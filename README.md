@@ -16,15 +16,25 @@
   These tests can be run anywhere in the game by referencing Tests.cs and running the appropriate test function
   once it is created.
 * To deploy/build the game, build it using Unity's build tool, place it in a ZIP folder and upload it to itch.io.
-
+  itch.io Refinery will be utilized in the future.
 
 ### Contribution guidelines ###
 
-* Writing tests
-* Code review
-* Other guidelines
+* The contents of a test should reflect the nature of the function that is being tested.
+  The output of the tests can either be to the Unity console or to an external log file.
+* Code follows personal coding conventions/structure which is subject to change however I will try to maintain the following:
+  - Variable names are camelCase.
+  - Function/method names are UppercaseByWord.
+  - Methods in a script are usually called in order by a master-method located somewhere in the script which is itself called by a master-method for the game itself.
+* No other guidelines.
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
-* Other community or team contact
+* Ryan White
+* - ryan.thomas.white@outlook.com)
+* - flizzehh.itch.io/snowship
+* - @Flizzehh on Twitter
+* Esteae
+* - esteae.ca
+* - ryan@esteae.ca
+* - support@esteae.ca
