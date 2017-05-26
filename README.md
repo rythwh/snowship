@@ -30,11 +30,11 @@
 
 ### Who do I talk to? ###
 
-* Ryan White
-* - ryan.thomas.white@outlook.com)
-* - flizzehh.itch.io/snowship
-* - @Flizzehh on Twitter
-* Esteae
-* - esteae.ca
-* - ryan@esteae.ca
-* - support@esteae.ca
++ Ryan White
+  * ryan.thomas.white@outlook.com)
+  * flizzehh.itch.io/snowship
+  * @Flizzehh on Twitter
+- Esteae
+  * esteae.ca
+  * ryan@esteae.ca
+  * support@esteae.ca
