@@ -1,0 +1,120 @@
+Dirt/
+	0.75/
+	true/
+	true`
+DirtWater/
+	0.2/
+	true/
+	false`
+Mud/
+	0.4/
+	true/
+	true`
+DirtGrass/
+	0.7/
+	true/
+	true`
+DirtThinGrass/
+	0.7/
+	true/
+	true`
+DirtDryGrass/
+	0.7/
+	true/
+	true`
+Grass/
+	0.8/
+	true/
+	true`
+GrassWater/
+	0.2/
+	true/
+	false`
+ThickGrass/
+	0.5/
+	true/
+	true`
+ColdGrass/
+	0.8/
+	true/
+	true`
+ColdGrassWater/
+	0.2/
+	true/
+	false`
+DryGrass/
+	0.7/
+	true/
+	true`
+DryGrassWater/
+	0.2/
+	true/
+	false`
+Sand/
+	0.5/
+	true/
+	true`
+SandWater/
+	0.2/
+	true/
+	false`
+Snow/
+	0.5/
+	true/
+	true`
+SnowIce/
+	0.2/
+	true/
+	false`
+SnowStone/
+	0.6/
+	true/
+	true`
+Stone/
+	1/
+	false/
+	true`
+StoneThinGrass/
+	0.8/
+	true/
+	true`
+StoneSand/
+	0.7/
+	true/
+	true`
+StoneSnow/
+	0.7/
+	true/
+	true`
+StoneIce/
+	0.2/
+	true/
+	false`
+StoneWater/
+	0.2/
+	true/
+	false`
+Granite/
+	1/
+	false/
+	true`
+Limestone/
+	1/
+	false/
+	true`
+Marble/
+	1/
+	false/
+	true`
+Sandstone/
+	1/
+	false/
+	true`
+Slate/
+	1/
+	false/
+	true`
+Clay/
+	1/
+	false/
+	true
