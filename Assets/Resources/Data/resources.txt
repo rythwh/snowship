@@ -1,0 +1,11 @@
+Natural:
+	Dirt/
+		1`
+	Stone/
+		2`
+	Logs/
+		2
+~
+Materials:
+	Firewood/
+		2
