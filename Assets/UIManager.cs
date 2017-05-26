@@ -32,7 +32,7 @@ public class UIManager : MonoBehaviour {
 		GameObject.Find("PlayButton").GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
 
 		GameObject.Find("MapSize-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdateMapSizeText(); });
-		GameObject.Find("MapSize-Slider").GetComponent<Slider>().value = 6;
+		GameObject.Find("MapSize-Slider").GetComponent<Slider>().value = 4;
 
 		mainMenu = GameObject.Find("MainMenu-BackgroundPanel");
 
