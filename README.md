@@ -3,8 +3,7 @@
 ### What is this repository for? ###
 
 * Snowship is a colony survival management simulation game developed by Esteae/Ryan White.
-* Alpha R1
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+* Snowship Alpha R1
 
 ### How do I get set up? ###
 
@@ -38,3 +37,6 @@
     * esteae.ca
     * ryan@esteae.ca
     * support@esteae.ca
+
+### README Formatting ###
+* [Markdown](https://bitbucket.org/tutorials/markdowndemo)
