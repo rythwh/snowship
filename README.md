@@ -32,7 +32,8 @@
 + Ryan White
     * ryan.thomas.white@outlook.com)
     * flizzehh.itch.io/snowship
-    * @Flizzehh on Twitter
+    * [@Flizzehh](https://twitter.com/flizzehh) on Twitter
+    * @Flizzehh on BitBucket
 - Esteae
     * esteae.ca
     * ryan@esteae.ca
