@@ -39,37 +39,38 @@ public class ColonistManager : MonoBehaviour {
 			MoveToTile(null);
 		}
 
+		private Vector2 oldPosition;
 		public void MoveToTile(TileManager.Tile tile) {
 			if (tile != null) {
 				path = pm.FindPathToTile(overTile,tile);
-				if (path[0] == overTile) {
-					path.RemoveAt(0);
-				}
-				obj.GetComponent<SpriteRenderer>().sprite = GetMoveSprite();
+				path.RemoveAt(0);
+				SetMoveSprite();
 				moveTimer = 0;
+				oldPosition = obj.transform.position;
 			}
 			if (path.Count > 0) {
 
 				overTile = tm.GetTileFromPosition(obj.transform.position);
 
-				obj.transform.position = Vector2.Lerp(obj.transform.position,path[0].obj.transform.position,moveTimer);
+				obj.transform.position = Vector2.Lerp(oldPosition,path[0].obj.transform.position,moveTimer);
 
 				if (moveTimer >= 1f) {
+					oldPosition = obj.transform.position;
 					obj.transform.position = path[0].obj.transform.position;
 					moveTimer = 0;
 					path.RemoveAt(0);
-
-					obj.GetComponent<SpriteRenderer>().sprite = GetMoveSprite();
+					if (path.Count > 0) {
+						SetMoveSprite();
+					}
 				} else {
-					moveTimer += 1 * Time.deltaTime * overTile.walkSpeed;
-					print(moveTimer);
+					moveTimer += 2 * Time.deltaTime * overTile.walkSpeed;
 				}
 			} else {
 				obj.GetComponent<SpriteRenderer>().sprite = moveSprites[0];
 			}
 		}
 
-		public Sprite GetMoveSprite() {
+		public void SetMoveSprite() {
 			int bitsum = 0;
 			for (int i = 0; i < overTile.surroundingTiles.Count; i++) {
 				if (overTile.surroundingTiles[i] == path[0]) {
@@ -79,7 +80,7 @@ public class ColonistManager : MonoBehaviour {
 			if (bitsum >= 16) {
 				bitsum = moveSpritesMap[bitsum];
 			}
-			return moveSprites[bitsum];
+			obj.GetComponent<SpriteRenderer>().sprite = moveSprites[bitsum];
 		}
 	}
 

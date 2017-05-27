@@ -457,10 +457,9 @@ public class TileManager:MonoBehaviour {
 		this.mapSize = mapSize;
 
 		if (mapSeed < 0) {
-			UnityEngine.Random.InitState(UnityEngine.Random.Range(0,int.MaxValue));
-		} else {
-			UnityEngine.Random.InitState(mapSeed);
+			mapSeed = UnityEngine.Random.Range(0,int.MaxValue);
 		}
+		UnityEngine.Random.InitState(mapSeed);
 		print(mapSeed);
 	}
 

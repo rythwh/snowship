@@ -33,23 +33,19 @@ public class PathManager : MonoBehaviour {
 
 			if (currentTile.tile == endTile) {
 				while (currentTile != null) {
-					currentTile.tile.obj.GetComponent<SpriteRenderer>().color = Color.black;
 					path.Add(currentTile.tile);
 					currentTile = currentTile.cameFrom;
 				}
-				//startTile.obj.GetComponent<SpriteRenderer>().color = Color.blue;
 				path.Reverse();
-				path[0].obj.GetComponent<SpriteRenderer>().color = Color.blue;
 				return path;
 			}
 
-			foreach (TileManager.Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
+			foreach (TileManager.Tile nTile in (currentTile.tile.surroundingTiles.Find(o => o != null && !o.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
 				if (nTile != null && checkedTiles.Find(o => o.tile == nTile) == null && nTile.walkable) {
 					float cost = Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position) - (nTile.walkSpeed * 10f);
 					PathfindingTile pTile = new PathfindingTile(nTile,currentTile,cost);
 					frontier.Add(pTile);
 					checkedTiles.Add(pTile);
-					nTile.obj.GetComponent<SpriteRenderer>().color = Color.red;
 				}
 			}
 			frontier = frontier.OrderBy(o => o.cost).ToList();
