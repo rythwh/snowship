@@ -3,6 +3,18 @@ Natural:
 		1`
 	Stone/
 		2`
+	Granite/
+		5`
+	Limestone/
+		3`
+	Marble/
+		10`
+	Sandstone/
+		3`
+	Slate/
+		5`
+	Clay/
+		5`
 	Logs/
 		2
 ~
