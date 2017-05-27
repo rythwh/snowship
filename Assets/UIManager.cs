@@ -32,7 +32,7 @@ public class UIManager : MonoBehaviour {
 		GameObject.Find("PlayButton").GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
 
 		GameObject.Find("MapSize-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdateMapSizeText(); });
-		GameObject.Find("MapSize-Slider").GetComponent<Slider>().value = 4;
+		GameObject.Find("MapSize-Slider").GetComponent<Slider>().value = 1;
 
 		mainMenu = GameObject.Find("MainMenu-BackgroundPanel");
 
@@ -49,9 +49,6 @@ public class UIManager : MonoBehaviour {
 				mapSeed += c;
 			}
 		}
-		print(mapSeed);
-
-		print(mapSize);
 
 		tm.Initialize(mapSize,mapSeed);
 		mainMenu.SetActive(false);

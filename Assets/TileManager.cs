@@ -220,6 +220,9 @@ public class TileManager:MonoBehaviour {
 		public float temperature;
 
 		public bool walkable;
+		public float walkSpeed;
+
+		public ResourceManager.TileObjectInstance objectInstance;
 
 		public Tile(Vector2 position,float height,TileManager tm) {
 
@@ -247,6 +250,7 @@ public class TileManager:MonoBehaviour {
 				Destroy(plant);
 				plant = null;
 			}
+			SetWalkSpeed();
 		}
 
 		public void SetTileTypeBasedOnHeight() {
@@ -304,6 +308,24 @@ public class TileManager:MonoBehaviour {
 					break;
 				}
 			}
+			SetWalkSpeed();
+			
+		}
+
+		public void SetTileObject(ResourceManager.TileObjectPrefab tileObjectPrefab) {
+			objectInstance = new ResourceManager.TileObjectInstance(tileObjectPrefab,this);
+			SetWalkSpeed();
+			
+		}
+
+		public void SetWalkSpeed() {
+			walkSpeed = tileType.walkSpeed;
+			if (plant != null && walkSpeed > 0.5f) {
+				walkSpeed = 0.5f;
+			}
+			if (objectInstance != null && walkSpeed > objectInstance.prefab.walkSpeed) {
+				walkSpeed = objectInstance.prefab.walkSpeed;
+			}
 		}
 	}
 
@@ -316,7 +338,7 @@ public class TileManager:MonoBehaviour {
 		GetComponent<CameraManager>().SetCameraZoom((mapSize / 2f) + 2);
 
 		GetComponent<ResourceManager>().CreateResources();
-		GetComponent<ColonistManager>().SpawnColonists(3);
+		GetComponent<ResourceManager>().CreateTileObjectPrefabs();
 
 		CreatePlantGroups();
 		CreateTileTypes();
@@ -324,7 +346,11 @@ public class TileManager:MonoBehaviour {
 		CreateMap();
 
 		generated = true;
+
+		GetComponent<ColonistManager>().SpawnColonists(3);
 	}
+
+	ColonistManager.Colonist selectedColonist;
 
 	void Update() {
 		if (generated) {
@@ -397,14 +423,30 @@ public class TileManager:MonoBehaviour {
 
 			Vector2 mousePosition = GetComponent<CameraManager>().cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 			if (Input.GetMouseButtonDown(0)) {
+				bool foundColonist = false;
+				foreach (ColonistManager.Colonist colonist in GetComponent<ColonistManager>().colonists) {
+					if (colonist.overTile == GetTileFromPosition(mousePosition)) {
+						selectedColonist = colonist;
+						foundColonist = true;
+						break;
+					}
+				}
+				if (!foundColonist && selectedColonist != null) {
+					selectedColonist.MoveToTile(GetTileFromPosition(mousePosition));
+				}
+				/*
 				Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
 				print(tile.biome.name);
 				//tile.SetTileType(GetTileTypeByEnum(TileTypes.GrassWater),true);
+				*/
 			}
 			if (Input.GetMouseButtonDown(1)) {
+				selectedColonist = null;
+				/*
 				Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
 				//tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true);
 				print(tile.tileType.name);
+				*/
 			}
 		}
 	}
@@ -419,6 +461,7 @@ public class TileManager:MonoBehaviour {
 		} else {
 			UnityEngine.Random.InitState(mapSeed);
 		}
+		print(mapSeed);
 	}
 
 	void CreateMap() {
@@ -732,7 +775,7 @@ public class TileManager:MonoBehaviour {
 
 		List<List<float>> precipitations = new List<List<float>>();
 
-		for (int i = 0;i < 4;i++) {
+		for (int i = 0;i < 5;i++) {
 			windDirection = i;
 			if (windDirection <= 3) { // Wind is going horizontally/vertically
 				bool yStartAtTop = (windDirection == 2);
@@ -754,7 +797,24 @@ public class TileManager:MonoBehaviour {
 					}
 				}
 			} else { // Wind is going diagonally
-
+				for (int k = 0; k < mapSize * 2; k++) {
+					for (int x = 0; x <= k; x++) {
+						int y = k - x;
+						if (y < mapSize && x < mapSize) {
+							Tile tile = sortedTiles[y][x];
+							Tile previousTile = tile.surroundingTiles[windDirectionOppositeMap[windDirection]];
+							if (previousTile != null) {
+								if (LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+									tile.precipitation = previousTile.precipitation + (UnityEngine.Random.Range(0f,1f) < 1 - previousTile.precipitation ? UnityEngine.Random.Range(0f,(1 - previousTile.precipitation) / 5f) : 0f);
+								} else {
+									tile.precipitation = previousTile.precipitation - (UnityEngine.Random.Range(0f,1f) < 1 - previousTile.precipitation ? UnityEngine.Random.Range(0f,previousTile.precipitation / 5f) * tile.height : 0f);
+								}
+							} else {
+								tile.precipitation = UnityEngine.Random.Range(0.1f,0.5f) * (1 - tile.height);
+							}
+						}
+					}
+				}
 			}
 			List<float> directionPrecipitations = new List<float>();
 			foreach (Tile tile in tiles) {
@@ -880,18 +940,6 @@ public class TileManager:MonoBehaviour {
 
 	public List<List<Tile>> rivers = new List<List<Tile>>();
 
-	public class PathfindingTile {
-		public Tile tile;
-		public PathfindingTile cameFrom;
-		public float cost;
-
-		public PathfindingTile(Tile tile,PathfindingTile cameFrom,float cost) {
-			this.tile = tile;
-			this.cameFrom = cameFrom;
-			this.cost = cost;
-		}
-	}
-
 	public Dictionary<Region,Tile> drainageBasins = new Dictionary<Region,Tile>();
 	public int drainageBasinID = 0;
 
@@ -956,11 +1004,11 @@ public class TileManager:MonoBehaviour {
 			}
 			removeTiles.Clear();
 
-			PathfindingTile currentTile = new PathfindingTile(riverStartTile,null,0);
+			PathManager.PathfindingTile currentTile = new PathManager.PathfindingTile(riverStartTile,null,0);
 
-			List<PathfindingTile> checkedTiles = new List<PathfindingTile>();
+			List<PathManager.PathfindingTile> checkedTiles = new List<PathManager.PathfindingTile>();
 			checkedTiles.Add(currentTile);
-			List<PathfindingTile> frontier = new List<PathfindingTile>();
+			List<PathManager.PathfindingTile> frontier = new List<PathManager.PathfindingTile>();
 			frontier.Add(currentTile);
 
 			List<Tile> river = new List<Tile>();
@@ -981,7 +1029,7 @@ public class TileManager:MonoBehaviour {
 				foreach (Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
 					if (nTile != null && checkedTiles.Find(o => o.tile == nTile) == null && !StoneEquivalentTileTypes.Contains(nTile.tileType.type)) {
 						float cost = Vector2.Distance(nTile.obj.transform.position,riverEndTile.obj.transform.position) + (nTile.height * (mapSize/10f));
-						PathfindingTile pTile = new PathfindingTile(nTile,currentTile,cost);
+						PathManager.PathfindingTile pTile = new PathManager.PathfindingTile(nTile,currentTile,cost);
 						frontier.Add(pTile);
 						checkedTiles.Add(pTile);
 					}
@@ -1088,7 +1136,7 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
-	void Bitmasking(List<Tile> tilesToBitmask) {
+	public void Bitmasking(List<Tile> tilesToBitmask) {
 		foreach (Tile tile in tilesToBitmask) {
 			if (tile != null) {
 				if (BitmaskingTileTypes.Contains(tile.tileType.type)) {
@@ -1110,5 +1158,10 @@ public class TileManager:MonoBehaviour {
 			compareTileTypes.AddRange(StoneEquivalentTileTypes);
 			BitmaskTile(river[river.Count - 1],false,true,compareTileTypes);
 		}
+	}
+
+	public Tile GetTileFromPosition(Vector2 position) {
+		position = new Vector2(Mathf.Clamp(position.x,0,mapSize - 1),Mathf.Clamp(position.y,0,mapSize - 1));
+		return sortedTiles[Mathf.FloorToInt(position.y)][Mathf.FloorToInt(position.x)];
 	}
 }
