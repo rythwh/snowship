@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System;
 using UnityEngine;
 
 public class TileManager:MonoBehaviour {
@@ -27,7 +26,7 @@ public class TileManager:MonoBehaviour {
 	}
 
 	public void CreatePlantGroups() {
-		foreach (PlantGroups plantGroup in Enum.GetValues(typeof(PlantGroups))) {
+		foreach (PlantGroups plantGroup in System.Enum.GetValues(typeof(PlantGroups))) {
 			plantGroups.Add(new PlantGroup(plantGroup));
 		}
 	}
@@ -56,6 +55,22 @@ public class TileManager:MonoBehaviour {
 		TileTypes.GrassWater, TileTypes.SnowIce, TileTypes.StoneIce, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.Stone
 	};
 
+	public List<TileTypes> GetWaterEquivalentTileTypes() {
+		return WaterEquivalentTileTypes;
+	}
+	public List<TileTypes> GetLiquidWaterEquivalentTileTypes() {
+		return LiquidWaterEquivalentTileTypes;
+	}
+	public List<TileTypes> GetStoneEquivalentTileTypes() {
+		return StoneEquivalentTileTypes;
+	}
+	public List<TileTypes> GetPlantableTileTypes() {
+		return PlantableTileTypes;
+	}
+	public List<TileTypes> GetBitmaskingTileTypes() {
+		return BitmaskingTileTypes;
+	}
+
 	public List<TileType> tileTypes = new List<TileType>();
 
 	public class TileType {
@@ -72,7 +87,7 @@ public class TileManager:MonoBehaviour {
 		public List<Sprite> riverSprites = new List<Sprite>();
 
 		public TileType(List<string> tileTypeData, TileManager tm) {
-			type = (TileTypes)Enum.Parse(typeof(TileTypes),tileTypeData[0]);
+			type = (TileTypes)System.Enum.Parse(typeof(TileTypes),tileTypeData[0]);
 			name = type.ToString();
 
 			walkSpeed = float.Parse(tileTypeData[1]);
@@ -128,7 +143,7 @@ public class TileManager:MonoBehaviour {
 		public TileType waterType;
 
 		public Biome(List<string> biomeData, TileManager tm) {
-			type = (BiomeTypes)Enum.Parse(typeof(BiomeTypes),biomeData[0]);
+			type = (BiomeTypes)System.Enum.Parse(typeof(BiomeTypes),biomeData[0]);
 			name = type.ToString();
 
 			List <string> stringTemperatureRange = biomeData[1].Split(',').ToList();
@@ -158,20 +173,20 @@ public class TileManager:MonoBehaviour {
 			}
 
 			List<string> tileTypeData = biomeData[3].Split(',').ToList();
-			tileType = tm.GetTileTypeByEnum((TileTypes)Enum.Parse(typeof(TileTypes),tileTypeData[0]));
-			waterType = tm.GetTileTypeByEnum((TileTypes)Enum.Parse(typeof(TileTypes),tileTypeData[1]));
+			tileType = tm.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes),tileTypeData[0]));
+			waterType = tm.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes),tileTypeData[1]));
 
 			if (float.Parse(biomeData[4].Split(',')[0]) != 0) {
 				int vegetationIndex = 0;
 				foreach (string vegetationChance in biomeData[4].Split(',').ToList()) {
-					vegetationChances.Add((PlantGroups)Enum.Parse(typeof(PlantGroups),biomeData[5].Split(',').ToList()[vegetationIndex]),float.Parse(vegetationChance));
+					vegetationChances.Add((PlantGroups)System.Enum.Parse(typeof(PlantGroups),biomeData[5].Split(',').ToList()[vegetationIndex]),float.Parse(vegetationChance));
 					vegetationIndex += 1;
 				}
 			}
 
-			int r = Int32.Parse("" + biomeData[6][2] + biomeData[6][3],System.Globalization.NumberStyles.HexNumber);
-			int g = Int32.Parse("" + biomeData[6][4] + biomeData[6][5],System.Globalization.NumberStyles.HexNumber);
-			int b = Int32.Parse("" + biomeData[6][6] + biomeData[6][7],System.Globalization.NumberStyles.HexNumber);
+			int r = System.Int32.Parse("" + biomeData[6][2] + biomeData[6][3],System.Globalization.NumberStyles.HexNumber);
+			int g = System.Int32.Parse("" + biomeData[6][4] + biomeData[6][5],System.Globalization.NumberStyles.HexNumber);
+			int b = System.Int32.Parse("" + biomeData[6][6] + biomeData[6][7],System.Globalization.NumberStyles.HexNumber);
 			colour = new Color(r,g,b,255f) / 255f;
 
 		}
@@ -223,6 +238,7 @@ public class TileManager:MonoBehaviour {
 		public float walkSpeed;
 
 		public ResourceManager.TileObjectInstance objectInstance;
+		public ResourceManager.TileObjectInstance floorInstance;
 
 		public Tile(Vector2 position,float height,TileManager tm) {
 
@@ -294,12 +310,12 @@ public class TileManager:MonoBehaviour {
 			}
 			foreach (KeyValuePair<PlantGroups,float> kvp in biome.vegetationChances) {
 				PlantGroups plantGroup = kvp.Key;
-				if (UnityEngine.Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
+				if (Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
 					GameObject plant = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),obj.transform.position,Quaternion.identity);
-					if (UnityEngine.Random.Range(0f,1f) < 0.1f) {
-						plant.GetComponent<SpriteRenderer>().sprite = tm.GetPlantGroupByEnum(plantGroup).smallPlants[UnityEngine.Random.Range(0,tm.GetPlantGroupByEnum(plantGroup).smallPlants.Count)];
+					if (Random.Range(0f,1f) < 0.1f) {
+						plant.GetComponent<SpriteRenderer>().sprite = tm.GetPlantGroupByEnum(plantGroup).smallPlants[Random.Range(0,tm.GetPlantGroupByEnum(plantGroup).smallPlants.Count)];
 					} else {
-						plant.GetComponent<SpriteRenderer>().sprite = tm.GetPlantGroupByEnum(plantGroup).fullPlants[UnityEngine.Random.Range(0,tm.GetPlantGroupByEnum(plantGroup).fullPlants.Count)];
+						plant.GetComponent<SpriteRenderer>().sprite = tm.GetPlantGroupByEnum(plantGroup).fullPlants[Random.Range(0,tm.GetPlantGroupByEnum(plantGroup).fullPlants.Count)];
 					}
 					plant.GetComponent<SpriteRenderer>().sortingOrder = 1;
 					plant.name = "PLANT " + plant.GetComponent<SpriteRenderer>().sprite.name;
@@ -352,102 +368,105 @@ public class TileManager:MonoBehaviour {
 
 	ColonistManager.Colonist selectedColonist;
 
-	void Update() {
-		if (generated) {
-			if (Input.GetKeyDown(KeyCode.Z)) {
-				foreach (Tile tile in tiles) {
-					tile.obj.GetComponent<SpriteRenderer>().color = Color.white;
-				}
-				Bitmasking(tiles);
-			}
-			if (Input.GetKeyDown(KeyCode.X)) {
-				foreach (Region region in regions) {
-					region.ColourRegion();
-				}
-			}
-			if (Input.GetKeyDown(KeyCode.C)) {
-				Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-				foreach (Tile tile in tiles) {
-					tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-					tile.obj.GetComponent<SpriteRenderer>().color = new Color(tile.height,tile.height,tile.height,1f);
-				}
-			}
-			if (Input.GetKeyDown(KeyCode.V)) {
-				Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-				foreach (Tile tile in tiles) {
-					tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-					tile.obj.GetComponent<SpriteRenderer>().color = new Color(tile.precipitation,tile.precipitation,tile.precipitation,1f);
-				}
-			}
-			if (Input.GetKeyDown(KeyCode.B)) {
-				Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-				foreach (Tile tile in tiles) {
-					tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-					tile.obj.GetComponent<SpriteRenderer>().color = new Color((tile.temperature + 50f) / 100f,(tile.temperature + 50f) / 100f,(tile.temperature + 50f) / 100f,1f);
-				}
-			}
-			if (Input.GetKeyDown(KeyCode.N)) {
-				Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-				foreach (Tile tile in tiles) {
-					tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-					if (tile.biome != null) {
-						tile.obj.GetComponent<SpriteRenderer>().color = tile.biome.colour;
-					} else {
-						tile.obj.GetComponent<SpriteRenderer>().color = Color.black;
-					}
-				}
-			}
-			if (Input.GetKeyDown(KeyCode.M)) {
-				Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-				foreach (Tile tile in edgeTiles) {
-					tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-					tile.obj.GetComponent<SpriteRenderer>().color = Color.red;
-				}
-				foreach (List<Tile> river in rivers) {
-					foreach (Tile tile in river) {
-						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-						tile.obj.GetComponent<SpriteRenderer>().color = Color.black;
-					}
-					river[0].obj.GetComponent<SpriteRenderer>().color = Color.green;
-				}
-			}
-			if (Input.GetKeyDown(KeyCode.Comma)) {
-				Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-				foreach (KeyValuePair<Region,Tile> kvp in drainageBasins) {
-					foreach (Tile tile in kvp.Key.tiles) {
-						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-						tile.obj.GetComponent<SpriteRenderer>().color = kvp.Key.colour;
-					}
-				}
-			}
+	private bool debugMode;
 
-			
-			Vector2 mousePosition = GetComponent<CameraManager>().cameraComponent.ScreenToWorldPoint(Input.mousePosition);
-			if (Input.GetMouseButtonDown(0)) {
-				bool foundColonist = false;
-				foreach (ColonistManager.Colonist colonist in GetComponent<ColonistManager>().colonists) {
-					if (colonist.overTile == GetTileFromPosition(mousePosition)) {
-						selectedColonist = colonist;
-						foundColonist = true;
-						break;
+	void Update() {
+		if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.BackQuote)) {
+			debugMode = !debugMode;
+		}
+		if (debugMode) {
+			if (generated) {
+				if (Input.GetKeyDown(KeyCode.Z)) {
+					foreach (Tile tile in tiles) {
+						tile.obj.GetComponent<SpriteRenderer>().color = Color.white;
+					}
+					Bitmasking(tiles);
+				}
+				if (Input.GetKeyDown(KeyCode.X)) {
+					foreach (Region region in regions) {
+						region.ColourRegion();
 					}
 				}
-				if (!foundColonist && selectedColonist != null) {
-					selectedColonist.MoveToTile(GetTileFromPosition(mousePosition));
+				if (Input.GetKeyDown(KeyCode.C)) {
+					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+					foreach (Tile tile in tiles) {
+						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+						tile.obj.GetComponent<SpriteRenderer>().color = new Color(tile.height,tile.height,tile.height,1f);
+					}
 				}
-				/*
-				Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
-				print(tile.biome.name);
-				//tile.SetTileType(GetTileTypeByEnum(TileTypes.GrassWater),true);
-				*/
-			}
-			if (Input.GetMouseButtonDown(1)) {
-				selectedColonist = null;
-				/*
-				Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
-				//tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true);
-				print(tile.tileType.name);
-				*/
+				if (Input.GetKeyDown(KeyCode.V)) {
+					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+					foreach (Tile tile in tiles) {
+						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+						tile.obj.GetComponent<SpriteRenderer>().color = new Color(tile.precipitation,tile.precipitation,tile.precipitation,1f);
+					}
+				}
+				if (Input.GetKeyDown(KeyCode.B)) {
+					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+					foreach (Tile tile in tiles) {
+						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+						tile.obj.GetComponent<SpriteRenderer>().color = new Color((tile.temperature + 50f) / 100f,(tile.temperature + 50f) / 100f,(tile.temperature + 50f) / 100f,1f);
+					}
+				}
+				if (Input.GetKeyDown(KeyCode.N)) {
+					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+					foreach (Tile tile in tiles) {
+						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+						if (tile.biome != null) {
+							tile.obj.GetComponent<SpriteRenderer>().color = tile.biome.colour;
+						} else {
+							tile.obj.GetComponent<SpriteRenderer>().color = Color.black;
+						}
+					}
+				}
+				if (Input.GetKeyDown(KeyCode.M)) {
+					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+					foreach (KeyValuePair<Region,Tile> kvp in drainageBasins) {
+						foreach (Tile tile in kvp.Key.tiles) {
+							tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+							tile.obj.GetComponent<SpriteRenderer>().color = kvp.Key.colour;
+						}
+					}
+				}
+				if (Input.GetKeyDown(KeyCode.Comma)) {
+					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+					foreach (List<Tile> river in rivers) {
+						foreach (Tile tile in river) {
+							tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+							tile.obj.GetComponent<SpriteRenderer>().color = Color.blue;
+						}
+						river[0].obj.GetComponent<SpriteRenderer>().color = Color.red;
+						river[river.Count - 1].obj.GetComponent<SpriteRenderer>().color = Color.green;
+					}
+				}
+
+				Vector2 mousePosition = GetComponent<CameraManager>().cameraComponent.ScreenToWorldPoint(Input.mousePosition);
+				if (Input.GetMouseButtonDown(0)) {
+					bool foundColonist = false;
+					foreach (ColonistManager.Colonist colonist in GetComponent<ColonistManager>().colonists) {
+						if (colonist.overTile == GetTileFromPosition(mousePosition)) {
+							selectedColonist = colonist;
+							foundColonist = true;
+							break;
+						}
+					}
+					if (!foundColonist && selectedColonist != null) {
+						selectedColonist.MoveToTile(GetTileFromPosition(mousePosition));
+					}
+					/*
+					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
+					print(tile.biome.name);
+					//tile.SetTileType(GetTileTypeByEnum(TileTypes.GrassWater),true);
+					*/
+				}
+				if (Input.GetMouseButtonDown(1)) {
+					selectedColonist = null;
+					/*
+					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
+					//tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true);
+					print(tile.tileType.name);
+					*/
+				}
 			}
 		}
 	}
@@ -458,7 +477,7 @@ public class TileManager:MonoBehaviour {
 		this.mapSize = mapSize;
 
 		if (mapSeed < 0) {
-			mapSeed = UnityEngine.Random.Range(0,int.MaxValue);
+			mapSeed = Random.Range(0,int.MaxValue);
 		}
 		UnityEngine.Random.InitState(mapSeed);
 		print(mapSeed);
@@ -490,7 +509,7 @@ public class TileManager:MonoBehaviour {
 			List<Tile> innerTiles = new List<Tile>();
 			for (int x = 0;x < mapSize;x++) {
 
-				float height = UnityEngine.Random.Range(0f,1f);
+				float height = Random.Range(0f,1f);
 
 				Vector2 position = new Vector2(x,y);
 
@@ -574,7 +593,7 @@ public class TileManager:MonoBehaviour {
 						}
 					}
 					sectionAverage /= (size * size);
-					sectionAverage += UnityEngine.Random.Range(-0.25f,0.25f);
+					sectionAverage += Random.Range(-0.25f,0.25f);
 					for (int y = sectionY;(y < sectionY + size && y < mapSize);y++) {
 						for (int x = sectionX;(x < sectionX + size && x < mapSize);x++) {
 							sortedTiles[y][x].height = sectionAverage;
@@ -637,7 +656,7 @@ public class TileManager:MonoBehaviour {
 			this.tileType = regionTileType;
 			this.id = regionID;
 
-			colour = new Color(UnityEngine.Random.Range(0f,1f),UnityEngine.Random.Range(0f,1f),UnityEngine.Random.Range(0f,1f),1f);
+			colour = new Color(Random.Range(0f,1f),Random.Range(0f,1f),Random.Range(0f,1f),1f);
 		}
 
 		public void ColourRegion() {
@@ -770,7 +789,7 @@ public class TileManager:MonoBehaviour {
 
 	private int windDirection = 0;
 	void CalculatePrecipitation() {
-		//int windDirection = 0;/*UnityEngine.Random.Range(0,3);*/ // 0 - up, 1 - right, 2 - down, 3 - left, 4 - up/right, 5 - down/right, 6 - down-left, 7 - up/left
+		//int windDirection = 0;/*Random.Range(0,3);*/ // 0 - up, 1 - right, 2 - down, 3 - left, 4 - up/right, 5 - down/right, 6 - down-left, 7 - up/left
 		Dictionary<int,int> windDirectionOppositeMap = new Dictionary<int,int>() { { 0,2 },{ 1,3 },{ 2,0 },{ 3,1 },{ 4,6 },{ 5,7 },{ 6,4 },{ 7,5 } };
 
 		List<List<float>> precipitations = new List<List<float>>();
@@ -787,12 +806,12 @@ public class TileManager:MonoBehaviour {
 						Tile previousTile = tile.surroundingTiles[windDirectionOppositeMap[windDirection]];
 						if (previousTile != null) {
 							if (LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-								tile.precipitation = previousTile.precipitation + (UnityEngine.Random.Range(0f,1f) < 1 - previousTile.precipitation ? UnityEngine.Random.Range(0f,(1 - previousTile.precipitation) / 5f) : 0f);
+								tile.precipitation = previousTile.precipitation + (Random.Range(0f,1f) < 1 - previousTile.precipitation ? Random.Range(0f,(1 - previousTile.precipitation) / 5f) : 0f);
 							} else {
-								tile.precipitation = previousTile.precipitation - (UnityEngine.Random.Range(0f,1f) < 1 - previousTile.precipitation ? UnityEngine.Random.Range(0f,previousTile.precipitation / 5f) * tile.height : 0f);//(tile.height * Random.Range(0.005f,0.03f));
+								tile.precipitation = previousTile.precipitation - (Random.Range(0f,1f) < 1 - previousTile.precipitation ? Random.Range(0f,previousTile.precipitation / 5f) * tile.height : 0f);//(tile.height * Random.Range(0.005f,0.03f));
 							}
 						} else {
-							tile.precipitation = UnityEngine.Random.Range(0.1f,0.5f) * (1 - tile.height);
+							tile.precipitation = Random.Range(0.1f,0.5f) * (1 - tile.height);
 						}
 					}
 				}
@@ -805,12 +824,12 @@ public class TileManager:MonoBehaviour {
 							Tile previousTile = tile.surroundingTiles[windDirectionOppositeMap[windDirection]];
 							if (previousTile != null) {
 								if (LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-									tile.precipitation = previousTile.precipitation + (UnityEngine.Random.Range(0f,1f) < 1 - previousTile.precipitation ? UnityEngine.Random.Range(0f,(1 - previousTile.precipitation) / 5f) : 0f);
+									tile.precipitation = previousTile.precipitation + (Random.Range(0f,1f) < 1 - previousTile.precipitation ? Random.Range(0f,(1 - previousTile.precipitation) / 5f) : 0f);
 								} else {
-									tile.precipitation = previousTile.precipitation - (UnityEngine.Random.Range(0f,1f) < 1 - previousTile.precipitation ? UnityEngine.Random.Range(0f,previousTile.precipitation / 5f) * tile.height : 0f);
+									tile.precipitation = previousTile.precipitation - (Random.Range(0f,1f) < 1 - previousTile.precipitation ? Random.Range(0f,previousTile.precipitation / 5f) * tile.height : 0f);
 								}
 							} else {
-								tile.precipitation = UnityEngine.Random.Range(0.1f,0.5f) * (1 - tile.height);
+								tile.precipitation = Random.Range(0.1f,0.5f) * (1 - tile.height);
 							}
 						}
 					}
@@ -823,7 +842,7 @@ public class TileManager:MonoBehaviour {
 			}
 			precipitations.Add(directionPrecipitations);
 		}
-		int primaryDirection = UnityEngine.Random.Range(0,3);
+		int primaryDirection = Random.Range(0,3);
 		int oppositeDirection = windDirectionOppositeMap[primaryDirection];
 
 		for (int t = 0; t < tiles.Count; t++) {
@@ -991,7 +1010,7 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 		for (int i = 0;i < mapSize / 10f && i < riverStartTiles.Count;i++) {
-			Tile riverStartTile = Enumerable.ToList(riverStartTiles.Keys)[UnityEngine.Random.Range(0,riverStartTiles.Count)];
+			Tile riverStartTile = Enumerable.ToList(riverStartTiles.Keys)[Random.Range(0,riverStartTiles.Count)];
 			Tile riverEndTile = riverStartTiles[riverStartTile];
 			List<Tile> removeTiles = new List<Tile>();
 			foreach (KeyValuePair<Tile,Tile> kvp in riverStartTiles) {
@@ -1028,7 +1047,7 @@ public class TileManager:MonoBehaviour {
 
 				foreach (Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
 					if (nTile != null && checkedTiles.Find(o => o.tile == nTile) == null && !StoneEquivalentTileTypes.Contains(nTile.tileType.type)) {
-						float cost = Vector2.Distance(nTile.obj.transform.position,riverEndTile.obj.transform.position) + (nTile.height * (mapSize/10f));
+						float cost = Vector2.Distance(nTile.obj.transform.position,riverEndTile.obj.transform.position) + (nTile.height * (mapSize/10f)) + ((rivers.Find(otherRiver => otherRiver.Find(riverTile => nTile == riverTile) != null) != null) ? -100 : Random.Range(0,10));
 						PathManager.PathfindingTile pTile = new PathManager.PathfindingTile(nTile,currentTile,cost);
 						frontier.Add(pTile);
 						checkedTiles.Add(pTile);
@@ -1131,7 +1150,7 @@ public class TileManager:MonoBehaviour {
 			}
 		} else {
 			if (!tile.tileType.baseSprites.Contains(tile.obj.GetComponent<SpriteRenderer>().sprite)) {
-				tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.baseSprites[UnityEngine.Random.Range(0,tile.tileType.baseSprites.Count)];
+				tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.baseSprites[Random.Range(0,tile.tileType.baseSprites.Count)];
 			}
 		}
 	}
@@ -1143,7 +1162,7 @@ public class TileManager:MonoBehaviour {
 					BitmaskTile(tile,true,false,null);
 				} else {
 					if (!tile.tileType.baseSprites.Contains(tile.obj.GetComponent<SpriteRenderer>().sprite)) {
-						tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.baseSprites[UnityEngine.Random.Range(0,tile.tileType.baseSprites.Count)];
+						tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.baseSprites[Random.Range(0,tile.tileType.baseSprites.Count)];
 					}
 				}
 			}

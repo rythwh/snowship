@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using System;
 
 public class ResourceManager : MonoBehaviour {
 
@@ -45,7 +44,7 @@ public class ResourceManager : MonoBehaviour {
 		public int value;
 
 		public Resource(List<string> resourceData,ResourceGroup resourceGroup, ResourceManager rm) {
-			type = (ResourcesEnum)Enum.Parse(typeof(ResourcesEnum),resourceData[0]);
+			type = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceData[0]);
 			name = type.ToString();
 
 			this.resourceGroup = resourceGroup;
@@ -113,7 +112,7 @@ public class ResourceManager : MonoBehaviour {
 	public List<TileObjectPrefab> tileObjectPrefabs = new List<TileObjectPrefab>();
 
 	public void CreateTileObjectPrefabs() {
-		List <string> tileObjectPrefabGroupsData = Resources.Load<TextAsset>(@"Data/tileobjectprefabs").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split(new string[] { "<Group>" },StringSplitOptions.RemoveEmptyEntries).ToList();
+		List <string> tileObjectPrefabGroupsData = Resources.Load<TextAsset>(@"Data/tileobjectprefabs").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split(new string[] { "<Group>" },System.StringSplitOptions.RemoveEmptyEntries).ToList();
 		foreach (string tileObjectPrefabGroupDataString in tileObjectPrefabGroupsData) {
 			tileObjectPrefabGroups.Add(new TileObjectPrefabGroup(tileObjectPrefabGroupDataString,this));
 		}
@@ -127,9 +126,9 @@ public class ResourceManager : MonoBehaviour {
 		public List<TileObjectPrefabSubGroup> tileObjectPrefabSubGroups = new List<TileObjectPrefabSubGroup>();
 
 		public TileObjectPrefabGroup(string data, ResourceManager rm) {
-			List<string> tileObjectPrefabSubGroupsData = data.Split(new string[] { "<SubGroup>" },StringSplitOptions.RemoveEmptyEntries).ToList();
+			List<string> tileObjectPrefabSubGroupsData = data.Split(new string[] { "<SubGroup>" },System.StringSplitOptions.RemoveEmptyEntries).ToList();
 
-			type = (TileObjectPrefabGroupsEnum)Enum.Parse(typeof(TileObjectPrefabGroupsEnum),tileObjectPrefabSubGroupsData[0]);
+			type = (TileObjectPrefabGroupsEnum)System.Enum.Parse(typeof(TileObjectPrefabGroupsEnum),tileObjectPrefabSubGroupsData[0]);
 			name = type.ToString();
 
 			foreach (string tileObjectPrefabSubGroupDataString in tileObjectPrefabSubGroupsData.Skip(1)) {
@@ -148,9 +147,9 @@ public class ResourceManager : MonoBehaviour {
 		public TileObjectPrefabSubGroup(string data,TileObjectPrefabGroup tileObjectPrefabGroup,ResourceManager rm) {
 			this.tileObjectPrefabGroup = tileObjectPrefabGroup;
 
-			List<string> tileObjectPrefabsData = data.Split(new string[] { "<Object>" },StringSplitOptions.RemoveEmptyEntries).ToList();
+			List<string> tileObjectPrefabsData = data.Split(new string[] { "<Object>" },System.StringSplitOptions.RemoveEmptyEntries).ToList();
 
-			type = (TileObjectPrefabSubGroupsEnum)Enum.Parse(typeof(TileObjectPrefabSubGroupsEnum),tileObjectPrefabsData[0]);
+			type = (TileObjectPrefabSubGroupsEnum)System.Enum.Parse(typeof(TileObjectPrefabSubGroupsEnum),tileObjectPrefabsData[0]);
 			name = type.ToString();
 
 			foreach (string tileObjectPrefabDataString in tileObjectPrefabsData.Skip(1)) {
@@ -172,6 +171,7 @@ public class ResourceManager : MonoBehaviour {
 
 		public int timeToBuild;
 		public List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
+		public JobManager.SelectionTypesEnum selectionType;
 
 		public float flammability;
 
@@ -186,7 +186,7 @@ public class ResourceManager : MonoBehaviour {
 
 			List<string> properties = data.Split('/').ToList();
 
-			type = (TileObjectPrefabsEnum)Enum.Parse(typeof(TileObjectPrefabsEnum),properties[0]);
+			type = (TileObjectPrefabsEnum)System.Enum.Parse(typeof(TileObjectPrefabsEnum),properties[0]);
 			name = rm.GetComponent<UIManager>().SplitByCapitals(type.ToString());
 
 			timeToBuild = int.Parse(properties[1]);
@@ -194,18 +194,23 @@ public class ResourceManager : MonoBehaviour {
 			if (float.Parse(properties[2].Split(',')[0]) != 0) {
 				int resourceIndex = 0;
 				foreach (string resourceName in properties[3].Split(',').ToList()) {
-					resourcesToBuild.Add(new ResourceAmount(rm.GetResourceByEnum((ResourcesEnum)Enum.Parse(typeof(ResourcesEnum),resourceName)),int.Parse(properties[2].Split(',')[resourceIndex])));
+					resourcesToBuild.Add(new ResourceAmount(rm.GetResourceByEnum((ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceName)),int.Parse(properties[2].Split(',')[resourceIndex])));
 					resourceIndex += 1;
 				}
 			}
 
-			flammability = float.Parse(properties[4]);
+			selectionType = (JobManager.SelectionTypesEnum)System.Enum.Parse(typeof(JobManager.SelectionTypesEnum),properties[4]);
 
-			walkable = bool.Parse(properties[5]);
-			walkSpeed = float.Parse(properties[6]);
+			flammability = float.Parse(properties[5]);
 
-			baseSprite = Resources.Load<Sprite>(@"Sprites/TileObjects/" + name + "/" + name+"-base");
-			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name + "-bitmask").ToList();
+			walkable = bool.Parse(properties[6]);
+			walkSpeed = float.Parse(properties[7]);
+
+			baseSprite = Resources.Load<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-base");
+			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-bitmask").ToList();
+			if (baseSprite == null && bitmaskSprites.Count > 0) {
+				baseSprite = bitmaskSprites[0];
+			}
 		}
 	}
 
