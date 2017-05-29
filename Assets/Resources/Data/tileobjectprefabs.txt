@@ -7,6 +7,7 @@
 			10/
 			5/
 			Wood/
+			Outline/
 			1.0/
 			false/
 			1.0
@@ -15,6 +16,7 @@
 			15/
 			5/
 			Stone/
+			Outline/
 			0.0/
 			false/
 			1.0
@@ -25,6 +27,7 @@
 			5/
 			2/
 			Wood/
+			AllBuildable/
 			1.0/
 			true/
 			0.5
@@ -35,15 +38,8 @@
 			5/
 			2/
 			Wood/
+			OmitFloors/
 			1.0/
-			true/
-			1.0
-		<Object>
-			StoneFloor/
-			5/
-			2/
-			Stone/
-			0.0/
 			true/
 			1.0
 <Group>
@@ -55,6 +51,7 @@
 			15/
 			3/
 			Wood/
+			AllBuildable/
 			1.0/
 			true/
 			0.5

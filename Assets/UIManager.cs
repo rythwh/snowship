@@ -36,8 +36,16 @@ public class UIManager : MonoBehaviour {
 		GameObject.Find("MapSize-Slider").GetComponent<Slider>().value = 2;
 
 		mainMenu = GameObject.Find("MainMenu-BackgroundPanel");
+	}
 
-		
+	void Update() {
+		if (Input.GetMouseButtonDown(1)) {
+			if (GetComponent<JobManager>().firstTile != null) {
+				GetComponent<JobManager>().StopSelection();
+			} else {
+				GetComponent<JobManager>().SetSelectedPrefab(null);
+			}
+		}
 	}
 
 	public void PlayButton() {
@@ -82,10 +90,11 @@ public class UIManager : MonoBehaviour {
 					GameObject buildMenuObjectButton = Instantiate(Resources.Load<GameObject>(@"UI/BuildObject-Button-Prefab"),buildMenuSubGroupButton.transform.Find("Panel").transform,false);
 					buildMenuObjectButton.transform.Find("Text").GetComponent<Text>().text = top.name;
 					if (top.baseSprite != null) {
-						buildMenuObjectButton.transform.Find("Text").GetComponent<Image>().sprite = top.baseSprite;
+						buildMenuObjectButton.transform.Find("Image").GetComponent<Image>().sprite = top.baseSprite;
 					}
 					objectButtons.Add(buildMenuObjectButton);
-				}
+					buildMenuObjectButton.GetComponent<Button>().onClick.AddListener(delegate { GetComponent<JobManager>().SetSelectedPrefab(top); });
+					}
 				subGroupPanels.Add(subGroupPanel,objectButtons);
 
 				buildMenuSubGroupButton.GetComponent<Button>().onClick.AddListener(delegate {

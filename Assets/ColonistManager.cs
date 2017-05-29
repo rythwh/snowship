@@ -26,7 +26,7 @@ public class ColonistManager : MonoBehaviour {
 
 			overTile = spawnTile;
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),overTile.obj.transform.position,Quaternion.identity);
-			obj.GetComponent<SpriteRenderer>().sortingOrder = 2;
+			obj.GetComponent<SpriteRenderer>().sortingOrder = 3;
 			
 		}
 
@@ -111,7 +111,7 @@ public class ColonistManager : MonoBehaviour {
 		public JobManager.Job job;
 
 		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes,TileManager tm,PathManager pm,ColonistManager cm) : base(spawnTile,colonistLookIndexes,tm,pm,cm) {
-
+			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
 		}
 
 		public void SetJob(JobManager.Job job) {
