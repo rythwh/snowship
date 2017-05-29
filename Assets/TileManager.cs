@@ -421,6 +421,7 @@ public class TileManager:MonoBehaviour {
 				}
 			}
 
+			
 			Vector2 mousePosition = GetComponent<CameraManager>().cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 			if (Input.GetMouseButtonDown(0)) {
 				bool foundColonist = false;

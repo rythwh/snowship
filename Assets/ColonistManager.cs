@@ -107,7 +107,16 @@ public class ColonistManager : MonoBehaviour {
 	public List<Colonist> colonists = new List<Colonist>();
 
 	public class Colonist : Human {
+
+		public JobManager.Job job;
+
 		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes,TileManager tm,PathManager pm,ColonistManager cm) : base(spawnTile,colonistLookIndexes,tm,pm,cm) {
+
+		}
+
+		public void SetJob(JobManager.Job job) {
+			this.job = job;
+			MoveToTile(job.tile);
 		}
 	}
 

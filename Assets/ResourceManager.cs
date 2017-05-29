@@ -8,7 +8,7 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourceGroupsEnum { Natural, Materials };
 
-	public enum ResourcesEnum { Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Logs, Firewood };
+	public enum ResourcesEnum { Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Wood, Firewood };
 
 	public List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
 
@@ -63,8 +63,8 @@ public class ResourceManager : MonoBehaviour {
 		}
 	}
 
-	public Resource GetResourceByName(string resourceName) {
-		return resources.Find(o => o.name == resourceName);
+	public Resource GetResourceByEnum(ResourcesEnum resourceEnum) {
+		return resources.Find(o => o.type == resourceEnum);
 	}
 
 	public class ResourceAmount {
@@ -117,6 +117,7 @@ public class ResourceManager : MonoBehaviour {
 		foreach (string tileObjectPrefabGroupDataString in tileObjectPrefabGroupsData) {
 			tileObjectPrefabGroups.Add(new TileObjectPrefabGroup(tileObjectPrefabGroupDataString,this));
 		}
+		GetComponent<UIManager>().CreateBuildMenuButtons();
 	}
 
 	public class TileObjectPrefabGroup {
@@ -186,14 +187,14 @@ public class ResourceManager : MonoBehaviour {
 			List<string> properties = data.Split('/').ToList();
 
 			type = (TileObjectPrefabsEnum)Enum.Parse(typeof(TileObjectPrefabsEnum),properties[0]);
-			name = type.ToString();
+			name = rm.GetComponent<UIManager>().SplitByCapitals(type.ToString());
 
 			timeToBuild = int.Parse(properties[1]);
 
 			if (float.Parse(properties[2].Split(',')[0]) != 0) {
 				int resourceIndex = 0;
 				foreach (string resourceName in properties[3].Split(',').ToList()) {
-					resourcesToBuild.Add(new ResourceAmount(rm.GetResourceByName(resourceName),int.Parse(properties[2].Split(',')[resourceIndex])));
+					resourcesToBuild.Add(new ResourceAmount(rm.GetResourceByEnum((ResourcesEnum)Enum.Parse(typeof(ResourcesEnum),resourceName)),int.Parse(properties[2].Split(',')[resourceIndex])));
 					resourceIndex += 1;
 				}
 			}

@@ -15,7 +15,7 @@ Natural:
 		5`
 	Clay/
 		5`
-	Logs/
+	Wood/
 		2
 ~
 Materials:
