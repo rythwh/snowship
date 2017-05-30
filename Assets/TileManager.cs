@@ -370,6 +370,8 @@ public class TileManager:MonoBehaviour {
 
 	private bool debugMode;
 
+	private int viewRiverAtIndex = 0;
+
 	void Update() {
 		if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.BackQuote)) {
 			debugMode = !debugMode;
@@ -430,6 +432,7 @@ public class TileManager:MonoBehaviour {
 				}
 				if (Input.GetKeyDown(KeyCode.Comma)) {
 					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+					/*
 					foreach (List<Tile> river in rivers) {
 						foreach (Tile tile in river) {
 							tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
@@ -437,6 +440,21 @@ public class TileManager:MonoBehaviour {
 						}
 						river[0].obj.GetComponent<SpriteRenderer>().color = Color.red;
 						river[river.Count - 1].obj.GetComponent<SpriteRenderer>().color = Color.green;
+					}
+					*/
+					foreach (Tile tile in tiles) {
+						tile.obj.GetComponent<SpriteRenderer>().color = Color.white;
+					}
+					Bitmasking(tiles);
+					foreach (Tile tile in rivers[viewRiverAtIndex]) {
+						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+						tile.obj.GetComponent<SpriteRenderer>().color = Color.blue;
+					}
+					rivers[viewRiverAtIndex][0].obj.GetComponent<SpriteRenderer>().color = Color.red;
+					rivers[viewRiverAtIndex][rivers[viewRiverAtIndex].Count - 1].obj.GetComponent<SpriteRenderer>().color = Color.green;
+					viewRiverAtIndex += 1;
+					if (viewRiverAtIndex == rivers.Count) {
+						viewRiverAtIndex = 0;
 					}
 				}
 
@@ -653,8 +671,8 @@ public class TileManager:MonoBehaviour {
 		public Color colour;
 
 		public Region(TileType regionTileType,int regionID) {
-			this.tileType = regionTileType;
-			this.id = regionID;
+			tileType = regionTileType;
+			id = regionID;
 
 			colour = new Color(Random.Range(0f,1f),Random.Range(0f,1f),Random.Range(0f,1f),1f);
 		}
@@ -1036,78 +1054,48 @@ public class TileManager:MonoBehaviour {
 				currentTile = frontier[0];
 				frontier.RemoveAt(0);
 
-				if (WaterEquivalentTileTypes.Contains(currentTile.tile.tileType.type)) {
+				if (WaterEquivalentTileTypes.Contains(currentTile.tile.tileType.type) || (currentTile.tile.horizontalSurroundingTiles.Find(o => o != null && WaterEquivalentTileTypes.Contains(o.tileType.type) && RiversContainTile(o).Key == null) != null)) {
 					Tile foundOtherRiverAtTile = null;
 					List<Tile> foundOtherRiver = null;
-					bool expandRiver = false;
+					bool expandRiver = true; // false: SET TO FALSE TO ENABLE RIVER EXPANSION
 					while (currentTile != null) {
 						river.Add(currentTile.tile);
 						currentTile.tile.SetTileType(currentTile.tile.biome.waterType,false);
-						/*
-						foreach (Tile nTile in currentTile.tile.surroundingTiles) {
-							if (nTile != null) {
-								foreach (List<Tile> otherRiver in rivers) {
-									foreach (Tile otherRiverTile in otherRiver) {
-										if (currentTile.tile.surroundingTiles.Contains(otherRiverTile) && !river.Contains(otherRiverTile)) {
-											foundOtherRiverAtTile = currentTile.tile;
-											expandRiver = true;
-											break;
-										}
-									}
-								}
-							}
-						}
-						*/
 						if (!expandRiver) {
-							foreach (List<Tile> otherRiver in rivers) {
-								foreach (Tile otherRiverTile in otherRiver) {
-									if (otherRiverTile == currentTile.tile) {
-										foundOtherRiver = otherRiver;
-										foundOtherRiverAtTile = otherRiverTile;
-										expandRiver = true;
-										break;
-									}
-								}
-								if (expandRiver) {
-									break;
-								}
+							KeyValuePair<Tile,List<Tile>> kvp = RiversContainTile(currentTile.tile);
+							if (kvp.Key != null) {
+								foundOtherRiverAtTile = kvp.Key;
+								foundOtherRiver = kvp.Value;
+								expandRiver = true;
+								print("Expanding river at " + foundOtherRiverAtTile.obj.transform.position);
 							}
 						}
-						/*
-						if ((rivers.Find(otherRiver => otherRiver.Find(riverTile => currentTile.tile == riverTile) != null) != null)) {
-							print("Expand");
-							foundOtherRiverAtTile = currentTile.tile;
-							print("Found: " + foundOtherRiverAtTile.obj.transform.position);
-							expandRiver = true;
-						}
-						*/
 						currentTile = currentTile.cameFrom;
 					}
-					if (foundOtherRiver != null && foundOtherRiver.Count > 0) {
-						int riverTileIndex = 0;
+					if (foundOtherRiver != null && foundOtherRiver.Count > 1) {
+						int riverTileIndex = 1;
 						while (expandRiver) {
 							Tile riverTile = foundOtherRiver[riverTileIndex];
-							print("Checking: " + riverTile.obj.transform.position);
 							if (riverTile == foundOtherRiverAtTile) {
-								print("Found other river");
 								break;
 							}
-							int maxExpandRadius = 2;
+							int maxExpandRadius = 1;
 							List<Tile> expandFrontier = new List<Tile>();
 							expandFrontier.Add(riverTile);
+							List<Tile> checkedExpandTiles = new List<Tile>();
+							checkedExpandTiles.Add(riverTile);
 							while (expandFrontier.Count > 0) {
-								print("Changed tiles");
 								Tile expandTile = expandFrontier[0];
 								expandFrontier.RemoveAt(0);
 								expandTile.SetTileType(expandTile.biome.waterType,false);
 								foreach (Tile nTile in expandTile.surroundingTiles) {
-									if (nTile != null && !StoneEquivalentTileTypes.Contains(nTile.tileType.type) && Vector2.Distance(nTile.obj.transform.position,riverTile.obj.transform.position) < maxExpandRadius) {
+									if (nTile != null && !checkedExpandTiles.Contains(nTile) && !StoneEquivalentTileTypes.Contains(nTile.tileType.type) && Vector2.Distance(nTile.obj.transform.position,riverTile.obj.transform.position) <= maxExpandRadius) {
 										expandFrontier.Add(nTile);
+										checkedExpandTiles.Add(nTile);
 									}
 								}
 							}
 							riverTileIndex += 1;
-							break;
 						}
 					}
 					break;
@@ -1133,6 +1121,17 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
+	KeyValuePair<Tile,List<Tile>> RiversContainTile(Tile tile) {
+		foreach (List<Tile> river in rivers) {
+			foreach (Tile riverTile in river) {
+				if (riverTile == tile) {
+					return new KeyValuePair<Tile,List<Tile>>(riverTile,river);
+				}
+			}
+		}
+		return new KeyValuePair<Tile, List<Tile>>(null,null);
+	}
+
 	Dictionary<int,int> bitmaskMap = new Dictionary<int,int>() {
 		{ 19,16 },{ 23,17 },{ 27,18 },{ 31,19 },{ 38,20 },{ 39,21 },{ 46,22 },
 		{ 47,23 },{ 55,24 },{ 63,25 },{ 76,26 },{ 77,27 },{ 78,28 },{ 79,29 },
@@ -1147,7 +1146,7 @@ public class TileManager:MonoBehaviour {
 		{7,new List<int>() {3,0 } }
 	};
 
-	int BitSum(List<TileTypes> compareTileTypes,List<Tile> tilesToSum) {
+	int BitSum(List<TileTypes> compareTileTypes,List<Tile> tilesToSum, bool includeMapEdge) {
 		int sum = 0;
 		for (int i = 0;i < tilesToSum.Count;i++) {
 			if (tilesToSum[i] != null) {
@@ -1177,7 +1176,7 @@ public class TileManager:MonoBehaviour {
 						sum += Mathf.RoundToInt(Mathf.Pow(2,i));
 					}
 				}
-			} else {
+			} else if (includeMapEdge) {
 				if (tilesToSum.Find(tile => tile != null && tilesToSum.IndexOf(tile) <= 3 && !compareTileTypes.Contains(tile.tileType.type)) == null) {
 					sum += Mathf.RoundToInt(Mathf.Pow(2,i));
 				} else {
@@ -1195,28 +1194,30 @@ public class TileManager:MonoBehaviour {
 		return sum;
 	}
 
-	void BitmaskTile(Tile tile,bool includeDiagonalSurroundingTiles,bool customBitSumInputs,List<TileTypes> customCompareTileTypes) {
+	void BitmaskTile(Tile tile,bool includeDiagonalSurroundingTiles,bool customBitSumInputs,List<TileTypes> customCompareTileTypes, bool includeMapEdge) {
 		int sum = 0;
 		if (customBitSumInputs) {
-			sum = BitSum(customCompareTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles));
+			sum = BitSum(customCompareTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
 		} else {
-			if (WaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-				sum = BitSum(WaterEquivalentTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles));
+			if (RiversContainTile(tile).Key != null) {
+				sum = BitSum(WaterEquivalentTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),false);
+			} else if (WaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+				sum = BitSum(WaterEquivalentTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
 			} else if (StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-				sum = BitSum(StoneEquivalentTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles));
+				sum = BitSum(StoneEquivalentTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
 			} else {
-				sum = BitSum(new List<TileTypes>() { tile.tileType.type },(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles));
+				sum = BitSum(new List<TileTypes>() { tile.tileType.type },(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
 			}
 		}
 		if ((sum < 16) || (bitmaskMap[sum] != 46)) {
 			if (sum >= 16) {
-				if (LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && rivers.Find(river => river.Find(riverTile => riverTile == tile) != null) != null) {
+				if (LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key != null) {
 					tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.riverSprites[bitmaskMap[sum]];
 				} else {
 					tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.bitmaskSprites[bitmaskMap[sum]];
 				}
 			} else {
-				if (LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && rivers.Find(river => river.Find(riverTile => riverTile == tile) != null) != null) {
+				if (LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key != null) {
 					tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.riverSprites[sum];
 				} else {
 					tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.bitmaskSprites[sum];
@@ -1233,7 +1234,7 @@ public class TileManager:MonoBehaviour {
 		foreach (Tile tile in tilesToBitmask) {
 			if (tile != null) {
 				if (BitmaskingTileTypes.Contains(tile.tileType.type)) {
-					BitmaskTile(tile,true,false,null);
+					BitmaskTile(tile,true,false,null,true);
 				} else {
 					if (!tile.tileType.baseSprites.Contains(tile.obj.GetComponent<SpriteRenderer>().sprite)) {
 						tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.baseSprites[Random.Range(0,tile.tileType.baseSprites.Count)];
@@ -1249,7 +1250,7 @@ public class TileManager:MonoBehaviour {
 			List<TileTypes> compareTileTypes = new List<TileTypes>();
 			compareTileTypes.AddRange(WaterEquivalentTileTypes);
 			compareTileTypes.AddRange(StoneEquivalentTileTypes);
-			BitmaskTile(river[river.Count - 1],false,true,compareTileTypes);
+			BitmaskTile(river[river.Count - 1],false,true,compareTileTypes,false);
 		}
 	}
 
