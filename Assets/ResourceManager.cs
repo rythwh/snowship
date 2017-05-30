@@ -197,6 +197,9 @@ public class ResourceManager : MonoBehaviour {
 		public float walkSpeed;
 
 		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup) {
+
+			GetScriptReferences();
+
 			this.tileObjectPrefabSubGroup = tileObjectPrefabSubGroup;
 
 			List<string> properties = data.Split('/').ToList();
@@ -246,6 +249,9 @@ public class ResourceManager : MonoBehaviour {
 		public GameObject obj;
 
 		public TileObjectInstance(TileObjectPrefab prefab, TileManager.Tile tile) {
+
+			GetScriptReferences();
+
 			this.prefab = prefab;
 			this.tile = tile;
 
