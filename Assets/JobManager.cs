@@ -5,12 +5,14 @@ using System.Linq;
 
 public class JobManager : MonoBehaviour {
 
-	TileManager tm;
-	ColonistManager cm;
+	private TileManager tileM;
+	private ColonistManager colonistM;
+	private CameraManager cameraM;
 
 	void Awake() {
-		tm = GetComponent<TileManager>();
-		cm = GetComponent<ColonistManager>();
+		tileM = GetComponent<TileManager>();
+		colonistM = GetComponent<ColonistManager>();
+		cameraM = GetComponent<CameraManager>();
 	}
 
 	public List<Job> jobs = new List<Job>();
@@ -24,21 +26,23 @@ public class JobManager : MonoBehaviour {
 
 		public bool accessible;
 
-		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab, ColonistManager cm) {
+		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab, ColonistManager colonistM) {
 			this.tile = tile;
 			this.prefab = prefab;
 
 			jobPreview = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform.position,Quaternion.identity);
 			jobPreview.name = "JobPreview: " + prefab.name + " at " + tile.obj.transform.position;
 			jobPreview.transform.SetParent(tile.obj.transform);
+
+			SpriteRenderer jPSR = jobPreview.GetComponent<SpriteRenderer>();
 			if (prefab.baseSprite != null) {
-				jobPreview.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
-				jobPreview.GetComponent<SpriteRenderer>().sortingOrder = 2;
+				jPSR.sprite = prefab.baseSprite;
+				jPSR.sortingOrder = 2;
 			}
-			jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,0.25f);
+			jPSR.color = new Color(1f,1f,1f,0.25f);
 
 			accessible = false;
-			foreach (ColonistManager.Colonist colonist in cm.colonists) {
+			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
 				if (colonist.overTile.region == tile.region) {
 					accessible = true;
 					break;
@@ -86,9 +90,9 @@ public class JobManager : MonoBehaviour {
 		}
 
 		if (selectedPrefab != null) {
-			Vector2 mousePosition = GetComponent<CameraManager>().cameraComponent.ScreenToWorldPoint(Input.mousePosition);
+			Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 			if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
-				firstTile = tm.GetTileFromPosition(mousePosition);
+				firstTile = tileM.GetTileFromPosition(mousePosition);
 			}
 			if (firstTile != null) {
 				if (stopSelection) {
@@ -96,7 +100,7 @@ public class JobManager : MonoBehaviour {
 					firstTile = null;
 					return;
 				}
-				TileManager.Tile secondTile = tm.GetTileFromPosition(mousePosition);
+				TileManager.Tile secondTile = tileM.GetTileFromPosition(mousePosition);
 				if (secondTile != null) {
 					float smallerY = Mathf.Min(firstTile.obj.transform.position.y,secondTile.obj.transform.position.y);
 					float largerY = Mathf.Max(firstTile.obj.transform.position.y,secondTile.obj.transform.position.y);
@@ -107,7 +111,7 @@ public class JobManager : MonoBehaviour {
 
 					for (float y = smallerY; y < ((largerY - smallerY) + smallerY + 1); y++) {
 						for (float x = smallerX; x < ((largerX - smallerX) + smallerX + 1); x++) {
-							TileManager.Tile tile = tm.GetTileFromPosition(new Vector2(x,y));
+							TileManager.Tile tile = tileM.GetTileFromPosition(new Vector2(x,y));
 							if (selectedPrefab.selectionType == SelectionTypesEnum.All) {
 								selectionArea.Add(tile);
 							} else if (selectedPrefab.selectionType == SelectionTypesEnum.AllBuildable) {
@@ -121,15 +125,15 @@ public class JobManager : MonoBehaviour {
 									}
 								}
 							} else if (selectedPrefab.selectionType == SelectionTypesEnum.OnlyStoneTypes) {
-								if (tm.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) {
+								if (tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) {
 									selectionArea.Add(tile);
 								}
 							} else if (selectedPrefab.selectionType == SelectionTypesEnum.OnlyAllWaterTypes) {
-								if (tm.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
+								if (tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
 									selectionArea.Add(tile);
 								}
 							} else if (selectedPrefab.selectionType == SelectionTypesEnum.OnlyLiquidWaterTypes) {
-								if (tm.GetLiquidWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
+								if (tileM.GetLiquidWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
 									selectionArea.Add(tile);
 								}
 							} else if (selectedPrefab.selectionType == SelectionTypesEnum.OmitAnythingOnTile) {
@@ -173,9 +177,10 @@ public class JobManager : MonoBehaviour {
 					}
 
 					foreach (TileManager.Tile tile in selectionArea) {
-						GameObject selectionIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/SelectionIndicator"),tile.obj.transform.position,Quaternion.identity);
-						selectionIndicator.GetComponent<SpriteRenderer>().sortingOrder = 2;
-						selectionIndicator.transform.SetParent(tile.obj.transform);
+						GameObject selectionIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
+						SpriteRenderer sISR = selectionIndicator.GetComponent<SpriteRenderer>();
+						sISR.sprite = Resources.Load<Sprite>(@"UI/selectionIndicator");
+						sISR.sortingOrder = 2;
 						selectionIndicators.Add(selectionIndicator);
 					}
 
@@ -190,7 +195,7 @@ public class JobManager : MonoBehaviour {
 
 	public void CreateJobsInSelectionArea(ResourceManager.TileObjectPrefab prefab, List<TileManager.Tile> selectionArea) {
 		foreach (TileManager.Tile tile in selectionArea) {
-			CreateJob(new Job(tile,prefab,cm));
+			CreateJob(new Job(tile,prefab,colonistM));
 		}
 	}
 
@@ -207,7 +212,7 @@ public class JobManager : MonoBehaviour {
 		foreach (Job job in jobs) {
 			bool gaveJob = false;
 			if (job.accessible) {
-				List<ColonistManager.Colonist> sortedColonists = cm.colonists.Where(c => c.job == null).OrderBy(c => Vector2.Distance(c.overTile.obj.transform.position,job.tile.obj.transform.position)).ToList();
+				List<ColonistManager.Colonist> sortedColonists = colonistM.colonists.Where(c => c.job == null).OrderBy(c => Vector2.Distance(c.overTile.obj.transform.position,job.tile.obj.transform.position)).ToList();
 				foreach (ColonistManager.Colonist colonist in sortedColonists) {
 					if (colonist.path.Count <= 0) {
 						colonist.SetJob(job);

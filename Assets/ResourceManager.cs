@@ -5,6 +5,12 @@ using System.Linq;
 
 public class ResourceManager : MonoBehaviour {
 
+	private UIManager uiM;
+
+	void Awake() {
+		uiM = GetComponent<UIManager>();
+	}
+
 	public enum ResourceGroupsEnum { Natural, Materials };
 
 	public enum ResourcesEnum { Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Wood, Firewood };
@@ -114,9 +120,9 @@ public class ResourceManager : MonoBehaviour {
 	public void CreateTileObjectPrefabs() {
 		List <string> tileObjectPrefabGroupsData = Resources.Load<TextAsset>(@"Data/tileobjectprefabs").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split(new string[] { "<Group>" },System.StringSplitOptions.RemoveEmptyEntries).ToList();
 		foreach (string tileObjectPrefabGroupDataString in tileObjectPrefabGroupsData) {
-			tileObjectPrefabGroups.Add(new TileObjectPrefabGroup(tileObjectPrefabGroupDataString,this));
+			tileObjectPrefabGroups.Add(new TileObjectPrefabGroup(tileObjectPrefabGroupDataString));
 		}
-		GetComponent<UIManager>().CreateBuildMenuButtons();
+		uiM.CreateBuildMenuButtons();
 	}
 
 	public class TileObjectPrefabGroup {
@@ -125,14 +131,14 @@ public class ResourceManager : MonoBehaviour {
 
 		public List<TileObjectPrefabSubGroup> tileObjectPrefabSubGroups = new List<TileObjectPrefabSubGroup>();
 
-		public TileObjectPrefabGroup(string data, ResourceManager rm) {
+		public TileObjectPrefabGroup(string data) {
 			List<string> tileObjectPrefabSubGroupsData = data.Split(new string[] { "<SubGroup>" },System.StringSplitOptions.RemoveEmptyEntries).ToList();
 
 			type = (TileObjectPrefabGroupsEnum)System.Enum.Parse(typeof(TileObjectPrefabGroupsEnum),tileObjectPrefabSubGroupsData[0]);
 			name = type.ToString();
 
 			foreach (string tileObjectPrefabSubGroupDataString in tileObjectPrefabSubGroupsData.Skip(1)) {
-				tileObjectPrefabSubGroups.Add(new TileObjectPrefabSubGroup(tileObjectPrefabSubGroupDataString,this,rm));
+				tileObjectPrefabSubGroups.Add(new TileObjectPrefabSubGroup(tileObjectPrefabSubGroupDataString,this));
 			}
 		}
 	}
@@ -144,7 +150,7 @@ public class ResourceManager : MonoBehaviour {
 		public TileObjectPrefabGroup tileObjectPrefabGroup;
 		public List<TileObjectPrefab> tileObjectPrefabs = new List<TileObjectPrefab>();
 
-		public TileObjectPrefabSubGroup(string data,TileObjectPrefabGroup tileObjectPrefabGroup,ResourceManager rm) {
+		public TileObjectPrefabSubGroup(string data,TileObjectPrefabGroup tileObjectPrefabGroup) {
 			this.tileObjectPrefabGroup = tileObjectPrefabGroup;
 
 			List<string> tileObjectPrefabsData = data.Split(new string[] { "<Object>" },System.StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -153,7 +159,7 @@ public class ResourceManager : MonoBehaviour {
 			name = type.ToString();
 
 			foreach (string tileObjectPrefabDataString in tileObjectPrefabsData.Skip(1)) {
-				tileObjectPrefabs.Add(new TileObjectPrefab(tileObjectPrefabDataString,this,rm));
+				tileObjectPrefabs.Add(new TileObjectPrefab(tileObjectPrefabDataString,this));
 			}
 		}
 	}
@@ -161,6 +167,18 @@ public class ResourceManager : MonoBehaviour {
 	
 
 	public class TileObjectPrefab {
+
+		private ResourceManager resourceM;
+		private UIManager uiM;
+
+		void GetScriptReferences() {
+
+			GameObject GM = GameObject.Find("GM");
+
+			resourceM = GM.GetComponent<ResourceManager>();
+			uiM = GM.GetComponent<UIManager>();
+		}
+
 		public TileObjectPrefabsEnum type;
 		public string name;
 
@@ -178,23 +196,20 @@ public class ResourceManager : MonoBehaviour {
 		public bool walkable;
 		public float walkSpeed;
 
-		public ResourceManager rm;
-
-		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup,ResourceManager rm) {
+		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup) {
 			this.tileObjectPrefabSubGroup = tileObjectPrefabSubGroup;
-			this.rm = rm;
 
 			List<string> properties = data.Split('/').ToList();
 
 			type = (TileObjectPrefabsEnum)System.Enum.Parse(typeof(TileObjectPrefabsEnum),properties[0]);
-			name = rm.GetComponent<UIManager>().SplitByCapitals(type.ToString());
+			name = uiM.SplitByCapitals(type.ToString());
 
 			timeToBuild = int.Parse(properties[1]);
 
 			if (float.Parse(properties[2].Split(',')[0]) != 0) {
 				int resourceIndex = 0;
 				foreach (string resourceName in properties[3].Split(',').ToList()) {
-					resourcesToBuild.Add(new ResourceAmount(rm.GetResourceByEnum((ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceName)),int.Parse(properties[2].Split(',')[resourceIndex])));
+					resourcesToBuild.Add(new ResourceAmount(resourceM.GetResourceByEnum((ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceName)),int.Parse(properties[2].Split(',')[resourceIndex])));
 					resourceIndex += 1;
 				}
 			}
@@ -215,6 +230,16 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	public class TileObjectInstance {
+
+		private ResourceManager resourceM;
+
+		void GetScriptReferences() {
+
+			GameObject GM = GameObject.Find("GM");
+
+			resourceM = GM.GetComponent<ResourceManager>();
+		}
+
 		public TileManager.Tile tile;
 		
 		public TileObjectPrefab prefab;
@@ -229,7 +254,7 @@ public class ResourceManager : MonoBehaviour {
 
 			List<TileManager.Tile> bitmaskingTiles = new List<TileManager.Tile>() { tile };
 			bitmaskingTiles.AddRange(tile.surroundingTiles);
-			prefab.rm.Bitmask(bitmaskingTiles);
+			resourceM.Bitmask(bitmaskingTiles);
 		}
 	}
 
@@ -394,14 +419,15 @@ public class ResourceManager : MonoBehaviour {
 				sum = BitSumTileObjects(new List<TileObjectPrefabsEnum>() { objectInstance.prefab.type },(includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
 			}
 		}
+		SpriteRenderer oISR = objectInstance.obj.GetComponent<SpriteRenderer>();
 		if ((sum < 16) || (bitmaskMap[sum] != 46)) {
 			if (sum >= 16) {
-				objectInstance.obj.GetComponent<SpriteRenderer>().sprite = objectInstance.prefab.bitmaskSprites[bitmaskMap[sum]];
+				oISR.sprite = objectInstance.prefab.bitmaskSprites[bitmaskMap[sum]];
 			} else {
-				objectInstance.obj.GetComponent<SpriteRenderer>().sprite = objectInstance.prefab.bitmaskSprites[sum];
+				oISR.sprite = objectInstance.prefab.bitmaskSprites[sum];
 			}
 		} else {
-			objectInstance.obj.GetComponent<SpriteRenderer>().sprite = objectInstance.prefab.baseSprite;
+			oISR.sprite = objectInstance.prefab.baseSprite;
 		}
 	}
 

@@ -6,9 +6,11 @@ using System.Linq;
 public class ColonistManager : MonoBehaviour {
 
 	private TileManager tileM;
+	private CameraManager cameraM;
 
 	void Awake() {
 		tileM = GetComponent<TileManager>();
+		cameraM = GetComponent<CameraManager>();
 	}
 
 	public List<Life> animals = new List<Life>();
@@ -21,6 +23,16 @@ public class ColonistManager : MonoBehaviour {
 		public ColonistManager colonistM;
 		public JobManager jobM;
 
+		void GetScriptReferences() {
+			GameObject GM = GameObject.Find("GM");
+
+			tileM = GM.GetComponent<TileManager>();
+			pathM = GM.GetComponent<PathManager>();
+			timeM = GM.GetComponent<TimeManager>();
+			colonistM = GM.GetComponent<ColonistManager>();
+			jobM = GM.GetComponent<JobManager>();
+		}
+
 		public int health;
 
 		public GameObject obj;
@@ -30,13 +42,7 @@ public class ColonistManager : MonoBehaviour {
 
 		public Life(TileManager.Tile spawnTile) {
 
-			GameObject GM = GameObject.Find("GM");
-
-			tileM = GM.GetComponent<TileManager>();
-			pathM = GM.GetComponent<PathManager>();
-			timeM = GM.GetComponent<TimeManager>();
-			colonistM = GM.GetComponent<ColonistManager>();
-			jobM = GM.GetComponent<JobManager>();
+			GetScriptReferences();
 
 			overTile = spawnTile;
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),overTile.obj.transform.position,Quaternion.identity);
@@ -139,6 +145,8 @@ public class ColonistManager : MonoBehaviour {
 				jobM.AddExistingJob(job);
 				job = null;
 				MoveToTile(tile);
+			} else {
+				MoveToTile(tile);
 			}
 		}
 	}
@@ -183,6 +191,7 @@ public class ColonistManager : MonoBehaviour {
 	}
 
 	public Colonist selectedColonist;
+	private GameObject selectedColonistIndicator;
 
 	void Update() {
 		SetSelectedColonist();
@@ -191,19 +200,39 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
+	
+
 	void SetSelectedColonist() {
-		Vector2 mousePosition = GetComponent<CameraManager>().cameraComponent.ScreenToWorldPoint(Input.mousePosition);
+		Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 		if (Input.GetMouseButtonDown(0)) {
 			bool foundColonist = false;
-			selectedColonist = colonists.Find(colonist => Vector2.Distance(colonist.obj.transform.position,mousePosition) < 0.5f);
-			foundColonist = selectedColonist != null;
+			Colonist newSelectedColonist = colonists.Find(colonist => Vector2.Distance(colonist.obj.transform.position,mousePosition) < 0.5f);
+			if (newSelectedColonist != null) {
+				DeselectSelectedColonist();
+				selectedColonist = newSelectedColonist;
+				foundColonist = true;
+			}
+
+			if (foundColonist) {
+				selectedColonistIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),selectedColonist.obj.transform,false);
+				SpriteRenderer sCISR = selectedColonistIndicator.GetComponent<SpriteRenderer>();
+				sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
+				sCISR.sortingOrder = 4;
+				sCISR.color = new Color(1f,1f,1f,0.75f);
+				selectedColonistIndicator.transform.localScale = new Vector2(1f,1f) * 1.2f;
+			}
 
 			if (!foundColonist && selectedColonist != null) {
 				selectedColonist.PlayerMoveToTile(tileM.GetTileFromPosition(mousePosition));
 			}
 		}
 		if (Input.GetMouseButtonDown(1)) {
-			selectedColonist = null;
+			DeselectSelectedColonist();
 		}
+	}
+
+	void DeselectSelectedColonist() {
+		selectedColonist = null;
+		Destroy(selectedColonistIndicator);
 	}
 }
