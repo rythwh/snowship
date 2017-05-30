@@ -17,18 +17,22 @@ public class UIManager : MonoBehaviour {
 		return r.Replace(combinedString," ");
 	}
 
-	private GameObject GM;
-	private TileManager tm;
-	private CameraManager cm;
+	private TileManager tileM;
+	private CameraManager cameraM;
+	private JobManager jobM;
+	private ResourceManager resourceM;
 
 	private GameObject mainMenu;
 
 	public int mapSize;
 
 	void Awake() {
-		GM = GameObject.Find("GM");
-		tm = GM.GetComponent<TileManager>();
-		cm = GM.GetComponent<CameraManager>();
+		GameObject GM = GameObject.Find("GM");
+
+		tileM = GM.GetComponent<TileManager>();
+		cameraM = GM.GetComponent<CameraManager>();
+		jobM = GM.GetComponent<JobManager>();
+		resourceM = GM.GetComponent<ResourceManager>();
 
 		GameObject.Find("PlayButton").GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
 
@@ -40,10 +44,10 @@ public class UIManager : MonoBehaviour {
 
 	void Update() {
 		if (Input.GetMouseButtonDown(1)) {
-			if (GetComponent<JobManager>().firstTile != null) {
-				GetComponent<JobManager>().StopSelection();
+			if (jobM.firstTile != null) {
+				jobM.StopSelection();
 			} else {
-				GetComponent<JobManager>().SetSelectedPrefab(null);
+				jobM.SetSelectedPrefab(null);
 			}
 		}
 	}
@@ -59,7 +63,7 @@ public class UIManager : MonoBehaviour {
 			}
 		}
 
-		tm.Initialize(mapSize,mapSeed);
+		tileM.Initialize(mapSize,mapSeed);
 		mainMenu.SetActive(false);
 	}
 
@@ -71,7 +75,7 @@ public class UIManager : MonoBehaviour {
 	public Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>> menuStructure = new Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>>();
 
 	public void CreateBuildMenuButtons() {
-		foreach (ResourceManager.TileObjectPrefabGroup topg in GetComponent<ResourceManager>().tileObjectPrefabGroups) {
+		foreach (ResourceManager.TileObjectPrefabGroup topg in resourceM.tileObjectPrefabGroups) {
 			GameObject buildMenuGroupButton = Instantiate(Resources.Load<GameObject>(@"UI/BuildItem-Button-Prefab"),GameObject.Find("BuildMenu-Panel").transform,false);
 			buildMenuGroupButton.transform.Find("Text").GetComponent<Text>().text = topg.name;
 
@@ -93,7 +97,7 @@ public class UIManager : MonoBehaviour {
 						buildMenuObjectButton.transform.Find("Image").GetComponent<Image>().sprite = top.baseSprite;
 					}
 					objectButtons.Add(buildMenuObjectButton);
-					buildMenuObjectButton.GetComponent<Button>().onClick.AddListener(delegate { GetComponent<JobManager>().SetSelectedPrefab(top); });
+					buildMenuObjectButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(top); });
 					}
 				subGroupPanels.Add(subGroupPanel,objectButtons);
 

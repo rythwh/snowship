@@ -5,6 +5,18 @@ using UnityEngine;
 
 public class TileManager:MonoBehaviour {
 
+	private UIManager uiM;
+	private CameraManager cameraM;
+	private ResourceManager resourceM;
+	private ColonistManager colonistM;
+
+	void Awake() {
+		uiM = GetComponent<UIManager>();
+		cameraM = GetComponent<CameraManager>();
+		resourceM = GetComponent<ResourceManager>();
+		colonistM = GetComponent<ColonistManager>();
+	}
+
 	public enum PlantGroups { Cactus, ColourfulShrubs, ColourfulTrees, DeadTrees, Shrubs, SnowTrees, ThinTrees, WideTrees };
 
 	public List<PlantGroup> plantGroups = new List<PlantGroup>();
@@ -111,7 +123,7 @@ public class TileManager:MonoBehaviour {
 			tileTypes.Add(new TileType(stringTileTypeData,this));
 		}
 		foreach (TileType tileType in tileTypes) {
-			tileType.name = GetComponent<UIManager>().SplitByCapitals(tileType.name);
+			tileType.name = uiM.SplitByCapitals(tileType.name);
 		}
 	}
 
@@ -199,7 +211,7 @@ public class TileManager:MonoBehaviour {
 			biomes.Add(new Biome(stringBiomeData,this));
 		}
 		foreach (Biome biome in biomes) {
-			biome.name = GetComponent<UIManager>().SplitByCapitals(biome.name);
+			biome.name = uiM.SplitByCapitals(biome.name);
 		}
 	}
 
@@ -312,13 +324,14 @@ public class TileManager:MonoBehaviour {
 				PlantGroups plantGroup = kvp.Key;
 				if (Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
 					GameObject plant = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),obj.transform.position,Quaternion.identity);
+					SpriteRenderer pSR = plant.GetComponent<SpriteRenderer>();
 					if (Random.Range(0f,1f) < 0.1f) {
-						plant.GetComponent<SpriteRenderer>().sprite = tm.GetPlantGroupByEnum(plantGroup).smallPlants[Random.Range(0,tm.GetPlantGroupByEnum(plantGroup).smallPlants.Count)];
+						pSR.sprite = tm.GetPlantGroupByEnum(plantGroup).smallPlants[Random.Range(0,tm.GetPlantGroupByEnum(plantGroup).smallPlants.Count)];
 					} else {
-						plant.GetComponent<SpriteRenderer>().sprite = tm.GetPlantGroupByEnum(plantGroup).fullPlants[Random.Range(0,tm.GetPlantGroupByEnum(plantGroup).fullPlants.Count)];
+						pSR.sprite = tm.GetPlantGroupByEnum(plantGroup).fullPlants[Random.Range(0,tm.GetPlantGroupByEnum(plantGroup).fullPlants.Count)];
 					}
-					plant.GetComponent<SpriteRenderer>().sortingOrder = 1;
-					plant.name = "PLANT " + plant.GetComponent<SpriteRenderer>().sprite.name;
+					pSR.sortingOrder = 1;
+					plant.name = "PLANT " + pSR.sprite.name;
 					plant.transform.parent = obj.transform;
 					this.plant = plant;
 					break;
@@ -350,11 +363,11 @@ public class TileManager:MonoBehaviour {
 	public void Initialize(int mapSize,int mapSeed) {
 		SetMapInformation(mapSize,mapSeed);
 
-		GetComponent<CameraManager>().SetCameraPosition(new Vector2(mapSize / 2f,mapSize / 2f));
-		GetComponent<CameraManager>().SetCameraZoom((mapSize / 2f) + 2);
+		cameraM.SetCameraPosition(new Vector2(mapSize / 2f,mapSize / 2f));
+		cameraM.SetCameraZoom((mapSize / 2f) + 2);
 
-		GetComponent<ResourceManager>().CreateResources();
-		GetComponent<ResourceManager>().CreateTileObjectPrefabs();
+		resourceM.CreateResources();
+		resourceM.CreateTileObjectPrefabs();
 
 		CreatePlantGroups();
 		CreateTileTypes();
@@ -363,7 +376,7 @@ public class TileManager:MonoBehaviour {
 
 		generated = true;
 
-		GetComponent<ColonistManager>().SpawnColonists(3);
+		colonistM.SpawnColonists(3);
 	}
 
 	private bool debugMode;
@@ -389,32 +402,36 @@ public class TileManager:MonoBehaviour {
 				if (Input.GetKeyDown(KeyCode.C)) {
 					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 					foreach (Tile tile in tiles) {
-						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-						tile.obj.GetComponent<SpriteRenderer>().color = new Color(tile.height,tile.height,tile.height,1f);
+						SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+						tSR.sprite = whiteSquare;
+						tSR.color = new Color(tile.height,tile.height,tile.height,1f);
 					}
 				}
 				if (Input.GetKeyDown(KeyCode.V)) {
 					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 					foreach (Tile tile in tiles) {
-						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-						tile.obj.GetComponent<SpriteRenderer>().color = new Color(tile.precipitation,tile.precipitation,tile.precipitation,1f);
+						SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+						tSR.sprite = whiteSquare;
+						tSR.color = new Color(tile.precipitation,tile.precipitation,tile.precipitation,1f);
 					}
 				}
 				if (Input.GetKeyDown(KeyCode.B)) {
 					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 					foreach (Tile tile in tiles) {
-						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-						tile.obj.GetComponent<SpriteRenderer>().color = new Color((tile.temperature + 50f) / 100f,(tile.temperature + 50f) / 100f,(tile.temperature + 50f) / 100f,1f);
+						SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+						tSR.sprite = whiteSquare;
+						tSR.color = new Color((tile.temperature + 50f) / 100f,(tile.temperature + 50f) / 100f,(tile.temperature + 50f) / 100f,1f);
 					}
 				}
 				if (Input.GetKeyDown(KeyCode.N)) {
 					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 					foreach (Tile tile in tiles) {
-						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+						SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+						tSR.sprite = whiteSquare;
 						if (tile.biome != null) {
-							tile.obj.GetComponent<SpriteRenderer>().color = tile.biome.colour;
+							tSR.color = tile.biome.colour;
 						} else {
-							tile.obj.GetComponent<SpriteRenderer>().color = Color.black;
+							tSR.color = Color.black;
 						}
 					}
 				}
@@ -422,8 +439,9 @@ public class TileManager:MonoBehaviour {
 					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 					foreach (KeyValuePair<Region,Tile> kvp in drainageBasins) {
 						foreach (Tile tile in kvp.Key.tiles) {
-							tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-							tile.obj.GetComponent<SpriteRenderer>().color = kvp.Key.colour;
+							SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+							tSR.sprite = whiteSquare;
+							tSR.color = kvp.Key.colour;
 						}
 					}
 				}
@@ -432,20 +450,23 @@ public class TileManager:MonoBehaviour {
 					/*
 					foreach (List<Tile> river in rivers) {
 						foreach (Tile tile in river) {
-							tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-							tile.obj.GetComponent<SpriteRenderer>().color = Color.blue;
+							SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+							tSR.sprite = whiteSquare;
+							tSR.color = Color.blue;
 						}
 						river[0].obj.GetComponent<SpriteRenderer>().color = Color.red;
 						river[river.Count - 1].obj.GetComponent<SpriteRenderer>().color = Color.green;
 					}
 					*/
 					foreach (Tile tile in tiles) {
-						tile.obj.GetComponent<SpriteRenderer>().color = Color.white;
+						SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+						tSR.color = Color.white;
 					}
 					Bitmasking(tiles);
 					foreach (Tile tile in rivers[viewRiverAtIndex]) {
-						tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-						tile.obj.GetComponent<SpriteRenderer>().color = Color.blue;
+						SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+						tSR.sprite = whiteSquare;
+						tSR.color = Color.blue;
 					}
 					rivers[viewRiverAtIndex][0].obj.GetComponent<SpriteRenderer>().color = Color.red;
 					rivers[viewRiverAtIndex][rivers[viewRiverAtIndex].Count - 1].obj.GetComponent<SpriteRenderer>().color = Color.green;
@@ -455,7 +476,7 @@ public class TileManager:MonoBehaviour {
 					}
 				}
 
-				Vector2 mousePosition = GetComponent<CameraManager>().cameraComponent.ScreenToWorldPoint(Input.mousePosition);
+				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
 					/*
 					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
@@ -665,8 +686,9 @@ public class TileManager:MonoBehaviour {
 		public void ColourRegion() {
 			Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 			foreach (Tile tile in this.tiles) {
-				tile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
-				tile.obj.GetComponent<SpriteRenderer>().color = colour;
+				SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+				tSR.sprite = whiteSquare;
+				tSR.color = colour;
 			}
 		}
 	}
@@ -1194,23 +1216,24 @@ public class TileManager:MonoBehaviour {
 				sum = BitSum(new List<TileTypes>() { tile.tileType.type },(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
 			}
 		}
+		SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
 		if ((sum < 16) || (bitmaskMap[sum] != 46)) {
 			if (sum >= 16) {
 				if (LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key != null) {
-					tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.riverSprites[bitmaskMap[sum]];
+					tSR.sprite = tile.tileType.riverSprites[bitmaskMap[sum]];
 				} else {
-					tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.bitmaskSprites[bitmaskMap[sum]];
+					tSR.sprite = tile.tileType.bitmaskSprites[bitmaskMap[sum]];
 				}
 			} else {
 				if (LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key != null) {
-					tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.riverSprites[sum];
+					tSR.sprite = tile.tileType.riverSprites[sum];
 				} else {
-					tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.bitmaskSprites[sum];
+					tSR.sprite = tile.tileType.bitmaskSprites[sum];
 				}
 			}
 		} else {
-			if (!tile.tileType.baseSprites.Contains(tile.obj.GetComponent<SpriteRenderer>().sprite)) {
-				tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.baseSprites[Random.Range(0,tile.tileType.baseSprites.Count)];
+			if (!tile.tileType.baseSprites.Contains(tSR.sprite)) {
+				tSR.sprite = tile.tileType.baseSprites[Random.Range(0,tile.tileType.baseSprites.Count)];
 			}
 		}
 	}
@@ -1221,8 +1244,9 @@ public class TileManager:MonoBehaviour {
 				if (BitmaskingTileTypes.Contains(tile.tileType.type)) {
 					BitmaskTile(tile,true,false,null,true);
 				} else {
-					if (!tile.tileType.baseSprites.Contains(tile.obj.GetComponent<SpriteRenderer>().sprite)) {
-						tile.obj.GetComponent<SpriteRenderer>().sprite = tile.tileType.baseSprites[Random.Range(0,tile.tileType.baseSprites.Count)];
+					SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+					if (!tile.tileType.baseSprites.Contains(tSR.sprite)) {
+						tSR.sprite = tile.tileType.baseSprites[Random.Range(0,tile.tileType.baseSprites.Count)];
 					}
 				}
 			}
