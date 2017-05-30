@@ -366,10 +366,7 @@ public class TileManager:MonoBehaviour {
 		GetComponent<ColonistManager>().SpawnColonists(3);
 	}
 
-	ColonistManager.Colonist selectedColonist;
-
 	private bool debugMode;
-
 	private int viewRiverAtIndex = 0;
 
 	void Update() {
@@ -460,17 +457,6 @@ public class TileManager:MonoBehaviour {
 
 				Vector2 mousePosition = GetComponent<CameraManager>().cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
-					bool foundColonist = false;
-					foreach (ColonistManager.Colonist colonist in GetComponent<ColonistManager>().colonists) {
-						if (colonist.overTile == GetTileFromPosition(mousePosition)) {
-							selectedColonist = colonist;
-							foundColonist = true;
-							break;
-						}
-					}
-					if (!foundColonist && selectedColonist != null) {
-						selectedColonist.MoveToTile(GetTileFromPosition(mousePosition));
-					}
 					/*
 					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
 					print(tile.biome.name);
@@ -478,7 +464,6 @@ public class TileManager:MonoBehaviour {
 					*/
 				}
 				if (Input.GetMouseButtonDown(1)) {
-					selectedColonist = null;
 					/*
 					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
 					//tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true);
