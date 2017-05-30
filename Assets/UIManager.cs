@@ -18,7 +18,6 @@ public class UIManager : MonoBehaviour {
 	}
 
 	private TileManager tileM;
-	private CameraManager cameraM;
 	private JobManager jobM;
 	private ResourceManager resourceM;
 
@@ -30,7 +29,6 @@ public class UIManager : MonoBehaviour {
 		GameObject GM = GameObject.Find("GM");
 
 		tileM = GM.GetComponent<TileManager>();
-		cameraM = GM.GetComponent<CameraManager>();
 		jobM = GM.GetComponent<JobManager>();
 		resourceM = GM.GetComponent<ResourceManager>();
 

@@ -7,19 +7,21 @@
 			10/
 			5/
 			Wood/
-			Outline/
+			Outline,Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
 			1.0/
 			false/
-			1.0
+			1.0/
+			2
 		<Object>
 			StoneWall/
 			15/
 			5/
 			Stone/
-			Outline/
+			Outline,Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
 			0.0/
 			false/
-			1.0
+			1.0/
+			2
 	<SubGroup>
 		Doors
 		<Object>
@@ -27,10 +29,11 @@
 			5/
 			2/
 			Wood/
-			AllBuildable/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
 			1.0/
 			true/
-			0.5
+			0.5/
+			2
 	<SubGroup>
 		Floors
 		<Object>
@@ -38,10 +41,11 @@
 			5/
 			2/
 			Wood/
-			OmitFloors/
+			Walkable,Buildable,OmitFloors,OmitPlants,OmitSameLayerJobs/
 			1.0/
 			true/
-			1.0
+			1.0/
+			1
 <Group>
 	Furniture
 	<SubGroup>
@@ -51,7 +55,8 @@
 			15/
 			3/
 			Wood/
-			AllBuildable/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
 			1.0/
 			true/
-			0.5
+			0.5/
+			2
