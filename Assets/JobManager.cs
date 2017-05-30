@@ -176,7 +176,7 @@ public class JobManager : MonoBehaviour {
 						GameObject selectionIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/SelectionIndicator"),tile.obj.transform.position,Quaternion.identity);
 						selectionIndicator.GetComponent<SpriteRenderer>().sortingOrder = 2;
 						selectionIndicator.transform.SetParent(tile.obj.transform);
-						selectionIndicators.Add(selectionIndicator);					
+						selectionIndicators.Add(selectionIndicator);
 					}
 
 					if (Input.GetMouseButtonUp(0)) {
@@ -198,6 +198,10 @@ public class JobManager : MonoBehaviour {
 		jobs.Add(newJob);
 	}
 
+	public void AddExistingJob(Job existingJob) {
+		jobs.Add(existingJob);
+	}
+
 	public void GiveJobsToColonists() {
 		List<Job> jobsToRemove = new List<Job>();
 		foreach (Job job in jobs) {
@@ -205,10 +209,12 @@ public class JobManager : MonoBehaviour {
 			if (job.accessible) {
 				List<ColonistManager.Colonist> sortedColonists = cm.colonists.Where(c => c.job == null).OrderBy(c => Vector2.Distance(c.overTile.obj.transform.position,job.tile.obj.transform.position)).ToList();
 				foreach (ColonistManager.Colonist colonist in sortedColonists) {
-					colonist.SetJob(job);
-					jobsToRemove.Add(job);
-					gaveJob = true;
-					break;
+					if (colonist.path.Count <= 0) {
+						colonist.SetJob(job);
+						jobsToRemove.Add(job);
+						gaveJob = true;
+						break;
+					}
 				}
 			}
 			if (gaveJob) {

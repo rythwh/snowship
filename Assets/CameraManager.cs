@@ -9,6 +9,7 @@ public class CameraManager : MonoBehaviour {
 
 	private GameObject gm;
 	private TileManager tm;
+	private TimeManager timeM;
 
 	void Awake() {
 		cameraGO = GameObject.Find("Camera");
@@ -28,6 +29,7 @@ public class CameraManager : MonoBehaviour {
 	}
 
 	void Update() {
+
 		cameraGO.transform.Translate(new Vector2(Input.GetAxis("Horizontal"),Input.GetAxis("Vertical")) * cameraComponent.orthographicSize * Time.deltaTime);
 		cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x,0,tm.mapSize),Mathf.Clamp(cameraGO.transform.position.y,0,tm.mapSize));
 

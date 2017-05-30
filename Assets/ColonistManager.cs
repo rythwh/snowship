@@ -5,12 +5,21 @@ using System.Linq;
 
 public class ColonistManager : MonoBehaviour {
 
+	private TileManager tileM;
+
+	void Awake() {
+		tileM = GetComponent<TileManager>();
+	}
+
 	public List<Life> animals = new List<Life>();
 
 	public class Life {
 
-		public TileManager tm;
-		public PathManager pm;
+		public TileManager tileM;
+		public PathManager pathM;
+		public TimeManager timeM;
+		public ColonistManager colonistM;
+		public JobManager jobM;
 
 		public int health;
 
@@ -19,15 +28,19 @@ public class ColonistManager : MonoBehaviour {
 		public TileManager.Tile overTile;
 		public List<Sprite> moveSprites = new List<Sprite>();
 
-		public Life(TileManager.Tile spawnTile,TileManager tm,PathManager pm) {
+		public Life(TileManager.Tile spawnTile) {
 
-			this.tm = tm;
-			this.pm = pm;
+			GameObject GM = GameObject.Find("GM");
+
+			tileM = GM.GetComponent<TileManager>();
+			pathM = GM.GetComponent<PathManager>();
+			timeM = GM.GetComponent<TimeManager>();
+			colonistM = GM.GetComponent<ColonistManager>();
+			jobM = GM.GetComponent<JobManager>();
 
 			overTile = spawnTile;
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),overTile.obj.transform.position,Quaternion.identity);
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 3;
-			
 		}
 
 		private Dictionary<int,int> moveSpritesMap = new Dictionary<int,int>() {
@@ -35,6 +48,7 @@ public class ColonistManager : MonoBehaviour {
 		};
 		private float moveTimer;
 		public List<TileManager.Tile> path = new List<TileManager.Tile>();
+
 		public void Update() {
 			MoveToTile(null);
 		}
@@ -42,15 +56,14 @@ public class ColonistManager : MonoBehaviour {
 		private Vector2 oldPosition;
 		public void MoveToTile(TileManager.Tile tile) {
 			if (tile != null) {
-				path = pm.FindPathToTile(overTile,tile);
+				path = pathM.FindPathToTile(overTile,tile);
 				path.RemoveAt(0);
 				SetMoveSprite();
 				moveTimer = 0;
 				oldPosition = obj.transform.position;
 			}
 			if (path.Count > 0) {
-
-				overTile = tm.GetTileFromPosition(obj.transform.position);
+				overTile = tileM.GetTileFromPosition(obj.transform.position);
 
 				obj.transform.position = Vector2.Lerp(oldPosition,path[0].obj.transform.position,moveTimer);
 
@@ -63,7 +76,7 @@ public class ColonistManager : MonoBehaviour {
 						SetMoveSprite();
 					}
 				} else {
-					moveTimer += 2 * Time.deltaTime * overTile.walkSpeed;
+					moveTimer += 2 * timeM.deltaTime * overTile.walkSpeed;
 				}
 			} else {
 				obj.GetComponent<SpriteRenderer>().sprite = moveSprites[0];
@@ -99,8 +112,8 @@ public class ColonistManager : MonoBehaviour {
 
 		// Skills/Abilities
 
-		public Human(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes, TileManager tm, PathManager pm, ColonistManager cm) : base(spawnTile,tm,pm) {
-			moveSprites = cm.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
+		public Human(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile) {
+			moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
 		}
 	}
 
@@ -110,7 +123,9 @@ public class ColonistManager : MonoBehaviour {
 
 		public JobManager.Job job;
 
-		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes,TileManager tm,PathManager pm,ColonistManager cm) : base(spawnTile,colonistLookIndexes,tm,pm,cm) {
+		public bool playerMoved;
+
+		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile,colonistLookIndexes) {
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
 		}
 
@@ -118,12 +133,20 @@ public class ColonistManager : MonoBehaviour {
 			this.job = job;
 			MoveToTile(job.tile);
 		}
+
+		public void PlayerMoveToTile(TileManager.Tile tile) {
+			if (job != null) {
+				jobM.AddExistingJob(job);
+				job = null;
+				MoveToTile(tile);
+			}
+		}
 	}
 
 	public List<Trader> traders = new List<Trader>();
 
 	public class Trader : Human {
-		public Trader(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes,TileManager tm,PathManager pm,ColonistManager cm) : base(spawnTile,colonistLookIndexes,tm,pm,cm) {
+		public Trader(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile,colonistLookIndexes) {
 			
 		}
 	}
@@ -132,15 +155,12 @@ public class ColonistManager : MonoBehaviour {
 	public enum ColonistLook { Skin, Hair, Shirt, Pants };
 
 	public void SpawnColonists(int amount) {
-
-		TileManager tm = GetComponent<TileManager>();
-
 		for (int i = 0; i < 3; i++) {
 			List<Sprite> innerHumanMoveSprites = Resources.LoadAll<Sprite>(@"Sprites/Colonists/colonists-body-base-" + i).ToList();
 			humanMoveSprites.Add(innerHumanMoveSprites);
 		}
 
-		int mapSize = tm.mapSize;
+		int mapSize = tileM.mapSize;
 		for (int i = 0;i < amount;i++) {
 
 			Dictionary<ColonistLook,int> colonistLookIndexes = new Dictionary<ColonistLook,int>() {
@@ -148,23 +168,42 @@ public class ColonistManager : MonoBehaviour {
 				{ColonistLook.Shirt, Random.Range(0,0) },{ColonistLook.Pants, Random.Range(0,0) }
 			};
 
-			List<TileManager.Tile> walkableTilesByDistanceToCentre = tm.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))).ToList();
+			List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))).ToList();
 			if (walkableTilesByDistanceToCentre.Count <= 0) {
-				foreach (TileManager.Tile tile in tm.tiles.Where(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f)) <= 4f)) {
-					tile.SetTileType(tm.GetTileTypeByEnum(TileManager.TileTypes.Grass),true);
+				foreach (TileManager.Tile tile in tileM.tiles.Where(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f)) <= 4f)) {
+					tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Grass),true);
 				}
-				walkableTilesByDistanceToCentre = tm.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))).ToList();
+				walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))).ToList();
 			}
 			TileManager.Tile colonistSpawnTile = walkableTilesByDistanceToCentre[Random.Range(0,(walkableTilesByDistanceToCentre.Count > 30 ? 30 : walkableTilesByDistanceToCentre.Count))];
 
-			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes,tm,GetComponent<PathManager>(),this);
+			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes);
 			colonists.Add(colonist);
 		}
 	}
 
+	public Colonist selectedColonist;
+
 	void Update() {
+		SetSelectedColonist();
 		foreach (Colonist colonist in colonists) {
 			colonist.Update();
+		}
+	}
+
+	void SetSelectedColonist() {
+		Vector2 mousePosition = GetComponent<CameraManager>().cameraComponent.ScreenToWorldPoint(Input.mousePosition);
+		if (Input.GetMouseButtonDown(0)) {
+			bool foundColonist = false;
+			selectedColonist = colonists.Find(colonist => Vector2.Distance(colonist.obj.transform.position,mousePosition) < 0.5f);
+			foundColonist = selectedColonist != null;
+
+			if (!foundColonist && selectedColonist != null) {
+				selectedColonist.PlayerMoveToTile(tileM.GetTileFromPosition(mousePosition));
+			}
+		}
+		if (Input.GetMouseButtonDown(1)) {
+			selectedColonist = null;
 		}
 	}
 }
