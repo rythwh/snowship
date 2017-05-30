@@ -189,12 +189,14 @@ public class ResourceManager : MonoBehaviour {
 
 		public int timeToBuild;
 		public List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
-		public JobManager.SelectionTypesEnum selectionType;
+		public List<JobManager.SelectionModifiersEnum> selectionModifiers = new List<JobManager.SelectionModifiersEnum>();
 
 		public float flammability;
 
 		public bool walkable;
 		public float walkSpeed;
+
+		public int layer;
 
 		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup) {
 
@@ -217,12 +219,16 @@ public class ResourceManager : MonoBehaviour {
 				}
 			}
 
-			selectionType = (JobManager.SelectionTypesEnum)System.Enum.Parse(typeof(JobManager.SelectionTypesEnum),properties[4]);
+			foreach (string selectionModifierString in properties[4].Split(',')) {
+				selectionModifiers.Add((JobManager.SelectionModifiersEnum)System.Enum.Parse(typeof(JobManager.SelectionModifiersEnum),selectionModifierString));
+			}
 
 			flammability = float.Parse(properties[5]);
 
 			walkable = bool.Parse(properties[6]);
 			walkSpeed = float.Parse(properties[7]);
+
+			layer = int.Parse(properties[8]);
 
 			baseSprite = Resources.Load<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-base");
 			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-bitmask").ToList();
@@ -255,8 +261,10 @@ public class ResourceManager : MonoBehaviour {
 			this.prefab = prefab;
 			this.tile = tile;
 
-			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform.position,Quaternion.identity);
-			obj.transform.SetParent(tile.obj.transform);
+			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
+			obj.GetComponent<SpriteRenderer>().sortingOrder = 1;
+			obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
+
 
 			List<TileManager.Tile> bitmaskingTiles = new List<TileManager.Tile>() { tile };
 			bitmaskingTiles.AddRange(tile.surroundingTiles);

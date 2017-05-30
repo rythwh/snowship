@@ -60,7 +60,7 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		private Vector2 oldPosition;
-		public void MoveToTile(TileManager.Tile tile) {
+		public bool MoveToTile(TileManager.Tile tile) {
 			if (tile != null) {
 				path = pathM.FindPathToTile(overTile,tile);
 				path.RemoveAt(0);
@@ -86,7 +86,9 @@ public class ColonistManager : MonoBehaviour {
 				}
 			} else {
 				obj.GetComponent<SpriteRenderer>().sprite = moveSprites[0];
+				return true;
 			}
+			return false;
 		}
 
 		public void SetMoveSprite() {
@@ -135,9 +137,45 @@ public class ColonistManager : MonoBehaviour {
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
 		}
 
+		public new void Update() {
+			base.Update();
+			if (job != null && !job.started && overTile == job.tile) {
+				StartJob();
+			}
+			if (job != null && job.started && overTile == job.tile && !Mathf.Approximately(job.jobProgress,0)) {
+				WorkJob();
+			}
+		}
+
 		public void SetJob(JobManager.Job job) {
 			this.job = job;
 			MoveToTile(job.tile);
+		}
+
+		public void StartJob() {
+			job.started = true;
+			Destroy(job.jobPreview);
+			job.tile.SetTileObject(job.prefab);
+		}
+
+		public void WorkJob() {
+			job.jobProgress -= 1 * timeM.deltaTime;
+
+			if (job.jobProgress <= 0 || Mathf.Approximately(job.jobProgress,0)) {
+				job.jobProgress = 0;
+				FinishJob();
+				return;
+			}
+
+			job.tile.objectInstance.obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.prefab.timeToBuild - job.jobProgress) / job.prefab.timeToBuild));
+		}
+
+		public void FinishJob() {
+			job.tile.objectInstance.obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+
+
+
+			job = null;
 		}
 
 		public void PlayerMoveToTile(TileManager.Tile tile) {
@@ -199,8 +237,6 @@ public class ColonistManager : MonoBehaviour {
 			colonist.Update();
 		}
 	}
-
-	
 
 	void SetSelectedColonist() {
 		Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
