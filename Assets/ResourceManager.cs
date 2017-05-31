@@ -190,6 +190,7 @@ public class ResourceManager : MonoBehaviour {
 		public int timeToBuild;
 		public List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
 		public List<JobManager.SelectionModifiersEnum> selectionModifiers = new List<JobManager.SelectionModifiersEnum>();
+		public JobManager.JobTypesEnum jobType;
 
 		public float flammability;
 
@@ -223,18 +224,46 @@ public class ResourceManager : MonoBehaviour {
 				selectionModifiers.Add((JobManager.SelectionModifiersEnum)System.Enum.Parse(typeof(JobManager.SelectionModifiersEnum),selectionModifierString));
 			}
 
-			flammability = float.Parse(properties[5]);
+			jobType = (JobManager.JobTypesEnum)System.Enum.Parse(typeof(JobManager.JobTypesEnum),properties[5]);
 
-			walkable = bool.Parse(properties[6]);
-			walkSpeed = float.Parse(properties[7]);
+			flammability = float.Parse(properties[6]);
 
-			layer = int.Parse(properties[8]);
+			walkable = bool.Parse(properties[7]);
+			walkSpeed = float.Parse(properties[8]);
+
+			layer = int.Parse(properties[9]);
 
 			baseSprite = Resources.Load<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-base");
 			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-bitmask").ToList();
 			if (baseSprite == null && bitmaskSprites.Count > 0) {
 				baseSprite = bitmaskSprites[0];
 			}
+		}
+	}
+
+	public Dictionary<TileObjectPrefab,List<TileObjectInstance>> tileObjectInstances = new Dictionary<TileObjectPrefab,List<TileObjectInstance>>();
+
+	public List<TileObjectInstance> GetTileObjectInstanceList(TileObjectInstance tileObjectInstance) {
+		if (tileObjectInstances.ContainsKey(tileObjectInstance.prefab)) {
+			return tileObjectInstances[tileObjectInstance.prefab];
+		}
+		print("Tried accessing a tile object instance which isn't already in the list...");
+		return null;
+	}
+
+	public void AddTileObjectInstance(TileObjectInstance tileObjectInstance) {
+		if (tileObjectInstances.ContainsKey(tileObjectInstance.prefab)) {
+			tileObjectInstances[tileObjectInstance.prefab].Add(tileObjectInstance);
+		} else {
+			tileObjectInstances.Add(tileObjectInstance.prefab,new List<TileObjectInstance>() { tileObjectInstance });
+		}
+	}
+
+	public void RemoveTileObjectInstance(TileObjectInstance tileObjectInstance) {
+		if (tileObjectInstances.ContainsKey(tileObjectInstance.prefab)) {
+			tileObjectInstances[tileObjectInstance.prefab].Remove(tileObjectInstance);
+		} else {
+			print("Tried removing a tile object instance which isn't in the list...");
 		}
 	}
 
