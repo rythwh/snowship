@@ -634,7 +634,7 @@ public class TileManager:MonoBehaviour {
 	}
 
 	void AverageTileHeights() {
-		for (int i = 0;i < 10;i++) { // 3
+		for (int i = 0;i < 3;i++) { // 3
 			List<float> averageTileHeights = new List<float>();
 
 			foreach (Tile tile in tiles) {
