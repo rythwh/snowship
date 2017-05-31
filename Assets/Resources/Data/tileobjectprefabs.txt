@@ -7,7 +7,7 @@
 			10/
 			5/
 			Wood/
-			Outline,Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
 			1.0/
 			false/
@@ -18,7 +18,7 @@
 			15/
 			5/
 			Stone/
-			Outline,Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
 			0.0/
 			false/
@@ -31,7 +31,7 @@
 			5/
 			2/
 			Wood/
-			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
 			1.0/
 			true/
@@ -44,7 +44,7 @@
 			5/
 			2/
 			Wood/
-			Walkable,Buildable,OmitFloors,OmitPlants,OmitSameLayerJobs/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
 			1.0/
 			true/
@@ -59,7 +59,7 @@
 			15/
 			3/
 			Wood/
-			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
 			1.0/
 			true/

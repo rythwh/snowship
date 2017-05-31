@@ -22,6 +22,7 @@ public class ColonistManager : MonoBehaviour {
 		public TimeManager timeM;
 		public ColonistManager colonistM;
 		public JobManager jobM;
+		public ResourceManager resourceM;
 
 		void GetScriptReferences() {
 			GameObject GM = GameObject.Find("GM");
@@ -31,6 +32,7 @@ public class ColonistManager : MonoBehaviour {
 			timeM = GM.GetComponent<TimeManager>();
 			colonistM = GM.GetComponent<ColonistManager>();
 			jobM = GM.GetComponent<JobManager>();
+			resourceM = GM.GetComponent<ResourceManager>();
 		}
 
 		public int health;
@@ -167,14 +169,17 @@ public class ColonistManager : MonoBehaviour {
 				return;
 			}
 
-			job.tile.objectInstance.obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.prefab.timeToBuild - job.jobProgress) / job.prefab.timeToBuild));
+			job.tile.objectInstances[job.prefab.layer].obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.prefab.timeToBuild - job.jobProgress) / job.prefab.timeToBuild));
+			//job.tile.objectInstance.obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.prefab.timeToBuild - job.jobProgress) / job.prefab.timeToBuild));
 		}
 
 		public void FinishJob() {
-			job.tile.objectInstance.obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+			job.tile.objectInstances[job.prefab.layer].obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+
+			job.tile.objectInstances[job.prefab.layer].FinishCreation();
 
 			if (job.prefab.jobType == JobManager.JobTypesEnum.Build) {
-				
+
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.Remove) {
 
 			}
