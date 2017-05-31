@@ -80,7 +80,8 @@ public class JobManager:MonoBehaviour {
 	public enum JobTypesEnum { Build, Remove };
 
 	public enum SelectionModifiersEnum { Outline, Walkable, OmitWalkable, Buildable, OmitBuildable, StoneTypes, OmitStoneTypes, AllWaterTypes, OmitAllWaterTypes, LiquidWaterTypes, OmitLiquidWaterTypes, OmitNonStoneAndWaterTypes,
-		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs };
+		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances
+	};
 	Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>> selectionModifierFunctions = new Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>>();
 
 	void InitializeSelectionModifierFunctions() {
@@ -117,6 +118,7 @@ public class JobManager:MonoBehaviour {
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonStoneAndWaterTypes,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type) || tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) { removeTiles.Add(tile); }
 		});
+		/*
 		selectionModifierFunctions.Add(SelectionModifiersEnum.Objects,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tile.objectInstance == null) { removeTiles.Add(tile); }
 		});
@@ -129,11 +131,25 @@ public class JobManager:MonoBehaviour {
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitFloors,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tile.floorInstance != null) { removeTiles.Add(tile); }
 		});
+		*/
 		selectionModifierFunctions.Add(SelectionModifiersEnum.Plants,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tile.plant == null) { removeTiles.Add(tile); }
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitPlants,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tile.plant != null) { removeTiles.Add(tile); }
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitSameLayerJobs,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
+			if (jobs.Find(job => job.prefab.layer == selectedPrefab.layer && job.tile == tile) != null) {
+				removeTiles.Add(tile);
+				return;
+			}
+			if (colonistM.colonists.Find(colonist => colonist.job != null && colonist.job.prefab.layer == selectedPrefab.layer && colonist.job.tile == tile) != null) {
+				removeTiles.Add(tile);
+				return;
+			}
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitSameLayerObjectInstances,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
+			if (tile.objectInstances.ContainsKey(selectedPrefab.layer) && tile.objectInstances[selectedPrefab.layer] != null) { removeTiles.Add(tile); }
 		});
 	}
 
@@ -189,7 +205,7 @@ public class JobManager:MonoBehaviour {
 						List<TileManager.Tile> removeTiles = new List<TileManager.Tile>();
 						if (selectionModifier == SelectionModifiersEnum.Outline) {
 							continue;
-						} else if (selectionModifier == SelectionModifiersEnum.OmitSameLayerJobs) {
+						}/* else if (selectionModifier == SelectionModifiersEnum.OmitSameLayerJobs) {
 							foreach (TileManager.Tile tile in selectionArea) {
 								if (jobs.Find(job => job.prefab.layer == selectedPrefab.layer && job.tile == tile) != null) {
 									removeTiles.Add(tile);
@@ -200,7 +216,13 @@ public class JobManager:MonoBehaviour {
 									continue;
 								}
 							}
-						} else {
+						} else if (selectionModifier == SelectionModifiersEnum.OmitSameLayerObjectInstances) {
+							foreach (TileManager.Tile tile in selectionArea) {
+								if (tile.objectInstances.ContainsKey(selectedPrefab.layer) && tile.objectInstances[selectedPrefab.layer] != null) {
+									removeTiles.Add(tile);
+								}
+							}
+						} */else {
 							foreach (TileManager.Tile tile in selectionArea) {
 								selectionModifierFunctions[selectionModifier].Invoke(tile,removeTiles);
 							}

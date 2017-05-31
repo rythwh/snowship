@@ -125,6 +125,10 @@ public class ResourceManager : MonoBehaviour {
 		uiM.CreateBuildMenuButtons();
 	}
 
+	public TileObjectPrefab GetTileObjectPrefabByEnum(TileObjectPrefabsEnum topEnum) {
+		return tileObjectPrefabs.Find(top => top.type == topEnum);
+	}
+
 	public class TileObjectPrefabGroup {
 		public TileObjectPrefabGroupsEnum type;
 		public string name;
@@ -238,6 +242,8 @@ public class ResourceManager : MonoBehaviour {
 			if (baseSprite == null && bitmaskSprites.Count > 0) {
 				baseSprite = bitmaskSprites[0];
 			}
+
+			resourceM.tileObjectPrefabs.Add(this);
 		}
 	}
 
@@ -293,8 +299,9 @@ public class ResourceManager : MonoBehaviour {
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 1;
 			obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
+		}
 
-
+		public void FinishCreation() {
 			List<TileManager.Tile> bitmaskingTiles = new List<TileManager.Tile>() { tile };
 			bitmaskingTiles.AddRange(tile.surroundingTiles);
 			resourceM.Bitmask(bitmaskingTiles);
@@ -397,7 +404,147 @@ public class ResourceManager : MonoBehaviour {
 		{7,new List<int>() {3,0 } }
 	};
 
-	int BitSumTileObjects(List<TileObjectPrefabsEnum> compareTileObjectTypes,List<TileManager.Tile> tilesToSum) {
+	int BitSumTileObjects(List<TileObjectPrefabsEnum> compareTileObjectTypes,List<TileManager.Tile> tileSurroundingTiles) {
+		//Dictionary<int,List<int>> layerTiles = new Dictionary<int,List<int>>();
+
+		List<int> layers = new List<int>();
+		foreach (TileManager.Tile tile in tileSurroundingTiles) {
+			if (tile != null) {
+				foreach (KeyValuePair<int,TileObjectInstance> kvp in tile.objectInstances) {
+					if (!layers.Contains(kvp.Key)) {
+						layers.Add(kvp.Key);
+					}
+				}
+			}
+		}
+		layers.Sort();
+		print(layers.Count);
+
+		Dictionary<int,List<int>> layersSumTiles = new Dictionary<int,List<int>>();
+		foreach (int layer in layers) {
+			List<int> layerSumTiles = new List<int>() { 0,0,0,0,0,0,0,0 };
+			for (int i = 0;i < tileSurroundingTiles.Count;i++) {
+				if (tileSurroundingTiles[i] != null && tileSurroundingTiles[i].GetObjectInstanceAtLayer(layer) != null) {
+					if (compareTileObjectTypes.Contains(tileSurroundingTiles[i].GetObjectInstanceAtLayer(layer).prefab.type)) {
+						bool ignoreTile = false;
+						if (compareTileObjectTypes.Contains(tileSurroundingTiles[i].GetObjectInstanceAtLayer(layer).prefab.type) && diagonalCheckMap.ContainsKey(i)) {
+							List<TileManager.Tile> surroundingHorizontalTiles = new List<TileManager.Tile>() { tileSurroundingTiles[diagonalCheckMap[i][0]],tileSurroundingTiles[diagonalCheckMap[i][1]] };
+
+							List<TileManager.Tile> similarTiles = surroundingHorizontalTiles.Where(tile => tile != null && tile.GetObjectInstanceAtLayer(layer) != null && compareTileObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)).ToList();
+							List<TileManager.Tile> oppositeTiles = surroundingHorizontalTiles.Where(tile => tile != null && tile.GetObjectInstanceAtLayer(layer) != null && !compareTileObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)).ToList();
+
+							print(similarTiles.Count + " " + oppositeTiles.Count);
+
+							if (similarTiles.Count == 0 && oppositeTiles.Count == 2) {
+								ignoreTile = true;
+							} else if (similarTiles.Count == 2 && oppositeTiles.Count == 0) {
+								ignoreTile = false;
+							} else if (similarTiles.Count == 1 && oppositeTiles.Count == 1) {
+								ignoreTile = true;
+							} else if (similarTiles.Count == 0 && oppositeTiles.Count == 1) {
+								ignoreTile = true;
+							} else if (similarTiles.Count == 1 && oppositeTiles.Count == 0) {
+								ignoreTile = true;
+							} else {
+								ignoreTile = true;
+							}
+
+							print(ignoreTile);
+						}
+						if (!ignoreTile) {
+							layerSumTiles[i] = 1;// Mathf.RoundToInt(Mathf.Pow(2,i));
+						}
+					}
+				} else {
+					if (tileSurroundingTiles.Find(tile => tile != null && tileSurroundingTiles.IndexOf(tile) <= 3 && tile.GetObjectInstanceAtLayer(layer) != null && !compareTileObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)) == null) {
+						layerSumTiles[i] = 1;//Mathf.RoundToInt(Mathf.Pow(2,i));
+					} else {
+						if (i <= 3) {
+							layerSumTiles[i] = 1;// Mathf.RoundToInt(Mathf.Pow(2,i));
+						} else {
+							List<TileManager.Tile> surroundingHorizontalTiles = new List<TileManager.Tile>() { tileSurroundingTiles[diagonalCheckMap[i][0]],tileSurroundingTiles[diagonalCheckMap[i][1]] };
+							if (surroundingHorizontalTiles.Find(tile => tile != null && tile.GetObjectInstanceAtLayer(layer) != null && !compareTileObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)) == null) {
+								layerSumTiles[i] = 1;//Mathf.RoundToInt(Mathf.Pow(2,i));
+							}
+						}
+					}
+				}
+			}
+			string output = layer + "\n";
+			for (int a = 0;a < layerSumTiles.Count;a++) {
+				output += layerSumTiles[a].ToString() + " ";
+				if ((a + 1) % 4 == 0) {
+					output += '\n';
+				}
+			}
+			print(output);
+			layersSumTiles.Add(layer,layerSumTiles);
+		}
+
+		List<bool> sumTiles = new List<bool>() { false,false,false,false,false,false,false,false };
+
+		foreach (KeyValuePair<int,List<int>> layerSumTiles in layersSumTiles) {
+			print(layerSumTiles.Key);
+			foreach (TileObjectPrefabsEnum topEnum in compareTileObjectTypes) {
+				TileObjectPrefab top = GetTileObjectPrefabByEnum(topEnum);
+				print(top.name);
+				if (top.layer == layerSumTiles.Key) {
+					foreach (TileManager.Tile tile in tileSurroundingTiles) {
+						print(tile.obj.transform.position);
+						TileObjectInstance topInstance = tile.GetAllObjectInstances().Find(instances => instances.prefab == top);
+						if (topInstance != null) {
+							if (layerSumTiles.Value[tileSurroundingTiles.IndexOf(tile)] > 0) {
+								sumTiles[tileSurroundingTiles.IndexOf(tile)] = true;
+								string output = "";
+								for (int a = 0;a < sumTiles.Count;a++) {
+									output += sumTiles[a].ToString() + " ";
+									if ((a + 1) % 4 == 0) {
+										output += '\n';
+									}
+								}
+								print(output);
+							}
+						}
+					}
+				}
+			}
+			/*
+			print(layerSumTiles.Key);
+			foreach (TileObjectPrefabsEnum topEnum in compareTileObjectTypes) {
+				TileObjectPrefab top = GetTileObjectPrefabByEnum(topEnum);
+				print(topEnum.ToString());
+				if (top.layer == layerSumTiles.Key) {
+					int index = 0;
+					foreach (int i in layerSumTiles.Value) {
+						if (i > 0) {
+							sumTiles[index] = true;
+						}
+						index += 1;
+						string output = "";
+						for (int a = 0;a < sumTiles.Count;a++) {
+							output += sumTiles[a].ToString() + " ";
+							if (a % 2 == 0) {
+								output += '\n';
+							}
+						}
+						print(output);
+					}
+				}
+			}
+			*/
+		}
+
+		int sum = 0;
+
+		for (int i = 0;i < sumTiles.Count;i++) {
+			if (sumTiles[i]) {
+				sum += Mathf.RoundToInt(Mathf.Pow(2,i));
+			}
+		}
+
+		return sum;
+
+		/*
 		int sum = 0;
 		for (int i = 0; i < tilesToSum.Count; i++) {
 			if (tilesToSum[i] != null && tilesToSum[i].objectInstance != null) {
@@ -443,6 +590,7 @@ public class ResourceManager : MonoBehaviour {
 			}
 		}
 		return sum;
+		*/
 	}
 
 	void BitmaskTileObjects(TileObjectInstance objectInstance,bool includeDiagonalSurroundingTiles,bool customBitSumInputs,bool compareEquivalentTileObjects, List<TileObjectPrefabsEnum> customCompareTileObjectTypes) {
@@ -463,24 +611,23 @@ public class ResourceManager : MonoBehaviour {
 			}
 		}
 		SpriteRenderer oISR = objectInstance.obj.GetComponent<SpriteRenderer>();
-		if ((sum < 16) || (bitmaskMap[sum] != 46)) {
-			if (sum >= 16) {
-				oISR.sprite = objectInstance.prefab.bitmaskSprites[bitmaskMap[sum]];
-			} else {
-				oISR.sprite = objectInstance.prefab.bitmaskSprites[sum];
-			}
+		print(objectInstance.obj.transform.position + " " + sum);
+		if (sum >= 16) {
+			oISR.sprite = objectInstance.prefab.bitmaskSprites[bitmaskMap[sum]];
 		} else {
-			oISR.sprite = objectInstance.prefab.baseSprite;
+			oISR.sprite = objectInstance.prefab.bitmaskSprites[sum];
 		}
 	}
 
 	void Bitmask(List<TileManager.Tile> tilesToBitmask) {
 		foreach (TileManager.Tile tile in tilesToBitmask) {
-			if (tile != null && tile.objectInstance != null) {
-				if (BitmaskingTileObjects.Contains(tile.objectInstance.prefab.type)) {
-					BitmaskTileObjects(tile.objectInstance,true,false,false,null);
-				} else {
-					tile.objectInstance.obj.GetComponent<SpriteRenderer>().sprite = tile.objectInstance.prefab.baseSprite;
+			if (tile != null && tile.GetAllObjectInstances().Count > 0) {
+				foreach (TileObjectInstance tileObjectInstance in tile.GetAllObjectInstances()) {
+					if (BitmaskingTileObjects.Contains(tileObjectInstance.prefab.type)) {
+						BitmaskTileObjects(tileObjectInstance,true,false,false,null);
+					} else {
+						tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.baseSprite;
+					}
 				}
 			}
 		}

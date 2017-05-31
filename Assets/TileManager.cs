@@ -249,8 +249,7 @@ public class TileManager:MonoBehaviour {
 		public bool walkable;
 		public float walkSpeed;
 
-		public ResourceManager.TileObjectInstance objectInstance;
-		public ResourceManager.TileObjectInstance floorInstance;
+		public Dictionary<int,ResourceManager.TileObjectInstance> objectInstances = new Dictionary<int,ResourceManager.TileObjectInstance>();
 
 		public Tile(Vector2 position,float height,TileManager tm) {
 
@@ -342,18 +341,52 @@ public class TileManager:MonoBehaviour {
 		}
 
 		public void SetTileObject(ResourceManager.TileObjectPrefab tileObjectPrefab) {
-			objectInstance = new ResourceManager.TileObjectInstance(tileObjectPrefab,this);
+			if (objectInstances.ContainsKey(tileObjectPrefab.layer)) {
+				if (objectInstances[tileObjectPrefab.layer] != null) {
+					if (tileObjectPrefab != null) {
+						print("Trying to add object where one already exists at " + obj.transform.position);
+					} else {
+						objectInstances[tileObjectPrefab.layer] = null;
+					}
+				} else {
+					objectInstances[tileObjectPrefab.layer] = new ResourceManager.TileObjectInstance(tileObjectPrefab,this);
+				}
+			} else {
+				objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.TileObjectInstance(tileObjectPrefab,this));
+			}
 			SetWalkSpeed();
-			
+		}
+
+		public ResourceManager.TileObjectInstance GetObjectInstanceAtLayer(int layer) {
+			if (objectInstances.ContainsKey(layer)) {
+				return objectInstances[layer];
+			}
+			return null;
+		}
+
+		public List<ResourceManager.TileObjectInstance> GetAllObjectInstances() {
+			List<ResourceManager.TileObjectInstance> allObjectInstances = new List<ResourceManager.TileObjectInstance>();
+			foreach (KeyValuePair<int,ResourceManager.TileObjectInstance> kvp in objectInstances) {
+				if (kvp.Value != null) {
+					allObjectInstances.Add(kvp.Value);
+				}
+			}
+			return allObjectInstances;
 		}
 
 		public void SetWalkSpeed() {
 			walkSpeed = tileType.walkSpeed;
-			if (plant != null && walkSpeed > 0.5f) {
-				walkSpeed = 0.5f;
+			if (plant != null && walkSpeed > 0.75f) {
+				walkSpeed = 0.75f;
 			}
-			if (objectInstance != null && walkSpeed > objectInstance.prefab.walkSpeed) {
-				walkSpeed = objectInstance.prefab.walkSpeed;
+			float minObjectWalkSpeed = float.MaxValue; // Arbitrary value
+			foreach (KeyValuePair<int,ResourceManager.TileObjectInstance> kvp in objectInstances) {
+				if (kvp.Value != null && kvp.Value.prefab.walkSpeed <= minObjectWalkSpeed) {
+					minObjectWalkSpeed = kvp.Value.prefab.walkSpeed;
+				}
+			}
+			if (minObjectWalkSpeed < walkSpeed) {
+				walkSpeed = minObjectWalkSpeed;
 			}
 		}
 	}
@@ -478,18 +511,14 @@ public class TileManager:MonoBehaviour {
 
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
-					/*
 					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
-					print(tile.biome.name);
-					//tile.SetTileType(GetTileTypeByEnum(TileTypes.GrassWater),true);
-					*/
+					tile.SetTileType(GetTileTypeByEnum(TileTypes.GrassWater),true);
+					//print(tile.biome.name);
 				}
 				if (Input.GetMouseButtonDown(1)) {
-					/*
 					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
-					//tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true);
-					print(tile.tileType.name);
-					*/
+					tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true);
+					//print(tile.tileType.name);
 				}
 			}
 		}
@@ -1217,6 +1246,9 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 		SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+		if (sum == 36) {
+			print(tile.obj.transform.position);
+		}
 		if ((sum < 16) || (bitmaskMap[sum] != 46)) {
 			if (sum >= 16) {
 				if (LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key != null) {
