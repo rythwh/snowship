@@ -173,7 +173,11 @@ public class ColonistManager : MonoBehaviour {
 		public void FinishJob() {
 			job.tile.objectInstance.obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
 
+			if (job.prefab.jobType == JobManager.JobTypesEnum.Build) {
+				
+			} else if (job.prefab.jobType == JobManager.JobTypesEnum.Remove) {
 
+			}
 
 			job = null;
 		}
