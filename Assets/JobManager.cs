@@ -8,11 +8,13 @@ public class JobManager:MonoBehaviour {
 	private TileManager tileM;
 	private ColonistManager colonistM;
 	private CameraManager cameraM;
+	private TimeManager timeM;
 
 	void Awake() {
 		tileM = GetComponent<TileManager>();
 		colonistM = GetComponent<ColonistManager>();
 		cameraM = GetComponent<CameraManager>();
+		timeM = GetComponent<TimeManager>();
 
 		InitializeSelectionModifierFunctions();
 	}
@@ -74,7 +76,9 @@ public class JobManager:MonoBehaviour {
 
 	void Update() {
 		GetJobSelectionArea();
-		GiveJobsToColonists();
+		if (timeM.timeModifier > 0) {
+			GiveJobsToColonists();
+		}
 	}
 
 	public enum JobTypesEnum { Build, Remove };
@@ -118,20 +122,6 @@ public class JobManager:MonoBehaviour {
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonStoneAndWaterTypes,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type) || tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) { removeTiles.Add(tile); }
 		});
-		/*
-		selectionModifierFunctions.Add(SelectionModifiersEnum.Objects,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.objectInstance == null) { removeTiles.Add(tile); }
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitObjects,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.objectInstance != null) { removeTiles.Add(tile); }
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.Floors,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.floorInstance == null) { removeTiles.Add(tile); }
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitFloors,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.floorInstance != null) { removeTiles.Add(tile); }
-		});
-		*/
 		selectionModifierFunctions.Add(SelectionModifiersEnum.Plants,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tile.plant == null) { removeTiles.Add(tile); }
 		});
@@ -273,7 +263,7 @@ public class JobManager:MonoBehaviour {
 		List<ColonistManager.Colonist> availableColonists = colonistM.colonists.Where(colonist => colonist.job == null).ToList();
 		if (availableColonists.Count > 0) {
 			foreach (ColonistManager.Colonist colonist in availableColonists) {
-				List<Job> sortedJobs = jobs.Where(job => job.tile.region == colonist.overTile.region).OrderBy(job => 
+				List<Job> sortedJobs = jobs.Where(job => (false) || (job.tile.region == colonist.overTile.region)).OrderBy(job => 
 					Vector2.Distance(job.tile.obj.transform.position,colonist.obj.transform.position)
 				).ToList();
 				if (sortedJobs.Count > 0) {

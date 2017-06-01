@@ -429,109 +429,49 @@ public class ResourceManager : MonoBehaviour {
 						bool ignoreTile = false;
 						if (compareTileObjectTypes.Contains(tileSurroundingTiles[i].GetObjectInstanceAtLayer(layer).prefab.type) && diagonalCheckMap.ContainsKey(i)) {
 							List<TileManager.Tile> surroundingHorizontalTiles = new List<TileManager.Tile>() { tileSurroundingTiles[diagonalCheckMap[i][0]],tileSurroundingTiles[diagonalCheckMap[i][1]] };
-
 							List<TileManager.Tile> similarTiles = surroundingHorizontalTiles.Where(tile => tile != null && tile.GetObjectInstanceAtLayer(layer) != null && compareTileObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)).ToList();
-							List<TileManager.Tile> oppositeTiles = surroundingHorizontalTiles.Where(tile => tile != null && tile.GetObjectInstanceAtLayer(layer) != null && !compareTileObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)).ToList();
-
-							print(similarTiles.Count + " " + oppositeTiles.Count);
-
-							if (similarTiles.Count == 0 && oppositeTiles.Count == 2) {
-								ignoreTile = true;
-							} else if (similarTiles.Count == 2 && oppositeTiles.Count == 0) {
-								ignoreTile = false;
-							} else if (similarTiles.Count == 1 && oppositeTiles.Count == 1) {
-								ignoreTile = true;
-							} else if (similarTiles.Count == 0 && oppositeTiles.Count == 1) {
-								ignoreTile = true;
-							} else if (similarTiles.Count == 1 && oppositeTiles.Count == 0) {
-								ignoreTile = true;
-							} else {
+							if (similarTiles.Count < 2) {
 								ignoreTile = true;
 							}
-
-							print(ignoreTile);
 						}
 						if (!ignoreTile) {
-							layerSumTiles[i] = 1;// Mathf.RoundToInt(Mathf.Pow(2,i));
+							layerSumTiles[i] = 1;
 						}
 					}
 				} else {
 					if (tileSurroundingTiles.Find(tile => tile != null && tileSurroundingTiles.IndexOf(tile) <= 3 && tile.GetObjectInstanceAtLayer(layer) != null && !compareTileObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)) == null) {
-						layerSumTiles[i] = 1;//Mathf.RoundToInt(Mathf.Pow(2,i));
+						layerSumTiles[i] = 1;
 					} else {
 						if (i <= 3) {
-							layerSumTiles[i] = 1;// Mathf.RoundToInt(Mathf.Pow(2,i));
+							layerSumTiles[i] = 1;
 						} else {
 							List<TileManager.Tile> surroundingHorizontalTiles = new List<TileManager.Tile>() { tileSurroundingTiles[diagonalCheckMap[i][0]],tileSurroundingTiles[diagonalCheckMap[i][1]] };
 							if (surroundingHorizontalTiles.Find(tile => tile != null && tile.GetObjectInstanceAtLayer(layer) != null && !compareTileObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)) == null) {
-								layerSumTiles[i] = 1;//Mathf.RoundToInt(Mathf.Pow(2,i));
+								layerSumTiles[i] = 1;
 							}
 						}
 					}
 				}
 			}
-			string output = layer + "\n";
-			for (int a = 0;a < layerSumTiles.Count;a++) {
-				output += layerSumTiles[a].ToString() + " ";
-				if ((a + 1) % 4 == 0) {
-					output += '\n';
-				}
-			}
-			print(output);
 			layersSumTiles.Add(layer,layerSumTiles);
 		}
 
 		List<bool> sumTiles = new List<bool>() { false,false,false,false,false,false,false,false };
 
 		foreach (KeyValuePair<int,List<int>> layerSumTiles in layersSumTiles) {
-			print(layerSumTiles.Key);
 			foreach (TileObjectPrefabsEnum topEnum in compareTileObjectTypes) {
 				TileObjectPrefab top = GetTileObjectPrefabByEnum(topEnum);
-				print(top.name);
 				if (top.layer == layerSumTiles.Key) {
 					foreach (TileManager.Tile tile in tileSurroundingTiles) {
-						print(tile.obj.transform.position);
 						TileObjectInstance topInstance = tile.GetAllObjectInstances().Find(instances => instances.prefab == top);
 						if (topInstance != null) {
 							if (layerSumTiles.Value[tileSurroundingTiles.IndexOf(tile)] > 0) {
 								sumTiles[tileSurroundingTiles.IndexOf(tile)] = true;
-								string output = "";
-								for (int a = 0;a < sumTiles.Count;a++) {
-									output += sumTiles[a].ToString() + " ";
-									if ((a + 1) % 4 == 0) {
-										output += '\n';
-									}
-								}
-								print(output);
 							}
 						}
 					}
 				}
 			}
-			/*
-			print(layerSumTiles.Key);
-			foreach (TileObjectPrefabsEnum topEnum in compareTileObjectTypes) {
-				TileObjectPrefab top = GetTileObjectPrefabByEnum(topEnum);
-				print(topEnum.ToString());
-				if (top.layer == layerSumTiles.Key) {
-					int index = 0;
-					foreach (int i in layerSumTiles.Value) {
-						if (i > 0) {
-							sumTiles[index] = true;
-						}
-						index += 1;
-						string output = "";
-						for (int a = 0;a < sumTiles.Count;a++) {
-							output += sumTiles[a].ToString() + " ";
-							if (a % 2 == 0) {
-								output += '\n';
-							}
-						}
-						print(output);
-					}
-				}
-			}
-			*/
 		}
 
 		int sum = 0;
@@ -543,54 +483,6 @@ public class ResourceManager : MonoBehaviour {
 		}
 
 		return sum;
-
-		/*
-		int sum = 0;
-		for (int i = 0; i < tilesToSum.Count; i++) {
-			if (tilesToSum[i] != null && tilesToSum[i].objectInstance != null) {
-				if (compareTileObjectTypes.Contains(tilesToSum[i].objectInstance.prefab.type)) {
-					bool ignoreTile = false;
-					if (compareTileObjectTypes.Contains(tilesToSum[i].objectInstance.prefab.type) && diagonalCheckMap.ContainsKey(i)) {
-						List<TileManager.Tile> surroundingHorizontalTiles = new List<TileManager.Tile>() { tilesToSum[diagonalCheckMap[i][0]],tilesToSum[diagonalCheckMap[i][1]] };
-
-						List<TileManager.Tile> similarTiles = surroundingHorizontalTiles.Where(tile => tile != null && tile.objectInstance != null && compareTileObjectTypes.Contains(tile.objectInstance.prefab.type)).ToList();
-						List<TileManager.Tile> oppositeTiles = surroundingHorizontalTiles.Where(tile => tile != null && tile.objectInstance != null && !compareTileObjectTypes.Contains(tile.objectInstance.prefab.type)).ToList();
-
-						if (similarTiles.Count == 0 && oppositeTiles.Count == 2) {
-							ignoreTile = true;
-						} else if (similarTiles.Count == 2 && oppositeTiles.Count == 0) {
-							ignoreTile = false;
-						} else if (similarTiles.Count == 1 && oppositeTiles.Count == 1) {
-							ignoreTile = true;
-						} else if (similarTiles.Count == 0 && oppositeTiles.Count == 1) {
-							print("Not yet");
-						} else if (similarTiles.Count == 1 && oppositeTiles.Count == 0) {
-							print("Not yet");
-						} else {
-							print("Not yet");
-						}
-					}
-					if (!ignoreTile) {
-						sum += Mathf.RoundToInt(Mathf.Pow(2,i));
-					}
-				}
-			} else {
-				if (tilesToSum.Find(tile => tile != null && tilesToSum.IndexOf(tile) <= 3 && tile.objectInstance != null && !compareTileObjectTypes.Contains(tile.objectInstance.prefab.type)) == null) {
-					sum += Mathf.RoundToInt(Mathf.Pow(2,i));
-				} else {
-					if (i <= 3) {
-						sum += Mathf.RoundToInt(Mathf.Pow(2,i));
-					} else {
-						List<TileManager.Tile> surroundingHorizontalTiles = new List<TileManager.Tile>() { tilesToSum[diagonalCheckMap[i][0]],tilesToSum[diagonalCheckMap[i][1]] };
-						if (surroundingHorizontalTiles.Find(tile => tile != null && tile.objectInstance != null && !compareTileObjectTypes.Contains(tile.objectInstance.prefab.type)) == null) {
-							sum += Mathf.RoundToInt(Mathf.Pow(2,i));
-						}
-					}
-				}
-			}
-		}
-		return sum;
-		*/
 	}
 
 	void BitmaskTileObjects(TileObjectInstance objectInstance,bool includeDiagonalSurroundingTiles,bool customBitSumInputs,bool compareEquivalentTileObjects, List<TileObjectPrefabsEnum> customCompareTileObjectTypes) {
@@ -611,7 +503,6 @@ public class ResourceManager : MonoBehaviour {
 			}
 		}
 		SpriteRenderer oISR = objectInstance.obj.GetComponent<SpriteRenderer>();
-		print(objectInstance.obj.transform.position + " " + sum);
 		if (sum >= 16) {
 			oISR.sprite = objectInstance.prefab.bitmaskSprites[bitmaskMap[sum]];
 		} else {
