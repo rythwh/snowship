@@ -11,13 +11,18 @@ public class TimeManager : MonoBehaviour {
 
 	void Update() {
 		if (Input.GetKeyDown(KeyCode.Alpha1)) {
-			timeModifier -= 1;
+			if (timeModifier > 0) {
+				timeModifier -= 1;
+				if (timeModifier <= 0) {
+					timeModifier = 1;
+				}
+			}
 		}
 		if (Input.GetKeyDown(KeyCode.Alpha2)) {
 			timeModifier += 1;
 		}
 		timeModifier = Mathf.Clamp(timeModifier,0,5);
-		pauseTimeModifier = Mathf.Clamp(timeModifier,0,5);
+		pauseTimeModifier = Mathf.Clamp(pauseTimeModifier,0,5);
 		if (Input.GetKeyDown(KeyCode.Space)) {
 			if (timeModifier != 0) {
 				pauseTimeModifier = timeModifier;

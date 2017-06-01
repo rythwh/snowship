@@ -65,8 +65,9 @@ public class ColonistManager : MonoBehaviour {
 		public bool MoveToTile(TileManager.Tile tile) {
 			if (tile != null) {
 				path = pathM.FindPathToTile(overTile,tile);
-				path.RemoveAt(0);
-				SetMoveSprite();
+				if (path.Count > 0) {
+					SetMoveSprite();
+				}
 				moveTimer = 0;
 				oldPosition = obj.transform.position;
 			}
@@ -170,7 +171,6 @@ public class ColonistManager : MonoBehaviour {
 			}
 
 			job.tile.objectInstances[job.prefab.layer].obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.prefab.timeToBuild - job.jobProgress) / job.prefab.timeToBuild));
-			//job.tile.objectInstance.obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.prefab.timeToBuild - job.jobProgress) / job.prefab.timeToBuild));
 		}
 
 		public void FinishJob() {
