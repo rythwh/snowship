@@ -195,24 +195,7 @@ public class JobManager:MonoBehaviour {
 						List<TileManager.Tile> removeTiles = new List<TileManager.Tile>();
 						if (selectionModifier == SelectionModifiersEnum.Outline) {
 							continue;
-						}/* else if (selectionModifier == SelectionModifiersEnum.OmitSameLayerJobs) {
-							foreach (TileManager.Tile tile in selectionArea) {
-								if (jobs.Find(job => job.prefab.layer == selectedPrefab.layer && job.tile == tile) != null) {
-									removeTiles.Add(tile);
-									continue;
-								}
-								if (colonistM.colonists.Find(colonist => colonist.job != null && colonist.job.prefab.layer == selectedPrefab.layer && colonist.job.tile == tile) != null) {
-									removeTiles.Add(tile);
-									continue;
-								}
-							}
-						} else if (selectionModifier == SelectionModifiersEnum.OmitSameLayerObjectInstances) {
-							foreach (TileManager.Tile tile in selectionArea) {
-								if (tile.objectInstances.ContainsKey(selectedPrefab.layer) && tile.objectInstances[selectedPrefab.layer] != null) {
-									removeTiles.Add(tile);
-								}
-							}
-						} */else {
+						} else {
 							foreach (TileManager.Tile tile in selectionArea) {
 								selectionModifierFunctions[selectionModifier].Invoke(tile,removeTiles);
 							}
