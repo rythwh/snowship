@@ -52,15 +52,15 @@ public class UIManager : MonoBehaviour {
 
 	public void PlayButton() {
 		string mapSeedString = GameObject.Find("MapSeedInput-Text").GetComponent<Text>().text;
-		int mapSeed = 0;
 		if (string.IsNullOrEmpty(mapSeedString)) {
-			mapSeed = -1;
-		} else {
+			mapSeedString = UnityEngine.Random.Range(0,int.MaxValue).ToString();
+		}
+		int mapSeed = 0;
+		if (!int.TryParse(mapSeedString,out mapSeed)) {
 			foreach (char c in mapSeedString) {
 				mapSeed += c;
 			}
 		}
-
 		tileM.Initialize(mapSize,mapSeed);
 		mainMenu.SetActive(false);
 	}
