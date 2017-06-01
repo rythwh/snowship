@@ -538,11 +538,10 @@ public class TileManager:MonoBehaviour {
 
 	public void SetMapInformation(int mapSize, int mapSeed) {
 		this.mapSize = mapSize;
-
 		if (mapSeed < 0) {
 			mapSeed = Random.Range(0,int.MaxValue);
 		}
-		UnityEngine.Random.InitState(mapSeed);
+		Random.InitState(mapSeed);
 		print(mapSeed);
 	}
 
@@ -831,21 +830,64 @@ public class TileManager:MonoBehaviour {
 		{0,new List<int>() {7,4 } },
 		{1,new List<int>() {4,5 } },
 		{2,new List<int>() {5,6 } },
-		{3,new List<int>() {6,7 } }
+		{3,new List<int>() {6,7 } }/*,
+		{4,new List<int>() {0,1 } },
+		{5,new List<int>() {1,2 } },
+		{6,new List<int>() {2,3 } },
+		{7,new List<int>() {3,0 } }*/
+	};
+
+	Dictionary<int,List<int>> regionAdditionalDisconnectionMap = new Dictionary<int,List<int>>() {
+		{-1,new List<int>() { 1,3 } },
+		{-2,new List<int>() { 0,2 } }
 	};
 
 	public void RecalculateRegionsAtTile(Tile tile) {
 		List<Tile> tilesDisconnected = new List<Tile>();
 		for (int i = -2; i < tile.horizontalSurroundingTiles.Count; i++) {
+			Tile parentTile = (i >= 0 ? tile.horizontalSurroundingTiles[i] : tile);
 			List<Tile> tilesToCheck = new List<Tile>() { tile.surroundingTiles[regionDisconnectionMap[i][0]],tile.surroundingTiles[regionDisconnectionMap[i][1]] };
-			bool blocked = true;
+			bool blocked = false;
 			foreach (Tile tileToCheck in tilesToCheck) {
-				if (tileToCheck != null && (i >= 0 ? tile.horizontalSurroundingTiles[i] : tile).walkable && tileToCheck.walkable) {
+				if (tileToCheck != null && parentTile != null && (i >= 0 ? parentTile.walkable : true) && tileToCheck.walkable) {
+					blocked = false;
+				} else if (parentTile != null && parentTile.walkable) {
+					blocked = true;
+					if (i >= 0) {
+						break;
+					}
+				} else {
 					blocked = false;
 				}
 			}
-			if (blocked) {
-				tilesDisconnected.Add(i >= 0 ? tile.horizontalSurroundingTiles[i] : tile);
+			bool atLeastOneBlockedBothSides = false;
+			if (i < 0 && !blocked) {
+				foreach (int additionalIndex in regionAdditionalDisconnectionMap[i]) {
+					foreach (int additionalIndexInternalIndex in regionDisconnectionMap[additionalIndex]) {
+						Tile additionalIndexInternalIndexTile = tile.surroundingTiles[additionalIndexInternalIndex];
+						bool atLeastOneBlocked = false;
+						if (additionalIndexInternalIndexTile != null && !additionalIndexInternalIndexTile.walkable) {
+							atLeastOneBlocked = true;
+							break;
+						}
+						if (!atLeastOneBlocked) {
+							atLeastOneBlockedBothSides = false;
+							break;
+						}
+					}
+				}
+			}
+			print(blocked + " " + atLeastOneBlockedBothSides);
+			if (parentTile != null/* && (i < 0 && !blocked ? atLeastOneBlockedBothSides : blocked)*/) {
+				if (i < 0) {
+					if (!blocked && atLeastOneBlockedBothSides) {
+						tilesDisconnected.Add(parentTile);
+					}
+				} else {
+					if (blocked) {
+						tilesDisconnected.Add(parentTile);
+					}
+				}
 			}
 		}
 			/*
