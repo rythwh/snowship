@@ -246,8 +246,7 @@ public class JobManager:MonoBehaviour {
 		List<ColonistManager.Colonist> availableColonists = colonistM.colonists.Where(colonist => colonist.job == null).ToList();
 		if (availableColonists.Count > 0) {
 			foreach (ColonistManager.Colonist colonist in availableColonists) {
-				List<Job> sortedJobs = jobs.Where(job => (false) || (job.tile.region == colonist.overTile.region)).OrderBy(job => 
-					Vector2.Distance(job.tile.obj.transform.position,colonist.obj.transform.position)
+				List<Job> sortedJobs = jobs.Where(job => (job.tile.surroundingTiles.Find(o => o.region == colonist.overTile.region) != null) || (job.tile.region == colonist.overTile.region)).OrderBy(job => Vector2.Distance(job.tile.obj.transform.position,colonist.obj.transform.position)
 				).ToList();
 				if (sortedJobs.Count > 0) {
 					colonist.SetJob(sortedJobs[0]);

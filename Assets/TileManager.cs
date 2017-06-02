@@ -358,7 +358,8 @@ public class TileManager:MonoBehaviour {
 			foreach (KeyValuePair<int,ResourceManager.TileObjectInstance> kvp in objectInstances) {
 				if (kvp.Value != null && !kvp.Value.prefab.walkable) {
 					walkable = false;
-					tileM.SetTileRegions(false);
+					tileM.RecalculateRegionsAtTile(this);
+					//tileM.SetTileRegions(false);
 					break;
 				}
 			}
@@ -824,6 +825,7 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
+
 	Dictionary<int,List<int>> regionDisconnectionMap = new Dictionary<int,List<int>>() {
 		{-1,new List<int>() { 1,3 } },
 		{-2,new List<int>() { 0,2 } },
@@ -842,7 +844,152 @@ public class TileManager:MonoBehaviour {
 		{-2,new List<int>() { 0,2 } }
 	};
 
+	Dictionary<int,Dictionary<int,List<int>>> tileDiagonalDisconnectionMap = new Dictionary<int,Dictionary<int,List<int>>>() {
+		{0,new Dictionary<int, List<int>>() {
+			{ 3,new List<int>() {7,-1 } },
+			{ 1,new List<int>() {4,-1 } } }
+		},
+		{1,new Dictionary<int, List<int>>() {
+			{ 0,new List<int>() {4,-1 } },
+			{ 2,new List<int>() {5,-1 } } }
+		},
+		{2,new Dictionary<int, List<int>>() {
+			{ 1,new List<int>() {5,-1 } },
+			{ 3,new List<int>() {6,-1 } } }
+		},
+		{3,new Dictionary<int, List<int>>() {
+			{ 0,new List<int>() {7,-1 } },
+			{ 2,new List<int>() {6,-1 } } }
+		},
+	};
+
+	Dictionary<int,Dictionary<int,List<List<int>>>> tileOppositeDisconnectionMap = new Dictionary<int,Dictionary<int,List<List<int>>>>() {
+		{0,new Dictionary<int, List<List<int>>>() {
+			{ 2,new List<List<int>>() { new List<int>() { 7,4,-1 },new List<int>() { 3,1,-1 },new List<int>() { 6,5,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 } } }
+		} },
+		{1,new Dictionary<int, List<List<int>>>() {
+			{ 3,new List<List<int>>() { new List<int>() { 4,5,-1 },new List<int>() { 0,2,-1 },new List<int>() { 7,6,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 } } }
+		} },
+		{2,new Dictionary<int, List<List<int>>>() {
+			{ 0,new List<List<int>>() { new List<int>() { 7,4,-1 },new List<int>() { 3,1,-1 },new List<int>() { 6,5,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 } } }
+		} },
+		{3,new Dictionary<int, List<List<int>>>() {
+			{ 1,new List<List<int>>() { new List<int>() { 4,5,-1 },new List<int>() { 0,2,-1 },new List<int>() { 7,6,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 } } }
+		} }
+	};
+
 	public void RecalculateRegionsAtTile(Tile tile) {
+
+		/*
+
+		Tile currentTile = tile;
+		List<Tile> frontier = new List<Tile>() { currentTile };
+		List<Tile> checkedTiles = new List<Tile>() { currentTile };
+		List<Tile> unwalkableTiles = new List<Tile>();
+		while (frontier.Count > 0) {
+			currentTile = frontier[0];
+			frontier.RemoveAt(0);
+			unwalkableTiles.Add(currentTile);
+			foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+				if (nTile != null && !checkedTiles.Contains(nTile) && !nTile.walkable) {
+					frontier.Add(nTile);
+					checkedTiles.Add(nTile);
+				}
+			}
+		}
+
+		List<Tile> walkableTiles = new List<Tile>();
+
+		Color randomColor = new Color(Random.Range(0f,1f),Random.Range(0f,1f),Random.Range(0f,1f),1f);
+		foreach (Tile unwalkableTile in unwalkableTiles) {
+			unwalkableTile.obj.GetComponent<SpriteRenderer>().color = randomColor;
+			foreach (Tile nTile in unwalkableTile.surroundingTiles) {
+				nTile.obj.GetComponent<SpriteRenderer>().color = randomColor;
+				if (nTile.walkable) {
+					walkableTiles.Add(nTile);
+					nTile.obj.GetComponent<SpriteRenderer>().color = Color.black;
+				}
+			}
+		}
+
+		*/
+
+		Dictionary<int,List<int>> blockedTiles = new Dictionary<int,List<int>>() {
+			{0,new List<int>() },
+			{1,new List<int>() },
+			{2,new List<int>() },
+			{3,new List<int>() },
+		};
+
+		for (int i = 0; i < tile.horizontalSurroundingTiles.Count; i++) {
+			if (tile.horizontalSurroundingTiles[i] != null/* && tile.horizontalSurroundingTiles[i].walkable*/) {
+				foreach (KeyValuePair<int,List<int>> diagonalTileKVP in tileDiagonalDisconnectionMap[i]) {
+					int diagonalTileIndex = diagonalTileKVP.Key;
+					List<int> diagonalTileBlockerIndexes = diagonalTileKVP.Value;
+					bool bothBlocked = false;
+					foreach (int diagonalTileBlockerIndex in diagonalTileBlockerIndexes) {
+						Tile tileToCheck = (diagonalTileBlockerIndex != -1 ? tile.surroundingTiles[diagonalTileBlockerIndex] : tile);
+						if (tileToCheck != null && tileToCheck.walkable) {
+							bothBlocked = false;
+							break;
+						} else {
+							bothBlocked = true;
+						}
+					}
+					if (bothBlocked) {
+						blockedTiles[i].Add(diagonalTileIndex);
+					}
+				}
+				foreach (KeyValuePair<int,List<List<int>>> oppositeTileKVP in tileOppositeDisconnectionMap[i]) {
+					if (tile.horizontalSurroundingTiles[oppositeTileKVP.Key] != null/* && tile.horizontalSurroundingTiles[oppositeTileKVP.Key].walkable*/) {
+						bool atLeastOneBlocked = false;
+						foreach (List<int> tileCheckList in oppositeTileKVP.Value) {
+							bool threeBlocked = false;
+							foreach (int oppositeTileBlockerIndex in tileCheckList) {
+								Tile tileToCheck = (oppositeTileBlockerIndex != -1 ? tile.surroundingTiles[oppositeTileBlockerIndex] : tile);
+								if (tileToCheck != null && tileToCheck.walkable) {
+									threeBlocked = false;
+									break;
+								} else {
+									threeBlocked = true;
+								}
+							}
+							if (threeBlocked) {
+								atLeastOneBlocked = true;
+								break;
+							}
+						}
+						if (atLeastOneBlocked) {
+							blockedTiles[i].Add(oppositeTileKVP.Key);
+						}
+					}
+				}
+			}
+		}
+
+		List<Tile> tilesCompletelyBlocked = new List<Tile>();
+
+		foreach (KeyValuePair<int,List<int>> blockedTileKVP in blockedTiles) {
+			bool blockedToAllOtherTiles = false;
+			foreach (KeyValuePair<int,List<int>> innerBlockedTileKVP in blockedTiles) {
+				if (tile.surroundingTiles[blockedTileKVP.Key] != null && innerBlockedTileKVP.Key != blockedTileKVP.Key) {
+					if (!innerBlockedTileKVP.Value.Contains(blockedTileKVP.Key)) {
+						blockedToAllOtherTiles = false;
+						break;
+					} else {
+						blockedToAllOtherTiles = true;
+					}
+				}
+			}
+			if (blockedToAllOtherTiles) {
+				tilesCompletelyBlocked.Add(tile.surroundingTiles[blockedTileKVP.Key]);
+				tile.surroundingTiles[blockedTileKVP.Key].obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/white-square");
+				tile.surroundingTiles[blockedTileKVP.Key].obj.GetComponent<SpriteRenderer>().color = Color.black;
+			}
+		}
+	}
+
+	public void RecalculateRegionsAtTile2(Tile tile) {
 		List<Tile> tilesDisconnected = new List<Tile>();
 		for (int i = -2; i < tile.horizontalSurroundingTiles.Count; i++) {
 			Tile parentTile = (i >= 0 ? tile.horizontalSurroundingTiles[i] : tile);
