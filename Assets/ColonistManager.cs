@@ -178,6 +178,13 @@ public class ColonistManager : MonoBehaviour {
 
 			job.tile.objectInstances[job.prefab.layer].FinishCreation();
 
+			if (!overTile.walkable) {
+				List<TileManager.Tile> walkableSurroundingTiles = overTile.surroundingTiles.Where(tile => tile.walkable).ToList();
+				if (walkableSurroundingTiles.Count > 0) {
+					MoveToTile(walkableSurroundingTiles[Random.Range(0,walkableSurroundingTiles.Count)]);
+				}
+			}
+
 			if (job.prefab.jobType == JobManager.JobTypesEnum.Build) {
 
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.Remove) {
