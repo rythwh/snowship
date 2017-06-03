@@ -331,26 +331,6 @@ public class TileManager:MonoBehaviour {
 					foreach (Tile tile in removeFromNonWalkableSurroundingTiles) {
 						nonWalkableSurroundingTiles.Remove(tile);
 					}
-					// TEST
-					if (nonWalkableSurroundingTiles.Count > 1) {
-						List<Tile> removeTiles = new List<Tile>();
-						foreach (Tile startTile in nonWalkableSurroundingTiles) {
-							if (!removeTiles.Contains(startTile)) {
-								foreach (Tile endTile in nonWalkableSurroundingTiles) {
-									if (!removeTiles.Contains(endTile) && startTile != endTile) {
-										if (tileM.GetComponent<PathManager>().PathExists(startTile,endTile,true,tileM.mapSize,PathManager.WalkableSetting.NonWalkable)) {
-											print("Removing a tile because it is in the same region as another.");
-											removeTiles.Add(endTile);
-										}
-									}
-								}
-							}
-						}
-						foreach (Tile removeTile in removeTiles) {
-							nonWalkableSurroundingTiles.Remove(removeTile);
-						}
-					}
-					// END TEST
 					if (nonWalkableSurroundingTiles.Count > 1) {
 						print("Independent tiles");
 						Region oldRegion = region;
@@ -358,7 +338,6 @@ public class TileManager:MonoBehaviour {
 						tileM.regions.Remove(oldRegion);
 						List<List<Tile>> nonWalkableTileGroups = new List<List<Tile>>();
 						foreach (Tile nonWalkableTile in nonWalkableSurroundingTiles) {
-							//nonWalkableTile.obj.GetComponent<SpriteRenderer>().color = Color.black;
 							Tile currentTile = nonWalkableTile;
 							List<Tile> frontier = new List<Tile>() { currentTile };
 							List<Tile> checkedTiles = new List<Tile>() { currentTile };
@@ -367,7 +346,7 @@ public class TileManager:MonoBehaviour {
 							while (frontier.Count > 0) {
 								currentTile = frontier[0];
 								if (nonWalkableTileGroups.Find(group => group.Contains(currentTile)) != null) {
-									//print("Separate tiles part of the same group");
+									print("Separate tiles part of the same group");
 									addGroup = false;
 									break;
 								}
@@ -384,23 +363,6 @@ public class TileManager:MonoBehaviour {
 								nonWalkableTileGroups.Add(nonWalkableTiles);
 							}
 						}
-						/*
-						List<List<Tile>> removeGroups = new List<List<Tile>>();
-						foreach (List<Tile> nonWalkableTileGroup in nonWalkableTileGroups) {
-							foreach (List<Tile> otherNonWalkableTileGroup in nonWalkableTileGroups) {
-								if (nonWalkableTileGroup != otherNonWalkableTileGroup) {
-									if (nonWalkableTileGroup.Find(tile => otherNonWalkableTileGroup.Contains(tile)) != null) {
-										nonWalkableTileGroup.AddRange(otherNonWalkableTileGroup);
-										otherNonWalkableTileGroup.Clear();
-										removeGroups.Add(otherNonWalkableTileGroup);
-									}
-								}
-							}
-						}
-						foreach (List<Tile> removeGroup in removeGroups) {
-							nonWalkableTileGroups.Remove(removeGroup);
-						}
-						*/
 						foreach (List<Tile> nonWalkableTileGroup in nonWalkableTileGroups) {
 							Region groupRegion = new Region(nonWalkableTileGroup[0].tileType,tileM.currentRegionID);
 							tileM.currentRegionID += 1;
@@ -992,78 +954,6 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
-
-	Dictionary<int,List<int>> regionDisconnectionMap = new Dictionary<int,List<int>>() {
-		{-1,new List<int>() { 1,3 } },
-		{-2,new List<int>() { 0,2 } },
-		{0,new List<int>() {7,4 } },
-		{1,new List<int>() {4,5 } },
-		{2,new List<int>() {5,6 } },
-		{3,new List<int>() {6,7 } }/*,
-		{4,new List<int>() {0,1 } },
-		{5,new List<int>() {1,2 } },
-		{6,new List<int>() {2,3 } },
-		{7,new List<int>() {3,0 } }*/
-	};
-
-	Dictionary<int,List<int>> regionAdditionalDisconnectionMap = new Dictionary<int,List<int>>() {
-		{-1,new List<int>() { 1,3 } },
-		{-2,new List<int>() { 0,2 } }
-	};
-
-	Dictionary<int,Dictionary<int,List<int>>> tileDiagonalDisconnectionMap = new Dictionary<int,Dictionary<int,List<int>>>() {
-		{0,new Dictionary<int, List<int>>() {
-			{ 3,new List<int>() {7,-1 } },
-			{ 1,new List<int>() {4,-1 } } }
-		},
-		{1,new Dictionary<int, List<int>>() {
-			{ 0,new List<int>() {4,-1 } },
-			{ 2,new List<int>() {5,-1 } } }
-		},
-		{2,new Dictionary<int, List<int>>() {
-			{ 1,new List<int>() {5,-1 } },
-			{ 3,new List<int>() {6,-1 } } }
-		},
-		{3,new Dictionary<int, List<int>>() {
-			{ 0,new List<int>() {7,-1 } },
-			{ 2,new List<int>() {6,-1 } } }
-		},
-	};
-
-	Dictionary<int,Dictionary<int,List<List<int>>>> tileOppositeDisconnectionMap = new Dictionary<int,Dictionary<int,List<List<int>>>>() {
-		{0,new Dictionary<int, List<List<int>>>() {
-			{ 2,new List<List<int>>() { new List<int>() { 7,4,-1 },new List<int>() { 3,1,-1 },new List<int>() { 6,5,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 },
-				new List<int>() {1,7,-1 },new List<int>() { 1,6,-1 },new List<int>() { 3,4,-1 },new List<int>() { 3,5,-1 } } }
-		} },
-		{1,new Dictionary<int, List<List<int>>>() {
-			{ 3,new List<List<int>>() { new List<int>() { 4,5,-1 },new List<int>() { 0,2,-1 },new List<int>() { 7,6,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 },
-				new List<int>() { 0,6,-1 },new List<int>() { 0,5,-1 },new List<int>() { 2,7,-1 },new List<int>() { 2,4,-1 } } }
-		} },
-		{2,new Dictionary<int, List<List<int>>>() {
-			{ 0,new List<List<int>>() { new List<int>() { 7,4,-1 },new List<int>() { 3,1,-1 },new List<int>() { 6,5,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 },
-				new List<int>() {1,7,-1 },new List<int>() { 1,6,-1 },new List<int>() { 3,4,-1 },new List<int>() { 3,5,-1 } } }
-		} },
-		{3,new Dictionary<int, List<List<int>>>() {
-			{ 1,new List<List<int>>() { new List<int>() { 4,5,-1 },new List<int>() { 0,2,-1 },new List<int>() { 7,6,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 },
-				new List<int>() { 0,6,-1 },new List<int>() { 0,5,-1 },new List<int>() { 2,7,-1 },new List<int>() { 2,4,-1 } } }
-		} }
-	};
-
-	Dictionary<int,Dictionary<int,List<int>>> tileMinimumToBeBlockedMap = new Dictionary<int,Dictionary<int,List<int>>>() {
-		{0,new Dictionary<int, List<int>>() {
-			{2,new List<int>() { 3,1 } }
-		} },
-		{1,new Dictionary<int, List<int>>() {
-			{3,new List<int>() { 0,2 } }
-		} },
-		{2,new Dictionary<int, List<int>>() {
-			{0,new List<int>() { 3,1 } }
-		} },
-		{3,new Dictionary<int, List<int>>() {
-			{1,new List<int>() { 0,2 } }
-		} }
-	};
-
 	public void RecalculateRegionsAtTile(Tile tile) {
 		if (!tile.walkable) {
 			List<Tile> orderedSurroundingTiles = new List<Tile>() {
@@ -1103,7 +993,7 @@ public class TileManager:MonoBehaviour {
 					if (!removeTiles.Contains(startTile)) {
 						foreach (Tile endTile in horizontalGroups) {
 							if (!removeTiles.Contains(endTile) && startTile != endTile) {
-								if (pathM.PathExists(startTile,endTile,true,mapSize,PathManager.WalkableSetting.Walkable)) {
+								if (pathM.PathExists(startTile,endTile,true,mapSize,PathManager.WalkableSetting.Walkable,PathManager.DirectionSetting.Horizontal)) {
 									print("Removing a tile because it is in the same region as another.");
 									removeTiles.Add(endTile);
 								}
@@ -1117,337 +1007,7 @@ public class TileManager:MonoBehaviour {
 				if (horizontalGroups.Count > 1) {
 					SetTileRegions(false);
 				}
-				/*
-				List<Region> newRegions = new List<Region>();
-				foreach (Tile startTile in horizontalGroups) {
-					print(startTile + " " + startTile.region);
-					if (newRegions.Contains(startTile.region)) {
-						print("Separate tiles part of the same region");
-						continue;
-					}
-
-					Region startTileRegion = startTile.region;
-					foreach (Tile regionTile in startTileRegion.tiles) {
-						regionTile.region = null;
-					}
-					startTileRegion.tiles.Clear();
-					regions.Remove(startTileRegion);
-
-					Tile currentTile = startTile;
-
-					List<Tile> frontier = new List<Tile>() { currentTile };
-					List<Tile> checkedTiles = new List<Tile>() { currentTile };
-
-					Region newRegion = new Region(currentTile.tileType,currentRegionID);
-					currentRegionID += 1;
-
-					while (frontier.Count > 0) {
-						currentTile = frontier[0];
-						frontier.RemoveAt(0);
-						newRegion.tiles.Add(currentTile);
-						currentTile.ChangeRegion(newRegion,false,false);
-						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
-							if (nTile != null && !checkedTiles.Contains(nTile) && nTile.walkable) {
-								frontier.Add(nTile);
-								checkedTiles.Add(nTile);
-							}
-						}
-					}
-					newRegions.Add(newRegion);
-					foreach (Tile regionTile in newRegion.tiles) {
-						regionTile.obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/white-square");
-						regionTile.obj.GetComponent<SpriteRenderer>().color = newRegion.colour;
-					}
-				}
-				foreach (Tile startTile in horizontalGroups) {
-					startTile.obj.GetComponent<SpriteRenderer>().color = Color.black;
-				}
-				regions.AddRange(newRegions);
-				*/
 			}
-		}
-	}
-
-	public void RecalculateRegionsAtTile2(Tile tile) {
-
-		/*
-
-		Tile currentTile = tile;
-		List<Tile> frontier = new List<Tile>() { currentTile };
-		List<Tile> checkedTiles = new List<Tile>() { currentTile };
-		List<Tile> unwalkableTiles = new List<Tile>();
-		while (frontier.Count > 0) {
-			currentTile = frontier[0];
-			frontier.RemoveAt(0);
-			unwalkableTiles.Add(currentTile);
-			foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
-				if (nTile != null && !checkedTiles.Contains(nTile) && !nTile.walkable) {
-					frontier.Add(nTile);
-					checkedTiles.Add(nTile);
-				}
-			}
-		}
-
-		List<Tile> walkableTiles = new List<Tile>();
-
-		Color randomColor = new Color(Random.Range(0f,1f),Random.Range(0f,1f),Random.Range(0f,1f),1f);
-		foreach (Tile unwalkableTile in unwalkableTiles) {
-			unwalkableTile.obj.GetComponent<SpriteRenderer>().color = randomColor;
-			foreach (Tile nTile in unwalkableTile.surroundingTiles) {
-				nTile.obj.GetComponent<SpriteRenderer>().color = randomColor;
-				if (nTile.walkable) {
-					walkableTiles.Add(nTile);
-					nTile.obj.GetComponent<SpriteRenderer>().color = Color.black;
-				}
-			}
-		}
-
-		*/
-
-		Dictionary<int,List<int>> blockedTiles = new Dictionary<int,List<int>>() {
-			{0,new List<int>() },
-			{1,new List<int>() },
-			{2,new List<int>() },
-			{3,new List<int>() },
-		};
-
-		for (int i = 0; i < tile.horizontalSurroundingTiles.Count; i++) {
-			if (tile.horizontalSurroundingTiles[i] != null/* && tile.horizontalSurroundingTiles[i].walkable*/) {
-				foreach (KeyValuePair<int,List<int>> diagonalTileKVP in tileDiagonalDisconnectionMap[i]) {
-					int diagonalTileIndex = diagonalTileKVP.Key;
-					List<int> diagonalTileBlockerIndexes = diagonalTileKVP.Value;
-					bool bothBlocked = false;
-					foreach (int diagonalTileBlockerIndex in diagonalTileBlockerIndexes) {
-						Tile tileToCheck = (diagonalTileBlockerIndex != -1 ? tile.surroundingTiles[diagonalTileBlockerIndex] : tile);
-						if (tileToCheck != null && tileToCheck.walkable) {
-							bothBlocked = false;
-							break;
-						} else {
-							bothBlocked = true;
-						}
-					}
-					if (bothBlocked) {
-						blockedTiles[i].Add(diagonalTileIndex);
-						//blockedTiles[i].Add(oppositeDirectionTileMap[diagonalTileIndex]);
-					}
-				}
-				foreach (KeyValuePair<int,List<List<int>>> oppositeTileKVP in tileOppositeDisconnectionMap[i]) {
-					if (tile.horizontalSurroundingTiles[oppositeTileKVP.Key] != null/* && tile.horizontalSurroundingTiles[oppositeTileKVP.Key].walkable*/) {
-						bool atLeastOneBlocked = false;
-						foreach (List<int> tileCheckList in oppositeTileKVP.Value) {
-							bool threeBlocked = false;
-							foreach (int oppositeTileBlockerIndex in tileCheckList) {
-								Tile tileToCheck = (oppositeTileBlockerIndex != -1 ? tile.surroundingTiles[oppositeTileBlockerIndex] : tile);
-								if (tileToCheck != null && tileToCheck.walkable) {
-									threeBlocked = false;
-									break;
-								} else {
-									threeBlocked = true;
-								}
-							}
-							if (threeBlocked) {
-								atLeastOneBlocked = true;
-								break;
-							}
-						}
-						if (atLeastOneBlocked) {
-							blockedTiles[i].Add(oppositeTileKVP.Key);
-						}
-					}
-				}
-			}
-		}
-
-		List<int> tilesPotentiallyBlocked = new List<int>();
-
-		foreach (KeyValuePair<int,List<int>> blockedTileKVP in blockedTiles) {
-			bool blocked = false;
-			foreach (KeyValuePair<int,List<int>> requiredBlockedTilesKVP in tileMinimumToBeBlockedMap[blockedTileKVP.Key]) {
-				if (blockedTileKVP.Value.Contains(requiredBlockedTilesKVP.Key)) {
-					blocked = true;
-				} else {
-					blocked = false;
-					break;
-				}
-				bool oneBlocked = false;
-				foreach (int secondaryBlockedTileIndex in requiredBlockedTilesKVP.Value) {
-					if (blockedTileKVP.Value.Contains(secondaryBlockedTileIndex)) {
-						oneBlocked = true;
-						break;
-					} else {
-						oneBlocked = false;
-					}
-				}
-				if (oneBlocked) {
-					blocked = true;
-				} else {
-					blocked = false;
-					break;
-				}
-			}
-			if (blocked) {
-				if (tile.surroundingTiles[blockedTileKVP.Key] != null && tile.surroundingTiles[blockedTileKVP.Key].walkable) {
-					tilesPotentiallyBlocked.Add(blockedTileKVP.Key);
-					//tile.surroundingTiles[blockedTileKVP.Key].obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/white-square");
-					//tile.surroundingTiles[blockedTileKVP.Key].obj.GetComponent<SpriteRenderer>().color = Color.black;
-				}
-			}
-		}
-
-		List<List<int>> tilesInSameRegion = new List<List<int>>();
-
-		/*
-		for (int i = 0;i < 4;i++) {
-			if (!tilesPotentiallyBlocked.Contains(i) && tile.horizontalSurroundingTiles[i] != null && tile.horizontalSurroundingTiles[i].walkable) {
-				tilesPotentiallyBlocked.Add(i);
-			}
-		}
-		*/
-
-		foreach (int tilePotentiallyBlockedIndex in tilesPotentiallyBlocked) {
-			/*
-			if (tile.surroundingTiles[tilePotentiallyBlockedIndex] != null) {
-				tile.surroundingTiles[tilePotentiallyBlockedIndex].obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/white-square");
-				tile.surroundingTiles[tilePotentiallyBlockedIndex].obj.GetComponent<SpriteRenderer>().color = Color.black;
-			}
-			*/
-			foreach (int diagonalCheckIndex in regionDisconnectionMap[tilePotentiallyBlockedIndex]) {
-				if (tile.surroundingTiles[diagonalCheckIndex] != null && tile.surroundingTiles[diagonalCheckIndex].walkable) {
-					List<int> sameRegion = new List<int>();
-					foreach (int diagonalHorizontalCheckIndex in diagonalCheckMap[diagonalCheckIndex]) {
-						if (tile.surroundingTiles[diagonalHorizontalCheckIndex] != null && tile.surroundingTiles[diagonalHorizontalCheckIndex].walkable) {
-							sameRegion.Add(diagonalHorizontalCheckIndex);
-							sameRegion.Add(diagonalCheckIndex);
-						}
-					}
-					if (sameRegion.Count > 0) {
-						tilesInSameRegion.Add(sameRegion);
-					}
-					/*
-					bool containsBoth = false;
-					foreach (int diagonalHorizontalCheckIndex in diagonalCheckMap[diagonalCheckIndex]) {
-						if (tilesPotentiallyBlocked.Contains(diagonalHorizontalCheckIndex)) {
-							containsBoth = true;
-						} else {
-							containsBoth = false;
-							break;
-						}
-					}
-					if (containsBoth) {
-						List<int> sameRegion = new List<int>(diagonalCheckMap[diagonalCheckIndex]);
-					}
-					*/
-				}
-			}
-		}
-
-		foreach (List<int> sameRegionIndexes in tilesInSameRegion) {
-			Color randomColour = new Color(Random.Range(0f,1f),Random.Range(0f,1f),Random.Range(0f,1f),1f);
-			foreach (int sameRegionIndex in sameRegionIndexes) {
-				if (tile.surroundingTiles[sameRegionIndex] != null) {
-					tile.surroundingTiles[sameRegionIndex].obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/white-square");
-					tile.surroundingTiles[sameRegionIndex].obj.GetComponent<SpriteRenderer>().color = randomColour;
-				}
-			}
-		}
-
-		/*
-
-		List<Tile> tilesCompletelyBlocked = new List<Tile>();
-
-		foreach (KeyValuePair<int,List<int>> blockedTileKVP in blockedTiles) {
-			bool blockedToAllOtherTiles = false;
-			foreach (KeyValuePair<int,List<int>> innerBlockedTileKVP in blockedTiles) {
-				if (tile.surroundingTiles[blockedTileKVP.Key] != null && innerBlockedTileKVP.Key != blockedTileKVP.Key) {
-					if (!innerBlockedTileKVP.Value.Contains(blockedTileKVP.Key)) {
-						blockedToAllOtherTiles = false;
-						break;
-					} else {
-						blockedToAllOtherTiles = true;
-					}
-				}
-			}
-			if (blockedToAllOtherTiles) {
-				tilesCompletelyBlocked.Add(tile.surroundingTiles[blockedTileKVP.Key]);
-				tile.surroundingTiles[blockedTileKVP.Key].obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/white-square");
-				tile.surroundingTiles[blockedTileKVP.Key].obj.GetComponent<SpriteRenderer>().color = Color.black;
-			}
-		}
-		*/
-	}
-
-	public void RecalculateRegionsAtTile3(Tile tile) {
-		List<Tile> tilesDisconnected = new List<Tile>();
-		for (int i = -2; i < tile.horizontalSurroundingTiles.Count; i++) {
-			Tile parentTile = (i >= 0 ? tile.horizontalSurroundingTiles[i] : tile);
-			List<Tile> tilesToCheck = new List<Tile>() { tile.surroundingTiles[regionDisconnectionMap[i][0]],tile.surroundingTiles[regionDisconnectionMap[i][1]] };
-			bool blocked = false;
-			foreach (Tile tileToCheck in tilesToCheck) {
-				if (tileToCheck != null && parentTile != null && (i >= 0 ? parentTile.walkable : true) && tileToCheck.walkable) {
-					blocked = false;
-				} else if (parentTile != null && parentTile.walkable) {
-					blocked = true;
-					if (i >= 0) {
-						break;
-					}
-				} else {
-					blocked = false;
-				}
-			}
-			bool atLeastOneBlockedBothSides = false;
-			if (i < 0 && !blocked) {
-				foreach (int additionalIndex in regionAdditionalDisconnectionMap[i]) {
-					foreach (int additionalIndexInternalIndex in regionDisconnectionMap[additionalIndex]) {
-						Tile additionalIndexInternalIndexTile = tile.surroundingTiles[additionalIndexInternalIndex];
-						bool atLeastOneBlocked = false;
-						if (additionalIndexInternalIndexTile != null && !additionalIndexInternalIndexTile.walkable) {
-							atLeastOneBlocked = true;
-							break;
-						}
-						if (!atLeastOneBlocked) {
-							atLeastOneBlockedBothSides = false;
-							break;
-						}
-					}
-				}
-			}
-			print(blocked + " " + atLeastOneBlockedBothSides);
-			if (parentTile != null/* && (i < 0 && !blocked ? atLeastOneBlockedBothSides : blocked)*/) {
-				if (i < 0) {
-					if (!blocked && atLeastOneBlockedBothSides) {
-						tilesDisconnected.Add(parentTile);
-					}
-				} else {
-					if (blocked) {
-						tilesDisconnected.Add(parentTile);
-					}
-				}
-			}
-		}
-			/*
-			if (tile.horizontalSurroundingTiles[i] != null && tile.horizontalSurroundingTiles[i].walkable) {
-				bool allBlocked = true;
-				foreach (int disconnectedIndex in regionDisconnectionMap[i]) {
-					if (disconnectedIndex >= 0) {
-						if (tile.surroundingTiles[disconnectedIndex] != null && tile.surroundingTiles[disconnectedIndex].walkable) {
-							allBlocked = false;
-							break;
-						}
-					} else {
-						if (tile.surroundingTiles[
-					}
-				}
-				if (allBlocked) {
-					tilesDisconnected.Add(tile.horizontalSurroundingTiles[i]);
-					if (tile.horizontalSurroundingTiles[oppositeDirectionTileMap[i]] != null && tile.horizontalSurroundingTiles[oppositeDirectionTileMap[i]].walkable) {
-						tilesDisconnected.Add(tile.horizontalSurroundingTiles[oppositeDirectionTileMap[i]]);
-					}
-				}
-			}
-		}
-		*/
-		foreach (Tile disconnectedTile in tilesDisconnected) {
-			disconnectedTile.obj.GetComponent<SpriteRenderer>().color = Color.red;
 		}
 	}
 
@@ -1544,7 +1104,7 @@ public class TileManager:MonoBehaviour {
 					tiles[t].precipitation += precipitations[i][t];
 				}
 			}
-			tiles[t].precipitation /= 1.35f;//1.3f; // 2.25f
+			tiles[t].precipitation /= 1.35f; //1.3f; // 2.25f
 		}
 		AverageTilePrecipitations();
 
@@ -1586,7 +1146,7 @@ public class TileManager:MonoBehaviour {
 		float temperatureOffset = 50;
 
 		foreach (Tile tile in tiles) {
-			tile.temperature = TemperatureFunction(tile.position.y,temperatureOffset);//(Mathf.FloorToInt(tile.position.y) - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureOffset / 50f));//TemperatureFunction(tile.position.y,temperatureOffset);
+			tile.temperature = TemperatureFunction(tile.position.y,temperatureOffset);
 			tile.temperature += -(250f * Mathf.Pow(tile.height - 0.5f,3));
 		}
 
