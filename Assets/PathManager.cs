@@ -25,10 +25,8 @@ public class PathManager : MonoBehaviour {
 
 		PathfindingTile currentTile = new PathfindingTile(startTile,null,0);
 
-		List<PathfindingTile> checkedTiles = new List<PathfindingTile>();
-		checkedTiles.Add(currentTile);
-		List<PathfindingTile> frontier = new List<PathfindingTile>();
-		frontier.Add(currentTile);
+		List<PathfindingTile> frontier = new List<PathfindingTile>() { currentTile };
+		List<PathfindingTile> checkedTiles = new List<PathfindingTile>() { currentTile };
 
 		List<TileManager.Tile> path = new List<TileManager.Tile>();
 
@@ -62,5 +60,44 @@ public class PathManager : MonoBehaviour {
 			frontier = frontier.OrderBy(o => o.cost).ToList();
 		}
 		return new List<TileManager.Tile>();
+	}
+
+	public enum WalkableSetting { Walkable, NonWalkable, Both };
+
+	public bool PathExists(TileManager.Tile startTile,TileManager.Tile endTile, bool breakTooLong,int breakAfterTiles, WalkableSetting walkableSetting) {
+
+		PathfindingTile currentTile = new PathfindingTile(startTile,null,0);
+
+		List<PathfindingTile> frontier = new List<PathfindingTile>() { currentTile };
+		List<PathfindingTile> checkedTiles = new List<PathfindingTile>() { currentTile };
+
+		int breakCounter = 0;
+
+		while (frontier.Count > 0) {
+			currentTile = frontier[0];
+			frontier.RemoveAt(0);
+
+			if (breakTooLong) {
+				if (breakCounter >= breakAfterTiles) {
+					break;
+				}
+				breakCounter += 1;
+			}
+
+			if (currentTile.tile == endTile) {
+				return true;
+			}
+
+			foreach (TileManager.Tile nTile in currentTile.tile.surroundingTiles) {
+				if (nTile != null && checkedTiles.Find(o => o.tile == nTile) == null && (walkableSetting == WalkableSetting.Walkable ? nTile.walkable : (walkableSetting == WalkableSetting.NonWalkable ? !nTile.walkable : true))) {
+					PathfindingTile pTile = new PathfindingTile(nTile,null,Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position));
+					frontier.Add(pTile);
+					checkedTiles.Add(pTile);
+				}
+			}
+			frontier = frontier.OrderBy(o => o.cost).ToList();
+		}
+
+		return false;
 	}
 }
