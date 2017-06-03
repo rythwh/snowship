@@ -293,6 +293,7 @@ public class TileManager:MonoBehaviour {
 			if (resetRegion) {
 				ResetRegion(oldTileType,removeFromOldRegion);
 			}
+			SetWalkSpeed();
 		}
 
 		public void ResetRegion(TileType oldTileType, bool removeFromOldRegion) {
@@ -404,7 +405,6 @@ public class TileManager:MonoBehaviour {
 					}
 				}
 			}
-			SetWalkSpeed();
 		}
 
 		public void SetTileTypeBasedOnHeight() {
@@ -642,6 +642,14 @@ public class TileManager:MonoBehaviour {
 					viewRiverAtIndex += 1;
 					if (viewRiverAtIndex == rivers.Count) {
 						viewRiverAtIndex = 0;
+					}
+				}
+				if (Input.GetKeyDown(KeyCode.Period)) {
+					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+					foreach (Tile tile in tiles) {
+						SpriteRenderer tSR = tile.obj.GetComponent<SpriteRenderer>();
+						tSR.sprite = whiteSquare;
+						tSR.color = new Color(tile.walkSpeed,tile.walkSpeed,tile.walkSpeed,1f);
 					}
 				}
 
