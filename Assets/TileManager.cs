@@ -9,12 +9,14 @@ public class TileManager:MonoBehaviour {
 	private CameraManager cameraM;
 	private ResourceManager resourceM;
 	private ColonistManager colonistM;
+	private PathManager pathM;
 
 	void Awake() {
 		uiM = GetComponent<UIManager>();
 		cameraM = GetComponent<CameraManager>();
 		resourceM = GetComponent<ResourceManager>();
 		colonistM = GetComponent<ColonistManager>();
+		pathM = GetComponent<PathManager>();
 	}
 
 	public enum PlantGroups { Cactus, ColourfulShrubs, ColourfulTrees, DeadTrees, Shrubs, SnowTrees, ThinTrees, WideTrees };
@@ -221,6 +223,13 @@ public class TileManager:MonoBehaviour {
 	public List<List<Tile>> sortedTiles = new List<List<Tile>>();
 	public List<Tile> edgeTiles = new List<Tile>();
 
+	Dictionary<int,List<List<int>>> nonWalkableSurroundingTilesComparatorMap = new Dictionary<int,List<List<int>>>() {
+		{0, new List<List<int>>() { new List<int>() { 4,1,5,2 },new List<int>() { 7,3,6,2 } } },
+		{1, new List<List<int>>() { new List<int>() { 4,0,7,3},new List<int>() { 5,2,6,3 } } },
+		{2, new List<List<int>>() { new List<int>() { 5,1,4,0 },new List<int>() { 6,3,7,0 } } },
+		{3, new List<List<int>>() { new List<int>() { 6,2,5,1 },new List<int>() { 7,0,4,1 } } }
+	};
+
 	public class Tile {
 
 		private TileManager tileM;
@@ -267,8 +276,12 @@ public class TileManager:MonoBehaviour {
 			SetTileTypeBasedOnHeight();
 		}
 
-		public void SetTileType(TileType tileType, bool bitmask) {
+		public void SetTileType(TileType tileType,bool bitmask,bool resetRegion,bool removeFromOldRegion, bool setBiomeTileType) {
+			TileType oldTileType = this.tileType;
 			this.tileType = tileType;
+			if (setBiomeTileType && biome != null) {
+				SetBiome(this.biome);
+			}
 			walkable = tileType.walkable;
 			if (bitmask) {
 				tileM.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList());
@@ -277,16 +290,168 @@ public class TileManager:MonoBehaviour {
 				Destroy(plant);
 				plant = null;
 			}
+			if (resetRegion) {
+				ResetRegion(oldTileType,removeFromOldRegion);
+			}
+		}
+
+		public void ResetRegion(TileType oldTileType, bool removeFromOldRegion) {
+			if (oldTileType.walkable != walkable && region != null) {
+				bool setParentTileRegion = false;
+				if (!oldTileType.walkable && walkable) { // If a non-walkable tile became a walkable tile (splits two non-walkable regions)
+					setParentTileRegion = true;
+					
+					List<Tile> nonWalkableSurroundingTiles = new List<Tile>();
+					foreach (Tile tile in horizontalSurroundingTiles) {
+						if (tile != null && !tile.walkable) {
+							nonWalkableSurroundingTiles.Add(tile);
+						}
+					}
+					List<Tile> removeFromNonWalkableSurroundingTiles = new List<Tile>();
+					foreach (Tile tile in nonWalkableSurroundingTiles) {
+						if (!removeFromNonWalkableSurroundingTiles.Contains(tile)) {
+							int tileIndex = surroundingTiles.IndexOf(tile);
+							List<List<int>> orderedIndexesToCheckList = tileM.nonWalkableSurroundingTilesComparatorMap[tileIndex];
+							bool removedOppositeTile = false;
+							foreach (List<int> orderedIndexesToCheck in orderedIndexesToCheckList) {
+								if (surroundingTiles[orderedIndexesToCheck[0]] != null && !surroundingTiles[orderedIndexesToCheck[0]].walkable) {
+									if (nonWalkableSurroundingTiles.Contains(surroundingTiles[orderedIndexesToCheck[1]])) {
+										removeFromNonWalkableSurroundingTiles.Add(surroundingTiles[orderedIndexesToCheck[1]]);
+										if (!removedOppositeTile && surroundingTiles[orderedIndexesToCheck[2]] != null && !surroundingTiles[orderedIndexesToCheck[2]].walkable) {
+											if (nonWalkableSurroundingTiles.Contains(surroundingTiles[orderedIndexesToCheck[3]])) {
+												removeFromNonWalkableSurroundingTiles.Add(surroundingTiles[orderedIndexesToCheck[3]]);
+												removedOppositeTile = true;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					foreach (Tile tile in removeFromNonWalkableSurroundingTiles) {
+						nonWalkableSurroundingTiles.Remove(tile);
+					}
+					// TEST
+					if (nonWalkableSurroundingTiles.Count > 1) {
+						List<Tile> removeTiles = new List<Tile>();
+						foreach (Tile startTile in nonWalkableSurroundingTiles) {
+							if (!removeTiles.Contains(startTile)) {
+								foreach (Tile endTile in nonWalkableSurroundingTiles) {
+									if (!removeTiles.Contains(endTile) && startTile != endTile) {
+										if (tileM.GetComponent<PathManager>().PathExists(startTile,endTile,true,tileM.mapSize,PathManager.WalkableSetting.NonWalkable)) {
+											print("Removing a tile because it is in the same region as another.");
+											removeTiles.Add(endTile);
+										}
+									}
+								}
+							}
+						}
+						foreach (Tile removeTile in removeTiles) {
+							nonWalkableSurroundingTiles.Remove(removeTile);
+						}
+					}
+					// END TEST
+					if (nonWalkableSurroundingTiles.Count > 1) {
+						print("Independent tiles");
+						Region oldRegion = region;
+						oldRegion.tiles.Clear();
+						tileM.regions.Remove(oldRegion);
+						List<List<Tile>> nonWalkableTileGroups = new List<List<Tile>>();
+						foreach (Tile nonWalkableTile in nonWalkableSurroundingTiles) {
+							//nonWalkableTile.obj.GetComponent<SpriteRenderer>().color = Color.black;
+							Tile currentTile = nonWalkableTile;
+							List<Tile> frontier = new List<Tile>() { currentTile };
+							List<Tile> checkedTiles = new List<Tile>() { currentTile };
+							List<Tile> nonWalkableTiles = new List<Tile>();
+							bool addGroup = true;
+							while (frontier.Count > 0) {
+								currentTile = frontier[0];
+								if (nonWalkableTileGroups.Find(group => group.Contains(currentTile)) != null) {
+									//print("Separate tiles part of the same group");
+									addGroup = false;
+									break;
+								}
+								frontier.RemoveAt(0);
+								nonWalkableTiles.Add(currentTile);
+								foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+									if (nTile != null && !checkedTiles.Contains(nTile) && !nTile.walkable) {
+										frontier.Add(nTile);
+										checkedTiles.Add(nTile);
+									}
+								}
+							}
+							if (addGroup) {
+								nonWalkableTileGroups.Add(nonWalkableTiles);
+							}
+						}
+						/*
+						List<List<Tile>> removeGroups = new List<List<Tile>>();
+						foreach (List<Tile> nonWalkableTileGroup in nonWalkableTileGroups) {
+							foreach (List<Tile> otherNonWalkableTileGroup in nonWalkableTileGroups) {
+								if (nonWalkableTileGroup != otherNonWalkableTileGroup) {
+									if (nonWalkableTileGroup.Find(tile => otherNonWalkableTileGroup.Contains(tile)) != null) {
+										nonWalkableTileGroup.AddRange(otherNonWalkableTileGroup);
+										otherNonWalkableTileGroup.Clear();
+										removeGroups.Add(otherNonWalkableTileGroup);
+									}
+								}
+							}
+						}
+						foreach (List<Tile> removeGroup in removeGroups) {
+							nonWalkableTileGroups.Remove(removeGroup);
+						}
+						*/
+						foreach (List<Tile> nonWalkableTileGroup in nonWalkableTileGroups) {
+							Region groupRegion = new Region(nonWalkableTileGroup[0].tileType,tileM.currentRegionID);
+							tileM.currentRegionID += 1;
+							foreach (Tile tile in nonWalkableTileGroup) {
+								tile.ChangeRegion(groupRegion,false,false);
+							}
+							tileM.regions.Add(groupRegion);
+						}
+					}
+				}
+				if (setParentTileRegion || (oldTileType.walkable && !walkable)) { // If a walkable tile became a non-walkable tile (add non-walkable tile to nearby non-walkable region if exists, if not create it)
+					List<Region> similarRegions = new List<Region>();
+					foreach (Tile tile in horizontalSurroundingTiles) {
+						if (tile != null && tile.region != null && tile.walkable == walkable) {
+							if (tile.region != region) {
+								similarRegions.Add(tile.region);
+							}
+						}
+					}
+					if (similarRegions.Count == 0) {
+						region.tiles.Remove(this);
+						ChangeRegion(new Region(tileType,tileM.currentRegionID),false,false);
+						tileM.currentRegionID += 1;
+					} else if (similarRegions.Count == 1) {
+						region.tiles.Remove(this);
+						ChangeRegion(similarRegions[0],false,false);
+					} else {
+						region.tiles.Remove(this);
+						ChangeRegion(similarRegions.OrderByDescending(o => o.tiles.Count).ToList()[0],false,false);
+						foreach (Region similarRegion in similarRegions) {
+							if (similarRegion != region) {
+								foreach (Tile tile in similarRegion.tiles) {
+									tile.ChangeRegion(region,false,false);
+								}
+								similarRegion.tiles.Clear();
+								tileM.regions.Remove(similarRegion);
+							}
+						}
+					}
+				}
+			}
 			SetWalkSpeed();
 		}
 
 		public void SetTileTypeBasedOnHeight() {
 			if (height < 0.40f) {
-				SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater),false);
+				SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater),false,false,false,false);
 			} else if (height > 0.75f) {
-				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Stone),false);
+				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Stone),false,false,false,false);
 			} else {
-				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Grass),false);
+				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Grass),false,false,false,false);
 			}
 		}
 
@@ -297,7 +462,7 @@ public class TileManager:MonoBehaviour {
 				tileM.regions.Add(region);
 			}
 			if (changeTileTypeToRegionType) {
-				SetTileType(region.tileType,bitmask);
+				SetTileType(region.tileType,bitmask,false,false,true);
 			}
 		}
 
@@ -305,9 +470,9 @@ public class TileManager:MonoBehaviour {
 			this.biome = biome;
 			if (!tileM.StoneEquivalentTileTypes.Contains(tileType.type)) {
 				if (!tileM.WaterEquivalentTileTypes.Contains(tileType.type)) {
-					SetTileType(biome.tileType,false);
+					SetTileType(biome.tileType,false,false,false,false);
 				} else {
-					SetTileType(biome.waterType,false);
+					SetTileType(biome.waterType,false,false,false,false);
 				}
 			}
 			if (tileM.PlantableTileTypes.Contains(tileType.type)) {
@@ -521,13 +686,15 @@ public class TileManager:MonoBehaviour {
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
 					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
-					tile.SetTileType(GetTileTypeByEnum(TileTypes.Stone),true);
+					tile.SetTileType(GetTileTypeByEnum(TileTypes.Stone),true,true,true,true);
 					RecalculateRegionsAtTile(tile);
 					//SetTileRegions(false);
 					//print(tile.region.tileType.walkable);
 				}
 				if (Input.GetMouseButtonDown(1)) {
 					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
+					tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true,true,true,true);
+					RecalculateRegionsAtTile(tile);
 					//tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true);
 					//print(tile.tileType.name);
 				}
@@ -865,20 +1032,143 @@ public class TileManager:MonoBehaviour {
 
 	Dictionary<int,Dictionary<int,List<List<int>>>> tileOppositeDisconnectionMap = new Dictionary<int,Dictionary<int,List<List<int>>>>() {
 		{0,new Dictionary<int, List<List<int>>>() {
-			{ 2,new List<List<int>>() { new List<int>() { 7,4,-1 },new List<int>() { 3,1,-1 },new List<int>() { 6,5,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 } } }
+			{ 2,new List<List<int>>() { new List<int>() { 7,4,-1 },new List<int>() { 3,1,-1 },new List<int>() { 6,5,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 },
+				new List<int>() {1,7,-1 },new List<int>() { 1,6,-1 },new List<int>() { 3,4,-1 },new List<int>() { 3,5,-1 } } }
 		} },
 		{1,new Dictionary<int, List<List<int>>>() {
-			{ 3,new List<List<int>>() { new List<int>() { 4,5,-1 },new List<int>() { 0,2,-1 },new List<int>() { 7,6,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 } } }
+			{ 3,new List<List<int>>() { new List<int>() { 4,5,-1 },new List<int>() { 0,2,-1 },new List<int>() { 7,6,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 },
+				new List<int>() { 0,6,-1 },new List<int>() { 0,5,-1 },new List<int>() { 2,7,-1 },new List<int>() { 2,4,-1 } } }
 		} },
 		{2,new Dictionary<int, List<List<int>>>() {
-			{ 0,new List<List<int>>() { new List<int>() { 7,4,-1 },new List<int>() { 3,1,-1 },new List<int>() { 6,5,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 } } }
+			{ 0,new List<List<int>>() { new List<int>() { 7,4,-1 },new List<int>() { 3,1,-1 },new List<int>() { 6,5,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 },
+				new List<int>() {1,7,-1 },new List<int>() { 1,6,-1 },new List<int>() { 3,4,-1 },new List<int>() { 3,5,-1 } } }
 		} },
 		{3,new Dictionary<int, List<List<int>>>() {
-			{ 1,new List<List<int>>() { new List<int>() { 4,5,-1 },new List<int>() { 0,2,-1 },new List<int>() { 7,6,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 } } }
+			{ 1,new List<List<int>>() { new List<int>() { 4,5,-1 },new List<int>() { 0,2,-1 },new List<int>() { 7,6,-1 },new List<int>() { 7,5,-1 }, new List<int>() { 4,6,-1 },
+				new List<int>() { 0,6,-1 },new List<int>() { 0,5,-1 },new List<int>() { 2,7,-1 },new List<int>() { 2,4,-1 } } }
+		} }
+	};
+
+	Dictionary<int,Dictionary<int,List<int>>> tileMinimumToBeBlockedMap = new Dictionary<int,Dictionary<int,List<int>>>() {
+		{0,new Dictionary<int, List<int>>() {
+			{2,new List<int>() { 3,1 } }
+		} },
+		{1,new Dictionary<int, List<int>>() {
+			{3,new List<int>() { 0,2 } }
+		} },
+		{2,new Dictionary<int, List<int>>() {
+			{0,new List<int>() { 3,1 } }
+		} },
+		{3,new Dictionary<int, List<int>>() {
+			{1,new List<int>() { 0,2 } }
 		} }
 	};
 
 	public void RecalculateRegionsAtTile(Tile tile) {
+		if (!tile.walkable) {
+			List<Tile> orderedSurroundingTiles = new List<Tile>() {
+				tile.surroundingTiles[0],tile.surroundingTiles[4],tile.surroundingTiles[1],tile.surroundingTiles[5],
+				tile.surroundingTiles[2],tile.surroundingTiles[6],tile.surroundingTiles[3],tile.surroundingTiles[7]
+			};
+			List<List<Tile>> separateTileGroups = new List<List<Tile>>();
+			int groupIndex = 0;
+			for (int i = 0;i < orderedSurroundingTiles.Count;i++) {
+				if (groupIndex == separateTileGroups.Count) {
+					separateTileGroups.Add(new List<Tile>());
+				}
+				if (orderedSurroundingTiles[i] != null && orderedSurroundingTiles[i].walkable) {
+					separateTileGroups[groupIndex].Add(orderedSurroundingTiles[i]);
+					if (i == orderedSurroundingTiles.Count - 1 && groupIndex != 0) {
+						if (orderedSurroundingTiles[i] != null && orderedSurroundingTiles[i].walkable && orderedSurroundingTiles[0] != null && orderedSurroundingTiles[0].walkable) {
+							separateTileGroups[0].AddRange(separateTileGroups[groupIndex]);
+							separateTileGroups.RemoveAt(groupIndex);
+						}
+					}
+				} else {
+					if (separateTileGroups[groupIndex].Count > 0) {
+						groupIndex += 1;
+					}
+				}
+			}
+			List<Tile> horizontalGroups = new List<Tile>();
+			foreach (List<Tile> tileGroup in separateTileGroups) {
+				List<Tile> horizontalTilesInGroup = tileGroup.Where(o => tile.horizontalSurroundingTiles.Contains(o)).ToList();
+				if (horizontalTilesInGroup.Count > 0) {
+					horizontalGroups.Add(horizontalTilesInGroup[0]);
+				}
+			}
+			if (horizontalGroups.Count > 1) {
+				List<Tile> removeTiles = new List<Tile>();
+				foreach (Tile startTile in horizontalGroups) {
+					if (!removeTiles.Contains(startTile)) {
+						foreach (Tile endTile in horizontalGroups) {
+							if (!removeTiles.Contains(endTile) && startTile != endTile) {
+								if (pathM.PathExists(startTile,endTile,true,mapSize,PathManager.WalkableSetting.Walkable)) {
+									print("Removing a tile because it is in the same region as another.");
+									removeTiles.Add(endTile);
+								}
+							}
+						}
+					}
+				}
+				foreach (Tile removeTile in removeTiles) {
+					horizontalGroups.Remove(removeTile);
+				}
+				if (horizontalGroups.Count > 1) {
+					SetTileRegions(false);
+				}
+				/*
+				List<Region> newRegions = new List<Region>();
+				foreach (Tile startTile in horizontalGroups) {
+					print(startTile + " " + startTile.region);
+					if (newRegions.Contains(startTile.region)) {
+						print("Separate tiles part of the same region");
+						continue;
+					}
+
+					Region startTileRegion = startTile.region;
+					foreach (Tile regionTile in startTileRegion.tiles) {
+						regionTile.region = null;
+					}
+					startTileRegion.tiles.Clear();
+					regions.Remove(startTileRegion);
+
+					Tile currentTile = startTile;
+
+					List<Tile> frontier = new List<Tile>() { currentTile };
+					List<Tile> checkedTiles = new List<Tile>() { currentTile };
+
+					Region newRegion = new Region(currentTile.tileType,currentRegionID);
+					currentRegionID += 1;
+
+					while (frontier.Count > 0) {
+						currentTile = frontier[0];
+						frontier.RemoveAt(0);
+						newRegion.tiles.Add(currentTile);
+						currentTile.ChangeRegion(newRegion,false,false);
+						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+							if (nTile != null && !checkedTiles.Contains(nTile) && nTile.walkable) {
+								frontier.Add(nTile);
+								checkedTiles.Add(nTile);
+							}
+						}
+					}
+					newRegions.Add(newRegion);
+					foreach (Tile regionTile in newRegion.tiles) {
+						regionTile.obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/white-square");
+						regionTile.obj.GetComponent<SpriteRenderer>().color = newRegion.colour;
+					}
+				}
+				foreach (Tile startTile in horizontalGroups) {
+					startTile.obj.GetComponent<SpriteRenderer>().color = Color.black;
+				}
+				regions.AddRange(newRegions);
+				*/
+			}
+		}
+	}
+
+	public void RecalculateRegionsAtTile2(Tile tile) {
 
 		/*
 
@@ -938,6 +1228,7 @@ public class TileManager:MonoBehaviour {
 					}
 					if (bothBlocked) {
 						blockedTiles[i].Add(diagonalTileIndex);
+						//blockedTiles[i].Add(oppositeDirectionTileMap[diagonalTileIndex]);
 					}
 				}
 				foreach (KeyValuePair<int,List<List<int>>> oppositeTileKVP in tileOppositeDisconnectionMap[i]) {
@@ -967,6 +1258,101 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 
+		List<int> tilesPotentiallyBlocked = new List<int>();
+
+		foreach (KeyValuePair<int,List<int>> blockedTileKVP in blockedTiles) {
+			bool blocked = false;
+			foreach (KeyValuePair<int,List<int>> requiredBlockedTilesKVP in tileMinimumToBeBlockedMap[blockedTileKVP.Key]) {
+				if (blockedTileKVP.Value.Contains(requiredBlockedTilesKVP.Key)) {
+					blocked = true;
+				} else {
+					blocked = false;
+					break;
+				}
+				bool oneBlocked = false;
+				foreach (int secondaryBlockedTileIndex in requiredBlockedTilesKVP.Value) {
+					if (blockedTileKVP.Value.Contains(secondaryBlockedTileIndex)) {
+						oneBlocked = true;
+						break;
+					} else {
+						oneBlocked = false;
+					}
+				}
+				if (oneBlocked) {
+					blocked = true;
+				} else {
+					blocked = false;
+					break;
+				}
+			}
+			if (blocked) {
+				if (tile.surroundingTiles[blockedTileKVP.Key] != null && tile.surroundingTiles[blockedTileKVP.Key].walkable) {
+					tilesPotentiallyBlocked.Add(blockedTileKVP.Key);
+					//tile.surroundingTiles[blockedTileKVP.Key].obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/white-square");
+					//tile.surroundingTiles[blockedTileKVP.Key].obj.GetComponent<SpriteRenderer>().color = Color.black;
+				}
+			}
+		}
+
+		List<List<int>> tilesInSameRegion = new List<List<int>>();
+
+		/*
+		for (int i = 0;i < 4;i++) {
+			if (!tilesPotentiallyBlocked.Contains(i) && tile.horizontalSurroundingTiles[i] != null && tile.horizontalSurroundingTiles[i].walkable) {
+				tilesPotentiallyBlocked.Add(i);
+			}
+		}
+		*/
+
+		foreach (int tilePotentiallyBlockedIndex in tilesPotentiallyBlocked) {
+			/*
+			if (tile.surroundingTiles[tilePotentiallyBlockedIndex] != null) {
+				tile.surroundingTiles[tilePotentiallyBlockedIndex].obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/white-square");
+				tile.surroundingTiles[tilePotentiallyBlockedIndex].obj.GetComponent<SpriteRenderer>().color = Color.black;
+			}
+			*/
+			foreach (int diagonalCheckIndex in regionDisconnectionMap[tilePotentiallyBlockedIndex]) {
+				if (tile.surroundingTiles[diagonalCheckIndex] != null && tile.surroundingTiles[diagonalCheckIndex].walkable) {
+					List<int> sameRegion = new List<int>();
+					foreach (int diagonalHorizontalCheckIndex in diagonalCheckMap[diagonalCheckIndex]) {
+						if (tile.surroundingTiles[diagonalHorizontalCheckIndex] != null && tile.surroundingTiles[diagonalHorizontalCheckIndex].walkable) {
+							sameRegion.Add(diagonalHorizontalCheckIndex);
+							sameRegion.Add(diagonalCheckIndex);
+						}
+					}
+					if (sameRegion.Count > 0) {
+						tilesInSameRegion.Add(sameRegion);
+					}
+					/*
+					bool containsBoth = false;
+					foreach (int diagonalHorizontalCheckIndex in diagonalCheckMap[diagonalCheckIndex]) {
+						if (tilesPotentiallyBlocked.Contains(diagonalHorizontalCheckIndex)) {
+							containsBoth = true;
+						} else {
+							containsBoth = false;
+							break;
+						}
+					}
+					if (containsBoth) {
+						List<int> sameRegion = new List<int>(diagonalCheckMap[diagonalCheckIndex]);
+					}
+					*/
+				}
+			}
+		}
+
+		foreach (List<int> sameRegionIndexes in tilesInSameRegion) {
+			Color randomColour = new Color(Random.Range(0f,1f),Random.Range(0f,1f),Random.Range(0f,1f),1f);
+			foreach (int sameRegionIndex in sameRegionIndexes) {
+				if (tile.surroundingTiles[sameRegionIndex] != null) {
+					tile.surroundingTiles[sameRegionIndex].obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/white-square");
+					tile.surroundingTiles[sameRegionIndex].obj.GetComponent<SpriteRenderer>().color = randomColour;
+				}
+			}
+		}
+
+		/*
+
 		List<Tile> tilesCompletelyBlocked = new List<Tile>();
 
 		foreach (KeyValuePair<int,List<int>> blockedTileKVP in blockedTiles) {
@@ -987,9 +1373,10 @@ public class TileManager:MonoBehaviour {
 				tile.surroundingTiles[blockedTileKVP.Key].obj.GetComponent<SpriteRenderer>().color = Color.black;
 			}
 		}
+		*/
 	}
 
-	public void RecalculateRegionsAtTile2(Tile tile) {
+	public void RecalculateRegionsAtTile3(Tile tile) {
 		List<Tile> tilesDisconnected = new List<Tile>();
 		for (int i = -2; i < tile.horizontalSurroundingTiles.Count; i++) {
 			Tile parentTile = (i >= 0 ? tile.horizontalSurroundingTiles[i] : tile);
@@ -1343,7 +1730,7 @@ public class TileManager:MonoBehaviour {
 					bool expandRiver = true; // false: SET TO FALSE TO ENABLE RIVER EXPANSION
 					while (currentTile != null) {
 						river.Add(currentTile.tile);
-						currentTile.tile.SetTileType(currentTile.tile.biome.waterType,false);
+						currentTile.tile.SetTileType(currentTile.tile.biome.waterType,false,false,false,true);
 						if (!expandRiver) {
 							KeyValuePair<Tile,List<Tile>> kvp = RiversContainTile(currentTile.tile);
 							if (kvp.Key != null) {
@@ -1370,7 +1757,7 @@ public class TileManager:MonoBehaviour {
 							while (expandFrontier.Count > 0) {
 								Tile expandTile = expandFrontier[0];
 								expandFrontier.RemoveAt(0);
-								expandTile.SetTileType(expandTile.biome.waterType,false);
+								expandTile.SetTileType(expandTile.biome.waterType,false,false,false,true);
 								foreach (Tile nTile in expandTile.surroundingTiles) {
 									if (nTile != null && !checkedExpandTiles.Contains(nTile) && !StoneEquivalentTileTypes.Contains(nTile.tileType.type) && Vector2.Distance(nTile.obj.transform.position,riverTile.obj.transform.position) <= maxExpandRadius) {
 										expandFrontier.Add(nTile);
@@ -1389,7 +1776,7 @@ public class TileManager:MonoBehaviour {
 						if (rivers.Find(otherRiver => otherRiver.Find(riverTile => nTile == riverTile) != null) != null) {
 							frontier.Clear();
 							frontier.Add(new PathManager.PathfindingTile(nTile,currentTile,0));
-							nTile.SetTileType(nTile.biome.waterType,false);
+							nTile.SetTileType(nTile.biome.waterType,false,false,false,true);
 							break;
 						}
 						float cost = Vector2.Distance(nTile.obj.transform.position,riverEndTile.obj.transform.position) + (nTile.height * (mapSize/10f)) + Random.Range(0,10);
