@@ -63,8 +63,9 @@ public class PathManager : MonoBehaviour {
 	}
 
 	public enum WalkableSetting { Walkable, NonWalkable, Both };
+	public enum DirectionSetting { Horizontal, Diagonal, Both };
 
-	public bool PathExists(TileManager.Tile startTile,TileManager.Tile endTile, bool breakTooLong,int breakAfterTiles, WalkableSetting walkableSetting) {
+	public bool PathExists(TileManager.Tile startTile,TileManager.Tile endTile, bool breakTooLong,int breakAfterTiles, WalkableSetting walkableSetting,DirectionSetting directionSetting) {
 
 		PathfindingTile currentTile = new PathfindingTile(startTile,null,0);
 
@@ -88,7 +89,7 @@ public class PathManager : MonoBehaviour {
 				return true;
 			}
 
-			foreach (TileManager.Tile nTile in currentTile.tile.surroundingTiles) {
+			foreach (TileManager.Tile nTile in (directionSetting == DirectionSetting.Horizontal ? currentTile.tile.horizontalSurroundingTiles : (directionSetting == DirectionSetting.Diagonal ? currentTile.tile.diagonalSurroundingTiles : currentTile.tile.surroundingTiles))) {
 				if (nTile != null && checkedTiles.Find(o => o.tile == nTile) == null && (walkableSetting == WalkableSetting.Walkable ? nTile.walkable : (walkableSetting == WalkableSetting.NonWalkable ? !nTile.walkable : true))) {
 					PathfindingTile pTile = new PathfindingTile(nTile,null,Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position));
 					frontier.Add(pTile);
