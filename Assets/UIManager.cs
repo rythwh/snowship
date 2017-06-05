@@ -20,17 +20,21 @@ public class UIManager : MonoBehaviour {
 	private TileManager tileM;
 	private JobManager jobM;
 	private ResourceManager resourceM;
+	private CameraManager cameraM;
 
 	private GameObject mainMenu;
+
+	private TileManager.Tile mouseOverTile;
+
+	private GameObject tileInformation;
 
 	public int mapSize;
 
 	void Awake() {
-		GameObject GM = GameObject.Find("GM");
-
-		tileM = GM.GetComponent<TileManager>();
-		jobM = GM.GetComponent<JobManager>();
-		resourceM = GM.GetComponent<ResourceManager>();
+		tileM = GetComponent<TileManager>();
+		jobM = GetComponent<JobManager>();
+		resourceM = GetComponent<ResourceManager>();
+		cameraM = GetComponent<CameraManager>();
 
 		GameObject.Find("PlayButton").GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
 
@@ -38,15 +42,26 @@ public class UIManager : MonoBehaviour {
 		GameObject.Find("MapSize-Slider").GetComponent<Slider>().value = 2;
 
 		mainMenu = GameObject.Find("MainMenu");
+
+		tileInformation = GameObject.Find("TileInformation-Panel");
 	}
 
 	
 	void Update() {
-		if (Input.GetMouseButtonDown(1)) {
-			if (jobM.firstTile != null) {
-				jobM.StopSelection();
-			} else {
-				jobM.SetSelectedPrefab(null);
+		if (tileM.generated) {
+			Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
+			TileManager.Tile newMouseOverTile = tileM.GetTileFromPosition(mousePosition);
+			if (newMouseOverTile != mouseOverTile) {
+				mouseOverTile = newMouseOverTile;
+				UpdateTileInformation();
+			}
+
+			if (Input.GetMouseButtonDown(1)) {
+				if (jobM.firstTile != null) {
+					jobM.StopSelection();
+				} else {
+					jobM.SetSelectedPrefab(null);
+				}
 			}
 		}
 	}
@@ -140,5 +155,27 @@ public class UIManager : MonoBehaviour {
 		});
 		buildMenuButton.GetComponent<Button>().onClick.AddListener(delegate { buildMenuPanel.SetActive(!buildMenuPanel.activeSelf); });
 		buildMenuPanel.SetActive(false);
+	}
+
+	private List<GameObject> tileLayerSpriteObjects = new List<GameObject>();
+	public void UpdateTileInformation() {
+		if (mouseOverTile != null) {
+			foreach (GameObject tileLayerSpriteObject in tileLayerSpriteObjects) {
+				Destroy(tileLayerSpriteObject);
+			}
+			tileLayerSpriteObjects.Clear();
+
+			tileInformation.transform.Find("TileInformation-TileImage").GetComponent<Image>().sprite = mouseOverTile.obj.GetComponent<SpriteRenderer>().sprite;
+
+			if (mouseOverTile.plant != null) {
+				GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-TileImage"),tileInformation.transform.Find("TileInformation-BaseTileImage"),false);
+				tileLayerSpriteObject.GetComponent<Image>().sprite = mouseOverTile.plant.GetComponent<SpriteRenderer>().sprite;
+				tileLayerSpriteObjects.Add(tileLayerSpriteObject);
+			}
+
+			tileInformation.transform.Find("TileInformation -Position").GetComponent<Text>().text = "<b>Position</b>\n(" + Mathf.FloorToInt(mouseOverTile.obj.transform.position.x) + ", " + Mathf.FloorToInt(mouseOverTile.obj.transform.position.y) + ")";
+		} else {
+			tileInformation.transform.Find("TileInformation-Position").GetComponent<Text>().text = "<b>Position</b>\n";
+		}
 	}
 }

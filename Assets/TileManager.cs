@@ -527,7 +527,7 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
-	private bool generated;
+	public bool generated;
 
 	public void Initialize(int mapSize,int mapSeed) {
 		SetMapInformation(mapSize,mapSeed);
@@ -543,9 +543,9 @@ public class TileManager:MonoBehaviour {
 		CreateBiomes();
 		CreateMap();
 
-		generated = true;
-
 		colonistM.SpawnColonists(3);
+
+		generated = true;
 	}
 
 	private bool debugMode;
@@ -655,14 +655,14 @@ public class TileManager:MonoBehaviour {
 
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
-					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
+					Tile tile = GetTileFromPosition(mousePosition);
 					tile.SetTileType(GetTileTypeByEnum(TileTypes.Stone),true,true,true,true);
 					RecalculateRegionsAtTile(tile);
 					//SetTileRegions(false);
 					//print(tile.region.tileType.walkable);
 				}
 				if (Input.GetMouseButtonDown(1)) {
-					Tile tile = sortedTiles[Mathf.FloorToInt(mousePosition.y)][Mathf.FloorToInt(mousePosition.x)];
+					Tile tile = GetTileFromPosition(mousePosition);
 					tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true,true,true,true);
 					RecalculateRegionsAtTile(tile);
 					//tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true);
