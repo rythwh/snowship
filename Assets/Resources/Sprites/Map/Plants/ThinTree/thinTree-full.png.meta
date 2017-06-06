@@ -1,11 +1,13 @@
 fileFormatVersion: 2
-guid: 0dd2bab56494b8d429fc60ff1e66d921
-timeCreated: 1495433394
+guid: 298c4764f5e1b87429c86c98b3e70f3f
+timeCreated: 1496765987
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: thinTrees-small_0
-    21300002: thinTrees-small_1
+    21300000: thinTrees-full_0
+    21300002: thinTrees-full_1
+    21300004: thinTree-full_0
+    21300006: thinTree-full_1
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -72,7 +74,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: thinTrees-small_0
+      name: thinTree-full_0
       rect:
         serializedVersion: 2
         x: 0
@@ -85,7 +87,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: thinTrees-small_1
+      name: thinTree-full_1
       rect:
         serializedVersion: 2
         x: 0

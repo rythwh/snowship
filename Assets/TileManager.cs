@@ -19,7 +19,7 @@ public class TileManager:MonoBehaviour {
 		pathM = GetComponent<PathManager>();
 	}
 
-	public enum PlantGroups { Cactus, ColourfulShrubs, ColourfulTrees, DeadTrees, Shrubs, SnowTrees, ThinTrees, WideTrees };
+	public enum PlantGroups { Cactus, ColourfulShrub, ColourfulTree, DeadTree, Shrub, SnowTree, ThinTree, WideTree };
 
 	public List<PlantGroup> plantGroups = new List<PlantGroup>();
 
@@ -43,10 +43,36 @@ public class TileManager:MonoBehaviour {
 		foreach (PlantGroups plantGroup in System.Enum.GetValues(typeof(PlantGroups))) {
 			plantGroups.Add(new PlantGroup(plantGroup));
 		}
+		foreach (PlantGroup plantGroup in plantGroups) {
+			plantGroup.name = uiM.SplitByCapitals(plantGroup.name);
+		}
 	}
 
 	public PlantGroup GetPlantGroupByEnum(PlantGroups plantGroup) {
 		return plantGroups.Find(group => group.type == plantGroup);
+	}
+
+	public class Plant {
+		public PlantGroup group;
+		public Tile tile;
+		public GameObject obj;
+
+		public Plant(PlantGroup group, TileManager.Tile tile) {
+			this.group = group;
+			this.tile = tile;
+			
+			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform.position,Quaternion.identity);
+			SpriteRenderer pSR = obj.GetComponent<SpriteRenderer>();
+			if (Random.Range(0f,1f) < 0.1f) {
+				pSR.sprite = group.smallPlants[Random.Range(0,group.smallPlants.Count)];
+			} else {
+				pSR.sprite = group.fullPlants[Random.Range(0,group.fullPlants.Count)];
+			}
+			pSR.sortingOrder = 1; // Plant Sprite
+
+			obj.name = "PLANT " + pSR.sprite.name;
+			obj.transform.parent = tile.obj.transform;
+		}
 	}
 
 	public enum TileTypes { GrassWater, Ice, Dirt, DirtWater, Mud, DirtGrass, DirtThinGrass, DirtDryGrass, Grass, ThickGrass, ColdGrass, ColdGrassWater, DryGrass, DryGrassWater, Sand, SandWater,
@@ -250,7 +276,7 @@ public class TileManager:MonoBehaviour {
 		public Region drainageBasin;
 
 		public Biome biome;
-		public GameObject plant;
+		public Plant plant;
 
 		public float precipitation;
 		public float temperature;
@@ -287,7 +313,7 @@ public class TileManager:MonoBehaviour {
 				tileM.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList());
 			}
 			if (plant != null && !tileM.PlantableTileTypes.Contains(tileType.type)) {
-				Destroy(plant);
+				Destroy(plant.obj);
 				plant = null;
 			}
 			if (resetRegion) {
@@ -444,22 +470,13 @@ public class TileManager:MonoBehaviour {
 
 		public void SetPlant() {
 			if (plant != null) {
-				Destroy(plant);
+				Destroy(plant.obj);
+				plant = null;
 			}
 			foreach (KeyValuePair<PlantGroups,float> kvp in biome.vegetationChances) {
 				PlantGroups plantGroup = kvp.Key;
 				if (Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
-					GameObject plant = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),obj.transform.position,Quaternion.identity);
-					SpriteRenderer pSR = plant.GetComponent<SpriteRenderer>();
-					if (Random.Range(0f,1f) < 0.1f) {
-						pSR.sprite = tileM.GetPlantGroupByEnum(plantGroup).smallPlants[Random.Range(0,tileM.GetPlantGroupByEnum(plantGroup).smallPlants.Count)];
-					} else {
-						pSR.sprite = tileM.GetPlantGroupByEnum(plantGroup).fullPlants[Random.Range(0,tileM.GetPlantGroupByEnum(plantGroup).fullPlants.Count)];
-					}
-					pSR.sortingOrder = 1;
-					plant.name = "PLANT " + pSR.sprite.name;
-					plant.transform.parent = obj.transform;
-					this.plant = plant;
+					plant = new Plant(tileM.GetPlantGroupByEnum(plantGroup),this);
 					break;
 				}
 			}
@@ -1190,7 +1207,10 @@ public class TileManager:MonoBehaviour {
 	void SetBiomes() {
 		foreach (Tile tile in tiles) {
 			foreach (Biome biome in biomes) {
-				if (biome.temperatureRange[0] <= tile.temperature && biome.temperatureRange[1] >= tile.temperature && biome.precipitationRange[0] <= tile.precipitation && biome.precipitationRange[1] >= tile.precipitation) {
+				/*int tRange = Random.Range(-10,10);*/
+				int tRange = 0;
+				float pRange = tRange / 100f;
+				if ((biome.temperatureRange[0] <= tile.temperature + tRange) && (biome.temperatureRange[1] >= tile.temperature + tRange) && (biome.precipitationRange[0] <= tile.precipitation + pRange) && (biome.precipitationRange[1] >= tile.precipitation + pRange)) {
 					tile.SetBiome(biome);
 					break;
 				}

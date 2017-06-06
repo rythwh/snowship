@@ -42,7 +42,7 @@ public class JobManager:MonoBehaviour {
 			SpriteRenderer jPSR = jobPreview.GetComponent<SpriteRenderer>();
 			if (prefab.baseSprite != null) {
 				jPSR.sprite = prefab.baseSprite;
-				jPSR.sortingOrder = 2;
+				jPSR.sortingOrder = 2 + prefab.layer; // Job Preview Sprite
 			}
 			jPSR.color = new Color(1f,1f,1f,0.25f);
 
@@ -81,7 +81,7 @@ public class JobManager:MonoBehaviour {
 		}
 	}
 
-	public enum JobTypesEnum { Build, Remove };
+	public enum JobTypesEnum { Build, Remove, Mine, PlantFarm, HarvestFarm };
 
 	public enum SelectionModifiersEnum { Outline, Walkable, OmitWalkable, Buildable, OmitBuildable, StoneTypes, OmitStoneTypes, AllWaterTypes, OmitAllWaterTypes, LiquidWaterTypes, OmitLiquidWaterTypes, OmitNonStoneAndWaterTypes,
 		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances
@@ -208,7 +208,7 @@ public class JobManager:MonoBehaviour {
 						GameObject selectionIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
 						SpriteRenderer sISR = selectionIndicator.GetComponent<SpriteRenderer>();
 						sISR.sprite = Resources.Load<Sprite>(@"UI/selectionIndicator");
-						sISR.sortingOrder = 2;
+						sISR.sortingOrder = 20; // Selection Indicator Sprite
 						selectionIndicators.Add(selectionIndicator);
 					}
 

@@ -1,13 +1,17 @@
 fileFormatVersion: 2
-guid: e1005bd0709c1594d9c66d9f5445c836
-timeCreated: 1495474868
+guid: a23efb87e82102b45af81fb91fbf808b
+timeCreated: 1496765956
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: colourfulshrubs-small_0
-    21300002: colourfulshrubs-small_1
-    21300004: colourfulshrubs-small_2
-    21300006: colourfulshrubs-small_3
+    21300000: snowTrees-full_0
+    21300002: snowTrees-full_1
+    21300004: snowTrees-full_2
+    21300006: snowTrees-full_3
+    21300008: snowTree-full_0
+    21300010: snowTree-full_1
+    21300012: snowTree-full_2
+    21300014: snowTree-full_3
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -74,7 +78,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: colourfulshrubs-small_0
+      name: snowTree-full_0
       rect:
         serializedVersion: 2
         x: 0
@@ -87,7 +91,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: colourfulshrubs-small_1
+      name: snowTree-full_1
       rect:
         serializedVersion: 2
         x: 0
@@ -100,7 +104,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: colourfulshrubs-small_2
+      name: snowTree-full_2
       rect:
         serializedVersion: 2
         x: 0
@@ -113,7 +117,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: colourfulshrubs-small_3
+      name: snowTree-full_3
       rect:
         serializedVersion: 2
         x: 0

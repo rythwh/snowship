@@ -7,10 +7,14 @@ public class ColonistManager : MonoBehaviour {
 
 	private TileManager tileM;
 	private CameraManager cameraM;
+	private UIManager uiM;
 
 	void Awake() {
 		tileM = GetComponent<TileManager>();
 		cameraM = GetComponent<CameraManager>();
+		uiM = GetComponent<UIManager>();
+
+		GetColonistSkills();
 	}
 
 	public List<Life> animals = new List<Life>();
@@ -48,7 +52,7 @@ public class ColonistManager : MonoBehaviour {
 
 			overTile = spawnTile;
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),overTile.obj.transform.position,Quaternion.identity);
-			obj.GetComponent<SpriteRenderer>().sortingOrder = 3;
+			obj.GetComponent<SpriteRenderer>().sortingOrder = 10; // Life Sprite
 		}
 
 		private Dictionary<int,int> moveSpritesMap = new Dictionary<int,int>() {
@@ -120,16 +124,65 @@ public class ColonistManager : MonoBehaviour {
 		// Carrying Item
 
 		// Inventory
-
-		// Skills/Abilities
+		public ResourceManager.Inventory inventory;
 
 		public Human(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile) {
 			moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
+
+			inventory = new ResourceManager.Inventory(this,null);
 		}
 	}
 
-	void GetColonistSkills() {
+	public enum SkillTypeEnum { Building, Mining, Farming };
 
+	public class SkillPrefab {
+
+		public SkillTypeEnum type;
+		public string name;
+
+		public Dictionary<JobManager.JobTypesEnum,float> affectedJobTypes = new Dictionary<JobManager.JobTypesEnum,float>();
+
+		public SkillPrefab(List<string> data) {
+			type = (SkillTypeEnum)System.Enum.Parse(typeof(SkillTypeEnum),data[0]);
+			name = type.ToString();
+
+			foreach (string affectedJobTypeString in data[1].Split(';')) {
+				List<string> affectedJobTypeData = affectedJobTypeString.Split(',').ToList();
+				affectedJobTypes.Add((JobManager.JobTypesEnum)System.Enum.Parse(typeof(JobManager.JobTypesEnum),affectedJobTypeData[0]),float.Parse(affectedJobTypeData[1]));
+			}
+		}
+	}
+
+	public class SkillInstance {
+		public Colonist colonist;
+		public SkillPrefab prefab;
+		public Dictionary<JobManager.JobTypesEnum,float> currentAffectedJobTypes = new Dictionary<JobManager.JobTypesEnum,float>();
+
+		public SkillInstance(Colonist colonist, SkillPrefab prefab) {
+			this.colonist = colonist;
+			this.prefab = prefab;
+
+			foreach (KeyValuePair<JobManager.JobTypesEnum,float> kvp in prefab.affectedJobTypes) {
+				currentAffectedJobTypes.Add(kvp.Key,kvp.Value);
+			}
+		}
+
+		public void AddSkillExperience(JobManager.JobTypesEnum jobType, float amount) {
+			currentAffectedJobTypes[jobType] += amount;
+		}
+	}
+
+	public List<SkillPrefab> skillPrefabs = new List<SkillPrefab>();
+
+	void GetColonistSkills() {
+		List<string> stringSkills = Resources.Load<TextAsset>(@"Data/colonistskills").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('`').ToList();
+		foreach (string stringSkill in stringSkills) {
+			List<string> stringSkillData = stringSkill.Split('/').ToList();
+			skillPrefabs.Add(new SkillPrefab(stringSkillData));
+		}
+		foreach (SkillPrefab skillPrefab in skillPrefabs) {
+			skillPrefab.name = uiM.SplitByCapitals(skillPrefab.name);
+		}
 	}
 
 	public List<Colonist> colonists = new List<Colonist>();
@@ -139,6 +192,9 @@ public class ColonistManager : MonoBehaviour {
 		public JobManager.Job job;
 
 		public bool playerMoved;
+
+		// Skills
+		public List<SkillInstance> skills = new List<SkillInstance>();
 
 		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile,colonistLookIndexes) {
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
@@ -163,6 +219,8 @@ public class ColonistManager : MonoBehaviour {
 			job.started = true;
 			Destroy(job.jobPreview);
 			job.tile.SetTileObject(job.prefab);
+
+			job.jobProgress *= (1 + (1 - GetJobSkillMultiplier(job.prefab.jobType)));
 		}
 
 		public void WorkJob() {
@@ -207,6 +265,10 @@ public class ColonistManager : MonoBehaviour {
 				MoveToTile(tile);
 			}
 		}
+
+		public float GetJobSkillMultiplier(JobManager.JobTypesEnum jobType) {
+			return (1 + skills.Where(skill => skill.currentAffectedJobTypes.ContainsKey(jobType)).Sum(skill => skill.currentAffectedJobTypes[jobType] - 1));
+		}
 	}
 
 	public List<Trader> traders = new List<Trader>();
@@ -247,21 +309,27 @@ public class ColonistManager : MonoBehaviour {
 			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes);
 			colonists.Add(colonist);
 		}
+
+		uiM.UpdateColonistList();
 	}
 
 	public Colonist selectedColonist;
 	private GameObject selectedColonistIndicator;
 
 	void Update() {
-		SetSelectedColonist();
+		SetSelectedColonistFromInput();
 		foreach (Colonist colonist in colonists) {
 			colonist.Update();
 		}
+		if (Input.GetKey(KeyCode.F) && selectedColonist != null) {
+			cameraM.SetCameraPosition(selectedColonist.obj.transform.position);
+			cameraM.SetCameraZoom(5);
+		}
 	}
 
-	void SetSelectedColonist() {
+	void SetSelectedColonistFromInput() {
 		Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
-		if (Input.GetMouseButtonDown(0)) {
+		if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
 			bool foundColonist = false;
 			Colonist newSelectedColonist = colonists.Find(colonist => Vector2.Distance(colonist.obj.transform.position,mousePosition) < 0.5f);
 			if (newSelectedColonist != null) {
@@ -271,12 +339,7 @@ public class ColonistManager : MonoBehaviour {
 			}
 
 			if (foundColonist) {
-				selectedColonistIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),selectedColonist.obj.transform,false);
-				SpriteRenderer sCISR = selectedColonistIndicator.GetComponent<SpriteRenderer>();
-				sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
-				sCISR.sortingOrder = 4;
-				sCISR.color = new Color(1f,1f,1f,0.75f);
-				selectedColonistIndicator.transform.localScale = new Vector2(1f,1f) * 1.2f;
+				CreateColonistIndicator();
 			}
 
 			if (!foundColonist && selectedColonist != null) {
@@ -286,6 +349,23 @@ public class ColonistManager : MonoBehaviour {
 		if (Input.GetMouseButtonDown(1)) {
 			DeselectSelectedColonist();
 		}
+	}
+
+	public void SetSelectedColonist(Colonist colonist) {
+		DeselectSelectedColonist();
+		if (colonist != null) {
+			selectedColonist = colonist;
+			CreateColonistIndicator();
+		}
+	}
+
+	void CreateColonistIndicator() {
+		selectedColonistIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),selectedColonist.obj.transform,false);
+		SpriteRenderer sCISR = selectedColonistIndicator.GetComponent<SpriteRenderer>();
+		sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
+		sCISR.sortingOrder = 20; // Selected Colonist Indicator Sprite
+		sCISR.color = new Color(1f,1f,1f,0.75f);
+		selectedColonistIndicator.transform.localScale = new Vector2(1f,1f) * 1.2f;
 	}
 
 	void DeselectSelectedColonist() {

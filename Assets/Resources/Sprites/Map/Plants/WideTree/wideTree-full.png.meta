@@ -1,11 +1,17 @@
 fileFormatVersion: 2
-guid: 39ac1a8eca868c74bbfdc4a0d0ae5496
-timeCreated: 1495474899
+guid: 3616984d31ff09641a646b7f6c06c27e
+timeCreated: 1496766030
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: deadtrees-small_0
-    21300002: deadtrees-small_1
+    21300000: wideTrees-full_0
+    21300002: wideTrees-full_1
+    21300004: wideTrees-full_2
+    21300006: wideTrees-full_3
+    21300008: wideTrees-full_4
+    21300010: wideTrees-full_5
+    21300012: wideTree-full_0
+    21300014: wideTree-full_1
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -72,7 +78,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: deadtrees-small_0
+      name: wideTree-full_0
       rect:
         serializedVersion: 2
         x: 0
@@ -85,7 +91,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: deadtrees-small_1
+      name: wideTree-full_1
       rect:
         serializedVersion: 2
         x: 0

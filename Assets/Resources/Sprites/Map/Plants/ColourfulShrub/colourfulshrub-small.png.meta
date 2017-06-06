@@ -1,15 +1,17 @@
 fileFormatVersion: 2
-guid: 3616984d31ff09641a646b7f6c06c27e
-timeCreated: 1495433418
+guid: e1005bd0709c1594d9c66d9f5445c836
+timeCreated: 1496764052
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: wideTrees-full_0
-    21300002: wideTrees-full_1
-    21300004: wideTrees-full_2
-    21300006: wideTrees-full_3
-    21300008: wideTrees-full_4
-    21300010: wideTrees-full_5
+    21300000: colourfulshrubs-small_0
+    21300002: colourfulshrubs-small_1
+    21300004: colourfulshrubs-small_2
+    21300006: colourfulshrubs-small_3
+    21300008: colourfulshrub-small_0
+    21300010: colourfulshrub-small_1
+    21300012: colourfulshrub-small_2
+    21300014: colourfulshrub-small_3
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -76,33 +78,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: wideTrees-full_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 160
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: wideTrees-full_1
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 128
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: wideTrees-full_2
+      name: colourfulshrub-small_0
       rect:
         serializedVersion: 2
         x: 0
@@ -115,7 +91,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wideTrees-full_3
+      name: colourfulshrub-small_1
       rect:
         serializedVersion: 2
         x: 0
@@ -128,7 +104,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wideTrees-full_4
+      name: colourfulshrub-small_2
       rect:
         serializedVersion: 2
         x: 0
@@ -141,7 +117,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wideTrees-full_5
+      name: colourfulshrub-small_3
       rect:
         serializedVersion: 2
         x: 0

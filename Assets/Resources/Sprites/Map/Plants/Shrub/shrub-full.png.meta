@@ -1,13 +1,17 @@
 fileFormatVersion: 2
-guid: a23efb87e82102b45af81fb91fbf808b
-timeCreated: 1495433357
+guid: e991cbcbd2e775a419fecba91439fb5b
+timeCreated: 1496765925
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: snowTrees-full_0
-    21300002: snowTrees-full_1
-    21300004: snowTrees-full_2
-    21300006: snowTrees-full_3
+    21300000: shrubs-full_0
+    21300002: shrubs-full_1
+    21300004: shrubs-full_2
+    21300006: shrubs-full_3
+    21300008: shrubs-full_4
+    21300010: shrubs-full_5
+    21300012: shrub-full_0
+    21300014: shrub-full_1
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -74,33 +78,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: snowTrees-full_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 96
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: snowTrees-full_1
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 64
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: snowTrees-full_2
+      name: shrub-full_0
       rect:
         serializedVersion: 2
         x: 0
@@ -113,7 +91,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: snowTrees-full_3
+      name: shrub-full_1
       rect:
         serializedVersion: 2
         x: 0
