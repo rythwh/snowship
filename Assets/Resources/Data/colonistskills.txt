@@ -1,0 +1,3 @@
+Craftsmanship/
+	Build/
+	10`
