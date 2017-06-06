@@ -128,6 +128,10 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
+	void GetColonistSkills() {
+
+	}
+
 	public List<Colonist> colonists = new List<Colonist>();
 
 	public class Colonist : Human {
