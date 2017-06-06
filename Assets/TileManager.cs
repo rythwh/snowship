@@ -464,7 +464,6 @@ public class TileManager:MonoBehaviour {
 				}
 			}
 			SetWalkSpeed();
-			
 		}
 
 		public void SetTileObject(ResourceManager.TileObjectPrefab tileObjectPrefab) {
@@ -486,7 +485,6 @@ public class TileManager:MonoBehaviour {
 				if (kvp.Value != null && !kvp.Value.prefab.walkable) {
 					walkable = false;
 					tileM.RecalculateRegionsAtTile(this);
-					//tileM.SetTileRegions(false);
 					break;
 				}
 			}
