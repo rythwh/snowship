@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 302f902928c9c5e4a8cd16178b7de186
-timeCreated: 1495474864
+timeCreated: 1496764042
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -8,6 +8,10 @@ TextureImporter:
     21300002: colourfulshrubs-full_1
     21300004: colourfulshrubs-full_2
     21300006: colourfulshrubs-full_3
+    21300008: colourfulshrub-full_0
+    21300010: colourfulshrub-full_1
+    21300012: colourfulshrub-full_2
+    21300014: colourfulshrub-full_3
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -74,7 +78,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: colourfulshrubs-full_0
+      name: colourfulshrub-full_0
       rect:
         serializedVersion: 2
         x: 0
@@ -87,7 +91,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: colourfulshrubs-full_1
+      name: colourfulshrub-full_1
       rect:
         serializedVersion: 2
         x: 0
@@ -100,7 +104,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: colourfulshrubs-full_2
+      name: colourfulshrub-full_2
       rect:
         serializedVersion: 2
         x: 0
@@ -113,7 +117,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: colourfulshrubs-full_3
+      name: colourfulshrub-full_3
       rect:
         serializedVersion: 2
         x: 0

@@ -1,11 +1,17 @@
 fileFormatVersion: 2
-guid: 298c4764f5e1b87429c86c98b3e70f3f
-timeCreated: 1495433389
+guid: 822862e197a036d4a9d15736beb9be62
+timeCreated: 1496765964
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: thinTrees-full_0
-    21300002: thinTrees-full_1
+    21300000: snowTrees-small_0
+    21300002: snowTrees-small_1
+    21300004: snowTrees-small_2
+    21300006: snowTrees-small_3
+    21300008: snowTree-small_0
+    21300010: snowTree-small_1
+    21300012: snowTree-small_2
+    21300014: snowTree-small_3
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -72,7 +78,33 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: thinTrees-full_0
+      name: snowTree-small_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: snowTree-small_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: snowTree-small_2
       rect:
         serializedVersion: 2
         x: 0
@@ -85,7 +117,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: thinTrees-full_1
+      name: snowTree-small_3
       rect:
         serializedVersion: 2
         x: 0

@@ -1,3 +1,8 @@
-Craftsmanship/
-	Build/
-	10`
+Building/
+	Build,1.0;
+	Remove,1.0`
+Mining/
+	Mine,1.0`
+Farming/
+	PlantFarm,1.0;
+	HarvestFarm,1.0

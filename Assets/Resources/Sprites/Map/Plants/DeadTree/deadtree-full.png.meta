@@ -1,11 +1,13 @@
 fileFormatVersion: 2
 guid: ae29a3069b5bde6468fcc80f4812e764
-timeCreated: 1495474894
+timeCreated: 1496765895
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
     21300000: deadtrees-full_0
     21300002: deadtrees-full_1
+    21300004: deadtree-full_0
+    21300006: deadtree-full_1
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -72,7 +74,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: deadtrees-full_0
+      name: deadtree-full_0
       rect:
         serializedVersion: 2
         x: 0
@@ -85,7 +87,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: deadtrees-full_1
+      name: deadtree-full_1
       rect:
         serializedVersion: 2
         x: 0

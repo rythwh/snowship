@@ -21,6 +21,7 @@ public class UIManager:MonoBehaviour {
 	private JobManager jobM;
 	private ResourceManager resourceM;
 	private CameraManager cameraM;
+	private ColonistManager colonistM;
 
 	private GameObject mainMenu;
 
@@ -35,6 +36,7 @@ public class UIManager:MonoBehaviour {
 		jobM = GetComponent<JobManager>();
 		resourceM = GetComponent<ResourceManager>();
 		cameraM = GetComponent<CameraManager>();
+		colonistM = GetComponent<ColonistManager>();
 
 		GameObject.Find("PlayButton").GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
 
@@ -167,39 +169,52 @@ public class UIManager:MonoBehaviour {
 
 			if (mouseOverTile.plant != null) {
 				GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-TileImage"),false);
-				tileLayerSpriteObject.GetComponent<RectTransform>().localPosition = Vector2.zero;
-				tileLayerSpriteObject.GetComponent<Image>().sprite = mouseOverTile.plant.GetComponent<SpriteRenderer>().sprite;
+				tileLayerSpriteObject.GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
 				tileObjects.Add(tileLayerSpriteObject);
+
+				GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-ObjectData-Panel"),tileInformation.transform,false);
+				tileObjectDataObject.transform.Find("TileInformation-ObjectData-Label").GetComponent<Text>().text = "Plant";
+				tileObjectDataObject.transform.Find("TileInformation-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.group.name;
+				tileObjects.Add(tileObjectDataObject);
 			}
 			if (mouseOverTile.GetAllObjectInstances().Count > 0) {
 				foreach (ResourceManager.TileObjectInstance tileObject in mouseOverTile.GetAllObjectInstances().OrderBy(o => o.prefab.layer).ToList()) {
 					GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-TileImage"),false);
-					tileLayerSpriteObject.GetComponent<RectTransform>().localPosition = Vector2.zero;
 					tileLayerSpriteObject.GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
 					tileObjects.Add(tileLayerSpriteObject);
 
-					GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-ObjectData-Panel"),tileInformation.transform.Find("TileInformation-ObjectDataLayoutGroup-Panel"),false);
-					tileObjectDataObject.GetComponent<RectTransform>().localPosition = Vector2.zero;
+					GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-ObjectData-Panel"),tileInformation.transform,false);
 					tileObjectDataObject.transform.Find("TileInformation-ObjectData-Label").GetComponent<Text>().text = "L" + tileObject.prefab.layer;
 					tileObjectDataObject.transform.Find("TileInformation-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
 					tileObjects.Add(tileObjectDataObject);
 				}
-			} else {
-				GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-ObjectData-Panel"),tileInformation.transform.Find("TileInformation-ObjectDataLayoutGroup-Panel"),false);
-				tileObjectDataObject.GetComponent<RectTransform>().localPosition = Vector2.zero;
-				tileObjectDataObject.transform.Find("TileInformation-ObjectData-Label").GetComponent<Text>().text = "";
-				tileObjectDataObject.transform.Find("TileInformation-ObjectData-Value").GetComponent<Text>().text = "";
-				tileObjects.Add(tileObjectDataObject);
 			}
+
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Position").GetComponent<Text>().text = "<b>Position</b>\n(" + Mathf.FloorToInt(mouseOverTile.obj.transform.position.x) + ", " + Mathf.FloorToInt(mouseOverTile.obj.transform.position.y) + ")";
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "<b><size=14>Biome</size></b>\n<size=12>" + mouseOverTile.biome.name + "</size>";
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Temperature").GetComponent<Text>().text = "<b>Temperature</b>\n" + Mathf.RoundToInt(mouseOverTile.temperature) + "°C";
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Precipitation").GetComponent<Text>().text = "<b>Precipitation</b>\n" + Mathf.RoundToInt(mouseOverTile.precipitation * 100f) + "%";
+
+			if (!tileInformation.activeSelf) {
+				tileInformation.SetActive(true);
+			}
 		} else {
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Position").GetComponent<Text>().text = "<b>Position</b>\n";
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "<b>Biome</b>\n";
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Temperature").GetComponent<Text>().text = "<b>Temperature</b>\n";
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Precipitation").GetComponent<Text>().text = "<b>Precipitation</b>\n";
+			tileInformation.SetActive(false);
+		}
+	}
+
+	List<GameObject> colonistSpriteObjects = new List<GameObject>();
+
+	public void UpdateColonistList() {
+		foreach (GameObject colonistSpriteObject in colonistSpriteObjects) {
+			Destroy(colonistSpriteObject);
+		}
+		colonistSpriteObjects.Clear();
+		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+			GameObject colonistBaseSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/ColonistInformation-Panel"),GameObject.Find("ColonistList-Panel").transform,false);
+			colonistBaseSpriteObject.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = colonist.moveSprites[0];
+			colonistBaseSpriteObject.GetComponent<Button>().onClick.AddListener(delegate { colonistM.SetSelectedColonist(colonist); });
+			colonistSpriteObjects.Add(colonistBaseSpriteObject);
 		}
 	}
 }

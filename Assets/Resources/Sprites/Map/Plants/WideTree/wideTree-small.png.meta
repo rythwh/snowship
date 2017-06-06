@@ -1,15 +1,17 @@
 fileFormatVersion: 2
-guid: e991cbcbd2e775a419fecba91439fb5b
-timeCreated: 1495433332
+guid: 2a8b2e2485e86884fa95dbbd5c75f92f
+timeCreated: 1496766015
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: shrubs-full_0
-    21300002: shrubs-full_1
-    21300004: shrubs-full_2
-    21300006: shrubs-full_3
-    21300008: shrubs-full_4
-    21300010: shrubs-full_5
+    21300000: wideTrees-small_0
+    21300002: wideTrees-small_1
+    21300004: wideTrees-small_2
+    21300006: wideTrees-small_3
+    21300008: wideTrees-small_4
+    21300010: wideTrees-small_5
+    21300012: wideTree-small_0
+    21300014: wideTree-small_1
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -76,59 +78,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: shrubs-full_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 160
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: shrubs-full_1
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 128
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: shrubs-full_2
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 96
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: shrubs-full_3
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 64
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: shrubs-full_4
+      name: wideTree-small_0
       rect:
         serializedVersion: 2
         x: 0
@@ -141,7 +91,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: shrubs-full_5
+      name: wideTree-small_1
       rect:
         serializedVersion: 2
         x: 0

@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 5e2ebb89f728b1e4aae4a27e2065fc72
-timeCreated: 1495474604
+timeCreated: 1496764079
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -8,6 +8,10 @@ TextureImporter:
     21300002: colourfultrees-full_1
     21300004: colourfultrees-full_2
     21300006: colourfultrees-full_3
+    21300008: colourfultree-full_0
+    21300010: colourfultree-full_1
+    21300012: colourfultree-full_2
+    21300014: colourfultree-full_3
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -74,7 +78,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: colourfultrees-full_0
+      name: colourfultree-full_0
       rect:
         serializedVersion: 2
         x: 0
@@ -87,7 +91,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: colourfultrees-full_1
+      name: colourfultree-full_1
       rect:
         serializedVersion: 2
         x: 0
@@ -100,7 +104,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: colourfultrees-full_2
+      name: colourfultree-full_2
       rect:
         serializedVersion: 2
         x: 0
@@ -113,7 +117,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: colourfultrees-full_3
+      name: colourfultree-full_3
       rect:
         serializedVersion: 2
         x: 0
