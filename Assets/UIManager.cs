@@ -6,7 +6,7 @@ using System;
 using System.Text.RegularExpressions;
 using System.Linq;
 
-public class UIManager : MonoBehaviour {
+public class UIManager:MonoBehaviour {
 
 	public string SplitByCapitals(string combinedString) {
 		var r = new Regex(@"
@@ -46,7 +46,6 @@ public class UIManager : MonoBehaviour {
 		tileInformation = GameObject.Find("TileInformation-Panel");
 	}
 
-	
 	void Update() {
 		if (tileM.generated) {
 			Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
@@ -55,7 +54,6 @@ public class UIManager : MonoBehaviour {
 				mouseOverTile = newMouseOverTile;
 				UpdateTileInformation();
 			}
-
 			if (Input.GetMouseButtonDown(1)) {
 				if (jobM.firstTile != null) {
 					jobM.StopSelection();
@@ -112,7 +110,7 @@ public class UIManager : MonoBehaviour {
 					}
 					objectButtons.Add(buildMenuObjectButton);
 					buildMenuObjectButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(top); });
-					}
+				}
 				subGroupPanels.Add(subGroupPanel,objectButtons);
 
 				buildMenuSubGroupButton.GetComponent<Button>().onClick.AddListener(delegate {
@@ -157,25 +155,45 @@ public class UIManager : MonoBehaviour {
 		buildMenuPanel.SetActive(false);
 	}
 
-	private List<GameObject> tileLayerSpriteObjects = new List<GameObject>();
+	private List<GameObject> tileObjects = new List<GameObject>();
 	public void UpdateTileInformation() {
 		if (mouseOverTile != null) {
-			foreach (GameObject tileLayerSpriteObject in tileLayerSpriteObjects) {
+			foreach (GameObject tileLayerSpriteObject in tileObjects) {
 				Destroy(tileLayerSpriteObject);
 			}
-			tileLayerSpriteObjects.Clear();
+			tileObjects.Clear();
 
-			tileInformation.transform.Find("TileInformation-TileImage").GetComponent<Image>().sprite = mouseOverTile.obj.GetComponent<SpriteRenderer>().sprite;
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-TileImage").GetComponent<Image>().sprite = mouseOverTile.obj.GetComponent<SpriteRenderer>().sprite;
 
 			if (mouseOverTile.plant != null) {
-				GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-TileImage"),tileInformation.transform.Find("TileInformation-BaseTileImage"),false);
+				GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-TileImage"),false);
+				tileLayerSpriteObject.GetComponent<RectTransform>().localPosition = Vector2.zero;
 				tileLayerSpriteObject.GetComponent<Image>().sprite = mouseOverTile.plant.GetComponent<SpriteRenderer>().sprite;
-				tileLayerSpriteObjects.Add(tileLayerSpriteObject);
+				tileObjects.Add(tileLayerSpriteObject);
 			}
+			if (mouseOverTile.GetAllObjectInstances().Count > 0) {
+				foreach (ResourceManager.TileObjectInstance tileObject in mouseOverTile.GetAllObjectInstances().OrderBy(o => o.prefab.layer).ToList()) {
+					GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-TileImage"),false);
+					tileLayerSpriteObject.GetComponent<RectTransform>().localPosition = Vector2.zero;
+					tileLayerSpriteObject.GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
+					tileObjects.Add(tileLayerSpriteObject);
 
-			tileInformation.transform.Find("TileInformation -Position").GetComponent<Text>().text = "<b>Position</b>\n(" + Mathf.FloorToInt(mouseOverTile.obj.transform.position.x) + ", " + Mathf.FloorToInt(mouseOverTile.obj.transform.position.y) + ")";
+					GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-ObjectData-Panel"),tileInformation.transform.Find("TileInformation-ObjectDataLayoutGroup-Panel"),false);
+					tileObjectDataObject.GetComponent<RectTransform>().localPosition = Vector2.zero;
+					tileObjectDataObject.transform.Find("TileInformation-ObjectData-Label").GetComponent<Text>().text = "L" + tileObject.prefab.layer;
+					tileObjectDataObject.transform.Find("TileInformation-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
+					tileObjects.Add(tileObjectDataObject);
+				}
+			} else {
+				GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-ObjectData-Panel"),tileInformation.transform.Find("TileInformation-ObjectDataLayoutGroup-Panel"),false);
+				tileObjectDataObject.GetComponent<RectTransform>().localPosition = Vector2.zero;
+				tileObjectDataObject.transform.Find("TileInformation-ObjectData-Label").GetComponent<Text>().text = "";
+				tileObjectDataObject.transform.Find("TileInformation-ObjectData-Value").GetComponent<Text>().text = "";
+				tileObjects.Add(tileObjectDataObject);
+			}
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Position").GetComponent<Text>().text = "<b>Position</b>\n(" + Mathf.FloorToInt(mouseOverTile.obj.transform.position.x) + ", " + Mathf.FloorToInt(mouseOverTile.obj.transform.position.y) + ")";
 		} else {
-			tileInformation.transform.Find("TileInformation-Position").GetComponent<Text>().text = "<b>Position</b>\n";
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Position").GetComponent<Text>().text = "<b>Position</b>\n";
 		}
 	}
 }
