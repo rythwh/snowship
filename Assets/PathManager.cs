@@ -19,7 +19,7 @@ public class PathManager : MonoBehaviour {
 
 	public List<TileManager.Tile> FindPathToTile(TileManager.Tile startTile, TileManager.Tile endTile) {
 
-		if (!endTile.walkable) {
+		if (!endTile.walkable || startTile.region != endTile.region) {
 			return new List<TileManager.Tile>();
 		}
 
@@ -49,15 +49,15 @@ public class PathManager : MonoBehaviour {
 				return path;
 			}
 
-			foreach (TileManager.Tile nTile in (currentTile.tile.surroundingTiles.Find(o => o != null && !o.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
-				if (nTile != null && checkedTiles.Find(o => o.tile == nTile) == null && (walkable ? nTile.walkable : true)) {
+			foreach (TileManager.Tile nTile in (currentTile.tile.surroundingTiles.Find(tile => tile != null && !tile.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
+				if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (walkable ? nTile.walkable : true)) {
 					float cost = Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position) - (nTile.walkSpeed * 10f);
 					PathfindingTile pTile = new PathfindingTile(nTile,currentTile,cost);
 					frontier.Add(pTile);
 					checkedTiles.Add(pTile);
 				}
 			}
-			frontier = frontier.OrderBy(o => o.cost).ToList();
+			frontier = frontier.OrderBy(frontierTile => frontierTile.cost).ToList();
 		}
 		return new List<TileManager.Tile>();
 	}
