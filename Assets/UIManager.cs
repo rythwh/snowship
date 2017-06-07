@@ -77,6 +77,7 @@ public class UIManager:MonoBehaviour {
 					jobM.SetSelectedPrefab(null);
 				}
 			}
+			UpdateJobList();
 		}
 	}
 
@@ -230,6 +231,52 @@ public class UIManager:MonoBehaviour {
 				colonistBaseSpriteObject.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = colonist.moveSprites[0];
 				colonistBaseSpriteObject.GetComponent<Button>().onClick.AddListener(delegate { colonistM.SetSelectedColonist(colonist); });
 				colonistSpriteObjects.Add(colonistBaseSpriteObject);
+			}
+		}
+	}
+
+	List<GameObject> jobElements = new List<GameObject>();
+
+	public void UpdateJobList() {
+		if (jobM.jobs.Count > 0 || colonistM.colonists.Where(colonist => colonist.job != null).ToList().Count > 0) {
+			jobList.SetActive(true);
+			foreach (GameObject jobElement in jobElements) {
+				Destroy(jobElement);
+			}
+			jobElements.Clear();
+			foreach (ColonistManager.Colonist jobColonist in colonistM.colonists.Where(colonist => colonist.job != null).ToList()) {
+				GameObject jobElement = Instantiate(Resources.Load<GameObject>(@"UI/JobInformation-Panel"),jobList.transform.Find("JobList-Panel"),false);
+				jobElement.transform.Find("JobInfo/JobBaseSprite-Image").GetComponent<Image>().sprite = jobColonist.job.prefab.baseSprite;
+				jobElement.transform.Find("JobInfo/JobName-Text").GetComponent<Text>().text = jobColonist.job.prefab.name;
+				jobElement.GetComponent<Button>().onClick.AddListener(delegate {
+					cameraM.SetCameraPosition(jobColonist.job.tile.obj.transform.position);
+					cameraM.SetCameraZoom(5);
+				});
+				jobElement.GetComponent<Image>().color = new Color(52f,152f,219f,255f) / 255f;
+				jobElements.Add(jobElement);
+
+				GameObject colonistJobElement = Instantiate(Resources.Load<GameObject>(@"UI/ColonistInformation-Panel"),jobList.transform,false);
+				colonistJobElement.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = jobColonist.moveSprites[0];
+				colonistJobElement.GetComponent<Button>().onClick.AddListener(delegate { colonistM.SetSelectedColonist(jobColonist); });
+				jobElements.Add(colonistJobElement);
+			}
+			foreach (JobManager.Job job in jobM.jobs) {
+				GameObject jobElement = Instantiate(Resources.Load<GameObject>(@"UI/JobInformation-Panel"),jobList.transform.Find("JobList-Panel"),false);
+				jobElement.transform.Find("JobInfo/JobBaseSprite-Image").GetComponent<Image>().sprite = job.prefab.baseSprite;
+				jobElement.transform.Find("JobInfo/JobName-Text").GetComponent<Text>().text = job.prefab.name;
+				jobElement.GetComponent<Button>().onClick.AddListener(delegate {
+					cameraM.SetCameraPosition(job.tile.obj.transform.position);
+					cameraM.SetCameraZoom(5);
+				});
+				jobElements.Add(jobElement);
+			}
+		} else {
+			jobList.SetActive(false);
+			if (jobElements.Count > 0) {
+				foreach (GameObject jobElement in jobElements) {
+					Destroy(jobElement);
+				}
+				jobElements.Clear();
 			}
 		}
 	}
