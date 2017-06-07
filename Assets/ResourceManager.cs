@@ -69,7 +69,7 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	public Resource GetResourceByEnum(ResourcesEnum resourceEnum) {
-		return resources.Find(o => o.type == resourceEnum);
+		return resources.Find(resource => resource.type == resourceEnum);
 	}
 
 	public class ResourceAmount {
@@ -361,14 +361,14 @@ public class ResourceManager : MonoBehaviour {
 		public bool ReserveResources(List<ResourceAmount> resourcesToReserve, ColonistManager.Colonist colonistReservingResources) {
 			bool allResourcesFound = true;
 			foreach (ResourceAmount raReserve in resourcesToReserve) {
-				ResourceAmount raInventory = resources.Find(o => o.resource == raReserve.resource);
+				ResourceAmount raInventory = resources.Find(ra => ra.resource == raReserve.resource);
 				if (!(raInventory != null && raInventory.amount >= raReserve.amount)) {
 					allResourcesFound = false;
 				}
 			}
 			if (allResourcesFound) {
 				foreach (ResourceAmount raReserve in resourcesToReserve) {
-					ResourceAmount raInventory = resources.Find(o => o.resource == raReserve.resource);
+					ResourceAmount raInventory = resources.Find(ra => ra.resource == raReserve.resource);
 					ChangeResourceAmount(raInventory.resource,-raReserve.amount);
 				}
 				reservedResources.Add(new ReservedResources(resourcesToReserve,colonistReservingResources));

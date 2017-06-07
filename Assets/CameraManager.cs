@@ -31,7 +31,9 @@ public class CameraManager : MonoBehaviour {
 		cameraGO.transform.Translate(new Vector2(Input.GetAxis("Horizontal"),Input.GetAxis("Vertical")) * cameraComponent.orthographicSize * Time.deltaTime);
 		cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x,0,tileM.mapSize),Mathf.Clamp(cameraGO.transform.position.y,0,tileM.mapSize));
 
-		cameraComponent.orthographicSize -= Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") + (Input.GetAxis("KeyboardZoom") / 10f),-1f,1f) * cameraComponent.orthographicSize * Time.deltaTime * 100;
-		cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize,1,160); // 1,20
+		if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
+			cameraComponent.orthographicSize -= Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") + (Input.GetAxis("KeyboardZoom") / 10f),-1f,1f) * cameraComponent.orthographicSize * Time.deltaTime * 100;
+			cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize,1,160); // 1,20
+		}
 	}
 }

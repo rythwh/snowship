@@ -23,13 +23,20 @@ public class UIManager:MonoBehaviour {
 	private CameraManager cameraM;
 	private ColonistManager colonistM;
 
+
+	public int mapSize;
+
+
 	private GameObject mainMenu;
 
 	private TileManager.Tile mouseOverTile;
 
 	private GameObject tileInformation;
 
-	public int mapSize;
+	private GameObject colonistListToggleButton;
+	private GameObject colonistList;
+	private GameObject jobListToggleButton;
+	private GameObject jobList;
 
 	void Awake() {
 		tileM = GetComponent<TileManager>();
@@ -46,6 +53,13 @@ public class UIManager:MonoBehaviour {
 		mainMenu = GameObject.Find("MainMenu");
 
 		tileInformation = GameObject.Find("TileInformation-Panel");
+
+		colonistListToggleButton = GameObject.Find("ColonistListToggle-Button");
+		colonistList = GameObject.Find("ColonistList-ScrollPanel");
+		colonistListToggleButton.GetComponent<Button>().onClick.AddListener(delegate { colonistList.SetActive(!colonistList.activeSelf); });
+		jobListToggleButton = GameObject.Find("JobListToggle-Button");
+		jobList = GameObject.Find("JobList-ScrollPanel");
+		jobListToggleButton.GetComponent<Button>().onClick.AddListener(delegate { jobList.SetActive(!jobList.activeSelf); });
 	}
 
 	void Update() {
@@ -210,11 +224,13 @@ public class UIManager:MonoBehaviour {
 			Destroy(colonistSpriteObject);
 		}
 		colonistSpriteObjects.Clear();
-		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-			GameObject colonistBaseSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/ColonistInformation-Panel"),GameObject.Find("ColonistList-Panel").transform,false);
-			colonistBaseSpriteObject.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = colonist.moveSprites[0];
-			colonistBaseSpriteObject.GetComponent<Button>().onClick.AddListener(delegate { colonistM.SetSelectedColonist(colonist); });
-			colonistSpriteObjects.Add(colonistBaseSpriteObject);
+		if (colonistList.activeSelf) {
+			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+				GameObject colonistBaseSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/ColonistInformation-Panel"),colonistList.transform.Find("ColonistList-Panel"),false);
+				colonistBaseSpriteObject.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = colonist.moveSprites[0];
+				colonistBaseSpriteObject.GetComponent<Button>().onClick.AddListener(delegate { colonistM.SetSelectedColonist(colonist); });
+				colonistSpriteObjects.Add(colonistBaseSpriteObject);
+			}
 		}
 	}
 }

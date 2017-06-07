@@ -93,6 +93,7 @@ public class ColonistManager : MonoBehaviour {
 				}
 			} else {
 				obj.GetComponent<SpriteRenderer>().sprite = moveSprites[0];
+				path.Clear();
 				return true;
 			}
 			return false;
@@ -202,11 +203,29 @@ public class ColonistManager : MonoBehaviour {
 
 		public new void Update() {
 			base.Update();
+			if (job == null && path.Count <= 0) {
+				Wander();
+			} else {
+				wanderTimer = Random.Range(10f,20f);
+			}
 			if (job != null && !job.started && overTile == job.tile) {
 				StartJob();
 			}
 			if (job != null && job.started && overTile == job.tile && !Mathf.Approximately(job.jobProgress,0)) {
 				WorkJob();
+			}
+		}
+
+		private float wanderTimer = Random.Range(10f,20f);
+		private void Wander() {
+			if (wanderTimer <= 0) {
+				List<TileManager.Tile> validWanderTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable && tile.tileType.buildable && colonistM.colonists.Find(colonist => colonist.overTile == tile) == null).ToList();
+				if (validWanderTiles.Count > 0) {
+					MoveToTile(validWanderTiles[Random.Range(0,validWanderTiles.Count)]);
+				}
+				wanderTimer = Random.Range(10f,20f);
+			} else {
+				wanderTimer -= 1 * timeM.deltaTime;
 			}
 		}
 
@@ -241,7 +260,7 @@ public class ColonistManager : MonoBehaviour {
 			job.tile.objectInstances[job.prefab.layer].FinishCreation();
 
 			if (!overTile.walkable) {
-				List<TileManager.Tile> walkableSurroundingTiles = overTile.surroundingTiles.Where(tile => tile.walkable).ToList();
+				List<TileManager.Tile> walkableSurroundingTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
 				if (walkableSurroundingTiles.Count > 0) {
 					MoveToTile(walkableSurroundingTiles[Random.Range(0,walkableSurroundingTiles.Count)]);
 				}

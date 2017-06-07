@@ -418,7 +418,7 @@ public class TileManager:MonoBehaviour {
 						ChangeRegion(similarRegions[0],false,false);
 					} else {
 						region.tiles.Remove(this);
-						ChangeRegion(similarRegions.OrderByDescending(o => o.tiles.Count).ToList()[0],false,false);
+						ChangeRegion(similarRegions.OrderByDescending(similarRegion => similarRegion.tiles.Count).ToList()[0],false,false);
 						foreach (Region similarRegion in similarRegions) {
 							if (similarRegion != region) {
 								foreach (Tile tile in similarRegion.tiles) {
@@ -558,7 +558,7 @@ public class TileManager:MonoBehaviour {
 		CreateBiomes();
 		CreateMap();
 
-		colonistM.SpawnColonists(3);
+		colonistM.SpawnColonists(10);
 
 		generated = true;
 	}
@@ -670,9 +670,11 @@ public class TileManager:MonoBehaviour {
 
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
+					/*
 					Tile tile = GetTileFromPosition(mousePosition);
 					tile.SetTileType(GetTileTypeByEnum(TileTypes.Stone),true,true,true,true);
 					RecalculateRegionsAtTile(tile);
+					*/
 					//SetTileRegions(false);
 					//print(tile.region.tileType.walkable);
 				}
@@ -1005,7 +1007,7 @@ public class TileManager:MonoBehaviour {
 			}
 			List<Tile> horizontalGroups = new List<Tile>();
 			foreach (List<Tile> tileGroup in separateTileGroups) {
-				List<Tile> horizontalTilesInGroup = tileGroup.Where(o => tile.horizontalSurroundingTiles.Contains(o)).ToList();
+				List<Tile> horizontalTilesInGroup = tileGroup.Where(groupTile => tile.horizontalSurroundingTiles.Contains(groupTile)).ToList();
 				if (horizontalTilesInGroup.Count > 0) {
 					horizontalGroups.Add(horizontalTilesInGroup[0]);
 				}
@@ -1207,10 +1209,7 @@ public class TileManager:MonoBehaviour {
 	void SetBiomes() {
 		foreach (Tile tile in tiles) {
 			foreach (Biome biome in biomes) {
-				/*int tRange = Random.Range(-10,10);*/
-				int tRange = 0;
-				float pRange = tRange / 100f;
-				if ((biome.temperatureRange[0] <= tile.temperature + tRange) && (biome.temperatureRange[1] >= tile.temperature + tRange) && (biome.precipitationRange[0] <= tile.precipitation + pRange) && (biome.precipitationRange[1] >= tile.precipitation + pRange)) {
+				if ((biome.temperatureRange[0] <= tile.temperature) && (biome.temperatureRange[1] >= tile.temperature) && (biome.precipitationRange[0] <= tile.precipitation) && (biome.precipitationRange[1] >= tile.precipitation)) {
 					tile.SetBiome(biome);
 					break;
 				}
@@ -1237,7 +1236,7 @@ public class TileManager:MonoBehaviour {
 	public int drainageBasinID = 0;
 
 	void DetermineDrainageBasins() {
-		List<Tile> tilesByHeight = tiles.OrderBy(o => o.height).ToList();
+		List<Tile> tilesByHeight = tiles.OrderBy(tile => tile.height).ToList();
 		foreach (Tile tile in tilesByHeight) {
 			if (!StoneEquivalentTileTypes.Contains(tile.tileType.type) && tile.drainageBasin == null) {
 				Region drainageBasin = new Region(null,drainageBasinID);
@@ -1310,7 +1309,7 @@ public class TileManager:MonoBehaviour {
 				currentTile = frontier[0];
 				frontier.RemoveAt(0);
 
-				if (WaterEquivalentTileTypes.Contains(currentTile.tile.tileType.type) || (currentTile.tile.horizontalSurroundingTiles.Find(o => o != null && WaterEquivalentTileTypes.Contains(o.tileType.type) && RiversContainTile(o).Key == null) != null)) {
+				if (WaterEquivalentTileTypes.Contains(currentTile.tile.tileType.type) || (currentTile.tile.horizontalSurroundingTiles.Find(tile => tile != null && WaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key == null) != null)) {
 					Tile foundOtherRiverAtTile = null;
 					List<Tile> foundOtherRiver = null;
 					bool expandRiver = true; // false: SET TO FALSE TO ENABLE RIVER EXPANSION
@@ -1358,7 +1357,7 @@ public class TileManager:MonoBehaviour {
 				}
 
 				foreach (Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
-					if (nTile != null && checkedTiles.Find(o => o.tile == nTile) == null && !StoneEquivalentTileTypes.Contains(nTile.tileType.type)) {
+					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && !StoneEquivalentTileTypes.Contains(nTile.tileType.type)) {
 						if (rivers.Find(otherRiver => otherRiver.Find(riverTile => nTile == riverTile) != null) != null) {
 							frontier.Clear();
 							frontier.Add(new PathManager.PathfindingTile(nTile,currentTile,0));
@@ -1371,7 +1370,7 @@ public class TileManager:MonoBehaviour {
 						checkedTiles.Add(pTile);
 					}
 				}
-				frontier = frontier.OrderBy(o => o.cost).ToList();
+				frontier = frontier.OrderBy(frontierTile => frontierTile.cost).ToList();
 			}
 			rivers.Add(river);
 		}
