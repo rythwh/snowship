@@ -1,0 +1,20 @@
+Nothing/
+	was never particularly good at anything./
+	Building,2;
+	Mining,2;
+	Farming,2`
+Builder/
+	swims in pools of reinforced concrete./
+	Building,10;
+	Mining,5;
+	Farming,2`
+Miner/
+	worked deep in the mines for their entire life./
+	Building,5;
+	Mining,10;
+	Farming,2`
+Farmer/
+	sleeps on bails of hay./
+	Building,2;
+	Mining,2;
+	Farming,10

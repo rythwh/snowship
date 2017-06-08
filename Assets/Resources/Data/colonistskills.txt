@@ -1,8 +1,8 @@
 Building/
-	Build,1.0;
-	Remove,1.0`
+	Build,0.1;
+	Remove,0.05`
 Mining/
-	Mine,1.0`
+	Mine,0.1`
 Farming/
-	PlantFarm,1.0;
-	HarvestFarm,1.0
+	PlantFarm,0.1;
+	HarvestFarm,0.1

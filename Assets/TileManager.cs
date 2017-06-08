@@ -561,6 +561,9 @@ public class TileManager:MonoBehaviour {
 		colonistM.SpawnColonists(10);
 
 		generated = true;
+
+		uiM.UpdateSelectedColonistInformation();
+		uiM.UpdateJobList();
 	}
 
 	private bool debugMode;

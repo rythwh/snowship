@@ -22,7 +22,7 @@ public class UIManager:MonoBehaviour {
 	private ResourceManager resourceM;
 	private CameraManager cameraM;
 	private ColonistManager colonistM;
-
+	private TimeManager timeM;
 
 	public int mapSize;
 
@@ -38,12 +38,17 @@ public class UIManager:MonoBehaviour {
 	private GameObject jobListToggleButton;
 	private GameObject jobList;
 
+	private GameObject selectedColonistInformationPanel;
+
+	private GameObject dateTimeInformationPanel;
+
 	void Awake() {
 		tileM = GetComponent<TileManager>();
 		jobM = GetComponent<JobManager>();
 		resourceM = GetComponent<ResourceManager>();
 		cameraM = GetComponent<CameraManager>();
 		colonistM = GetComponent<ColonistManager>();
+		timeM = GetComponent<TimeManager>();
 
 		GameObject.Find("PlayButton").GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
 
@@ -60,6 +65,10 @@ public class UIManager:MonoBehaviour {
 		jobListToggleButton = GameObject.Find("JobListToggle-Button");
 		jobList = GameObject.Find("JobList-ScrollPanel");
 		jobListToggleButton.GetComponent<Button>().onClick.AddListener(delegate { jobList.SetActive(!jobList.activeSelf); });
+
+		selectedColonistInformationPanel = GameObject.Find("SelectedColonistInfo-Panel");
+
+		dateTimeInformationPanel = GameObject.Find("DateTimeInformation-Panel");
 	}
 
 	void Update() {
@@ -77,7 +86,6 @@ public class UIManager:MonoBehaviour {
 					jobM.SetSelectedPrefab(null);
 				}
 			}
-			UpdateJobList();
 		}
 	}
 
@@ -218,6 +226,52 @@ public class UIManager:MonoBehaviour {
 		}
 	}
 
+	List<GameObject> skillObjects = new List<GameObject>();
+
+	public void UpdateSelectedColonistInformation() {
+		if (colonistM.selectedColonist != null) {
+			selectedColonistInformationPanel.SetActive(true);
+
+			RectTransform rightListPanel = GameObject.Find("RightList-Panel").GetComponent<RectTransform>();
+			Vector2 rightListSize = rightListPanel.offsetMin;
+			rightListPanel.offsetMin = new Vector2(rightListSize.x,310);
+
+			foreach (GameObject skillObject in skillObjects) {
+				Destroy(skillObject);
+			}
+			skillObjects.Clear();
+
+			selectedColonistInformationPanel.transform.Find("SkillsList-Panel/SkillsListTitle-Panel/Profession-Text").GetComponent<Text>().text = colonistM.selectedColonist.profession.name;
+
+			foreach (ColonistManager.SkillInstance skill in colonistM.selectedColonist.skills) {
+				GameObject skillObject = Instantiate(Resources.Load<GameObject>(@"UI/SkillInformation-Panel"),selectedColonistInformationPanel.transform.Find("SkillsList-Panel"),false);
+				skillObject.transform.Find("SkillName-Text").GetComponent<Text>().text = skill.prefab.name;
+				skillObject.transform.Find("SkillLevelValue-Text").GetComponent<Text>().text = "Level " + skill.level + " (+" + Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f) + "%)";
+				skillObject.transform.Find("SkillExperience-Slider").GetComponent<Slider>().value = Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f);
+
+				if (skill.level >= 10) {
+					skillObject.transform.Find("SkillExperience-Slider/Fill Area/Fill").GetComponent<Image>().color = new Color(192f,57f,43f,255f) / 255f;
+					skillObject.transform.Find("SkillExperience-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = new Color(231f,76f,60f,255f) / 255f;
+				}
+
+				skillObjects.Add(skillObject);
+			}
+		} else {
+			selectedColonistInformationPanel.SetActive(false);
+
+			RectTransform rightListPanel = GameObject.Find("RightList-Panel").GetComponent<RectTransform>();
+			Vector2 rightListSize = rightListPanel.offsetMin;
+			rightListPanel.offsetMin = new Vector2(rightListSize.x,5);
+
+			if (skillObjects.Count > 0) {
+				foreach (GameObject skillObject in skillObjects) {
+					Destroy(skillObject);
+				}
+				skillObjects.Clear();
+			}
+		}
+	}
+
 	List<GameObject> colonistSpriteObjects = new List<GameObject>();
 
 	public void UpdateColonistList() {
@@ -279,5 +333,11 @@ public class UIManager:MonoBehaviour {
 				jobElements.Clear();
 			}
 		}
+	}
+
+	public void UpdateDateTimeInformation(int minute, int hour, int day, int month, int year, bool isDay) {
+		dateTimeInformationPanel.transform.Find("DateTimeInformation-Time-Text").GetComponent<Text>().text = timeM.Get12HourTime() + ":" + (minute < 10 ? ("0" + minute) : minute.ToString()) + (hour < 13 ? "AM" : "PM") + "(" + (isDay ? "D" : "N") + ")";
+		dateTimeInformationPanel.transform.Find("DateTimeInformation-Speed-Text").GetComponent<Text>().text = (timeM.timeModifier > 0 ? new string('>',timeM.timeModifier) : "-");
+		dateTimeInformationPanel.transform.Find("DateTimeInformation-Date-Text").GetComponent<Text>().text = "D" + day + " M" + month + " Y" + year;
 	}
 }
