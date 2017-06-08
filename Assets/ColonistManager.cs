@@ -133,7 +133,7 @@ public class ColonistManager : MonoBehaviour {
 		public Human(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile) {
 			moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
 
-			inventory = new ResourceManager.Inventory(this,null);
+			inventory = new ResourceManager.Inventory(this,null,50);
 		}
 	}
 
@@ -333,7 +333,7 @@ public class ColonistManager : MonoBehaviour {
 			}
 
 			job = null;
-			uiM.UpdateJobList();
+			uiM.SetJobList();
 		}
 
 		public void PlayerMoveToTile(TileManager.Tile tile) {
@@ -395,7 +395,7 @@ public class ColonistManager : MonoBehaviour {
 			colonists.Add(colonist);
 		}
 
-		uiM.UpdateColonistList();
+		uiM.SetColonistList();
 	}
 
 	public Colonist selectedColonist;
@@ -421,7 +421,7 @@ public class ColonistManager : MonoBehaviour {
 				DeselectSelectedColonist();
 				selectedColonist = newSelectedColonist;
 				foundColonist = true;
-				uiM.UpdateSelectedColonistInformation();
+				uiM.SetSelectedColonistInformation();
 			}
 
 			if (foundColonist) {
@@ -443,7 +443,7 @@ public class ColonistManager : MonoBehaviour {
 			selectedColonist = colonist;
 			CreateColonistIndicator();
 		}
-		uiM.UpdateSelectedColonistInformation();
+		uiM.SetSelectedColonistInformation();
 	}
 
 	void CreateColonistIndicator() {
@@ -458,6 +458,6 @@ public class ColonistManager : MonoBehaviour {
 	void DeselectSelectedColonist() {
 		selectedColonist = null;
 		Destroy(selectedColonistIndicator);
-		uiM.UpdateSelectedColonistInformation();
+		uiM.SetSelectedColonistInformation();
 	}
 }

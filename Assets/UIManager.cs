@@ -86,6 +86,9 @@ public class UIManager:MonoBehaviour {
 					jobM.SetSelectedPrefab(null);
 				}
 			}
+			if (colonistM.selectedColonist != null) {
+				UpdateSelectedColonistInformation();
+			}
 		}
 	}
 
@@ -228,7 +231,8 @@ public class UIManager:MonoBehaviour {
 
 	List<GameObject> skillObjects = new List<GameObject>();
 
-	public void UpdateSelectedColonistInformation() {
+	/* Called from ColonistManager.SetSelectedColonistFromInput(), ColonistManager.SetSelectedColonist(), ColonistManager.DeselectSelectedColonist(), TileManager.Initialize() */
+	public void SetSelectedColonistInformation() {
 		if (colonistM.selectedColonist != null) {
 			selectedColonistInformationPanel.SetActive(true);
 
@@ -246,14 +250,6 @@ public class UIManager:MonoBehaviour {
 			foreach (ColonistManager.SkillInstance skill in colonistM.selectedColonist.skills) {
 				GameObject skillObject = Instantiate(Resources.Load<GameObject>(@"UI/SkillInformation-Panel"),selectedColonistInformationPanel.transform.Find("SkillsList-Panel"),false);
 				skillObject.transform.Find("SkillName-Text").GetComponent<Text>().text = skill.prefab.name;
-				skillObject.transform.Find("SkillLevelValue-Text").GetComponent<Text>().text = "Level " + skill.level + " (+" + Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f) + "%)";
-				skillObject.transform.Find("SkillExperience-Slider").GetComponent<Slider>().value = Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f);
-
-				if (skill.level >= 10) {
-					skillObject.transform.Find("SkillExperience-Slider/Fill Area/Fill").GetComponent<Image>().color = new Color(192f,57f,43f,255f) / 255f;
-					skillObject.transform.Find("SkillExperience-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = new Color(231f,76f,60f,255f) / 255f;
-				}
-
 				skillObjects.Add(skillObject);
 			}
 		} else {
@@ -272,9 +268,28 @@ public class UIManager:MonoBehaviour {
 		}
 	}
 
+	public void UpdateSelectedColonistInformation() {
+		selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().minValue = 0;
+		selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().maxValue = colonistM.selectedColonist.inventory.maxAmount;
+		selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().value = colonistM.selectedColonist.inventory.CountResources();
+		selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventoryValue-Text").GetComponent<Text>().text = colonistM.selectedColonist.inventory.CountResources() + "/ " + colonistM.selectedColonist.inventory.maxAmount;
+		int skillIndex = 0;
+		foreach (GameObject skillObject in skillObjects) {
+			ColonistManager.SkillInstance skill = colonistM.selectedColonist.skills[skillIndex];
+			skillObject.transform.Find("SkillLevelValue-Text").GetComponent<Text>().text = "Level " + skill.level + " (+" + Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f) + "%)";
+			skillObject.transform.Find("SkillExperience-Slider").GetComponent<Slider>().value = Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f);
+			if (skill.level >= 10) {
+				skillObject.transform.Find("SkillExperience-Slider/Fill Area/Fill").GetComponent<Image>().color = new Color(192f,57f,43f,255f) / 255f;
+				skillObject.transform.Find("SkillExperience-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = new Color(231f,76f,60f,255f) / 255f;
+			}
+			skillIndex += 1;
+		}
+	}
+
 	List<GameObject> colonistSpriteObjects = new List<GameObject>();
 
-	public void UpdateColonistList() {
+	/* Called from ColonistManager.SpawnColonists() */
+	public void SetColonistList() {
 		foreach (GameObject colonistSpriteObject in colonistSpriteObjects) {
 			Destroy(colonistSpriteObject);
 		}
@@ -291,7 +306,8 @@ public class UIManager:MonoBehaviour {
 
 	List<GameObject> jobElements = new List<GameObject>();
 
-	public void UpdateJobList() {
+	/* Called from Colonist.FinishJob(), Colonist.CreateJob(), Colonist.AddExistingJob(), JobManager.GiveJobsToColonists(), TileManager.Initialize() */
+	public void SetJobList() {
 		if (jobM.jobs.Count > 0 || colonistM.colonists.Where(colonist => colonist.job != null).ToList().Count > 0) {
 			jobList.SetActive(true);
 			foreach (GameObject jobElement in jobElements) {
@@ -309,14 +325,21 @@ public class UIManager:MonoBehaviour {
 				jobElement.GetComponent<Image>().color = new Color(52f,152f,219f,255f) / 255f;
 				jobElements.Add(jobElement);
 
-				GameObject colonistJobElement = Instantiate(Resources.Load<GameObject>(@"UI/ColonistInformation-Panel"),jobList.transform,false);
+				GameObject colonistJobElement = Instantiate(Resources.Load<GameObject>(@"UI/ColonistInformation-Panel"),jobElement.transform,false);
+
+				colonistJobElement.GetComponent<Outline>().enabled = false;
+				jobElement.GetComponent<RectTransform>().sizeDelta = new Vector2(jobElement.GetComponent<RectTransform>().sizeDelta.x,105);
+
 				colonistJobElement.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = jobColonist.moveSprites[0];
 				colonistJobElement.GetComponent<Button>().onClick.AddListener(delegate { colonistM.SetSelectedColonist(jobColonist); });
+				colonistJobElement.GetComponent<Image>().color = new Color(52f,152f,219f,255f) / 255f;
+				colonistJobElement.GetComponent<RectTransform>().sizeDelta = new Vector2(175,colonistJobElement.GetComponent<RectTransform>().sizeDelta.y);
 				jobElements.Add(colonistJobElement);
 			}
 			foreach (JobManager.Job job in jobM.jobs) {
 				GameObject jobElement = Instantiate(Resources.Load<GameObject>(@"UI/JobInformation-Panel"),jobList.transform.Find("JobList-Panel"),false);
 				jobElement.transform.Find("JobInfo/JobBaseSprite-Image").GetComponent<Image>().sprite = job.prefab.baseSprite;
+				jobElement.transform.Find("JobInfo/JobName-Text").GetComponent<Text>().text = SplitByCapitals(job.prefab.jobType.ToString());
 				jobElement.transform.Find("JobInfo/JobName-Text").GetComponent<Text>().text = job.prefab.name;
 				jobElement.GetComponent<Button>().onClick.AddListener(delegate {
 					cameraM.SetCameraPosition(job.tile.obj.transform.position);

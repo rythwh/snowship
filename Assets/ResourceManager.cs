@@ -299,6 +299,10 @@ public class ResourceManager : MonoBehaviour {
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 1 + prefab.layer; // Tile Object Sprite
 			obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
+
+			if (resourceM.ContainerTileObjectTypes.Contains(prefab.type)) {
+				resourceM.containers.Add(new Container(this,250));
+			}
 		}
 
 		public void FinishCreation() {
@@ -308,12 +312,18 @@ public class ResourceManager : MonoBehaviour {
 		}
 	}
 
-	public class Container : TileObjectInstance {
+	List<TileObjectPrefabsEnum> ContainerTileObjectTypes = new List<TileObjectPrefabsEnum>() {
+		TileObjectPrefabsEnum.WoodenChest
+	};
+
+	public class Container {
+		public TileObjectInstance parentObject;
 		public Inventory inventory;
-		public Container(TileObjectPrefab prefab,TileManager.Tile tile) : base(prefab,tile) {
-			this.prefab = prefab;
-			this.tile = tile;
-			inventory = new Inventory(null,this);
+		public int maxAmount;
+		public Container(TileObjectInstance parentObject, int maxAmount) {
+			this.parentObject = parentObject;
+			this.maxAmount = maxAmount;
+			inventory = new Inventory(null,this,maxAmount);
 		}
 	}
 
@@ -326,13 +336,21 @@ public class ResourceManager : MonoBehaviour {
 		public ColonistManager.Human human;
 		public Container container;
 
-		public Inventory(ColonistManager.Human human, Container container) {
+		public int maxAmount;
+
+		public Inventory(ColonistManager.Human human, Container container, int maxAmount) {
 			this.human = human;
 			this.container = container;
+			this.maxAmount = maxAmount;
+		}
+
+		public int CountResources() {
+			return (resources.Sum(resource => resource.amount) + reservedResources.Sum(reservedResource => reservedResource.resources.Sum(rr => rr.amount)));
 		}
 
 		public void ChangeResourceAmount(Resource resource,int amount) {
 			ResourceAmount existingResourceAmount = resources.Find(ra => ra.resource == resource);
+			print(existingResourceAmount);
 			if (existingResourceAmount != null) {
 				if (amount >= 0 || (amount - existingResourceAmount.amount) >= 0) {
 					print("Added an additional " + amount + " of " + resource.name + " to " + human.name);
@@ -348,13 +366,16 @@ public class ResourceManager : MonoBehaviour {
 					Debug.LogError("Trying to remove " + amount + " of " + resource.name + " that doesn't exist in " + human.name);
 				}
 			}
-			if (existingResourceAmount.amount == 0) {
-				print("Removed " + existingResourceAmount.resource.name + " from " + human.name + " as its amount was 0");
-				resources.Remove(existingResourceAmount);
-			} else if (existingResourceAmount.amount < 0) {
-				Debug.LogError("There is a negative amount of " + resource.name + " on " + human.name + " with " + existingResourceAmount.amount);
-			} else {
-				print(human.name + " now has " + existingResourceAmount.amount + " of " + existingResourceAmount.resource.name);
+			existingResourceAmount = resources.Find(ra => ra.resource == resource);
+			if (existingResourceAmount != null) {
+				if (existingResourceAmount.amount == 0) {
+					print("Removed " + existingResourceAmount.resource.name + " from " + human.name + " as its amount was 0");
+					resources.Remove(existingResourceAmount);
+				} else if (existingResourceAmount.amount < 0) {
+					Debug.LogError("There is a negative amount of " + resource.name + " on " + human.name + " with " + existingResourceAmount.amount);
+				} else {
+					print(human.name + " now has " + existingResourceAmount.amount + " of " + existingResourceAmount.resource.name);
+				}
 			}
 		}
 

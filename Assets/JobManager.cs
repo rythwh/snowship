@@ -238,12 +238,12 @@ public class JobManager:MonoBehaviour {
 
 	public void CreateJob(Job newJob) {
 		jobs.Add(newJob);
-		uiM.UpdateJobList();
+		uiM.SetJobList();
 	}
 
 	public void AddExistingJob(Job existingJob) {
 		jobs.Add(existingJob);
-		uiM.UpdateJobList();
+		uiM.SetJobList();
 	}
 
 	public void GiveJobsToColonists() {
@@ -260,7 +260,7 @@ public class JobManager:MonoBehaviour {
 				}
 			}
 			if (gaveJob) {
-				uiM.UpdateJobList();
+				uiM.SetJobList();
 			}
 		}
 	}
