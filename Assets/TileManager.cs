@@ -562,8 +562,8 @@ public class TileManager:MonoBehaviour {
 
 		generated = true;
 
-		uiM.UpdateSelectedColonistInformation();
-		uiM.UpdateJobList();
+		uiM.SetSelectedColonistInformation();
+		uiM.SetJobList();
 	}
 
 	private bool debugMode;
@@ -670,6 +670,11 @@ public class TileManager:MonoBehaviour {
 						tSR.color = new Color(tile.walkSpeed,tile.walkSpeed,tile.walkSpeed,1f);
 					}
 				}
+				if (Input.GetKeyDown(KeyCode.Q)) {
+					foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),10);
+					}
+				}
 
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
@@ -682,9 +687,11 @@ public class TileManager:MonoBehaviour {
 					//print(tile.region.tileType.walkable);
 				}
 				if (Input.GetMouseButtonDown(1)) {
+					/*
 					Tile tile = GetTileFromPosition(mousePosition);
 					tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true,true,true,true);
 					RecalculateRegionsAtTile(tile);
+					*/
 					//tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true);
 					//print(tile.tileType.name);
 				}
