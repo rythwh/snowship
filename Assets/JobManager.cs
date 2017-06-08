@@ -9,12 +9,14 @@ public class JobManager:MonoBehaviour {
 	private ColonistManager colonistM;
 	private CameraManager cameraM;
 	private TimeManager timeM;
+	private UIManager uiM;
 
 	void Awake() {
 		tileM = GetComponent<TileManager>();
 		colonistM = GetComponent<ColonistManager>();
 		cameraM = GetComponent<CameraManager>();
 		timeM = GetComponent<TimeManager>();
+		uiM = GetComponent<UIManager>();
 
 		InitializeSelectionModifierFunctions();
 	}
@@ -236,22 +238,29 @@ public class JobManager:MonoBehaviour {
 
 	public void CreateJob(Job newJob) {
 		jobs.Add(newJob);
+		uiM.UpdateJobList();
 	}
 
 	public void AddExistingJob(Job existingJob) {
 		jobs.Add(existingJob);
+		uiM.UpdateJobList();
 	}
 
 	public void GiveJobsToColonists() {
 		List<ColonistManager.Colonist> availableColonists = colonistM.colonists.Where(colonist => colonist.job == null).ToList();
 		if (availableColonists.Count > 0) {
+			bool gaveJob = false;
 			foreach (ColonistManager.Colonist colonist in availableColonists) {
 				List<Job> sortedJobs = jobs.Where(job => (job.tile.surroundingTiles.Find(tile => tile != null && tile.region == colonist.overTile.region) != null) || (job.tile.region == colonist.overTile.region)).OrderBy(job => Vector2.Distance(job.tile.obj.transform.position,colonist.obj.transform.position)
 				).ToList();
 				if (sortedJobs.Count > 0) {
 					colonist.SetJob(sortedJobs[0]);
 					jobs.Remove(sortedJobs[0]);
+					gaveJob = true;
 				}
+			}
+			if (gaveJob) {
+				uiM.UpdateJobList();
 			}
 		}
 	}

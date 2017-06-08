@@ -14,7 +14,8 @@ public class ColonistManager : MonoBehaviour {
 		cameraM = GetComponent<CameraManager>();
 		uiM = GetComponent<UIManager>();
 
-		GetColonistSkills();
+		CreateColonistSkills();
+		CreateColonistProfessions();
 	}
 
 	public List<Life> animals = new List<Life>();
@@ -27,6 +28,7 @@ public class ColonistManager : MonoBehaviour {
 		public ColonistManager colonistM;
 		public JobManager jobM;
 		public ResourceManager resourceM;
+		public UIManager uiM;
 
 		void GetScriptReferences() {
 			GameObject GM = GameObject.Find("GM");
@@ -37,6 +39,7 @@ public class ColonistManager : MonoBehaviour {
 			colonistM = GM.GetComponent<ColonistManager>();
 			jobM = GM.GetComponent<JobManager>();
 			resourceM = GM.GetComponent<ResourceManager>();
+			uiM = GM.GetComponent<UIManager>();
 		}
 
 		public int health;
@@ -154,28 +157,42 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
+	public SkillPrefab GetSkillPrefabFromString(string skillTypeString) {
+		return skillPrefabs.Find(skillPrefab => skillPrefab.type == (SkillTypeEnum)System.Enum.Parse(typeof(SkillTypeEnum),skillTypeString));
+	}
+
 	public class SkillInstance {
 		public Colonist colonist;
 		public SkillPrefab prefab;
-		public Dictionary<JobManager.JobTypesEnum,float> currentAffectedJobTypes = new Dictionary<JobManager.JobTypesEnum,float>();
 
-		public SkillInstance(Colonist colonist, SkillPrefab prefab) {
+		public int level;
+		public float currentExperience;
+		public float nextLevelExperience;
+
+		public SkillInstance(Colonist colonist, SkillPrefab prefab, int startingLevel) {
 			this.colonist = colonist;
 			this.prefab = prefab;
 
-			foreach (KeyValuePair<JobManager.JobTypesEnum,float> kvp in prefab.affectedJobTypes) {
-				currentAffectedJobTypes.Add(kvp.Key,kvp.Value);
-			}
+			level = startingLevel;
+
+			currentExperience = Random.Range(0,100);
+			nextLevelExperience = 100 + (10 * level);
+			AddExperience(0);
 		}
 
-		public void AddSkillExperience(JobManager.JobTypesEnum jobType, float amount) {
-			currentAffectedJobTypes[jobType] += amount;
+		public void AddExperience(float amount) {
+			currentExperience += amount;
+			while (currentExperience >= nextLevelExperience) {
+				level += 1;
+				currentExperience = (currentExperience - nextLevelExperience);
+				nextLevelExperience = 100 + (10 * level);
+			}
 		}
 	}
 
 	public List<SkillPrefab> skillPrefabs = new List<SkillPrefab>();
 
-	void GetColonistSkills() {
+	void CreateColonistSkills() {
 		List<string> stringSkills = Resources.Load<TextAsset>(@"Data/colonistskills").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('`').ToList();
 		foreach (string stringSkill in stringSkills) {
 			List<string> stringSkillData = stringSkill.Split('/').ToList();
@@ -183,6 +200,42 @@ public class ColonistManager : MonoBehaviour {
 		}
 		foreach (SkillPrefab skillPrefab in skillPrefabs) {
 			skillPrefab.name = uiM.SplitByCapitals(skillPrefab.name);
+		}
+	}
+
+	public enum ProfessionTypeEnum { Nothing, Builder, Miner, Farmer };
+
+	public List<Profession> professions = new List<Profession>();
+
+	public class Profession {
+		public ProfessionTypeEnum type;
+		public string name;
+
+		public string description;
+
+		public Dictionary<SkillPrefab,int> skillRandomMaxValues = new Dictionary<SkillPrefab,int>();
+
+		public Profession(List<string> data, ColonistManager colonistM) {
+			type = (ProfessionTypeEnum)System.Enum.Parse(typeof(ProfessionTypeEnum),data[0]);
+			name = type.ToString();
+
+			description = data[1];
+
+			foreach (string skillRandomMaxValueData in data[2].Split(';')) {
+				List<string> skillRandomMaxValue = skillRandomMaxValueData.Split(',').ToList();
+				skillRandomMaxValues.Add(colonistM.GetSkillPrefabFromString(skillRandomMaxValue[0]),int.Parse(skillRandomMaxValue[1]));
+			}
+		}
+	}
+
+	void CreateColonistProfessions() {
+		List<string> stringProfessions = Resources.Load<TextAsset>(@"Data/colonistprofessions").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('`').ToList();
+		foreach (string stringProfession in stringProfessions) {
+			List<string> stringProfessionData = stringProfession.Split('/').ToList();
+			professions.Add(new Profession(stringProfessionData,this));
+		}
+		foreach (Profession profession in professions) {
+			profession.name = uiM.SplitByCapitals(profession.name);
 		}
 	}
 
@@ -194,11 +247,18 @@ public class ColonistManager : MonoBehaviour {
 
 		public bool playerMoved;
 
-		// Skills
 		public List<SkillInstance> skills = new List<SkillInstance>();
 
-		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile,colonistLookIndexes) {
+		public Profession profession;
+
+		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes, Profession profession) : base(spawnTile,colonistLookIndexes) {
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
+
+			this.profession = profession;
+
+			foreach (SkillPrefab skillPrefab in colonistM.skillPrefabs) {
+				skills.Add(new SkillInstance(this,skillPrefab,Random.Range(0,profession.skillRandomMaxValues[skillPrefab])));
+			}
 		}
 
 		public new void Update() {
@@ -273,6 +333,7 @@ public class ColonistManager : MonoBehaviour {
 			}
 
 			job = null;
+			uiM.UpdateJobList();
 		}
 
 		public void PlayerMoveToTile(TileManager.Tile tile) {
@@ -286,7 +347,12 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public float GetJobSkillMultiplier(JobManager.JobTypesEnum jobType) {
-			return (1 + skills.Where(skill => skill.currentAffectedJobTypes.ContainsKey(jobType)).Sum(skill => skill.currentAffectedJobTypes[jobType] - 1));
+			//return (1 + skills.Where(skill => skill.prefab.affectedJobTypes.ContainsKey(jobType)).Sum(skill => skill.currentAffectedJobTypes[jobType] - 1));
+			SkillInstance skill = skills.Find(findSkill => findSkill.prefab.affectedJobTypes.ContainsKey(jobType));
+			if (skill != null) {
+				return 1 * (-(1f / (((skill.prefab.affectedJobTypes[jobType]) * (skill.level)) + 1)) + 1);
+			}
+			return 1.0f;
 		}
 	}
 
@@ -325,7 +391,7 @@ public class ColonistManager : MonoBehaviour {
 			}
 			TileManager.Tile colonistSpawnTile = walkableTilesByDistanceToCentre[Random.Range(0,(walkableTilesByDistanceToCentre.Count > 30 ? 30 : walkableTilesByDistanceToCentre.Count))];
 
-			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes);
+			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes,professions[Random.Range(0,professions.Count)]);
 			colonists.Add(colonist);
 		}
 
@@ -355,6 +421,7 @@ public class ColonistManager : MonoBehaviour {
 				DeselectSelectedColonist();
 				selectedColonist = newSelectedColonist;
 				foundColonist = true;
+				uiM.UpdateSelectedColonistInformation();
 			}
 
 			if (foundColonist) {
@@ -376,6 +443,7 @@ public class ColonistManager : MonoBehaviour {
 			selectedColonist = colonist;
 			CreateColonistIndicator();
 		}
+		uiM.UpdateSelectedColonistInformation();
 	}
 
 	void CreateColonistIndicator() {
@@ -390,5 +458,6 @@ public class ColonistManager : MonoBehaviour {
 	void DeselectSelectedColonist() {
 		selectedColonist = null;
 		Destroy(selectedColonistIndicator);
+		uiM.UpdateSelectedColonistInformation();
 	}
 }
