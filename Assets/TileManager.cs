@@ -274,6 +274,7 @@ public class TileManager:MonoBehaviour {
 
 		public Region region;
 		public Region drainageBasin;
+		public Region regionBlock;
 
 		public Biome biome;
 		public Plant plant;
@@ -675,7 +676,11 @@ public class TileManager:MonoBehaviour {
 						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),10);
 					}
 				}
-
+				if (Input.GetKeyDown(KeyCode.E)) {
+					foreach (Region region in regionBlocks) {
+						region.ColourRegion();
+					}
+				}
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
 					/*
@@ -715,6 +720,8 @@ public class TileManager:MonoBehaviour {
 
 		SetTileRegions(true);
 
+		
+
 		ReduceNoise(Mathf.RoundToInt(mapSize / 5f),new List<TileTypes>() { TileTypes.GrassWater,TileTypes.Stone,TileTypes.Grass });
 		ReduceNoise(Mathf.RoundToInt(mapSize / 2f),new List<TileTypes>() { TileTypes.GrassWater });
 
@@ -727,6 +734,8 @@ public class TileManager:MonoBehaviour {
 		SetMapEdgeTiles();
 		DetermineDrainageBasins();
 		CreateRivers();
+
+		CreateRegionBlocks();
 
 		Bitmasking(tiles);
 	}
@@ -964,6 +973,80 @@ public class TileManager:MonoBehaviour {
 			}
 			FindConnectedRegions(splitByTileType); // Find the new connected regions
 		}
+	}
+
+	public List<RegionBlock> regionBlocks = new List<RegionBlock>();
+
+	public class RegionBlock : Region {
+		public Tile centreTile;
+		public RegionBlock(TileType regionTileType, int regionID) : base(regionTileType,regionID) {
+			centreTile = null;
+		}
+	}
+
+	void CreateRegionBlocks() {
+		int size = 10;
+		int regionIndex = 0;
+		for (int sectionY = 0; sectionY < mapSize; sectionY += size) {
+			for (int sectionX = 0; sectionX < mapSize; sectionX += size) {
+				RegionBlock regionBlock = new RegionBlock(GetTileTypeByEnum(TileTypes.Grass),regionIndex);
+				for (int y = sectionY; (y < sectionY + size && y < mapSize); y++) {
+					for (int x = sectionX; (x < sectionX + size && x < mapSize); x++) {
+						/*
+						if (y == Mathf.FloorToInt(sectionY + (size / 2f)) && x == Mathf.FloorToInt(sectionX + (size / 2f))) {
+							regionBlock.centreTile = sortedTiles[y][x];
+						}
+						*/
+						regionBlock.tiles.Add(sortedTiles[y][x]);
+					}
+				}
+				regionIndex += 1;
+				regionBlocks.Add(regionBlock);
+			}
+		}
+		regionIndex += 1;
+		List<RegionBlock> newRegionBlocks = new List<RegionBlock>();
+		foreach (RegionBlock regionBlock in regionBlocks) {
+			if (regionBlock.tiles.Find(tile => !tile.walkable) != null) {
+				List<Tile> unwalkableTiles = new List<Tile>();
+				foreach (Tile tile in regionBlock.tiles) {
+					if (!tile.walkable) {
+						unwalkableTiles.Add(tile);
+					} else {
+						tile.regionBlock = regionBlock;
+					}
+				}
+				regionBlock.tiles.RemoveAll(tile => !tile.walkable);
+				foreach (Tile unwalkableTile in unwalkableTiles) {
+					if (unwalkableTile.regionBlock == null) {
+						RegionBlock unwalkableRegionBlock = new RegionBlock(GetTileTypeByEnum(TileTypes.Stone),regionIndex);
+						regionIndex += 1;
+						Tile currentTile = unwalkableTile;
+						List<Tile> frontier = new List<Tile>() { currentTile };
+						List<Tile> checkedTiles = new List<Tile>() { currentTile };
+						while (frontier.Count > 0) {
+							currentTile = frontier[0];
+							frontier.RemoveAt(0);
+							unwalkableRegionBlock.tiles.Add(currentTile);
+							currentTile.regionBlock = unwalkableRegionBlock;
+							foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+								if (nTile != null && !nTile.walkable && !checkedTiles.Contains(nTile) && unwalkableTiles.Contains(nTile) && nTile.regionBlock == null) {
+									frontier.Add(nTile);
+								}
+								checkedTiles.Add(nTile);
+							}
+						}
+						newRegionBlocks.Add(unwalkableRegionBlock);
+					}
+				}
+			}
+		}
+		regionBlocks.AddRange(newRegionBlocks);
+		// Surrounding Tiles
+	}
+
+	void SplitRegionBlocks(List<Tile> groupedTiles) {
+
 	}
 
 	Region FindLowestRegion(List<Region> searchRegions) {
