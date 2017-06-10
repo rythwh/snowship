@@ -8,11 +8,13 @@ public class ColonistManager : MonoBehaviour {
 	private TileManager tileM;
 	private CameraManager cameraM;
 	private UIManager uiM;
+	private PathManager pathM;
 
 	void Awake() {
 		tileM = GetComponent<TileManager>();
 		cameraM = GetComponent<CameraManager>();
 		uiM = GetComponent<UIManager>();
+		pathM = GetComponent<PathManager>();
 
 		CreateColonistSkills();
 		CreateColonistProfessions();
@@ -319,6 +321,8 @@ public class ColonistManager : MonoBehaviour {
 
 			job.tile.objectInstances[job.prefab.layer].FinishCreation();
 
+			GetSkillFromJobType(job.prefab.jobType).AddExperience(job.prefab.timeToBuild);
+
 			if (!overTile.walkable) {
 				List<TileManager.Tile> walkableSurroundingTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
 				if (walkableSurroundingTiles.Count > 0) {
@@ -346,9 +350,13 @@ public class ColonistManager : MonoBehaviour {
 			}
 		}
 
+		public SkillInstance GetSkillFromJobType(JobManager.JobTypesEnum jobType) {
+			return skills.Find(findSkill => findSkill.prefab.affectedJobTypes.ContainsKey(jobType));
+		}
+
 		public float GetJobSkillMultiplier(JobManager.JobTypesEnum jobType) {
 			//return (1 + skills.Where(skill => skill.prefab.affectedJobTypes.ContainsKey(jobType)).Sum(skill => skill.currentAffectedJobTypes[jobType] - 1));
-			SkillInstance skill = skills.Find(findSkill => findSkill.prefab.affectedJobTypes.ContainsKey(jobType));
+			SkillInstance skill = GetSkillFromJobType(jobType);
 			if (skill != null) {
 				return 1 * (-(1f / (((skill.prefab.affectedJobTypes[jobType]) * (skill.level)) + 1)) + 1);
 			}
@@ -381,13 +389,13 @@ public class ColonistManager : MonoBehaviour {
 				{ColonistLook.Shirt, Random.Range(0,0) },{ColonistLook.Pants, Random.Range(0,0) }
 			};
 
-			List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))).ToList();
+			List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)).ToList();
 			if (walkableTilesByDistanceToCentre.Count <= 0) {
 				foreach (TileManager.Tile tile in tileM.tiles.Where(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f)) <= 4f)) {
 					tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Grass),true,true,true,true);
 				}
 				tileM.Bitmasking(tileM.tiles);
-				walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))).ToList();
+				walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)).ToList();
 			}
 			TileManager.Tile colonistSpawnTile = walkableTilesByDistanceToCentre[Random.Range(0,(walkableTilesByDistanceToCentre.Count > 30 ? 30 : walkableTilesByDistanceToCentre.Count))];
 

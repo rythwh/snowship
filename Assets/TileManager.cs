@@ -274,7 +274,7 @@ public class TileManager:MonoBehaviour {
 
 		public Region region;
 		public Region drainageBasin;
-		public Region regionBlock;
+		public RegionBlock regionBlock;
 
 		public Biome biome;
 		public Plant plant;
@@ -683,8 +683,27 @@ public class TileManager:MonoBehaviour {
 				}
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
-					/*
 					Tile tile = GetTileFromPosition(mousePosition);
+					pathM.RegionBlockDistance(GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,tile.regionBlock,true,true);
+					/*
+					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+					foreach (Tile rTile in tile.regionBlock.tiles) {
+						rTile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+						rTile.obj.GetComponent<SpriteRenderer>().color = Color.black;
+					}
+					GetTileFromPosition(tile.regionBlock.averagePosition).obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+					GetTileFromPosition(tile.regionBlock.averagePosition).obj.GetComponent<SpriteRenderer>().color = Color.white;
+					foreach (RegionBlock nRegionBlock in tile.regionBlock.horizontalSurroundingRegionBlocks) {
+						Color colour = nRegionBlock.tileType.walkable ? Color.blue : Color.red;
+						foreach (Tile rTile in nRegionBlock.tiles) {
+							rTile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+							rTile.obj.GetComponent<SpriteRenderer>().color = colour;
+						}
+						GetTileFromPosition(nRegionBlock.averagePosition).obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
+						GetTileFromPosition(nRegionBlock.averagePosition).obj.GetComponent<SpriteRenderer>().color = Color.white;
+					}
+					*/
+					/*
 					tile.SetTileType(GetTileTypeByEnum(TileTypes.Stone),true,true,true,true);
 					RecalculateRegionsAtTile(tile);
 					*/
@@ -712,15 +731,13 @@ public class TileManager:MonoBehaviour {
 			mapSeed = Random.Range(0,int.MaxValue);
 		}
 		Random.InitState(mapSeed);
-		print(mapSeed);
+		print("Map Seed: " + mapSeed);
 	}
 
 	void CreateMap() {
 		CreateTiles();
 
 		SetTileRegions(true);
-
-		
 
 		ReduceNoise(Mathf.RoundToInt(mapSize / 5f),new List<TileTypes>() { TileTypes.GrassWater,TileTypes.Stone,TileTypes.Grass });
 		ReduceNoise(Mathf.RoundToInt(mapSize / 2f),new List<TileTypes>() { TileTypes.GrassWater });
@@ -978,9 +995,10 @@ public class TileManager:MonoBehaviour {
 	public List<RegionBlock> regionBlocks = new List<RegionBlock>();
 
 	public class RegionBlock : Region {
-		public Tile centreTile;
+		public Vector2 averagePosition = new Vector2(0,0);
+		public List<RegionBlock> horizontalSurroundingRegionBlocks = new List<RegionBlock>();
 		public RegionBlock(TileType regionTileType, int regionID) : base(regionTileType,regionID) {
-			centreTile = null;
+
 		}
 	}
 
@@ -992,11 +1010,6 @@ public class TileManager:MonoBehaviour {
 				RegionBlock regionBlock = new RegionBlock(GetTileTypeByEnum(TileTypes.Grass),regionIndex);
 				for (int y = sectionY; (y < sectionY + size && y < mapSize); y++) {
 					for (int x = sectionX; (x < sectionX + size && x < mapSize); x++) {
-						/*
-						if (y == Mathf.FloorToInt(sectionY + (size / 2f)) && x == Mathf.FloorToInt(sectionX + (size / 2f))) {
-							regionBlock.centreTile = sortedTiles[y][x];
-						}
-						*/
 						regionBlock.tiles.Add(sortedTiles[y][x]);
 					}
 				}
@@ -1005,18 +1018,21 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 		regionIndex += 1;
+		List<RegionBlock> removeRegionBlocks = new List<RegionBlock>();
 		List<RegionBlock> newRegionBlocks = new List<RegionBlock>();
 		foreach (RegionBlock regionBlock in regionBlocks) {
 			if (regionBlock.tiles.Find(tile => !tile.walkable) != null) {
+				removeRegionBlocks.Add(regionBlock);
 				List<Tile> unwalkableTiles = new List<Tile>();
+				List<Tile> walkableTiles = new List<Tile>();
 				foreach (Tile tile in regionBlock.tiles) {
-					if (!tile.walkable) {
-						unwalkableTiles.Add(tile);
+					if (tile.walkable) {
+						walkableTiles.Add(tile);
 					} else {
-						tile.regionBlock = regionBlock;
+						unwalkableTiles.Add(tile);
 					}
 				}
-				regionBlock.tiles.RemoveAll(tile => !tile.walkable);
+				regionBlock.tiles.Clear();
 				foreach (Tile unwalkableTile in unwalkableTiles) {
 					if (unwalkableTile.regionBlock == null) {
 						RegionBlock unwalkableRegionBlock = new RegionBlock(GetTileTypeByEnum(TileTypes.Stone),regionIndex);
@@ -1039,14 +1055,50 @@ public class TileManager:MonoBehaviour {
 						newRegionBlocks.Add(unwalkableRegionBlock);
 					}
 				}
+				foreach (Tile walkableTile in walkableTiles) {
+					if (walkableTile.regionBlock == null) {
+						RegionBlock walkableRegionBlock = new RegionBlock(GetTileTypeByEnum(TileTypes.Grass),regionIndex);
+						regionIndex += 1;
+						Tile currentTile = walkableTile;
+						List<Tile> frontier = new List<Tile>() { currentTile };
+						List<Tile> checkedTiles = new List<Tile>() { currentTile };
+						while (frontier.Count > 0) {
+							currentTile = frontier[0];
+							frontier.RemoveAt(0);
+							walkableRegionBlock.tiles.Add(currentTile);
+							currentTile.regionBlock = walkableRegionBlock;
+							foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+								if (nTile != null && nTile.walkable && !checkedTiles.Contains(nTile) && walkableTiles.Contains(nTile) && nTile.regionBlock == null) {
+									frontier.Add(nTile);
+								}
+								checkedTiles.Add(nTile);
+							}
+						}
+						newRegionBlocks.Add(walkableRegionBlock);
+					}
+				}
+			} else {
+				foreach (Tile tile in regionBlock.tiles) {
+					tile.regionBlock = regionBlock;
+				}
 			}
 		}
+		foreach (RegionBlock regionBlock in removeRegionBlocks) {
+			regionBlocks.Remove(regionBlock);
+		}
+		removeRegionBlocks.Clear();
 		regionBlocks.AddRange(newRegionBlocks);
-		// Surrounding Tiles
-	}
-
-	void SplitRegionBlocks(List<Tile> groupedTiles) {
-
+		foreach (RegionBlock regionBlock in regionBlocks) {
+			foreach (Tile tile in regionBlock.tiles) {
+				foreach (Tile nTile in tile.horizontalSurroundingTiles) {
+					if (nTile != null && nTile.regionBlock != tile.regionBlock && nTile.regionBlock != null && !regionBlock.horizontalSurroundingRegionBlocks.Contains(nTile.regionBlock)) {
+						regionBlock.horizontalSurroundingRegionBlocks.Add(nTile.regionBlock);
+					}
+				}
+				regionBlock.averagePosition = new Vector2(regionBlock.averagePosition.x + tile.obj.transform.position.x,regionBlock.averagePosition.y + tile.obj.transform.position.y);
+			}
+			regionBlock.averagePosition = new Vector2(regionBlock.averagePosition.x / regionBlock.tiles.Count,regionBlock.averagePosition.y / regionBlock.tiles.Count);
+		}
 	}
 
 	Region FindLowestRegion(List<Region> searchRegions) {
@@ -1265,7 +1317,7 @@ public class TileManager:MonoBehaviour {
 
 		foreach (Tile tile in tiles) {
 			tile.temperature = TemperatureFunction(tile.position.y,temperatureOffset);
-			tile.temperature += -(250f * Mathf.Pow(tile.height - 0.5f,3));
+			tile.temperature += -(100f * Mathf.Pow(tile.height - 0.5f,3));
 		}
 
 		AverageTileTemperatures();

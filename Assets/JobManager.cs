@@ -10,6 +10,7 @@ public class JobManager:MonoBehaviour {
 	private CameraManager cameraM;
 	private TimeManager timeM;
 	private UIManager uiM;
+	private PathManager pathM;
 
 	void Awake() {
 		tileM = GetComponent<TileManager>();
@@ -17,6 +18,7 @@ public class JobManager:MonoBehaviour {
 		cameraM = GetComponent<CameraManager>();
 		timeM = GetComponent<TimeManager>();
 		uiM = GetComponent<UIManager>();
+		pathM = GetComponent<PathManager>();
 
 		InitializeSelectionModifierFunctions();
 	}
@@ -247,21 +249,46 @@ public class JobManager:MonoBehaviour {
 	}
 
 	public void GiveJobsToColonists() {
-		List<ColonistManager.Colonist> availableColonists = colonistM.colonists.Where(colonist => colonist.job == null).ToList();
+
+		if (jobs.Count > 0) {
+			bool updateJobListUI = false;
+			for (int i = 0; i < jobs.Count; i++) {
+				Job job = jobs[i];
+				List<ColonistManager.Colonist> availableColonists = colonistM.colonists.Where(colonist => colonist.job == null && job.tile.region == colonist.overTile.region).ToList();
+				if (availableColonists.Count > 0) {
+					List<ColonistManager.Colonist> sortedColonists = availableColonists.OrderBy(colonist => pathM.RegionBlockDistance(job.tile.regionBlock,colonist.overTile.regionBlock,true,true)).ToList();
+					foreach (ColonistManager.Colonist colonist in sortedColonists) {
+						colonist.SetJob(job);
+						jobs.RemoveAt(i);
+						i -= 1;//(i - 1 >= 0 ? i - 1 : 0);\
+						updateJobListUI = true;
+						break;
+					}
+				}
+			}
+			if (updateJobListUI) {
+				uiM.SetJobList();
+			}
+		}
+		/*
 		if (availableColonists.Count > 0) {
 			bool gaveJob = false;
 			foreach (ColonistManager.Colonist colonist in availableColonists) {
-				List<Job> sortedJobs = jobs.Where(job => (job.tile.surroundingTiles.Find(tile => tile != null && tile.region == colonist.overTile.region) != null) || (job.tile.region == colonist.overTile.region)).OrderBy(job => Vector2.Distance(job.tile.obj.transform.position,colonist.obj.transform.position)
-				).ToList();
+				List<Job> sortedJobs = jobs.Where(job => (job.tile.surroundingTiles.Find(tile => tile != null && tile.region == colonist.overTile.region) != null) || (job.tile.region == colonist.overTile.region)).OrderBy(job => pathM.RegionBlockDistance(job.tile.regionBlock,colonist.overTile.regionBlock,true,true)).ToList();
 				if (sortedJobs.Count > 0) {
-					colonist.SetJob(sortedJobs[0]);
-					jobs.Remove(sortedJobs[0]);
-					gaveJob = true;
+					if (availableColonists.OrderBy(c => pathM.RegionBlockDistance(c.overTile.regionBlock,sortedJobs[0].tile.regionBlock,true,true)).ToList()[0] == colonist) {
+						colonist.SetJob(sortedJobs[0]);
+						jobs.Remove(sortedJobs[0]);
+						gaveJob = true;
+					} else {
+						continue;
+					}
 				}
 			}
 			if (gaveJob) {
 				uiM.SetJobList();
 			}
 		}
+		*/
 	}
 }

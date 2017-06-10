@@ -98,7 +98,50 @@ public class PathManager : MonoBehaviour {
 			}
 			frontier = frontier.OrderBy(o => o.cost).ToList();
 		}
-
 		return false;
+	}
+
+	public class PathfindingRegionBlock {
+		public TileManager.RegionBlock regionBlock;
+		public PathfindingRegionBlock cameFrom;
+		public float cost;
+
+		public PathfindingRegionBlock(TileManager.RegionBlock regionBlock,PathfindingRegionBlock cameFrom, float cost) {
+			this.regionBlock = regionBlock;
+			this.cameFrom = cameFrom;
+			this.cost = cost;
+		}
+	}
+
+	public float RegionBlockDistance(TileManager.RegionBlock startRegionBlock,TileManager.RegionBlock endRegionBlock,bool careAboutWalkability,bool walkable) {
+
+		if (careAboutWalkability && (startRegionBlock.tileType.walkable != endRegionBlock.tileType.walkable || startRegionBlock.tiles[0].region != endRegionBlock.tiles[0].region)) {
+			return Mathf.Infinity;
+		}
+
+		PathfindingRegionBlock currentRegionBlock = new PathfindingRegionBlock(startRegionBlock,null,0);
+		List<PathfindingRegionBlock> frontier = new List<PathfindingRegionBlock>() { currentRegionBlock };
+		List<TileManager.RegionBlock> checkedBlocks = new List<TileManager.RegionBlock>() { startRegionBlock };
+		while (frontier.Count > 0) {
+			currentRegionBlock = frontier[0];
+			if (currentRegionBlock.regionBlock == endRegionBlock) {
+				float distance = 0;
+				while (currentRegionBlock.cameFrom != null) {
+					distance += Vector2.Distance(currentRegionBlock.regionBlock.averagePosition,currentRegionBlock.cameFrom.regionBlock.averagePosition);
+					currentRegionBlock = currentRegionBlock.cameFrom;
+				}
+				return distance;
+			}
+			frontier.RemoveAt(0);
+			foreach (TileManager.RegionBlock regionBlock in currentRegionBlock.regionBlock.horizontalSurroundingRegionBlocks) {
+				if ((careAboutWalkability ? regionBlock.tileType.walkable == walkable : true) && !checkedBlocks.Contains(regionBlock)) {
+					PathfindingRegionBlock pRegionBlock = new PathfindingRegionBlock(regionBlock,currentRegionBlock,Vector2.Distance(regionBlock.averagePosition,endRegionBlock.averagePosition));
+					frontier.Add(pRegionBlock);
+					checkedBlocks.Add(regionBlock);
+				}
+			}
+			frontier = frontier.OrderBy(regionBlock => regionBlock.cost).ToList();
+		}
+		return Mathf.Infinity;
 	}
 }
