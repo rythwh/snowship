@@ -36,6 +36,7 @@ public class JobManager:MonoBehaviour {
 
 		public bool started;
 		public float jobProgress;
+		public float colonistBuildTime;
 
 		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab,ColonistManager colonistM) {
 			this.tile = tile;
@@ -51,6 +52,7 @@ public class JobManager:MonoBehaviour {
 			jPSR.color = new Color(1f,1f,1f,0.25f);
 
 			jobProgress = prefab.timeToBuild;
+			colonistBuildTime = prefab.timeToBuild;
 
 			accessible = false;
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {

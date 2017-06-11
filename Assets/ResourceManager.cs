@@ -330,6 +330,16 @@ public class ResourceManager : MonoBehaviour {
 	public List<Container> containers = new List<Container>();
 
 	public class Inventory {
+
+		private UIManager uiM;
+
+		private void GetScriptReferences() {
+
+			GameObject GM = GameObject.Find("GM");
+
+			uiM = GM.GetComponent<UIManager>();
+		}
+
 		public List<ResourceAmount> resources = new List<ResourceAmount>();
 		public List<ReservedResources> reservedResources = new List<ReservedResources>();
 
@@ -342,6 +352,8 @@ public class ResourceManager : MonoBehaviour {
 			this.human = human;
 			this.container = container;
 			this.maxAmount = maxAmount;
+
+			GetScriptReferences();
 		}
 
 		public int CountResources() {
@@ -377,6 +389,7 @@ public class ResourceManager : MonoBehaviour {
 					print(human.name + " now has " + existingResourceAmount.amount + " of " + existingResourceAmount.resource.name);
 				}
 			}
+			uiM.SetSelectedColonistInformation();
 		}
 
 		public bool ReserveResources(List<ResourceAmount> resourcesToReserve, ColonistManager.Colonist colonistReservingResources) {
@@ -394,6 +407,7 @@ public class ResourceManager : MonoBehaviour {
 				}
 				reservedResources.Add(new ReservedResources(resourcesToReserve,colonistReservingResources));
 			}
+			uiM.SetSelectedColonistInformation();
 			return allResourcesFound;
 		}
 
@@ -407,6 +421,7 @@ public class ResourceManager : MonoBehaviour {
 			foreach (ReservedResources rr in reservedResourcesByColonist) {
 				reservedResources.Remove(rr);
 			}
+			uiM.SetSelectedColonistInformation();
 			return reservedResourcesByColonist;
 		}
 	}
@@ -481,10 +496,12 @@ public class ResourceManager : MonoBehaviour {
 				TileObjectPrefab top = GetTileObjectPrefabByEnum(topEnum);
 				if (top.layer == layerSumTiles.Key) {
 					foreach (TileManager.Tile tile in tileSurroundingTiles) {
-						TileObjectInstance topInstance = tile.GetAllObjectInstances().Find(instances => instances.prefab == top);
-						if (topInstance != null) {
-							if (layerSumTiles.Value[tileSurroundingTiles.IndexOf(tile)] > 0) {
-								sumTiles[tileSurroundingTiles.IndexOf(tile)] = true;
+						if (tile != null) {
+							TileObjectInstance topInstance = tile.GetAllObjectInstances().Find(instances => instances.prefab == top);
+							if (topInstance != null) {
+								if (layerSumTiles.Value[tileSurroundingTiles.IndexOf(tile)] > 0) {
+									sumTiles[tileSurroundingTiles.IndexOf(tile)] = true;
+								}
 							}
 						}
 					}

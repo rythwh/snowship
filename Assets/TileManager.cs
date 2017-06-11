@@ -1164,7 +1164,6 @@ public class TileManager:MonoBehaviour {
 						foreach (Tile endTile in horizontalGroups) {
 							if (!removeTiles.Contains(endTile) && startTile != endTile) {
 								if (pathM.PathExists(startTile,endTile,true,mapSize,PathManager.WalkableSetting.Walkable,PathManager.DirectionSetting.Horizontal)) {
-									print("Removing a tile because it is in the same region as another.");
 									removeTiles.Add(endTile);
 								}
 							}

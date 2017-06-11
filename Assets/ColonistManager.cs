@@ -67,6 +67,7 @@ public class ColonistManager : MonoBehaviour {
 		public List<TileManager.Tile> path = new List<TileManager.Tile>();
 
 		public void Update() {
+			overTile = tileM.GetTileFromPosition(obj.transform.position);
 			MoveToTile(null);
 		}
 
@@ -81,8 +82,7 @@ public class ColonistManager : MonoBehaviour {
 				oldPosition = obj.transform.position;
 			}
 			if (path.Count > 0) {
-				overTile = tileM.GetTileFromPosition(obj.transform.position);
-
+				
 				obj.transform.position = Vector2.Lerp(oldPosition,path[0].obj.transform.position,moveTimer);
 
 				if (moveTimer >= 1f) {
@@ -302,6 +302,9 @@ public class ColonistManager : MonoBehaviour {
 			job.tile.SetTileObject(job.prefab);
 
 			job.jobProgress *= (1 + (1 - GetJobSkillMultiplier(job.prefab.jobType)));
+			job.colonistBuildTime = job.jobProgress;
+
+			uiM.SetJobList();
 		}
 
 		public void WorkJob() {
@@ -313,7 +316,7 @@ public class ColonistManager : MonoBehaviour {
 				return;
 			}
 
-			job.tile.objectInstances[job.prefab.layer].obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.prefab.timeToBuild - job.jobProgress) / job.prefab.timeToBuild));
+			job.tile.objectInstances[job.prefab.layer].obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.colonistBuildTime - job.jobProgress) / job.colonistBuildTime));
 		}
 
 		public void FinishJob() {
@@ -337,6 +340,7 @@ public class ColonistManager : MonoBehaviour {
 			}
 
 			job = null;
+
 			uiM.SetJobList();
 		}
 
@@ -389,13 +393,13 @@ public class ColonistManager : MonoBehaviour {
 				{ColonistLook.Shirt, Random.Range(0,0) },{ColonistLook.Pants, Random.Range(0,0) }
 			};
 
-			List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)).ToList();
+			List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 			if (walkableTilesByDistanceToCentre.Count <= 0) {
 				foreach (TileManager.Tile tile in tileM.tiles.Where(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f)) <= 4f)) {
 					tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Grass),true,true,true,true);
 				}
 				tileM.Bitmasking(tileM.tiles);
-				walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)).ToList();
+				walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 			}
 			TileManager.Tile colonistSpawnTile = walkableTilesByDistanceToCentre[Random.Range(0,(walkableTilesByDistanceToCentre.Count > 30 ? 30 : walkableTilesByDistanceToCentre.Count))];
 
@@ -467,5 +471,9 @@ public class ColonistManager : MonoBehaviour {
 		selectedColonist = null;
 		Destroy(selectedColonistIndicator);
 		uiM.SetSelectedColonistInformation();
+	}
+
+	public void GenerateName() {
+
 	}
 }

@@ -19,7 +19,14 @@ public class PathManager : MonoBehaviour {
 
 	public List<TileManager.Tile> FindPathToTile(TileManager.Tile startTile, TileManager.Tile endTile) {
 
+		bool stop = false;
 		if (!endTile.walkable || startTile.region != endTile.region) {
+			stop = true;
+		}
+		if (!startTile.walkable && endTile.walkable) {
+			stop = false;
+		}
+		if (stop) {
 			return new List<TileManager.Tile>();
 		}
 
