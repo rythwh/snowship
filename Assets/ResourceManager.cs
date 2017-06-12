@@ -367,6 +367,9 @@ public class ResourceManager : MonoBehaviour {
 				if (amount >= 0 || (amount - existingResourceAmount.amount) >= 0) {
 					print("Added an additional " + amount + " of " + resource.name + " to " + human.name);
 					existingResourceAmount.amount += amount;
+				} else if (amount < 0 && (existingResourceAmount.amount + amount) >= 0) {
+					print("Removed " + amount + " of " + resource.name + " from " + human.name);
+					existingResourceAmount.amount += amount;
 				} else {
 					Debug.LogError("Trying to remove " + amount + " of " + resource.name + " on " + human.name + " when only " + existingResourceAmount.amount + " of that resource exist in this inventory");
 				}
@@ -393,6 +396,7 @@ public class ResourceManager : MonoBehaviour {
 		}
 
 		public bool ReserveResources(List<ResourceAmount> resourcesToReserve, ColonistManager.Colonist colonistReservingResources) {
+			print(colonistReservingResources.name + " is trying to reserve " + resourcesToReserve.Count + " resources");
 			bool allResourcesFound = true;
 			foreach (ResourceAmount raReserve in resourcesToReserve) {
 				ResourceAmount raInventory = resources.Find(ra => ra.resource == raReserve.resource);
@@ -400,6 +404,7 @@ public class ResourceManager : MonoBehaviour {
 					allResourcesFound = false;
 				}
 			}
+			print("All Resources Found: " + allResourcesFound);
 			if (allResourcesFound) {
 				foreach (ResourceAmount raReserve in resourcesToReserve) {
 					ResourceAmount raInventory = resources.Find(ra => ra.resource == raReserve.resource);

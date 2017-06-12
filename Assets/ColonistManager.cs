@@ -11,6 +11,11 @@ public class ColonistManager : MonoBehaviour {
 	private PathManager pathM;
 
 	void Awake() {
+
+		foreach (string name in Resources.Load<TextAsset>(@"Data/names").text.Split(' ').ToList()) {
+			humanNames.Add(name);
+		}
+
 		tileM = GetComponent<TileManager>();
 		cameraM = GetComponent<CameraManager>();
 		uiM = GetComponent<UIManager>();
@@ -136,6 +141,18 @@ public class ColonistManager : MonoBehaviour {
 			moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
 
 			inventory = new ResourceManager.Inventory(this,null,50);
+
+			List<string> validNames = colonistM.humanNames.Where(name => colonistM.colonists.Find(colonistWithName => colonistWithName.name == name) == null).ToList();
+			if (validNames.Count > 0) {
+				name = validNames[Random.Range(0,validNames.Count)];
+			} else {
+				name = colonistM.humanNames[Random.Range(0,colonistM.humanNames.Count)];
+			}
+			string tempName = name.Take(1).ToList()[0].ToString().ToUpper();
+			foreach (char character in name.Skip(1)) {
+				tempName += character;
+			}
+			name = tempName;
 		}
 	}
 
@@ -378,6 +395,8 @@ public class ColonistManager : MonoBehaviour {
 
 	public List<List<Sprite>> humanMoveSprites = new List<List<Sprite>>();
 	public enum ColonistLook { Skin, Hair, Shirt, Pants };
+
+	public List<string> humanNames = new List<string>();
 
 	public void SpawnColonists(int amount) {
 		for (int i = 0; i < 3; i++) {

@@ -681,6 +681,14 @@ public class TileManager:MonoBehaviour {
 						region.ColourRegion();
 					}
 				}
+				if (Input.GetKeyDown(KeyCode.T)) {
+					colonistM.colonists[0].inventory.ReserveResources(new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),5) },colonistM.colonists[1]);
+					/*
+					foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+						colonist.inventory.ReserveResources(new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),5) },colonist );
+					}
+					*/
+				}
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
 					Tile tile = GetTileFromPosition(mousePosition);

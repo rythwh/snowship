@@ -119,7 +119,7 @@ public class UIManager:MonoBehaviour {
 
 	public void CreateBuildMenuButtons() {
 		foreach (ResourceManager.TileObjectPrefabGroup topg in resourceM.tileObjectPrefabGroups) {
-			GameObject buildMenuGroupButton = Instantiate(Resources.Load<GameObject>(@"UI/BuildItem-Button-Prefab"),GameObject.Find("BuildMenu-Panel").transform,false);
+			GameObject buildMenuGroupButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildItem-Button-Prefab"),GameObject.Find("BuildMenu-Panel").transform,false);
 			buildMenuGroupButton.transform.Find("Text").GetComponent<Text>().text = topg.name;
 
 			GameObject groupPanel = buildMenuGroupButton.transform.Find("Panel").gameObject;
@@ -127,14 +127,14 @@ public class UIManager:MonoBehaviour {
 			Dictionary<GameObject,List<GameObject>> subGroupPanels = new Dictionary<GameObject,List<GameObject>>();
 			foreach (ResourceManager.TileObjectPrefabSubGroup topsg in topg.tileObjectPrefabSubGroups) {
 				buildMenuGroupButton.transform.Find("Panel").GetComponent<GridLayoutGroup>().cellSize = new Vector2(100,21);
-				GameObject buildMenuSubGroupButton = Instantiate(Resources.Load<GameObject>(@"UI/BuildItem-Button-Prefab"),buildMenuGroupButton.transform.Find("Panel").transform,false);
+				GameObject buildMenuSubGroupButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildItem-Button-Prefab"),buildMenuGroupButton.transform.Find("Panel").transform,false);
 				buildMenuSubGroupButton.transform.Find("Text").GetComponent<Text>().text = topsg.name;
 
 				GameObject subGroupPanel = buildMenuSubGroupButton.transform.Find("Panel").gameObject;
 
 				List<GameObject> objectButtons = new List<GameObject>();
 				foreach (ResourceManager.TileObjectPrefab top in topsg.tileObjectPrefabs) {
-					GameObject buildMenuObjectButton = Instantiate(Resources.Load<GameObject>(@"UI/BuildObject-Button-Prefab"),buildMenuSubGroupButton.transform.Find("Panel").transform,false);
+					GameObject buildMenuObjectButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildObject-Button-Prefab"),buildMenuSubGroupButton.transform.Find("Panel").transform,false);
 					buildMenuObjectButton.transform.Find("Text").GetComponent<Text>().text = top.name;
 					if (top.baseSprite != null) {
 						buildMenuObjectButton.transform.Find("Image").GetComponent<Image>().sprite = top.baseSprite;
@@ -194,27 +194,27 @@ public class UIManager:MonoBehaviour {
 			}
 			tileObjects.Clear();
 
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-TileImage").GetComponent<Image>().sprite = mouseOverTile.obj.GetComponent<SpriteRenderer>().sprite;
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage").GetComponent<Image>().sprite = mouseOverTile.obj.GetComponent<SpriteRenderer>().sprite;
 
 			if (mouseOverTile.plant != null) {
-				GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-TileImage"),false);
+				GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"),false);
 				tileLayerSpriteObject.GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
 				tileObjects.Add(tileLayerSpriteObject);
 
-				GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-ObjectData-Panel"),tileInformation.transform,false);
-				tileObjectDataObject.transform.Find("TileInformation-ObjectData-Label").GetComponent<Text>().text = "Plant";
-				tileObjectDataObject.transform.Find("TileInformation-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.group.name;
+				GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"),tileInformation.transform,false);
+				tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "Plant";
+				tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.group.name;
 				tileObjects.Add(tileObjectDataObject);
 			}
 			if (mouseOverTile.GetAllObjectInstances().Count > 0) {
 				foreach (ResourceManager.TileObjectInstance tileObject in mouseOverTile.GetAllObjectInstances().OrderBy(o => o.prefab.layer).ToList()) {
-					GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-TileImage"),false);
+					GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"),false);
 					tileLayerSpriteObject.GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
 					tileObjects.Add(tileLayerSpriteObject);
 
-					GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/TileInformation-ObjectData-Panel"),tileInformation.transform,false);
-					tileObjectDataObject.transform.Find("TileInformation-ObjectData-Label").GetComponent<Text>().text = "L" + tileObject.prefab.layer;
-					tileObjectDataObject.transform.Find("TileInformation-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
+					GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"),tileInformation.transform,false);
+					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "L" + tileObject.prefab.layer;
+					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
 					tileObjects.Add(tileObjectDataObject);
 				}
 			}
@@ -241,20 +241,20 @@ public class UIManager:MonoBehaviour {
 			this.colonist = colonist;
 			this.skill = skill;
 
-			obj = Instantiate(Resources.Load<GameObject>(@"UI/SkillInformation-Panel"),parent,false);
+			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/SkillInfoElement-Panel"),parent,false);
 
-			obj.transform.Find("SkillName-Text").GetComponent<Text>().text = skill.prefab.name;
+			obj.transform.Find("Name").GetComponent<Text>().text = skill.prefab.name;
 			// ADD SKILL IMAGE
 
 			UpdateInformation();
 		}
 
 		public void UpdateInformation() {
-			obj.transform.Find("SkillLevelValue-Text").GetComponent<Text>().text = "Level " + skill.level + " (+" + Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f) + "%)";
-			obj.transform.Find("SkillExperience-Slider").GetComponent<Slider>().value = Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f);
+			obj.transform.Find("Level").GetComponent<Text>().text = "Level " + skill.level + " (+" + Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f) + "%)";
+			obj.transform.Find("Experience-Slider").GetComponent<Slider>().value = Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f);
 			if (skill.level >= 10) {
-				obj.transform.Find("SkillExperience-Slider/Fill Area/Fill").GetComponent<Image>().color = new Color(192f,57f,43f,255f) / 255f;
-				obj.transform.Find("SkillExperience-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = new Color(231f,76f,60f,255f) / 255f;
+				obj.transform.Find("Experience-Slider/Fill Area/Fill").GetComponent<Image>().color = new Color(192f,57f,43f,255f) / 255f;
+				obj.transform.Find("Experience-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = new Color(231f,76f,60f,255f) / 255f;
 			}
 		}
 	}
@@ -268,27 +268,66 @@ public class UIManager:MonoBehaviour {
 			this.colonist = colonist;
 			this.resourceAmount = resourceAmount;
 
-			obj = Instantiate(Resources.Load<GameObject>(@"UI/InventoryElement-Panel"),parent,false);
+			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ResourceInfoElement-Panel"),parent,false);
 
-			obj.transform.Find("ResourceName-Text").GetComponent<Text>().text = resourceAmount.resource.name;
+			obj.transform.Find("Name").GetComponent<Text>().text = resourceAmount.resource.name;
+			obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
 			// ADD RESOURCE IMAGE
 
 			UpdateInformation();
 		}
 
 		public void UpdateInformation() {
-			obj.transform.Find("ResourceAmountValue-Text").GetComponent<Text>().text = resourceAmount.amount.ToString();
+			obj.transform.Find("Amount").GetComponent<Text>().text = resourceAmount.amount.ToString();
+		}
+	}
+
+	public class ReservedResourcesColonistElement {
+		public ColonistManager.Colonist colonist;
+		public ResourceManager.ReservedResources reservedResources;
+		public List<ReservedResourceElement> reservedResourceElements = new List<ReservedResourceElement>();
+		public GameObject obj;
+
+		public ReservedResourcesColonistElement(ColonistManager.Colonist colonist,ResourceManager.ReservedResources reservedResources,Transform parent) {
+			this.colonist = colonist;
+			this.reservedResources = reservedResources;
+
+			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ReservedResourcesColonistInfoElement-Panel"),parent,false);
+
+			obj.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonist.name;
+
+			foreach (ResourceManager.ResourceAmount ra in reservedResources.resources) {
+				reservedResourceElements.Add(new ReservedResourceElement(colonist,ra,parent));
+			}
 		}
 	}
 
 	public class ReservedResourceElement {
+		public ColonistManager.Colonist colonist;
+		public ResourceManager.ResourceAmount resourceAmount;
+		public GameObject obj;
 
+		public ReservedResourceElement(ColonistManager.Colonist colonist,ResourceManager.ResourceAmount resourceAmount,Transform parent) {
+			this.colonist = colonist;
+			this.resourceAmount = resourceAmount;
+
+			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ReservedResourceInfoElement-Panel"),parent,false);
+
+			obj.transform.Find("Name").GetComponent<Text>().text = resourceAmount.resource.name;
+			// ADD RESOURCE IMAGE
+
+			UpdateInformation();
+		}
+
+		public void UpdateInformation() {
+			obj.transform.Find("Amount").GetComponent<Text>().text = resourceAmount.amount.ToString();
+		}
 	}
 
-	//List<GameObject> skillObjects = new List<GameObject>();
 	List<SkillElement> skillElements = new List<SkillElement>();
-	//List<GameObject> inventoryObjects = new List<GameObject>();
 	List<InventoryElement> inventoryElements = new List<InventoryElement>();
+	List<ReservedResourcesColonistElement> reservedResourcesColonistElements = new List<ReservedResourcesColonistElement>();
+	List<ReservedResourceElement> reservedResourceElements = new List<ReservedResourceElement>();
 
 	/* Called from ColonistManager.SetSelectedColonistFromInput(), ColonistManager.SetSelectedColonist(), ColonistManager.DeselectSelectedColonist(), TileManager.Initialize() */
 	public void SetSelectedColonistInformation() {
@@ -300,60 +339,32 @@ public class UIManager:MonoBehaviour {
 			rightListPanel.offsetMin = new Vector2(rightListSize.x,310);
 
 			selectedColonistInformationPanel.transform.Find("SkillsList-Panel/SkillsListTitle-Panel/Profession-Text").GetComponent<Text>().text = colonistM.selectedColonist.profession.name;
+			selectedColonistInformationPanel.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonistM.selectedColonist.name;
 
-			/*
-			foreach (GameObject skillObject in skillObjects) {
-				Destroy(skillObject);
-			}
-			skillObjects.Clear();
-			*/
 			foreach (SkillElement skillElement in skillElements) {
 				Destroy(skillElement.obj);
 			}
 			skillElements.Clear();
-
-			/*
-			foreach (GameObject inventoryObject in inventoryObjects) {
-				Destroy(inventoryObject);
+			foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in reservedResourcesColonistElements) {
+				foreach (ReservedResourceElement reservedResourceElement in reservedResourcesColonistElement.reservedResourceElements) {
+					Destroy(reservedResourceElement.obj);
+				}
+				reservedResourcesColonistElement.reservedResourceElements.Clear();
+				Destroy(reservedResourcesColonistElement.obj);
 			}
-			inventoryObjects.Clear();
-			*/
+			reservedResourcesColonistElements.Clear();
 			foreach (InventoryElement inventoryElement in inventoryElements) {
 				Destroy(inventoryElement.obj);
 			}
 			inventoryElements.Clear();
 
-			
-
 			foreach (ColonistManager.SkillInstance skill in colonistM.selectedColonist.skills) {
-				/*GameObject skillObject = Instantiate(Resources.Load<GameObject>(@"UI/SkillInformation-Panel"),selectedColonistInformationPanel.transform.Find("SkillsList-Panel"),false);
-				skillObject.transform.Find("SkillName-Text").GetComponent<Text>().text = skill.prefab.name;
-				skillObjects.Add(skillObject);*/
 				skillElements.Add(new SkillElement(colonistM.selectedColonist,skill,selectedColonistInformationPanel.transform.Find("SkillsList-Panel")));
 			}
 
-			/*
-			foreach (ResourceManager.ReservedResources reservedResource in colonistM.selectedColonist.inventory.reservedResources) {
-
-				GameObject reservedColonistObject = Instantiate(Resources.Load<GameObject>(@"UI/InventoryInformation-Panel"),selectedColonistInformationPanel.transform.Find("Inventory-Panel/InventoryList-Panel"),false);
-				reservedColonistObject.transform.Find("ResourceName-Text").GetComponent<Text>().text = reservedResource.colonist.name;
-				reservedColonistObject.transform.Find("ResourceAmountValue-Text").GetComponent<Text>().text = reservedResource.resources.Count.ToString();
-				inventoryObjects.Add(reservedColonistObject);
-
-				foreach (ResourceManager.ResourceAmount ra in reservedResource.resources) {
-					GameObject rrObject = Instantiate(Resources.Load<GameObject>(@"UI/InventoryInformation-Panel"),selectedColonistInformationPanel.transform.Find("Inventory-Panel/InventoryList-Panel"),false);
-					rrObject.transform.Find("ResourceName-Text").GetComponent<Text>().text = ra.resource.name;
-					rrObject.transform.Find("ResourceAmountValue-Text").GetComponent<Text>().text = ra.amount.ToString();
-					inventoryObjects.Add(rrObject);
-				}
+			foreach (ResourceManager.ReservedResources rr in colonistM.selectedColonist.inventory.reservedResources) {
+				reservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.colonist,rr,selectedColonistInformationPanel.transform.Find("Inventory-Panel/InventoryList-Panel")));
 			}
-			foreach (ResourceManager.ResourceAmount resourceAmount in colonistM.selectedColonist.inventory.resources) {
-				GameObject raObject = Instantiate(Resources.Load<GameObject>(@"UI/InventoryInformation-Panel"),selectedColonistInformationPanel.transform.Find("Inventory-Panel/InventoryList-Panel"),false);
-				raObject.transform.Find("ResourceName-Text").GetComponent<Text>().text = resourceAmount.resource.name;
-				raObject.transform.Find("ResourceAmountValue-Text").GetComponent<Text>().text = resourceAmount.amount.ToString();
-				inventoryObjects.Add(raObject);
-			}
-			*/
 
 			foreach (ResourceManager.ResourceAmount ra in colonistM.selectedColonist.inventory.resources) {
 				inventoryElements.Add(new InventoryElement(colonistM.selectedColonist,ra,selectedColonistInformationPanel.transform.Find("Inventory-Panel/InventoryList-Panel")));
@@ -366,25 +377,23 @@ public class UIManager:MonoBehaviour {
 			Vector2 rightListSize = rightListPanel.offsetMin;
 			rightListPanel.offsetMin = new Vector2(rightListSize.x,5);
 
-			if (/*skillObjects*/skillElements.Count > 0) {
-				/*
-				foreach (GameObject skillObject in skillObjects) {
-					Destroy(skillObject);
-				}
-				skillObjects.Clear();
-				*/
+			if (skillElements.Count > 0) {
 				foreach (SkillElement skillElement in skillElements) {
 					Destroy(skillElement.obj);
 				}
 				skillElements.Clear();
 			}
-			if (/*inventoryObjects*/inventoryElements.Count > 0) {
-				/*
-				foreach (GameObject inventoryObject in inventoryObjects) {
-					Destroy(inventoryObject);
+			if (reservedResourcesColonistElements.Count > 0) {
+				foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in reservedResourcesColonistElements) {
+					foreach (ReservedResourceElement reservedResourceElement in reservedResourcesColonistElement.reservedResourceElements) {
+						Destroy(reservedResourceElement.obj);
+					}
+					reservedResourcesColonistElement.reservedResourceElements.Clear();
+					Destroy(reservedResourcesColonistElement.obj);
 				}
-				inventoryObjects.Clear();
-				*/
+				reservedResourcesColonistElements.Clear();
+			}
+			if (inventoryElements.Count > 0) {
 				foreach (InventoryElement inventoryElement in inventoryElements) {
 					Destroy(inventoryElement.obj);
 				}
@@ -399,45 +408,14 @@ public class UIManager:MonoBehaviour {
 		selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().value = colonistM.selectedColonist.inventory.CountResources();
 		selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventoryValue-Text").GetComponent<Text>().text = colonistM.selectedColonist.inventory.CountResources() + "/ " + colonistM.selectedColonist.inventory.maxAmount;
 
+		selectedColonistInformationPanel.transform.Find("ColonistAction-Text").GetComponent<Text>().text = "NO ACTION TEXT";
+
 		foreach (SkillElement skillElement in skillElements) {
 			skillElement.UpdateInformation();
 		}
-
-		/*int skillIndex = 0;
-		foreach (GameObject skillObject in skillObjects) {
-			ColonistManager.SkillInstance skill = colonistM.selectedColonist.skills[skillIndex];
-			skillObject.transform.Find("SkillLevelValue-Text").GetComponent<Text>().text = "Level " + skill.level + " (+" + Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f) + "%)";
-			skillObject.transform.Find("SkillExperience-Slider").GetComponent<Slider>().value = Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f);
-			if (skill.level >= 10) {
-				skillObject.transform.Find("SkillExperience-Slider/Fill Area/Fill").GetComponent<Image>().color = new Color(192f,57f,43f,255f) / 255f;
-				skillObject.transform.Find("SkillExperience-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = new Color(231f,76f,60f,255f) / 255f;
-			}
-			skillIndex += 1;
-		}*/
 		foreach (InventoryElement inventoryElement in inventoryElements) {
 			inventoryElement.UpdateInformation();
 		}
-		/*
-		int inventoryIndex = 0;
-		foreach (GameObject inventoryObject in inventoryObjects) {
-
-		}
-		foreach (ResourceManager.ReservedResources reservedResource in colonistM.selectedColonist.inventory.reservedResources) {
-			reservedColonistObject.transform.Find("ResourceName-Text").GetComponent<Text>().text = reservedResource.colonist.name;
-			reservedColonistObject.transform.Find("ResourceAmountValue-Text").GetComponent<Text>().text = reservedResource.resources.Count.ToString();
-			inventoryIndex += 1;
-			foreach (ResourceManager.ResourceAmount ra in reservedResource.resources) {
-				rrObject.transform.Find("ResourceName-Text").GetComponent<Text>().text = ra.resource.name;
-				rrObject.transform.Find("ResourceAmountValue-Text").GetComponent<Text>().text = ra.amount.ToString();
-				inventoryIndex += 1;
-			}
-		}
-		foreach (ResourceManager.ResourceAmount resourceAmount in colonistM.selectedColonist.inventory.resources) {
-			raObject.transform.Find("ResourceName-Text").GetComponent<Text>().text = resourceAmount.resource.name;
-			raObject.transform.Find("ResourceAmountValue-Text").GetComponent<Text>().text = resourceAmount.amount.ToString();
-			inventoryIndex += 1;
-		}
-		*/
 	}
 
 	List<GameObject> colonistSpriteObjects = new List<GameObject>();
@@ -450,8 +428,9 @@ public class UIManager:MonoBehaviour {
 		colonistSpriteObjects.Clear();
 		if (colonistList.activeSelf) {
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-				GameObject colonistBaseSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/ColonistInformation-Panel"),colonistList.transform.Find("ColonistList-Panel"),false);
-				colonistBaseSpriteObject.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = colonist.moveSprites[0];
+				GameObject colonistBaseSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ColonistInfoElement-Panel"),colonistList.transform.Find("ColonistList-Panel"),false);
+				colonistBaseSpriteObject.transform.Find("BodySprite").GetComponent<Image>().sprite = colonist.moveSprites[0];
+				colonistBaseSpriteObject.transform.Find("Name").GetComponent<Text>().text = colonist.name;
 				colonistBaseSpriteObject.GetComponent<Button>().onClick.AddListener(delegate { colonistM.SetSelectedColonist(colonist); });
 				colonistSpriteObjects.Add(colonistBaseSpriteObject);
 			}
@@ -471,9 +450,9 @@ public class UIManager:MonoBehaviour {
 			jobElements.Clear();
 			orderedColonists = colonistM.colonists.Where(colonist => colonist.job != null).OrderByDescending(colonist => colonist.job.colonistBuildTime - colonist.job.jobProgress).ToList();
 			foreach (ColonistManager.Colonist jobColonist in orderedColonists) {
-				GameObject jobElement = Instantiate(Resources.Load<GameObject>(@"UI/JobInformation-Panel"),jobList.transform.Find("JobList-Panel"),false);
-				jobElement.transform.Find("JobInfo/JobBaseSprite-Image").GetComponent<Image>().sprite = jobColonist.job.prefab.baseSprite;
-				jobElement.transform.Find("JobInfo/JobName-Text").GetComponent<Text>().text = jobColonist.job.prefab.name;
+				GameObject jobElement = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/JobInfoElement-Panel"),jobList.transform.Find("JobList-Panel"),false);
+				jobElement.transform.Find("JobInfo/Image").GetComponent<Image>().sprite = jobColonist.job.prefab.baseSprite;
+				jobElement.transform.Find("JobInfo/Name").GetComponent<Text>().text = jobColonist.job.prefab.name;
 				jobElement.GetComponent<Button>().onClick.AddListener(delegate {
 					cameraM.SetCameraPosition(jobColonist.job.tile.obj.transform.position);
 					cameraM.SetCameraZoom(5);
@@ -481,12 +460,13 @@ public class UIManager:MonoBehaviour {
 				jobElement.GetComponent<Image>().color = new Color(52f,152f,219f,255f) / 255f;
 				jobElements.Add(jobElement);
 
-				GameObject colonistJobElement = Instantiate(Resources.Load<GameObject>(@"UI/ColonistInformation-Panel"),jobElement.transform,false);
+				GameObject colonistJobElement = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ColonistInfoElement-Panel"),jobElement.transform,false);
 
 				colonistJobElement.GetComponent<Outline>().enabled = false;
 				jobElement.GetComponent<RectTransform>().sizeDelta = new Vector2(jobElement.GetComponent<RectTransform>().sizeDelta.x,105);
 
-				colonistJobElement.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = jobColonist.moveSprites[0];
+				colonistJobElement.transform.Find("BodySprite").GetComponent<Image>().sprite = jobColonist.moveSprites[0];
+				colonistJobElement.transform.Find("Name").GetComponent<Text>().text = jobColonist.name;
 				colonistJobElement.GetComponent<Button>().onClick.AddListener(delegate { colonistM.SetSelectedColonist(jobColonist); });
 				colonistJobElement.GetComponent<Image>().color = new Color(52f,152f,219f,255f) / 255f;
 				colonistJobElement.GetComponent<RectTransform>().sizeDelta = new Vector2(175,colonistJobElement.GetComponent<RectTransform>().sizeDelta.y);
@@ -498,10 +478,10 @@ public class UIManager:MonoBehaviour {
 				jobElements.Add(colonistJobElement);
 			}
 			foreach (JobManager.Job job in jobM.jobs) {
-				GameObject jobElement = Instantiate(Resources.Load<GameObject>(@"UI/JobInformation-Panel"),jobList.transform.Find("JobList-Panel"),false);
-				jobElement.transform.Find("JobInfo/JobBaseSprite-Image").GetComponent<Image>().sprite = job.prefab.baseSprite;
-				jobElement.transform.Find("JobInfo/JobName-Text").GetComponent<Text>().text = SplitByCapitals(job.prefab.jobType.ToString());
-				jobElement.transform.Find("JobInfo/JobName-Text").GetComponent<Text>().text = job.prefab.name;
+				GameObject jobElement = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/JobInfoElement-Panel"),jobList.transform.Find("JobList-Panel"),false);
+				jobElement.transform.Find("JobInfo/Image").GetComponent<Image>().sprite = job.prefab.baseSprite;
+				jobElement.transform.Find("JobInfo/Type").GetComponent<Text>().text = SplitByCapitals(job.prefab.jobType.ToString());
+				jobElement.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.prefab.name;
 				jobElement.GetComponent<Button>().onClick.AddListener(delegate {
 					cameraM.SetCameraPosition(job.tile.obj.transform.position);
 					cameraM.SetCameraZoom(5);
