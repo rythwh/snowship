@@ -21,6 +21,9 @@ public class JobManager:MonoBehaviour {
 		pathM = GetComponent<PathManager>();
 
 		InitializeSelectionModifierFunctions();
+
+		selectedPrefabPreview = GameObject.Find("SelectedPrefabPreview");
+		selectedPrefabPreview.GetComponent<SpriteRenderer>().sortingOrder = 50;
 	}
 
 	public List<Job> jobs = new List<Job>();
@@ -80,11 +83,54 @@ public class JobManager:MonoBehaviour {
 		}
 	}
 
+	private GameObject selectedPrefabPreview;
+	private GameObject selectionSizePanel;
+	public void SelectedPrefabPreview() {
+		Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
+		TileManager.Tile tile = tileM.GetTileFromPosition(mousePosition);
+		selectedPrefabPreview.transform.position = tile.obj.transform.position;
+	}
+
 	void Update() {
 		GetJobSelectionArea();
 		if (timeM.timeModifier > 0) {
 			GiveJobsToColonists();
 		}
+		if (selectedPrefab != null) {
+			if (enableSelectionPreview) {
+				if (!selectedPrefabPreview.activeSelf) {
+					selectedPrefabPreview.SetActive(true);
+					selectedPrefabPreview.GetComponent<SpriteRenderer>().sprite = selectedPrefab.baseSprite;
+					uiM.SelectionSizeCanvasSetActive(false);
+				}
+				SelectedPrefabPreview();
+			} else {
+				if (selectedPrefabPreview.activeSelf) {
+					selectedPrefabPreview.SetActive(false);
+				}
+				uiM.SelectionSizeCanvasSetActive(true);
+			}
+		} else {
+			selectedPrefabPreview.SetActive(false);
+			uiM.SelectionSizeCanvasSetActive(false);
+		}
+		/*
+		if (enableSelectionPreview && selectedPrefab != null) {
+			print("Not selecting area");
+			if (!selectedPrefabPreview.activeSelf) {
+				selectedPrefabPreview.SetActive(false);
+				selectedPrefabPreview.GetComponent<SpriteRenderer>().sprite = selectedPrefab.baseSprite;
+				selectionSizePanel.SetActive(true);
+			}
+			SelectedPrefabPreview();
+		} else if (selectedPrefabPreview.activeSelf) {
+			print("Selecting area");
+			selectedPrefabPreview.SetActive(true);
+			selectionSizePanel.SetActive(false);
+		} else {
+
+		}
+		*/
 	}
 
 	public enum JobTypesEnum { Build, Remove, Mine, PlantFarm, HarvestFarm };
@@ -158,7 +204,11 @@ public class JobManager:MonoBehaviour {
 		stopSelection = true;
 	}
 
+	private bool enableSelectionPreview = true;
+
 	public void GetJobSelectionArea() {
+
+		enableSelectionPreview = true;
 
 		foreach (GameObject selectionIndicator in selectionIndicators) {
 			Destroy(selectionIndicator);
@@ -177,6 +227,9 @@ public class JobManager:MonoBehaviour {
 				}
 				TileManager.Tile secondTile = tileM.GetTileFromPosition(mousePosition);
 				if (secondTile != null) {
+
+					enableSelectionPreview = false;
+
 					float smallerY = Mathf.Min(firstTile.obj.transform.position.y,secondTile.obj.transform.position.y);
 					float largerY = Mathf.Max(firstTile.obj.transform.position.y,secondTile.obj.transform.position.y);
 					float smallerX = Mathf.Min(firstTile.obj.transform.position.x,secondTile.obj.transform.position.x);
@@ -184,8 +237,13 @@ public class JobManager:MonoBehaviour {
 
 					List<TileManager.Tile> selectionArea = new List<TileManager.Tile>();
 
-					for (float y = smallerY; y < ((largerY - smallerY) + smallerY + 1); y++) {
-						for (float x = smallerX; x < ((largerX - smallerX) + smallerX + 1); x++) {
+					float maxY = ((largerY - smallerY) + smallerY + 1);
+					float maxX = ((largerX - smallerX) + smallerX + 1);
+
+					uiM.UpdateSelectionSizePanel(smallerX - maxX,smallerY - maxY,selectedPrefab);
+
+					for (float y = smallerY; y < maxY; y++) {
+						for (float x = smallerX; x < maxX; x++) {
 							TileManager.Tile tile = tileM.GetTileFromPosition(new Vector2(x,y));
 							if (selectedPrefab.selectionModifiers.Contains(SelectionModifiersEnum.Outline)) {
 								if (x == smallerX || y == smallerY || x == ((largerX - smallerX) + smallerX) || y == ((largerY - smallerY) + smallerY)) {
@@ -214,6 +272,8 @@ public class JobManager:MonoBehaviour {
 						GameObject selectionIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
 						SpriteRenderer sISR = selectionIndicator.GetComponent<SpriteRenderer>();
 						sISR.sprite = Resources.Load<Sprite>(@"UI/selectionIndicator");
+						//sISR.color = new Color(241f,196f,15f,255f) / 255f; // Yellow
+						//sISR.color = new Color(231f,76f,60f,255f) / 255f; // Red
 						sISR.sortingOrder = 20; // Selection Indicator Sprite
 						selectionIndicators.Add(selectionIndicator);
 					}
@@ -242,12 +302,12 @@ public class JobManager:MonoBehaviour {
 
 	public void CreateJob(Job newJob) {
 		jobs.Add(newJob);
-		uiM.SetJobList();
+		uiM.SetJobElements();
 	}
 
 	public void AddExistingJob(Job existingJob) {
 		jobs.Add(existingJob);
-		uiM.SetJobList();
+		uiM.SetJobElements();
 	}
 
 	public void GiveJobsToColonists() {
@@ -269,7 +329,7 @@ public class JobManager:MonoBehaviour {
 				}
 			}
 			if (updateJobListUI) {
-				uiM.SetJobList();
+				uiM.SetJobElements();
 			}
 		}
 		/*
