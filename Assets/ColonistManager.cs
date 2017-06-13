@@ -321,7 +321,7 @@ public class ColonistManager : MonoBehaviour {
 			job.jobProgress *= (1 + (1 - GetJobSkillMultiplier(job.prefab.jobType)));
 			job.colonistBuildTime = job.jobProgress;
 
-			uiM.SetJobList();
+			uiM.SetJobElements();
 		}
 
 		public void WorkJob() {
@@ -358,7 +358,7 @@ public class ColonistManager : MonoBehaviour {
 
 			job = null;
 
-			uiM.SetJobList();
+			uiM.SetJobElements();
 		}
 
 		public void PlayerMoveToTile(TileManager.Tile tile) {
@@ -426,7 +426,7 @@ public class ColonistManager : MonoBehaviour {
 			colonists.Add(colonist);
 		}
 
-		uiM.SetColonistList();
+		uiM.SetColonistElements();
 	}
 
 	public Colonist selectedColonist;
