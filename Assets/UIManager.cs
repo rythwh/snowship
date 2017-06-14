@@ -573,12 +573,12 @@ public class UIManager:MonoBehaviour {
 		selectionSizeCanvas.SetActive(active);
 	}
 
-	public void UpdateSelectionSizePanel(float xSize, float ySize, ResourceManager.TileObjectPrefab prefab) {
+	public void UpdateSelectionSizePanel(float xSize, float ySize, int selectionAreaCount, ResourceManager.TileObjectPrefab prefab) {
 		int ixSize = Mathf.Abs(Mathf.FloorToInt(xSize));
 		int iySize = Mathf.Abs(Mathf.FloorToInt(ySize));
 
 		selectionSizePanel.transform.Find("Dimensions-Text").GetComponent<Text>().text = ixSize + " × " + iySize;
-		selectionSizePanel.transform.Find("TotalSize-Text").GetComponent<Text>().text = (Mathf.RoundToInt(ixSize * iySize)).ToString();
+		selectionSizePanel.transform.Find("TotalSize-Text").GetComponent<Text>().text = (Mathf.RoundToInt(ixSize * iySize)) + " (" + selectionAreaCount + ")";
 		selectionSizePanel.transform.Find("SelectedPrefabName-Text").GetComponent<Text>().text = prefab.name;
 		selectionSizePanel.transform.Find("SelectedPrefabSprite-Image").GetComponent<Image>().sprite = prefab.baseSprite;
 
@@ -587,11 +587,5 @@ public class UIManager:MonoBehaviour {
 			mousePosition.x + (selectionSizeCanvas.GetComponent<RectTransform>().sizeDelta.x / 2f * selectionSizeCanvas.transform.localScale.x),
 			mousePosition.y + (selectionSizeCanvas.GetComponent<RectTransform>().sizeDelta.y / 2f * selectionSizeCanvas.transform.localScale.y)
 		);
-		/*
-		selectionSizeCanvas.transform.position = new Vector2(
-			mousePosition.x,
-			mousePosition.y
-		);
-		*/
 	}
 }

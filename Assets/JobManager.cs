@@ -240,8 +240,6 @@ public class JobManager:MonoBehaviour {
 					float maxY = ((largerY - smallerY) + smallerY + 1);
 					float maxX = ((largerX - smallerX) + smallerX + 1);
 
-					uiM.UpdateSelectionSizePanel(smallerX - maxX,smallerY - maxY,selectedPrefab);
-
 					for (float y = smallerY; y < maxY; y++) {
 						for (float x = smallerX; x < maxX; x++) {
 							TileManager.Tile tile = tileM.GetTileFromPosition(new Vector2(x,y));
@@ -267,6 +265,8 @@ public class JobManager:MonoBehaviour {
 						RemoveTilesFromList(selectionArea,removeTiles);
 						removeTiles.Clear();
 					}
+
+					uiM.UpdateSelectionSizePanel(smallerX - maxX,smallerY - maxY,selectionArea.Count,selectedPrefab);
 
 					foreach (TileManager.Tile tile in selectionArea) {
 						GameObject selectionIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
