@@ -432,11 +432,13 @@ public class JobManager:MonoBehaviour {
 			this.containerPickups = containerPickups;
 
 			cost = jobM.CalculateJobCost(colonist,job);
-			for (int i = 0; i < containerPickups.Count; i++) {
-				if (i == 0) {
-					cost += pathM.RegionBlockDistance(colonist.overTile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true);
-				} else {
-					cost += pathM.RegionBlockDistance(containerPickups[i-1].container.parentObject.tile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true);
+			if (containerPickups != null) {
+				for (int i = 0; i < containerPickups.Count; i++) {
+					if (i == 0) {
+						cost += pathM.RegionBlockDistance(colonist.overTile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true);
+					} else {
+						cost += pathM.RegionBlockDistance(containerPickups[i - 1].container.parentObject.tile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true);
+					}
 				}
 			}
 		}

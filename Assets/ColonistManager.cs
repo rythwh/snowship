@@ -318,12 +318,16 @@ public class ColonistManager : MonoBehaviour {
 
 		public void SetJob(JobManager.ColonistJob colonistJob) {
 
-			job.colonistResources.Clear();
-			job.containerPickups.Clear();
+			if (job.colonistResources != null) {
+				job.colonistResources.Clear();
+			}
+			if (job.containerPickups != null) {
+				job.containerPickups.Clear();
+			}
 
 			job.colonistResources = colonistJob.colonistResources;
 			job.containerPickups = colonistJob.containerPickups;
-			if (job.containerPickups.Count > 0) {
+			if (job.containerPickups != null && job.containerPickups.Count > 0) {
 				foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
 					containerPickup.container.inventory.ReserveResources(containerPickup.resourcesToPickup,this);
 				}
@@ -381,6 +385,7 @@ public class ColonistManager : MonoBehaviour {
 					JobManager.ContainerPickup containerPickup = storedJob.containerPickups.Find(pickup => pickup.container == containerOnTile);
 					if (containerPickup != null) {
 						containerPickup.container.inventory.TakeReservedResources(this);
+						storedJob.containerPickups.RemoveAt(0);
 					}
 				}
 			}
