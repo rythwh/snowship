@@ -95,13 +95,13 @@ public class ResourceManager : MonoBehaviour {
 	 * <Type> -> <SubType> -> <Object>
 	*/
 	public enum TileObjectPrefabGroupsEnum {
-		Structure, Furniture
+		None, Structure, Furniture
 	};
 	public enum TileObjectPrefabSubGroupsEnum {
-		Walls, Doors, Floors, Containers
+		None, Walls, Doors, Floors, Containers
 	};
 	public enum TileObjectPrefabsEnum {
-		StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, WoodenChest
+		PickupResources, StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, WoodenChest
 	};
 
 	List<TileObjectPrefabsEnum> BitmaskingTileObjects = new List<TileObjectPrefabsEnum>() {
@@ -224,18 +224,20 @@ public class ResourceManager : MonoBehaviour {
 				}
 			}
 
-			foreach (string selectionModifierString in properties[4].Split(',')) {
-				selectionModifiers.Add((JobManager.SelectionModifiersEnum)System.Enum.Parse(typeof(JobManager.SelectionModifiersEnum),selectionModifierString));
+			if (bool.Parse(properties[4])) {
+				foreach (string selectionModifierString in properties[5].Split(',')) {
+					selectionModifiers.Add((JobManager.SelectionModifiersEnum)System.Enum.Parse(typeof(JobManager.SelectionModifiersEnum),selectionModifierString));
+				}
 			}
 
-			jobType = (JobManager.JobTypesEnum)System.Enum.Parse(typeof(JobManager.JobTypesEnum),properties[5]);
+			jobType = (JobManager.JobTypesEnum)System.Enum.Parse(typeof(JobManager.JobTypesEnum),properties[6]);
 
-			flammability = float.Parse(properties[6]);
+			flammability = float.Parse(properties[7]);
 
-			walkable = bool.Parse(properties[7]);
-			walkSpeed = float.Parse(properties[8]);
+			walkable = bool.Parse(properties[8]);
+			walkSpeed = float.Parse(properties[9]);
 
-			layer = int.Parse(properties[9]);
+			layer = int.Parse(properties[10]);
 
 			baseSprite = Resources.Load<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-base");
 			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-bitmask").ToList();

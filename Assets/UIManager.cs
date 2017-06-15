@@ -129,6 +129,9 @@ public class UIManager:MonoBehaviour {
 
 	public void CreateBuildMenuButtons() {
 		foreach (ResourceManager.TileObjectPrefabGroup topg in resourceM.tileObjectPrefabGroups) {
+			if (topg.type == ResourceManager.TileObjectPrefabGroupsEnum.None) {
+				continue;
+			}
 			GameObject buildMenuGroupButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildItem-Button-Prefab"),GameObject.Find("BuildMenu-Panel").transform,false);
 			buildMenuGroupButton.transform.Find("Text").GetComponent<Text>().text = topg.name;
 
