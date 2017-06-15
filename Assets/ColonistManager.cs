@@ -270,6 +270,7 @@ public class ColonistManager : MonoBehaviour {
 	public class Colonist : Human {
 
 		public JobManager.Job job;
+		public JobManager.Job storedJob;
 
 		public bool playerMoved;
 
@@ -315,8 +316,21 @@ public class ColonistManager : MonoBehaviour {
 			}
 		}
 
-		public void SetJob(JobManager.Job job) {
-			this.job = job;
+		public void SetJob(JobManager.ColonistJob colonistJob) {
+
+			job.colonistResources.Clear();
+			job.containerPickups.Clear();
+
+			job.colonistResources = colonistJob.colonistResources;
+			job.containerPickups = colonistJob.containerPickups;
+			if (job.containerPickups.Count > 0) {
+				foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
+					containerPickup.container.inventory.ReserveResources(containerPickup.resourcesToPickup,this);
+				}
+			}
+
+			job = colonistJob.job;
+			job.SetColonist(this,resourceM,colonistM,jobM,pathM);
 			MoveToTile(job.tile);
 		}
 
@@ -361,6 +375,14 @@ public class ColonistManager : MonoBehaviour {
 
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.Remove) {
 
+			} else if (job.prefab.jobType == JobManager.JobTypesEnum.PickupResources) {
+				ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == overTile);
+				if (containerOnTile != null && storedJob != null) {
+					JobManager.ContainerPickup containerPickup = storedJob.containerPickups.Find(pickup => pickup.container == containerOnTile);
+					if (containerPickup != null) {
+						containerPickup.container.inventory.TakeReservedResources(this);
+					}
+				}
 			}
 
 			job = null;
