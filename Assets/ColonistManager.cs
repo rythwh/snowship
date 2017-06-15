@@ -232,6 +232,8 @@ public class ColonistManager : MonoBehaviour {
 
 		public string description;
 
+		public SkillPrefab primarySkill;
+
 		public Dictionary<SkillPrefab,int> skillRandomMaxValues = new Dictionary<SkillPrefab,int>();
 
 		public Profession(List<string> data, ColonistManager colonistM) {
@@ -240,7 +242,12 @@ public class ColonistManager : MonoBehaviour {
 
 			description = data[1];
 
-			foreach (string skillRandomMaxValueData in data[2].Split(';')) {
+			int primarySkillString = 0;
+			if (!int.TryParse(data[2],out primarySkillString)) {
+				primarySkill = colonistM.GetSkillPrefabFromString(data[2]);
+			}
+
+			foreach (string skillRandomMaxValueData in data[3].Split(';')) {
 				List<string> skillRandomMaxValue = skillRandomMaxValueData.Split(',').ToList();
 				skillRandomMaxValues.Add(colonistM.GetSkillPrefabFromString(skillRandomMaxValue[0]),int.Parse(skillRandomMaxValue[1]));
 			}
@@ -276,7 +283,7 @@ public class ColonistManager : MonoBehaviour {
 			this.profession = profession;
 
 			foreach (SkillPrefab skillPrefab in colonistM.skillPrefabs) {
-				skills.Add(new SkillInstance(this,skillPrefab,Random.Range(0,profession.skillRandomMaxValues[skillPrefab])));
+				skills.Add(new SkillInstance(this,skillPrefab,Random.Range((profession.primarySkill != null && profession.primarySkill.type == skillPrefab.type ? Mathf.RoundToInt(profession.skillRandomMaxValues[skillPrefab]/2f) : 0),profession.skillRandomMaxValues[skillPrefab])));
 			}
 		}
 
