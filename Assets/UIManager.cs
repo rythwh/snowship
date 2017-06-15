@@ -281,7 +281,6 @@ public class UIManager:MonoBehaviour {
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ResourceInfoElement-Panel"),parent,false);
 
 			obj.transform.Find("Name").GetComponent<Text>().text = resourceAmount.resource.name;
-			obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
 			// ADD RESOURCE IMAGE
 
 			Update();
