@@ -20,6 +20,18 @@ public class TileManager:MonoBehaviour {
 	}
 
 	public enum PlantGroups { Cactus, ColourfulShrub, ColourfulTree, DeadTree, Shrub, SnowTree, ThinTree, WideTree };
+	private Dictionary<PlantGroups,List<ResourceManager.ResourceAmount>> plantResources = new Dictionary<PlantGroups,List<ResourceManager.ResourceAmount>>();
+
+	public void CreatePlantResources() {
+		ResourceManager.Resource woodResource = resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood);
+		plantResources.Add(PlantGroups.ColourfulShrub,	new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,2) });
+		plantResources.Add(PlantGroups.ColourfulTree,	new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,5) });
+		plantResources.Add(PlantGroups.DeadTree,		new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,3) });
+		plantResources.Add(PlantGroups.Shrub,			new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,2) });
+		plantResources.Add(PlantGroups.SnowTree,		new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,5) });
+		plantResources.Add(PlantGroups.ThinTree,		new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,5) });
+		plantResources.Add(PlantGroups.WideTree,		new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,6) });
+	}
 
 	public List<PlantGroup> plantGroups = new List<PlantGroup>();
 
@@ -30,18 +42,22 @@ public class TileManager:MonoBehaviour {
 		public List<Sprite> smallPlants = new List<Sprite>();
 		public List<Sprite> fullPlants = new List<Sprite>();
 
-		public PlantGroup(PlantGroups type) {
+		public List<ResourceManager.ResourceAmount> returnResources = new List<ResourceManager.ResourceAmount>();
+
+		public PlantGroup(PlantGroups type,List<ResourceManager.ResourceAmount> returnResources) {
 			this.type = type;
 			name = type.ToString();
 
 			smallPlants = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + name + "/" + name + "-small").ToList();
 			fullPlants = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + name + "/" + name + "-full").ToList();
+
+			this.returnResources = returnResources;
 		}
 	}
 
 	public void CreatePlantGroups() {
 		foreach (PlantGroups plantGroup in System.Enum.GetValues(typeof(PlantGroups))) {
-			plantGroups.Add(new PlantGroup(plantGroup));
+			plantGroups.Add(new PlantGroup(plantGroup,(plantResources.ContainsKey(plantGroup) ? plantResources[plantGroup] : new List<ResourceManager.ResourceAmount>())));
 		}
 		foreach (PlantGroup plantGroup in plantGroups) {
 			plantGroup.name = uiM.SplitByCapitals(plantGroup.name);
@@ -57,21 +73,39 @@ public class TileManager:MonoBehaviour {
 		public Tile tile;
 		public GameObject obj;
 
-		public Plant(PlantGroup group, TileManager.Tile tile) {
+		bool small;
+
+		public Plant(PlantGroup group, Tile tile) {
 			this.group = group;
 			this.tile = tile;
 			
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform.position,Quaternion.identity);
 			SpriteRenderer pSR = obj.GetComponent<SpriteRenderer>();
 			if (Random.Range(0f,1f) < 0.1f) {
+				small = true;
 				pSR.sprite = group.smallPlants[Random.Range(0,group.smallPlants.Count)];
 			} else {
+				small = false;
 				pSR.sprite = group.fullPlants[Random.Range(0,group.fullPlants.Count)];
 			}
 			pSR.sortingOrder = 1; // Plant Sprite
 
 			obj.name = "PLANT " + pSR.sprite.name;
 			obj.transform.parent = tile.obj.transform;
+		}
+
+		public List<ResourceManager.ResourceAmount> GetResources() {
+			List<ResourceManager.ResourceAmount> resourcesToReturn = new List<ResourceManager.ResourceAmount>();
+			print(group.returnResources.Count.ToString());
+			foreach (ResourceManager.ResourceAmount resourceAmount in group.returnResources) {
+				int amount = Mathf.Clamp(resourceAmount.amount + Random.Range(-2,2),1,int.MaxValue);
+				if (small && amount > 0) {
+					amount = Mathf.CeilToInt(amount / 2f);
+				}
+				print(resourceAmount.resource.name + " " + amount);
+				resourcesToReturn.Add(new ResourceManager.ResourceAmount(resourceAmount.resource,amount));
+			}
+			return resourcesToReturn;
 		}
 	}
 
@@ -465,23 +499,35 @@ public class TileManager:MonoBehaviour {
 				}
 			}
 			if (tileM.PlantableTileTypes.Contains(tileType.type)) {
-				SetPlant();
+				SetPlant(false);
 			}
 		}
 
-		public void SetPlant() {
+		public void SetPlant(bool removePlant) {
 			if (plant != null) {
 				Destroy(plant.obj);
 				plant = null;
 			}
-			foreach (KeyValuePair<PlantGroups,float> kvp in biome.vegetationChances) {
-				PlantGroups plantGroup = kvp.Key;
-				if (Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
-					plant = new Plant(tileM.GetPlantGroupByEnum(plantGroup),this);
-					break;
+			if (!removePlant) {
+				foreach (KeyValuePair<PlantGroups,float> kvp in biome.vegetationChances) {
+					PlantGroups plantGroup = kvp.Key;
+					if (Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
+						plant = new Plant(tileM.GetPlantGroupByEnum(plantGroup),this);
+						break;
+					}
 				}
 			}
 			SetWalkSpeed();
+		}
+
+		public void RemoveTileObjectAtLayer(int layer) {
+			if (objectInstances.ContainsKey(layer)) {
+				if (objectInstances[layer] != null) {
+					Destroy(objectInstances[layer].obj);
+					objectInstances[layer] = null;
+				}
+			}
+			PostChangeTileObject();
 		}
 
 		public void SetTileObject(ResourceManager.TileObjectPrefab tileObjectPrefab) {
@@ -498,6 +544,10 @@ public class TileManager:MonoBehaviour {
 			} else {
 				objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.TileObjectInstance(tileObjectPrefab,this));
 			}
+			PostChangeTileObject();
+		}
+
+		public void PostChangeTileObject() {
 			walkable = tileType.walkable;
 			foreach (KeyValuePair<int,ResourceManager.TileObjectInstance> kvp in objectInstances) {
 				if (kvp.Value != null && !kvp.Value.prefab.walkable) {
@@ -673,7 +723,10 @@ public class TileManager:MonoBehaviour {
 				}
 				if (Input.GetKeyDown(KeyCode.Q)) {
 					foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),10);
+						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),0);
+					}
+					foreach (ResourceManager.Container container in resourceM.containers) {
+						container.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),10);
 					}
 				}
 				if (Input.GetKeyDown(KeyCode.E)) {

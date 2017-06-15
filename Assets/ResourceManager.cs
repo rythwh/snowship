@@ -6,9 +6,11 @@ using System.Linq;
 public class ResourceManager : MonoBehaviour {
 
 	private UIManager uiM;
+	private TileManager tileM;
 
 	void Awake() {
 		uiM = GetComponent<UIManager>();
+		tileM = GetComponent<TileManager>();
 	}
 
 	public enum ResourceGroupsEnum { Natural, Materials };
@@ -66,6 +68,7 @@ public class ResourceManager : MonoBehaviour {
 			ResourceGroup resourceGroup = new ResourceGroup(resourceGroupData,this);
 			resourceGroups.Add(resourceGroup);
 		}
+		tileM.CreatePlantResources();
 	}
 
 	public Resource GetResourceByEnum(ResourcesEnum resourceEnum) {
@@ -95,13 +98,19 @@ public class ResourceManager : MonoBehaviour {
 	 * <Type> -> <SubType> -> <Object>
 	*/
 	public enum TileObjectPrefabGroupsEnum {
-		None, Structure, Furniture
+		Structure, Furniture,
+		Commands,
+		None,
 	};
 	public enum TileObjectPrefabSubGroupsEnum {
-		None, Walls, Doors, Floors, Containers
+		Walls, Doors, Floors, Containers,
+		Plants,
+		None
 	};
 	public enum TileObjectPrefabsEnum {
-		PickupResources, StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, WoodenChest
+		StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, WoodenChest,
+		ChopPlant,
+		PickupResources
 	};
 
 	List<TileObjectPrefabsEnum> BitmaskingTileObjects = new List<TileObjectPrefabsEnum>() {
@@ -334,12 +343,18 @@ public class ResourceManager : MonoBehaviour {
 	public class Inventory {
 
 		private UIManager uiM;
+		private JobManager jobM;
+		private ColonistManager colonistM;
 
 		private void GetScriptReferences() {
 
 			GameObject GM = GameObject.Find("GM");
 
 			uiM = GM.GetComponent<UIManager>();
+			jobM = GM.GetComponent<JobManager>();
+			colonistM = GM.GetComponent<ColonistManager>();
+
+
 		}
 
 		public List<ResourceAmount> resources = new List<ResourceAmount>();
@@ -364,37 +379,38 @@ public class ResourceManager : MonoBehaviour {
 
 		public void ChangeResourceAmount(Resource resource,int amount) {
 			ResourceAmount existingResourceAmount = resources.Find(ra => ra.resource == resource);
-			print(existingResourceAmount);
+			//print(existingResourceAmount);
 			if (existingResourceAmount != null) {
 				if (amount >= 0 || (amount - existingResourceAmount.amount) >= 0) {
-					print("Added an additional " + amount + " of " + resource.name + " to " + human.name);
+					//print("Added an additional " + amount + " of " + resource.name + " to " + human.name);
 					existingResourceAmount.amount += amount;
 				} else if (amount < 0 && (existingResourceAmount.amount + amount) >= 0) {
-					print("Removed " + amount + " of " + resource.name + " from " + human.name);
+					//print("Removed " + amount + " of " + resource.name + " from " + human.name);
 					existingResourceAmount.amount += amount;
-				} else {
+				}/* else {
 					Debug.LogError("Trying to remove " + amount + " of " + resource.name + " on " + human.name + " when only " + existingResourceAmount.amount + " of that resource exist in this inventory");
-				}
+				}*/
 			} else {
 				if (amount > 0) {
-					print("Adding " + resource.name + " to " + human.name + " with a starting amount of " + amount);
+					//print("Adding " + resource.name + " to " + human.name + " with a starting amount of " + amount);
 					resources.Add(new ResourceAmount(resource,amount));
-				} else if (amount < 0) {
+				}/* else if (amount < 0) {
 					Debug.LogError("Trying to remove " + amount + " of " + resource.name + " that doesn't exist in " + human.name);
-				}
+				}*/
 			}
 			existingResourceAmount = resources.Find(ra => ra.resource == resource);
 			if (existingResourceAmount != null) {
 				if (existingResourceAmount.amount == 0) {
-					print("Removed " + existingResourceAmount.resource.name + " from " + human.name + " as its amount was 0");
+					//print("Removed " + existingResourceAmount.resource.name + " from " + human.name + " as its amount was 0");
 					resources.Remove(existingResourceAmount);
-				} else if (existingResourceAmount.amount < 0) {
+				}/* else if (existingResourceAmount.amount < 0) {
 					Debug.LogError("There is a negative amount of " + resource.name + " on " + human.name + " with " + existingResourceAmount.amount);
 				} else {
 					print(human.name + " now has " + existingResourceAmount.amount + " of " + existingResourceAmount.resource.name);
-				}
+				}*/
 			}
 			uiM.SetSelectedColonistInformation();
+			jobM.UpdateColonistJobs();
 		}
 
 		public bool ReserveResources(List<ResourceAmount> resourcesToReserve, ColonistManager.Colonist colonistReservingResources) {
