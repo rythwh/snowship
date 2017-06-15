@@ -5,4 +5,6 @@ Mining/
 	Mine,0.1`
 Farming/
 	PlantFarm,0.1;
-	HarvestFarm,0.1
+	HarvestFarm,0.1`
+Forestry/
+	ChopPlant,0.1

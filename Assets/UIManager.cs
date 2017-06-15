@@ -128,18 +128,28 @@ public class UIManager:MonoBehaviour {
 	public Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>> menuStructure = new Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>>();
 
 	public void CreateBuildMenuButtons() {
+		bool commandMenu = false;
 		foreach (ResourceManager.TileObjectPrefabGroup topg in resourceM.tileObjectPrefabGroups) {
 			if (topg.type == ResourceManager.TileObjectPrefabGroupsEnum.None) {
 				continue;
 			}
-			GameObject buildMenuGroupButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildItem-Button-Prefab"),GameObject.Find("BuildMenu-Panel").transform,false);
-			buildMenuGroupButton.transform.Find("Text").GetComponent<Text>().text = topg.name;
-
+			Transform objectsParent = GameObject.Find("BuildMenu-Panel").transform;
+			GameObject buildMenuGroupButton = null;
+			if (topg.type == ResourceManager.TileObjectPrefabGroupsEnum.Commands) {
+				objectsParent = GameObject.Find("CommandMenu-Button").transform.Find("Panel");
+				buildMenuGroupButton = GameObject.Find("CommandMenu-Button");
+				commandMenu = true;
+			} else {
+				buildMenuGroupButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildItem-Button-Prefab"),objectsParent,false);
+				buildMenuGroupButton.transform.Find("Text").GetComponent<Text>().text = topg.name;
+			}
 			GameObject groupPanel = buildMenuGroupButton.transform.Find("Panel").gameObject;
 
 			Dictionary<GameObject,List<GameObject>> subGroupPanels = new Dictionary<GameObject,List<GameObject>>();
 			foreach (ResourceManager.TileObjectPrefabSubGroup topsg in topg.tileObjectPrefabSubGroups) {
-				buildMenuGroupButton.transform.Find("Panel").GetComponent<GridLayoutGroup>().cellSize = new Vector2(100,21);
+				if (!commandMenu) {
+					buildMenuGroupButton.transform.Find("Panel").GetComponent<GridLayoutGroup>().cellSize = new Vector2(100,21);
+				}
 				GameObject buildMenuSubGroupButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildItem-Button-Prefab"),buildMenuGroupButton.transform.Find("Panel").transform,false);
 				buildMenuSubGroupButton.transform.Find("Text").GetComponent<Text>().text = topsg.name;
 
@@ -197,6 +207,20 @@ public class UIManager:MonoBehaviour {
 		});
 		buildMenuButton.GetComponent<Button>().onClick.AddListener(delegate { buildMenuPanel.SetActive(!buildMenuPanel.activeSelf); });
 		buildMenuPanel.SetActive(false);
+
+
+		GameObject commandMenuButton = GameObject.Find("CommandMenu-Button");
+		GameObject commandMenuPanel = commandMenuButton.transform.Find("Panel").gameObject;
+		commandMenuButton.GetComponent<Button>().onClick.AddListener(delegate {
+			foreach (KeyValuePair<GameObject,Dictionary<GameObject,List<GameObject>>> kvp in menuStructure) {
+				kvp.Key.SetActive(false);
+				foreach (KeyValuePair<GameObject,List<GameObject>> kvp2 in kvp.Value) {
+					kvp2.Key.SetActive(false);
+				}
+			}
+		});
+		commandMenuButton.GetComponent<Button>().onClick.AddListener(delegate { commandMenuPanel.SetActive(!commandMenuPanel.activeSelf); });
+		commandMenuPanel.SetActive(false);
 	}
 
 	private List<GameObject> tileObjects = new List<GameObject>();

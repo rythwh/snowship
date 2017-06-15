@@ -71,6 +71,22 @@
 			0.5/
 			2
 <Group>
+	Commands
+	<SubGroup>
+		Plants
+		<Object>
+			ChopPlant/
+			20/
+			0/
+			/
+			true/
+			Walkable,Plants,OmitSameLayerJobs/
+			ChopPlant/
+			0.0/
+			true/
+			1.0/
+			0/
+<Group>
 	None
 	<SubGroup>
 		None

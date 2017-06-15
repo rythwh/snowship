@@ -73,7 +73,7 @@ public class JobManager:MonoBehaviour {
 
 		public void SetColonist(ColonistManager.Colonist colonist, ResourceManager resourceM, ColonistManager colonistM, JobManager jobM, PathManager pathM) {
 			this.colonist = colonist;
-			if (prefab.jobType != JobTypesEnum.PickupResources && containerPickups.Count > 0) {
+			if (prefab.jobType != JobTypesEnum.PickupResources && containerPickups != null && containerPickups.Count > 0) {
 				colonist.storedJob = this;
 				colonist.SetJob(new ColonistJob(colonist,new Job(containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),colonistM),null,null,jobM,pathM));
 			}
@@ -100,7 +100,13 @@ public class JobManager:MonoBehaviour {
 		selectedPrefabPreview.transform.position = tile.obj.transform.position;
 	}
 
+	bool changedJobList = false;
 	void Update() {
+		if (changedJobList) {
+			UpdateColonistJobs();
+			uiM.SetJobElements();
+			changedJobList = false;
+		}
 		GetJobSelectionArea();
 		if (timeM.timeModifier > 0) {
 			GiveJobsToColonists();
@@ -142,7 +148,11 @@ public class JobManager:MonoBehaviour {
 		*/
 	}
 
-	public enum JobTypesEnum { Build, Remove, Mine, PlantFarm, HarvestFarm, PickupResources };
+	public enum JobTypesEnum {
+		Build, Remove, Mine, PlantFarm, HarvestFarm,
+		ChopPlant,
+		PickupResources
+	};
 
 	public enum SelectionModifiersEnum { Outline, Walkable, OmitWalkable, Buildable, OmitBuildable, StoneTypes, OmitStoneTypes, AllWaterTypes, OmitAllWaterTypes, LiquidWaterTypes, OmitLiquidWaterTypes, OmitNonStoneAndWaterTypes,
 		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances
@@ -311,12 +321,12 @@ public class JobManager:MonoBehaviour {
 
 	public void CreateJob(Job newJob) {
 		jobs.Add(newJob);
-		uiM.SetJobElements();
+		changedJobList = true;
 	}
 
 	public void AddExistingJob(Job existingJob) {
 		jobs.Add(existingJob);
-		uiM.SetJobElements();
+		changedJobList = true;
 	}
 
 	public class ContainerPickup {
@@ -338,18 +348,18 @@ public class JobManager:MonoBehaviour {
 				foreach (ResourceManager.ResourceAmount resourceAmount in container.inventory.resources.Where(ra => resourcesToPickup.Find(pickupResource => pickupResource.resource == ra.resource) != null)) {
 					ResourceManager.ResourceAmount pickupResource = resourcesToPickup.Find(pR => pR.resource == resourceAmount.resource);
 					if (resourceAmount.amount >= pickupResource.amount) {
-						print("Found all of resource" + pickupResource.resource.name + "(" + pickupResource.amount + ") at " + container.parentObject.tile.obj.transform.position);
+						//print("Found all of resource" + pickupResource.resource.name + "(" + pickupResource.amount + ") at " + container.parentObject.tile.obj.transform.position);
 						resourcesToPickupAtContainer.Add(new ResourceManager.ResourceAmount(pickupResource.resource,pickupResource.amount));
 						resourcesToPickup.Remove(pickupResource);
 					} else if (resourceAmount.amount > 0 && resourceAmount.amount < pickupResource.amount) {
-						print("Found some of resource" + pickupResource.resource.name + "(" + pickupResource.amount + ") at " + container.parentObject.tile.obj.transform.position);
+						//print("Found some of resource" + pickupResource.resource.name + "(" + pickupResource.amount + ") at " + container.parentObject.tile.obj.transform.position);
 						resourcesToPickupAtContainer.Add(new ResourceManager.ResourceAmount(pickupResource.resource,resourceAmount.amount));
 						pickupResource.amount -= resourceAmount.amount;
 						if (pickupResource.amount <= 0) {
 							resourcesToPickup.Remove(pickupResource);
 						}
 					} else {
-						print("Found none of resource" + pickupResource.resource.name + "(" + pickupResource.amount + ") at " + container.parentObject.tile.obj.transform.position);
+						//print("Found none of resource" + pickupResource.resource.name + "(" + pickupResource.amount + ") at " + container.parentObject.tile.obj.transform.position);
 					}
 				}
 				if (resourcesToPickupAtContainer.Count > 0) {
@@ -360,15 +370,15 @@ public class JobManager:MonoBehaviour {
 				if (resourcesToPickup.Count <= 0) {
 					return containersToPickupFrom;
 				} else {
-					print("Didn't find all resources in containers. Missed " + resourcesToPickup.Count + " resources");
+					//print("Didn't find all resources in containers. Missed " + resourcesToPickup.Count + " resources");
 					return null;
 				}
 			} else {
-				print("Didn't find any containers which contain the resources the colonist needs");
+				//print("Didn't find any containers which contain the resources the colonist needs");
 				return null;
 			}
 		} else {
-			print("Didn't find any valid containers");
+			//print("Didn't find any valid containers");
 			return null;
 		}
 	}
@@ -382,16 +392,16 @@ public class JobManager:MonoBehaviour {
 			if (colonistResourceAmount != null) {
 				if (colonistResourceAmount.amount >= resourceAmount.amount) {
 					colonistHasAllResources = true;
-					print("Found all of resource " + resourceAmount.resource.name + "(" + resourceAmount.amount + ") in " + colonist.name);
+					//print("Found all of resource " + resourceAmount.resource.name + "(" + resourceAmount.amount + ") in " + colonist.name);
 					resourcesColonistHas.Add(new ResourceManager.ResourceAmount(resourceAmount.resource,resourceAmount.amount));
 				} else if (colonistResourceAmount.amount > 0 && colonistResourceAmount.amount < resourceAmount.amount) {
 					colonistHasAllResources = false;
-					print("Found some of resource " + resourceAmount.resource.name + "(" + resourceAmount.amount + ") in " + colonist.name);
+					//print("Found some of resource " + resourceAmount.resource.name + "(" + resourceAmount.amount + ") in " + colonist.name);
 					resourcesColonistHas.Add(new ResourceManager.ResourceAmount(resourceAmount.resource,colonistResourceAmount.amount));
 					resourcesToPickup.Add(new ResourceManager.ResourceAmount(resourceAmount.resource,resourceAmount.amount - colonistResourceAmount.amount));
 				} else {
 					colonistHasAllResources = false;
-					print("Found none of resource " + resourceAmount.resource.name + "(" + resourceAmount.amount + ") in " + colonist.name);
+					//print("Found none of resource " + resourceAmount.resource.name + "(" + resourceAmount.amount + ") in " + colonist.name);
 					resourcesToPickup.Add(new ResourceManager.ResourceAmount(resourceAmount.resource,resourceAmount.amount));
 				}
 			} else {
@@ -399,6 +409,7 @@ public class JobManager:MonoBehaviour {
 				resourcesToPickup.Add(new ResourceManager.ResourceAmount(resourceAmount.resource,resourceAmount.amount));
 			}
 		}
+		/*
 		if (resourcesToPickup.Count > 0 && resourcesColonistHas.Count > 0) {
 			print("Found " + resourcesToPickup.Count + " that " + colonist.name + " needs to pickup");
 		} else if (resourcesToPickup.Count <= 0 && resourcesColonistHas.Count > 0) {
@@ -406,13 +417,40 @@ public class JobManager:MonoBehaviour {
 		} else if (resourcesToPickup.Count > 0 && resourcesColonistHas.Count <= 0) {
 			print("Found no resources in " + colonist.name);
 		}
+		*/
 		return new KeyValuePair<bool,List<List<ResourceManager.ResourceAmount>>>(colonistHasAllResources, new List<List<ResourceManager.ResourceAmount>>() { (resourcesToPickup.Count > 0 ? resourcesToPickup : null),(resourcesColonistHas.Count > 0 ? resourcesColonistHas : null) });
 	}
 
-	public float CalculateJobCost(ColonistManager.Colonist colonist,Job job) {
+	public float CalculateJobCost(ColonistManager.Colonist colonist,Job job, List<ContainerPickup> containerPickups) {
+		/* The cost of a job is determined using:
+				- the amount of resources the colonist has
+					- sometimes the amount of resources containers have
+				- the distance of the colonist to the job
+					- sometimes the distance between the colonist position and the job following the path of pickups
+				- the skill of the colonist
+			The cost should be updated whenever:
+				- an inventory is changed:
+					- all colonists if any container's inventory is changed
+					- single colonist is the colonist's inventory is changed
+				- the colonist moves
+				- the skill of the colonist changes
+		*/
 		float cost = 0;
-		cost += pathM.RegionBlockDistance(job.tile.regionBlock,colonist.overTile.regionBlock,true,true);
-		cost -= colonist.GetSkillFromJobType(job.prefab.jobType).level * 10f;
+		if (containerPickups != null) {
+			for (int i = 0;i < containerPickups.Count;i++) {
+				if (i == 0) {
+					cost += pathM.RegionBlockDistance(colonist.overTile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true);
+				} else {
+					cost += pathM.RegionBlockDistance(containerPickups[i - 1].container.parentObject.tile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true);
+				}
+			}
+			cost += pathM.RegionBlockDistance(job.tile.regionBlock,containerPickups[containerPickups.Count-1].container.parentObject.tile.regionBlock,true,true);
+		} else {
+			cost += pathM.RegionBlockDistance(job.tile.regionBlock,colonist.overTile.regionBlock,true,true);
+		}
+		if (job.prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type != ResourceManager.TileObjectPrefabGroupsEnum.None) {
+			cost -= colonist.GetSkillFromJobType(job.prefab.jobType).level * 10f;
+		}
 		return cost;
 	}
 
@@ -431,26 +469,44 @@ public class JobManager:MonoBehaviour {
 			this.colonistResources = colonistResources;
 			this.containerPickups = containerPickups;
 
-			cost = jobM.CalculateJobCost(colonist,job);
-			if (containerPickups != null) {
-				for (int i = 0; i < containerPickups.Count; i++) {
-					if (i == 0) {
-						cost += pathM.RegionBlockDistance(colonist.overTile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true);
-					} else {
-						cost += pathM.RegionBlockDistance(containerPickups[i - 1].container.parentObject.tile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true);
-					}
-				}
+			CalculateCost(jobM);
+		}
+
+		public void CalculateCost(JobManager jobM) {
+			cost = jobM.CalculateJobCost(colonist,job,containerPickups);
+		}
+
+		public void RecalculatePickupResources(JobManager jobM) {
+			KeyValuePair<bool,List<List<ResourceManager.ResourceAmount>>> returnKVP = jobM.CalculateColonistResourcesToPickup(colonist,job.prefab.resourcesToBuild);
+			List<ResourceManager.ResourceAmount> resourcesToPickup = returnKVP.Value[0];
+			colonistResources = returnKVP.Value[1];
+			if (resourcesToPickup != null) { // If there are resources the colonist doesn't have
+				containerPickups = jobM.CalculateColonistPickupContainers(colonist,job,resourcesToPickup);
+			} else {
+				containerPickups = null;
 			}
 		}
 	}
 
-	public void GiveJobsToColonists() {
-		Dictionary<ColonistManager.Colonist,List<ColonistJob>> colonistJobs = new Dictionary<ColonistManager.Colonist,List<ColonistJob>>();
-		List<ColonistManager.Colonist> availableColonists = colonistM.colonists.Where(colonist => colonist.job == null).ToList();
-		foreach (ColonistManager.Colonist colonist in availableColonists) {
-			List<Job> sortedJobs = jobs.Where(job => job.tile.region == colonist.overTile.region).OrderBy(job => CalculateJobCost(colonist,job)).ToList();
-			List<ColonistJob> validJobs = new List<ColonistJob>();
-			foreach (Job job in sortedJobs) {
+	public void UpdateColonistJobCosts(ColonistManager.Colonist colonist) {
+		if (colonistJobs.ContainsKey(colonist)) {
+			foreach (ColonistJob colonistJob in colonistJobs[colonist]) {
+				colonistJob.CalculateCost(this);
+			}
+		}
+	}
+
+	public void UpdateAllColonistJobCosts() {
+		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+			UpdateColonistJobCosts(colonist);
+		}
+	}
+
+	public void UpdateSingleColonistJobs(ColonistManager.Colonist colonist) {
+		List<Job> sortedJobs = jobs.Where(job => job.tile.region == colonist.overTile.region).OrderBy(job => CalculateJobCost(colonist,job,null)).ToList();
+		List<ColonistJob> validJobs = new List<ColonistJob>();
+		foreach (Job job in sortedJobs) {
+			if (job.prefab.resourcesToBuild.Count > 0) {
 				KeyValuePair<bool,List<List<ResourceManager.ResourceAmount>>> returnKVP = CalculateColonistResourcesToPickup(colonist,job.prefab.resourcesToBuild);
 				bool colonistHasAllResources = returnKVP.Key;
 				List<ResourceManager.ResourceAmount> resourcesToPickup = returnKVP.Value[0];
@@ -467,22 +523,73 @@ public class JobManager:MonoBehaviour {
 				} else {
 					continue;
 				}
+			} else {
+				validJobs.Add(new ColonistJob(colonist,job,null,null,this,pathM));
+			}
+		}
+		if (validJobs.Count > 0) {
+			validJobs = validJobs.OrderBy(job => job.cost).ToList();
+			if (colonistJobs.ContainsKey(colonist)) {
+				colonistJobs[colonist] = validJobs;
+			} else {
+				colonistJobs.Add(colonist,validJobs);
+			}
+		}
+	}
+
+	private Dictionary<ColonistManager.Colonist,List<ColonistJob>> colonistJobs = new Dictionary<ColonistManager.Colonist,List<ColonistJob>>();
+	public void UpdateColonistJobs() {
+		print("Updating colonist jobs");
+		colonistJobs.Clear();
+		List<ColonistManager.Colonist> availableColonists = colonistM.colonists.Where(colonist => colonist.job == null && colonist.overTile.walkable).ToList();
+		foreach (ColonistManager.Colonist colonist in availableColonists) {
+			UpdateSingleColonistJobs(colonist);
+			/*
+			List<Job> sortedJobs = jobs.Where(job => job.tile.region == colonist.overTile.region).OrderBy(job => CalculateJobCost(colonist,job,null)).ToList();
+			List<ColonistJob> validJobs = new List<ColonistJob>();
+			foreach (Job job in sortedJobs) {
+				if (job.prefab.resourcesToBuild.Count > 0) {
+					KeyValuePair<bool,List<List<ResourceManager.ResourceAmount>>> returnKVP = CalculateColonistResourcesToPickup(colonist,job.prefab.resourcesToBuild);
+					bool colonistHasAllResources = returnKVP.Key;
+					List<ResourceManager.ResourceAmount> resourcesToPickup = returnKVP.Value[0];
+					List<ResourceManager.ResourceAmount> resourcesColonistHas = returnKVP.Value[1];
+					if (resourcesToPickup != null) { // If there are resources the colonist doesn't have
+						List<ContainerPickup> containerPickups = CalculateColonistPickupContainers(colonist,job,resourcesToPickup);
+						if (containerPickups != null) { // If all resources were found in containers
+							validJobs.Add(new ColonistJob(colonist,job,resourcesColonistHas,containerPickups,this,pathM));
+						} else {
+							continue;
+						}
+					} else if (colonistHasAllResources) { // If the colonist has all resources
+						validJobs.Add(new ColonistJob(colonist,job,resourcesColonistHas,null,this,pathM));
+					} else {
+						continue;
+					}
+				} else {
+					validJobs.Add(new ColonistJob(colonist,job,null,null,this,pathM));
+				}
 			}
 			if (validJobs.Count > 0) {
 				colonistJobs.Add(colonist,validJobs.OrderBy(job => job.cost).ToList());
 			}
+			*/
 		}
+	}
 
-		// IMPLEMENT ACTUAL DISTRIBUTION OF JOBS NOW
+	void GiveJobsToColonists() {
+		bool gaveJob = false;
 		foreach (KeyValuePair<ColonistManager.Colonist,List<ColonistJob>> colonistKVP in colonistJobs) {
 			ColonistManager.Colonist colonist = colonistKVP.Key;
 			List<ColonistJob> colonistJobsList = colonistKVP.Value;
 			if (colonist.job == null) {
-				foreach (ColonistJob colonistJob in colonistJobsList) {
+				for (int i = 0; i < colonistJobsList.Count; i++) {
+					ColonistJob colonistJob = colonistJobsList[i];
 					bool bestColonistForJob = true;
+					//print(colonist.name + " BEST -- " + colonistJob.cost);
 					foreach (KeyValuePair<ColonistManager.Colonist,List<ColonistJob>> otherColonistKVP in colonistJobs) {
 						if (colonistKVP.Key != otherColonistKVP.Key && otherColonistKVP.Key.job == null) {
-							ColonistJob otherColonistJob = otherColonistKVP.Value.Find(job => job == colonistJob);
+							ColonistJob otherColonistJob = otherColonistKVP.Value.Find(job => job.job == colonistJob.job);
+							//print(otherColonistKVP.Key.name + " -- " + (otherColonistJob != null ? otherColonistJob.cost.ToString() : "NULL"));
 							if (otherColonistJob != null && otherColonistJob.cost < colonistJob.cost) {
 								bestColonistForJob = false;
 								break;
@@ -490,10 +597,24 @@ public class JobManager:MonoBehaviour {
 						}
 					}
 					if (bestColonistForJob) {
+						gaveJob = true;
 						colonist.SetJob(colonistJob);
+						jobs.Remove(colonistJob.job);
+						foreach (KeyValuePair<ColonistManager.Colonist,List<ColonistJob>> removeKVP in colonistJobs) {
+							ColonistJob jobToRemove = removeKVP.Value.Find(cJob => cJob.job == colonistJob.job);
+							if (jobToRemove != null) {
+								removeKVP.Value.Remove(jobToRemove);
+							}
+						}
+						i -= 1;
+						break;
 					}
 				}
 			}
+		}
+		if (gaveJob) {
+			uiM.SetJobElements();
+			UpdateColonistJobs();
 		}
 
 		/*
