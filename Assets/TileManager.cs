@@ -692,7 +692,11 @@ public class TileManager:MonoBehaviour {
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
 					Tile tile = GetTileFromPosition(mousePosition);
-					pathM.RegionBlockDistance(GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,tile.regionBlock,true,true);
+					ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == tile);
+					if (container != null) {
+						print("Found container");
+					}
+					/*pathM.RegionBlockDistance(GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,tile.regionBlock,true,true);*/
 					/*
 					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 					foreach (Tile rTile in tile.regionBlock.tiles) {
