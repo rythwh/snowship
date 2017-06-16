@@ -451,6 +451,7 @@ public class JobManager:MonoBehaviour {
 		if (job.prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type != ResourceManager.TileObjectPrefabGroupsEnum.None) {
 			cost -= colonist.GetSkillFromJobType(job.prefab.jobType).level * 10f;
 		}
+		cost += Vector2.Distance(colonist.overTile.obj.transform.position,job.tile.obj.transform.position);
 		return cost;
 	}
 
@@ -539,45 +540,16 @@ public class JobManager:MonoBehaviour {
 
 	private Dictionary<ColonistManager.Colonist,List<ColonistJob>> colonistJobs = new Dictionary<ColonistManager.Colonist,List<ColonistJob>>();
 	public void UpdateColonistJobs() {
-		//print("Updating colonist jobs");
 		colonistJobs.Clear();
 		List<ColonistManager.Colonist> availableColonists = colonistM.colonists.Where(colonist => colonist.job == null && colonist.overTile.walkable).ToList();
 		foreach (ColonistManager.Colonist colonist in availableColonists) {
 			UpdateSingleColonistJobs(colonist);
-			/*
-			List<Job> sortedJobs = jobs.Where(job => job.tile.region == colonist.overTile.region).OrderBy(job => CalculateJobCost(colonist,job,null)).ToList();
-			List<ColonistJob> validJobs = new List<ColonistJob>();
-			foreach (Job job in sortedJobs) {
-				if (job.prefab.resourcesToBuild.Count > 0) {
-					KeyValuePair<bool,List<List<ResourceManager.ResourceAmount>>> returnKVP = CalculateColonistResourcesToPickup(colonist,job.prefab.resourcesToBuild);
-					bool colonistHasAllResources = returnKVP.Key;
-					List<ResourceManager.ResourceAmount> resourcesToPickup = returnKVP.Value[0];
-					List<ResourceManager.ResourceAmount> resourcesColonistHas = returnKVP.Value[1];
-					if (resourcesToPickup != null) { // If there are resources the colonist doesn't have
-						List<ContainerPickup> containerPickups = CalculateColonistPickupContainers(colonist,job,resourcesToPickup);
-						if (containerPickups != null) { // If all resources were found in containers
-							validJobs.Add(new ColonistJob(colonist,job,resourcesColonistHas,containerPickups,this,pathM));
-						} else {
-							continue;
-						}
-					} else if (colonistHasAllResources) { // If the colonist has all resources
-						validJobs.Add(new ColonistJob(colonist,job,resourcesColonistHas,null,this,pathM));
-					} else {
-						continue;
-					}
-				} else {
-					validJobs.Add(new ColonistJob(colonist,job,null,null,this,pathM));
-				}
-			}
-			if (validJobs.Count > 0) {
-				colonistJobs.Add(colonist,validJobs.OrderBy(job => job.cost).ToList());
-			}
-			*/
 		}
 	}
 
 	void GiveJobsToColonists() {
 		bool gaveJob = false;
+		Dictionary<ColonistManager.Colonist,ColonistJob> jobsGiven = new Dictionary<ColonistManager.Colonist,ColonistJob>();
 		foreach (KeyValuePair<ColonistManager.Colonist,List<ColonistJob>> colonistKVP in colonistJobs) {
 			ColonistManager.Colonist colonist = colonistKVP.Key;
 			List<ColonistJob> colonistJobsList = colonistKVP.Value;
@@ -585,11 +557,10 @@ public class JobManager:MonoBehaviour {
 				for (int i = 0; i < colonistJobsList.Count; i++) {
 					ColonistJob colonistJob = colonistJobsList[i];
 					bool bestColonistForJob = true;
-					//print(colonist.name + " BEST -- " + colonistJob.cost);
 					foreach (KeyValuePair<ColonistManager.Colonist,List<ColonistJob>> otherColonistKVP in colonistJobs) {
-						if (colonistKVP.Key != otherColonistKVP.Key && otherColonistKVP.Key.job == null) {
+						ColonistManager.Colonist otherColonist = otherColonistKVP.Key;
+						if (colonist != otherColonist && otherColonist.job == null) {
 							ColonistJob otherColonistJob = otherColonistKVP.Value.Find(job => job.job == colonistJob.job);
-							//print(otherColonistKVP.Key.name + " -- " + (otherColonistJob != null ? otherColonistJob.cost.ToString() : "NULL"));
 							if (otherColonistJob != null && otherColonistJob.cost < colonistJob.cost) {
 								bestColonistForJob = false;
 								break;
@@ -598,7 +569,7 @@ public class JobManager:MonoBehaviour {
 					}
 					if (bestColonistForJob) {
 						gaveJob = true;
-						colonist.SetJob(colonistJob);
+						jobsGiven.Add(colonist,colonistJob);
 						jobs.Remove(colonistJob.job);
 						foreach (KeyValuePair<ColonistManager.Colonist,List<ColonistJob>> removeKVP in colonistJobs) {
 							ColonistJob jobToRemove = removeKVP.Value.Find(cJob => cJob.job == colonistJob.job);
@@ -611,6 +582,9 @@ public class JobManager:MonoBehaviour {
 					}
 				}
 			}
+		}
+		foreach (KeyValuePair<ColonistManager.Colonist,ColonistJob> jobGiven in jobsGiven) {
+			jobGiven.Key.SetJob(jobGiven.Value);
 		}
 		if (gaveJob) {
 			uiM.SetJobElements();
