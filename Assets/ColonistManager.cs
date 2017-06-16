@@ -351,6 +351,9 @@ public class ColonistManager : MonoBehaviour {
 
 			job = colonistJob.job;
 			job.colonistResources = colonistJob.colonistResources;
+			if (colonistJob.containerPickups != null) {
+				print("CONTAINER PICKUPS: " + colonistJob.containerPickups.Count);
+			}
 			job.containerPickups = colonistJob.containerPickups;
 			if (job.containerPickups != null && job.containerPickups.Count > 0) {
 				foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
@@ -434,18 +437,27 @@ public class ColonistManager : MonoBehaviour {
 				job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.PickupResources) {
 				ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == overTile);
+				print(containerOnTile + " " + storedJob.prefab.type.ToString());
 				if (containerOnTile != null && storedJob != null) {
 					JobManager.ContainerPickup containerPickup = storedJob.containerPickups.Find(pickup => pickup.container == containerOnTile);
+					print(containerPickup);
 					if (containerPickup != null) {
 						foreach (ResourceManager.ReservedResources rr in containerPickup.container.inventory.TakeReservedResources(this)) {
+							print(name + " " + rr.colonist.name + " " + rr.resources.Count);
 							foreach (ResourceManager.ResourceAmount ra in rr.resources) {
 								inventory.ChangeResourceAmount(ra.resource,ra.amount);
+								print(name + " " + ra.resource.name + " " + ra.amount);
 							}
 						}
 						storedJob.containerPickups.RemoveAt(0);
 					}
 				}
 				job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
+				if (storedJob.containerPickups.Count <= 0) {
+					job = null;
+					print("Setting stored job on " + name);
+					SetJob(new JobManager.ColonistJob(this,storedJob,storedJob.colonistResources,null,jobM,pathM));
+				}
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.EmptyInventory) {
 				ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == overTile);
 				if (containerOnTile != null) {
@@ -471,9 +483,10 @@ public class ColonistManager : MonoBehaviour {
 
 			job = null;
 
-			uiM.SetJobElements();
 			jobM.UpdateSingleColonistJobs(this);
-			//jobM.UpdateColonistJobs();
+			uiM.SetJobElements();
+			uiM.UpdateSelectedColonistInformation();
+			uiM.UpdateSelectedContainerInfo();
 		}
 
 		public void PlayerMoveToTile(TileManager.Tile tile) {

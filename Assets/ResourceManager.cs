@@ -437,10 +437,12 @@ public class ResourceManager : MonoBehaviour {
 		}
 
 		public List<ReservedResources> TakeReservedResources(ColonistManager.Colonist colonistReservingResources) {
+			print(colonistReservingResources.name + " is taking reserved resources");
 			List<ReservedResources> reservedResourcesByColonist = new List<ReservedResources>();
 			foreach (ReservedResources rr in reservedResources) {
 				if (rr.colonist == colonistReservingResources) {
 					reservedResourcesByColonist.Add(rr);
+					print("Found " + rr.resources.Count + " for " + colonistReservingResources.name);
 				}
 			}
 			foreach (ReservedResources rr in reservedResourcesByColonist) {

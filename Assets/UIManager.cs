@@ -108,12 +108,13 @@ public class UIManager:MonoBehaviour {
 				UpdateColonistElements();
 			}
 			if (selectedContainer != null) {
-				UpdateSelectedContainerInfo();
 				if (Input.GetMouseButtonDown(1)) {
 					selectedContainer = null;
 					SetSelectedContainerInfo();
 				}
-			} else if (Input.GetMouseButtonDown(0)) {
+				UpdateSelectedContainerInfo();
+			}
+			if (Input.GetMouseButtonDown(0)) {
 				ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == newMouseOverTile);
 				if (container != null) {
 					selectedContainer = container;
@@ -509,18 +510,20 @@ public class UIManager:MonoBehaviour {
 	}
 
 	public void UpdateSelectedColonistInformation() {
-		selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().minValue = 0;
-		selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().maxValue = colonistM.selectedColonist.inventory.maxAmount;
-		selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().value = colonistM.selectedColonist.inventory.CountResources();
-		selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventoryValue-Text").GetComponent<Text>().text = colonistM.selectedColonist.inventory.CountResources() + "/ " + colonistM.selectedColonist.inventory.maxAmount;
+		if (colonistM.selectedColonist != null) {
+			selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().minValue = 0;
+			selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().maxValue = colonistM.selectedColonist.inventory.maxAmount;
+			selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().value = colonistM.selectedColonist.inventory.CountResources();
+			selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventoryValue-Text").GetComponent<Text>().text = colonistM.selectedColonist.inventory.CountResources() + "/ " + colonistM.selectedColonist.inventory.maxAmount;
 
-		selectedColonistInformationPanel.transform.Find("ColonistAction-Text").GetComponent<Text>().text = "NO ACTION TEXT";
+			selectedColonistInformationPanel.transform.Find("ColonistAction-Text").GetComponent<Text>().text = "NO ACTION TEXT";
 
-		foreach (SkillElement skillElement in skillElements) {
-			skillElement.Update();
-		}
-		foreach (InventoryElement inventoryElement in inventoryElements) {
-			inventoryElement.Update();
+			foreach (SkillElement skillElement in skillElements) {
+				skillElement.Update();
+			}
+			foreach (InventoryElement inventoryElement in inventoryElements) {
+				inventoryElement.Update();
+			}
 		}
 	}
 
@@ -707,7 +710,7 @@ public class UIManager:MonoBehaviour {
 				containerReservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.colonist,rr,selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel")));
 			}
 			foreach (ResourceManager.ResourceAmount ra in selectedContainer.inventory.resources) {
-				inventoryElements.Add(new InventoryElement(colonistM.selectedColonist,ra,selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel")));
+				containerInventoryElements.Add(new InventoryElement(colonistM.selectedColonist,ra,selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel")));
 			}
 		} else {
 			foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in containerReservedResourcesColonistElements) {
@@ -727,7 +730,7 @@ public class UIManager:MonoBehaviour {
 	}
 
 	public void UpdateSelectedContainerInfo() {
-		foreach (InventoryElement inventoryElement in inventoryElements) {
+		foreach (InventoryElement inventoryElement in containerInventoryElements) {
 			inventoryElement.Update();
 		}
 	}
