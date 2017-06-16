@@ -110,7 +110,7 @@ public class ResourceManager : MonoBehaviour {
 	public enum TileObjectPrefabsEnum {
 		StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, WoodenChest,
 		ChopPlant,
-		PickupResources
+		PickupResources, EmptyInventory
 	};
 
 	List<TileObjectPrefabsEnum> BitmaskingTileObjects = new List<TileObjectPrefabsEnum>() {
@@ -410,6 +410,7 @@ public class ResourceManager : MonoBehaviour {
 				}*/
 			}
 			uiM.SetSelectedColonistInformation();
+			uiM.SetSelectedContainerInfo();
 			jobM.UpdateColonistJobs();
 		}
 
@@ -431,6 +432,7 @@ public class ResourceManager : MonoBehaviour {
 				reservedResources.Add(new ReservedResources(resourcesToReserve,colonistReservingResources));
 			}
 			uiM.SetSelectedColonistInformation();
+			uiM.SetSelectedContainerInfo();
 			return allResourcesFound;
 		}
 
@@ -445,6 +447,7 @@ public class ResourceManager : MonoBehaviour {
 				reservedResources.Remove(rr);
 			}
 			uiM.SetSelectedColonistInformation();
+			uiM.SetSelectedContainerInfo();
 			return reservedResourcesByColonist;
 		}
 	}

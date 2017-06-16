@@ -102,3 +102,15 @@
 			true/
 			1.0/
 			0
+		<Object>
+			EmptyInventory/
+			5/
+			0/
+			/
+			false/
+			/
+			EmptyInventory/
+			0.0/
+			true/
+			1.0/
+			0

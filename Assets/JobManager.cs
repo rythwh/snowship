@@ -151,7 +151,7 @@ public class JobManager:MonoBehaviour {
 	public enum JobTypesEnum {
 		Build, Remove, Mine, PlantFarm, HarvestFarm,
 		ChopPlant,
-		PickupResources
+		PickupResources, EmptyInventory
 	};
 
 	public enum SelectionModifiersEnum { Outline, Walkable, OmitWalkable, Buildable, OmitBuildable, StoneTypes, OmitStoneTypes, AllWaterTypes, OmitAllWaterTypes, LiquidWaterTypes, OmitLiquidWaterTypes, OmitNonStoneAndWaterTypes,
@@ -539,7 +539,7 @@ public class JobManager:MonoBehaviour {
 
 	private Dictionary<ColonistManager.Colonist,List<ColonistJob>> colonistJobs = new Dictionary<ColonistManager.Colonist,List<ColonistJob>>();
 	public void UpdateColonistJobs() {
-		print("Updating colonist jobs");
+		//print("Updating colonist jobs");
 		colonistJobs.Clear();
 		List<ColonistManager.Colonist> availableColonists = colonistM.colonists.Where(colonist => colonist.job == null && colonist.overTile.walkable).ToList();
 		foreach (ColonistManager.Colonist colonist in availableColonists) {
@@ -616,49 +616,5 @@ public class JobManager:MonoBehaviour {
 			uiM.SetJobElements();
 			UpdateColonistJobs();
 		}
-
-		/*
-		if (jobs.Count > 0) {
-			bool updateJobListUI = false;
-			for (int i = 0; i < jobs.Count; i++) {
-				Job job = jobs[i];
-				List<ColonistManager.Colonist> availableColonists = colonistM.colonists.Where(colonist => colonist.job == null && job.tile.region == colonist.overTile.region).ToList();
-				if (availableColonists.Count > 0) {
-					//List<ColonistManager.Colonist> sortedColonists = availableColonists.OrderBy(colonist => pathM.RegionBlockDistance(job.tile.regionBlock,colonist.overTile.regionBlock,true,true)).ToList();
-					List<ColonistManager.Colonist> sortedColonists = availableColonists.OrderBy(colonist => CalculateJobCost(colonist,job)).ToList();
-					foreach (ColonistManager.Colonist colonist in sortedColonists) {
-						colonist.SetJob(job);
-						jobs.RemoveAt(i);
-						i -= 1;
-						updateJobListUI = true;
-						break;
-					}
-				}
-			}
-			if (updateJobListUI) {
-				uiM.SetJobElements();
-			}
-		}
-		*/
-		/*
-		if (availableColonists.Count > 0) {
-			bool gaveJob = false;
-			foreach (ColonistManager.Colonist colonist in availableColonists) {
-				List<Job> sortedJobs = jobs.Where(job => (job.tile.surroundingTiles.Find(tile => tile != null && tile.region == colonist.overTile.region) != null) || (job.tile.region == colonist.overTile.region)).OrderBy(job => pathM.RegionBlockDistance(job.tile.regionBlock,colonist.overTile.regionBlock,true,true)).ToList();
-				if (sortedJobs.Count > 0) {
-					if (availableColonists.OrderBy(c => pathM.RegionBlockDistance(c.overTile.regionBlock,sortedJobs[0].tile.regionBlock,true,true)).ToList()[0] == colonist) {
-						colonist.SetJob(sortedJobs[0]);
-						jobs.Remove(sortedJobs[0]);
-						gaveJob = true;
-					} else {
-						continue;
-					}
-				}
-			}
-			if (gaveJob) {
-				uiM.SetJobList();
-			}
-		}
-		*/
 	}
 }
