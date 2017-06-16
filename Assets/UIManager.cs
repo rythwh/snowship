@@ -45,6 +45,8 @@ public class UIManager:MonoBehaviour {
 	private GameObject selectionSizeCanvas;
 	private GameObject selectionSizePanel;
 
+	private GameObject selectedContainerInventoryPanel;
+
 	void Awake() {
 		tileM = GetComponent<TileManager>();
 		jobM = GetComponent<JobManager>();
@@ -76,8 +78,11 @@ public class UIManager:MonoBehaviour {
 		selectionSizeCanvas = GameObject.Find("SelectionSize-Canvas");
 		selectionSizeCanvas.GetComponent<Canvas>().sortingOrder = 100;
 		selectionSizePanel = selectionSizeCanvas.transform.Find("SelectionSize-Panel/Content-Panel").gameObject;
+
+		selectedContainerInventoryPanel = GameObject.Find("SelectedContainerInventory-Panel");
 	}
 
+	public ResourceManager.Container selectedContainer;
 	void Update() {
 		if (tileM.generated) {
 			mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
@@ -101,6 +106,19 @@ public class UIManager:MonoBehaviour {
 			}
 			if (colonistElements.Count > 0) {
 				UpdateColonistElements();
+			}
+			if (selectedContainer != null) {
+				UpdateSelectedContainerInfo();
+				if (Input.GetMouseButtonDown(1)) {
+					selectedContainer = null;
+					SetSelectedContainerInfo();
+				}
+			} else if (Input.GetMouseButtonDown(0)) {
+				ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == newMouseOverTile);
+				if (container != null) {
+					selectedContainer = container;
+					SetSelectedContainerInfo();
+				}
 			}
 		}
 	}
@@ -139,17 +157,16 @@ public class UIManager:MonoBehaviour {
 		Dictionary<GameObject,Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>>> menus = CreateBuildMenuButtons();
 
 		foreach (KeyValuePair<GameObject,Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>>> menuKVP in menus) {
-			print(menuKVP.Key.name);
 			GameObject menuKVPPanel = menuKVP.Key.transform.Find("Panel").gameObject;
 			menuKVP.Key.GetComponent<Button>().onClick.AddListener(delegate {
 				foreach (KeyValuePair<GameObject,Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>>> otherMenuKVP in menus) {
 					if (menuKVP.Key != otherMenuKVP.Key) {
 						otherMenuKVP.Key.transform.Find("Panel").gameObject.SetActive(false);
-					}
-					foreach (KeyValuePair<GameObject,Dictionary<GameObject,List<GameObject>>> groupKVP in otherMenuKVP.Value) {
-						groupKVP.Key.SetActive(false);
-						foreach (KeyValuePair<GameObject,List<GameObject>> subgroupKVP in groupKVP.Value) {
-							subgroupKVP.Key.SetActive(false);
+						foreach (KeyValuePair<GameObject,Dictionary<GameObject,List<GameObject>>> groupKVP in otherMenuKVP.Value) {
+							groupKVP.Key.SetActive(false);
+							foreach (KeyValuePair<GameObject,List<GameObject>> subgroupKVP in groupKVP.Value) {
+								subgroupKVP.Key.SetActive(false);
+							}
 						}
 					}
 				}
@@ -277,36 +294,36 @@ public class UIManager:MonoBehaviour {
 		return groupPanels;
 	}
 
-	private List<GameObject> tileObjects = new List<GameObject>();
+	private List<GameObject> tileObjectElements = new List<GameObject>();
 	public void UpdateTileInformation() {
 		if (mouseOverTile != null) {
-			foreach (GameObject tileLayerSpriteObject in tileObjects) {
+			foreach (GameObject tileLayerSpriteObject in tileObjectElements) {
 				Destroy(tileLayerSpriteObject);
 			}
-			tileObjects.Clear();
+			tileObjectElements.Clear();
 
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage").GetComponent<Image>().sprite = mouseOverTile.obj.GetComponent<SpriteRenderer>().sprite;
 
 			if (mouseOverTile.plant != null) {
 				GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"),false);
 				tileLayerSpriteObject.GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
-				tileObjects.Add(tileLayerSpriteObject);
+				tileObjectElements.Add(tileLayerSpriteObject);
 
 				GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"),tileInformation.transform,false);
 				tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "Plant";
 				tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.group.name;
-				tileObjects.Add(tileObjectDataObject);
+				tileObjectElements.Add(tileObjectDataObject);
 			}
 			if (mouseOverTile.GetAllObjectInstances().Count > 0) {
 				foreach (ResourceManager.TileObjectInstance tileObject in mouseOverTile.GetAllObjectInstances().OrderBy(o => o.prefab.layer).ToList()) {
 					GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"),false);
 					tileLayerSpriteObject.GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
-					tileObjects.Add(tileLayerSpriteObject);
+					tileObjectElements.Add(tileLayerSpriteObject);
 
 					GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"),tileInformation.transform,false);
 					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "L" + tileObject.prefab.layer;
 					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
-					tileObjects.Add(tileObjectDataObject);
+					tileObjectElements.Add(tileObjectDataObject);
 				}
 			}
 
@@ -417,7 +434,6 @@ public class UIManager:MonoBehaviour {
 	List<SkillElement> skillElements = new List<SkillElement>();
 	List<InventoryElement> inventoryElements = new List<InventoryElement>();
 	List<ReservedResourcesColonistElement> reservedResourcesColonistElements = new List<ReservedResourcesColonistElement>();
-	List<ReservedResourceElement> reservedResourceElements = new List<ReservedResourceElement>();
 
 	/* Called from ColonistManager.SetSelectedColonistFromInput(), ColonistManager.SetSelectedColonist(), ColonistManager.DeselectSelectedColonist(), TileManager.Initialize() */
 	public void SetSelectedColonistInformation() {
@@ -667,5 +683,52 @@ public class UIManager:MonoBehaviour {
 			mousePosition.x + (selectionSizeCanvas.GetComponent<RectTransform>().sizeDelta.x / 2f * selectionSizeCanvas.transform.localScale.x),
 			mousePosition.y + (selectionSizeCanvas.GetComponent<RectTransform>().sizeDelta.y / 2f * selectionSizeCanvas.transform.localScale.y)
 		);
+	}
+
+	List<ReservedResourcesColonistElement> containerReservedResourcesColonistElements = new List<ReservedResourcesColonistElement>();
+	List<InventoryElement> containerInventoryElements = new List<InventoryElement>();
+	public void SetSelectedContainerInfo() {
+		if (selectedContainer != null) {
+			selectedContainerInventoryPanel.SetActive(true);
+			foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in containerReservedResourcesColonistElements) {
+				foreach (ReservedResourceElement reservedResourceElement in reservedResourcesColonistElement.reservedResourceElements) {
+					Destroy(reservedResourceElement.obj);
+				}
+				reservedResourcesColonistElement.reservedResourceElements.Clear();
+				Destroy(reservedResourcesColonistElement.obj);
+			}
+			containerReservedResourcesColonistElements.Clear();
+			foreach (InventoryElement inventoryElement in containerInventoryElements) {
+				Destroy(inventoryElement.obj);
+			}
+			containerInventoryElements.Clear();
+
+			foreach (ResourceManager.ReservedResources rr in selectedContainer.inventory.reservedResources) {
+				containerReservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.colonist,rr,selectedContainerInventoryPanel.transform.Find("InventoryList-Panel")));
+			}
+			foreach (ResourceManager.ResourceAmount ra in selectedContainer.inventory.resources) {
+				inventoryElements.Add(new InventoryElement(colonistM.selectedColonist,ra,selectedContainerInventoryPanel.transform.Find("InventoryList-Panel")));
+			}
+		} else {
+			foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in containerReservedResourcesColonistElements) {
+				foreach (ReservedResourceElement reservedResourceElement in reservedResourcesColonistElement.reservedResourceElements) {
+					Destroy(reservedResourceElement.obj);
+				}
+				reservedResourcesColonistElement.reservedResourceElements.Clear();
+				Destroy(reservedResourcesColonistElement.obj);
+			}
+			containerReservedResourcesColonistElements.Clear();
+			foreach (InventoryElement inventoryElement in containerInventoryElements) {
+				Destroy(inventoryElement.obj);
+			}
+			containerInventoryElements.Clear();
+			selectedContainerInventoryPanel.SetActive(false);
+		}
+	}
+
+	public void UpdateSelectedContainerInfo() {
+		foreach (InventoryElement inventoryElement in inventoryElements) {
+			inventoryElement.Update();
+		}
 	}
 }

@@ -301,16 +301,28 @@ public class ColonistManager : MonoBehaviour {
 			if (overTileChanged) {
 				jobM.UpdateColonistJobCosts(this);
 			}
-			if (job == null && path.Count <= 0) {
-				Wander();
+			if (job == null) {
+				if(path.Count <= 0) {
+					List<ResourceManager.Container> validContainers = resourceM.containers.Where(container => container.parentObject.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
+					if (resourceM.containers.Count > 0 && inventory.CountResources() >= inventory.maxAmount / 2f && validContainers.Count > 0) {
+						List<ResourceManager.Container> closestContainers = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock,overTile.regionBlock,true,true)).ToList();
+						if (closestContainers.Count > 0) {
+							ResourceManager.Container closestContainer = closestContainers[0];
+							SetJob(new JobManager.ColonistJob(this,new JobManager.Job(closestContainer.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory),colonistM),null,null,jobM,pathM));
+						}
+					} else {
+						Wander();
+					}
+				} else {
+					wanderTimer = Random.Range(10f,20f);
+				}
 			} else {
-				wanderTimer = Random.Range(10f,20f);
-			}
-			if (job != null && !job.started && overTile == job.tile) {
-				StartJob();
-			}
-			if (job != null && job.started && overTile == job.tile && !Mathf.Approximately(job.jobProgress,0)) {
-				WorkJob();
+				if (!job.started && overTile == job.tile) {
+					StartJob();
+				}
+				if (job.started && overTile == job.tile && !Mathf.Approximately(job.jobProgress,0)) {
+					WorkJob();
+				}
 			}
 		}
 
@@ -351,8 +363,6 @@ public class ColonistManager : MonoBehaviour {
 
 		public void StartJob() {
 			job.started = true;
-			Destroy(job.jobPreview);
-			job.tile.SetTileObject(job.prefab);
 
 			job.jobProgress *= (1 + (1 - GetJobSkillMultiplier(job.prefab.jobType)));
 			job.colonistBuildTime = job.jobProgress;
@@ -369,10 +379,14 @@ public class ColonistManager : MonoBehaviour {
 				return;
 			}
 
-			job.tile.objectInstances[job.prefab.layer].obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.colonistBuildTime - job.jobProgress) / job.colonistBuildTime));
+			job.jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.colonistBuildTime - job.jobProgress) / job.colonistBuildTime));
 		}
 
 		public void FinishJob() {
+
+			Destroy(job.jobPreview);
+			job.tile.SetTileObject(job.prefab);
+
 			job.tile.objectInstances[job.prefab.layer].obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
 
 			job.tile.objectInstances[job.prefab.layer].FinishCreation();
@@ -423,10 +437,36 @@ public class ColonistManager : MonoBehaviour {
 				if (containerOnTile != null && storedJob != null) {
 					JobManager.ContainerPickup containerPickup = storedJob.containerPickups.Find(pickup => pickup.container == containerOnTile);
 					if (containerPickup != null) {
-						containerPickup.container.inventory.TakeReservedResources(this);
+						foreach (ResourceManager.ReservedResources rr in containerPickup.container.inventory.TakeReservedResources(this)) {
+							foreach (ResourceManager.ResourceAmount ra in rr.resources) {
+								inventory.ChangeResourceAmount(ra.resource,ra.amount);
+							}
+						}
 						storedJob.containerPickups.RemoveAt(0);
 					}
 				}
+				job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
+			} else if (job.prefab.jobType == JobManager.JobTypesEnum.EmptyInventory) {
+				ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == overTile);
+				if (containerOnTile != null) {
+					List<ResourceManager.ResourceAmount> removeResourceAmounts = new List<ResourceManager.ResourceAmount>();
+					foreach (ResourceManager.ResourceAmount inventoryResourceAmount in inventory.resources) {
+						if (inventoryResourceAmount.amount <= containerOnTile.maxAmount - containerOnTile.inventory.CountResources()) {
+							containerOnTile.inventory.ChangeResourceAmount(inventoryResourceAmount.resource,inventoryResourceAmount.amount);
+							removeResourceAmounts.Add(new ResourceManager.ResourceAmount(inventoryResourceAmount.resource,inventoryResourceAmount.amount));
+						} else if (containerOnTile.inventory.CountResources() < containerOnTile.maxAmount) {
+							int amount = containerOnTile.maxAmount - containerOnTile.inventory.CountResources();
+							containerOnTile.inventory.ChangeResourceAmount(inventoryResourceAmount.resource,amount);
+							removeResourceAmounts.Add(new ResourceManager.ResourceAmount(inventoryResourceAmount.resource,amount));
+						} else {
+							print("No space left in container");
+						}
+					}
+					foreach (ResourceManager.ResourceAmount removeResourceAmount in removeResourceAmounts) {
+						inventory.ChangeResourceAmount(removeResourceAmount.resource,-removeResourceAmount.amount);
+					}
+				}
+				job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
 			}
 
 			job = null;

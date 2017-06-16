@@ -96,13 +96,11 @@ public class TileManager:MonoBehaviour {
 
 		public List<ResourceManager.ResourceAmount> GetResources() {
 			List<ResourceManager.ResourceAmount> resourcesToReturn = new List<ResourceManager.ResourceAmount>();
-			print(group.returnResources.Count.ToString());
 			foreach (ResourceManager.ResourceAmount resourceAmount in group.returnResources) {
 				int amount = Mathf.Clamp(resourceAmount.amount + Random.Range(-2,2),1,int.MaxValue);
 				if (small && amount > 0) {
 					amount = Mathf.CeilToInt(amount / 2f);
 				}
-				print(resourceAmount.resource.name + " " + amount);
 				resourcesToReturn.Add(new ResourceManager.ResourceAmount(resourceAmount.resource,amount));
 			}
 			return resourcesToReturn;
@@ -609,11 +607,12 @@ public class TileManager:MonoBehaviour {
 		CreateBiomes();
 		CreateMap();
 
-		colonistM.SpawnColonists(10);
+		colonistM.SpawnColonists(3);
 
 		generated = true;
 
 		uiM.SetSelectedColonistInformation();
+		uiM.SetSelectedContainerInfo();
 		uiM.SetJobElements();
 	}
 
@@ -723,11 +722,13 @@ public class TileManager:MonoBehaviour {
 				}
 				if (Input.GetKeyDown(KeyCode.Q)) {
 					foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),0);
+						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),10);
 					}
+					/*
 					foreach (ResourceManager.Container container in resourceM.containers) {
 						container.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),10);
 					}
+					*/
 				}
 				if (Input.GetKeyDown(KeyCode.E)) {
 					foreach (Region region in regionBlocks) {
