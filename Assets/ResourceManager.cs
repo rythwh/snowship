@@ -131,7 +131,7 @@ public class ResourceManager : MonoBehaviour {
 		foreach (string tileObjectPrefabGroupDataString in tileObjectPrefabGroupsData) {
 			tileObjectPrefabGroups.Add(new TileObjectPrefabGroup(tileObjectPrefabGroupDataString));
 		}
-		uiM.CreateBuildMenuButtons();
+		uiM.CreateMenus();
 	}
 
 	public TileObjectPrefab GetTileObjectPrefabByEnum(TileObjectPrefabsEnum topEnum) {
