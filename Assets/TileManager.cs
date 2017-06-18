@@ -1161,12 +1161,8 @@ public class TileManager:MonoBehaviour {
 				foreach (Tile nTile in tile.horizontalSurroundingTiles) {
 					if (nTile != null && nTile.regionBlock != tile.regionBlock && nTile.regionBlock != null && !regionBlock.horizontalSurroundingRegionBlocks.Contains(nTile.regionBlock)) {
 						regionBlock.horizontalSurroundingRegionBlocks.Add(nTile.regionBlock);
-						print("A");
 					}
 				}
-				print(regionBlock.horizontalSurroundingRegionBlocks.Count);
-				tile.regionBlock.surroundingRegionBlocks.AddRange(regionBlock.horizontalSurroundingRegionBlocks);
-				print(regionBlock.surroundingRegionBlocks.Count);
 				foreach (Tile nTile in tile.surroundingTiles) {
 					if (nTile != null && nTile.regionBlock != tile.regionBlock && nTile.regionBlock != null && !regionBlock.surroundingRegionBlocks.Contains(nTile.regionBlock)) {
 						regionBlock.surroundingRegionBlocks.Add(nTile.regionBlock);
