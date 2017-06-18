@@ -528,7 +528,7 @@ public class TileManager:MonoBehaviour {
 			PostChangeTileObject();
 		}
 
-		public void SetTileObject(ResourceManager.TileObjectPrefab tileObjectPrefab) {
+		public void SetTileObject(ResourceManager.TileObjectPrefab tileObjectPrefab,int rotationIndex) {
 			if (objectInstances.ContainsKey(tileObjectPrefab.layer)) {
 				if (objectInstances[tileObjectPrefab.layer] != null) {
 					if (tileObjectPrefab != null) {
@@ -537,10 +537,10 @@ public class TileManager:MonoBehaviour {
 						objectInstances[tileObjectPrefab.layer] = null;
 					}
 				} else {
-					objectInstances[tileObjectPrefab.layer] = new ResourceManager.TileObjectInstance(tileObjectPrefab,this);
+					objectInstances[tileObjectPrefab.layer] = new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex);
 				}
 			} else {
-				objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.TileObjectInstance(tileObjectPrefab,this));
+				objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex));
 			}
 			PostChangeTileObject();
 		}
@@ -753,7 +753,6 @@ public class TileManager:MonoBehaviour {
 					}
 					*/
 					/*pathM.RegionBlockDistance(GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,tile.regionBlock,true,true);*/
-					/*
 					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 					foreach (Tile rTile in tile.regionBlock.tiles) {
 						rTile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
@@ -761,7 +760,8 @@ public class TileManager:MonoBehaviour {
 					}
 					GetTileFromPosition(tile.regionBlock.averagePosition).obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
 					GetTileFromPosition(tile.regionBlock.averagePosition).obj.GetComponent<SpriteRenderer>().color = Color.white;
-					foreach (RegionBlock nRegionBlock in tile.regionBlock.horizontalSurroundingRegionBlocks) {
+					print(tile.regionBlock.surroundingRegionBlocks.Count + " " + tile.regionBlock.horizontalSurroundingRegionBlocks.Count);
+					foreach (RegionBlock nRegionBlock in tile.regionBlock.surroundingRegionBlocks) {
 						Color colour = nRegionBlock.tileType.walkable ? Color.blue : Color.red;
 						foreach (Tile rTile in nRegionBlock.tiles) {
 							rTile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
@@ -770,7 +770,6 @@ public class TileManager:MonoBehaviour {
 						GetTileFromPosition(nRegionBlock.averagePosition).obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
 						GetTileFromPosition(nRegionBlock.averagePosition).obj.GetComponent<SpriteRenderer>().color = Color.white;
 					}
-					*/
 					/*
 					tile.SetTileType(GetTileTypeByEnum(TileTypes.Stone),true,true,true,true);
 					RecalculateRegionsAtTile(tile);
@@ -1064,6 +1063,7 @@ public class TileManager:MonoBehaviour {
 
 	public class RegionBlock : Region {
 		public Vector2 averagePosition = new Vector2(0,0);
+		public List<RegionBlock> surroundingRegionBlocks = new List<RegionBlock>();
 		public List<RegionBlock> horizontalSurroundingRegionBlocks = new List<RegionBlock>();
 		public RegionBlock(TileType regionTileType, int regionID) : base(regionTileType,regionID) {
 
@@ -1161,6 +1161,15 @@ public class TileManager:MonoBehaviour {
 				foreach (Tile nTile in tile.horizontalSurroundingTiles) {
 					if (nTile != null && nTile.regionBlock != tile.regionBlock && nTile.regionBlock != null && !regionBlock.horizontalSurroundingRegionBlocks.Contains(nTile.regionBlock)) {
 						regionBlock.horizontalSurroundingRegionBlocks.Add(nTile.regionBlock);
+						print("A");
+					}
+				}
+				print(regionBlock.horizontalSurroundingRegionBlocks.Count);
+				tile.regionBlock.surroundingRegionBlocks.AddRange(regionBlock.horizontalSurroundingRegionBlocks);
+				print(regionBlock.surroundingRegionBlocks.Count);
+				foreach (Tile nTile in tile.surroundingTiles) {
+					if (nTile != null && nTile.regionBlock != tile.regionBlock && nTile.regionBlock != null && !regionBlock.surroundingRegionBlocks.Contains(nTile.regionBlock)) {
+						regionBlock.surroundingRegionBlocks.Add(nTile.regionBlock);
 					}
 				}
 				regionBlock.averagePosition = new Vector2(regionBlock.averagePosition.x + tile.obj.transform.position.x,regionBlock.averagePosition.y + tile.obj.transform.position.y);

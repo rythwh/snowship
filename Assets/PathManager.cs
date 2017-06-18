@@ -17,10 +17,10 @@ public class PathManager : MonoBehaviour {
 		}
 	}
 
-	public List<TileManager.Tile> FindPathToTile(TileManager.Tile startTile, TileManager.Tile endTile) {
+	public List<TileManager.Tile> FindPathToTile(TileManager.Tile startTile, TileManager.Tile endTile, bool allowEndTileNonWalkable) {
 
 		bool stop = false;
-		if (!endTile.walkable || startTile.region != endTile.region) {
+		if (!allowEndTileNonWalkable && (!endTile.walkable || startTile.region != endTile.region)) {
 			stop = true;
 		}
 		if (!startTile.walkable && endTile.walkable) {
@@ -57,7 +57,7 @@ public class PathManager : MonoBehaviour {
 			}
 
 			foreach (TileManager.Tile nTile in (currentTile.tile.surroundingTiles.Find(tile => tile != null && !tile.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
-				if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (walkable ? nTile.walkable : true)) {
+				if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (allowEndTileNonWalkable && nTile == endTile ? true : (walkable ? nTile.walkable : true))) {
 					float cost = Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position) - (nTile.walkSpeed * 10f);
 					PathfindingTile pTile = new PathfindingTile(nTile,currentTile,cost);
 					frontier.Add(pTile);

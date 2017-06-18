@@ -8,7 +8,6 @@ public class ColonistManager : MonoBehaviour {
 	private TileManager tileM;
 	private CameraManager cameraM;
 	private UIManager uiM;
-	private PathManager pathM;
 
 	void Awake() {
 
@@ -19,7 +18,6 @@ public class ColonistManager : MonoBehaviour {
 		tileM = GetComponent<TileManager>();
 		cameraM = GetComponent<CameraManager>();
 		uiM = GetComponent<UIManager>();
-		pathM = GetComponent<PathManager>();
 
 		CreateColonistSkills();
 		CreateColonistProfessions();
@@ -80,13 +78,13 @@ public class ColonistManager : MonoBehaviour {
 				overTileChanged = true;
 			}
 			overTile = newOverTile;
-			MoveToTile(null);
+			MoveToTile(null,false);
 		}
 
 		private Vector2 oldPosition;
-		public bool MoveToTile(TileManager.Tile tile) {
+		public bool MoveToTile(TileManager.Tile tile, bool allowEndTileNonWalkable) {
 			if (tile != null) {
-				path = pathM.FindPathToTile(overTile,tile);
+				path = pathM.FindPathToTile(overTile,tile,allowEndTileNonWalkable);
 				if (path.Count > 0) {
 					SetMoveSprite();
 				}
@@ -275,6 +273,11 @@ public class ColonistManager : MonoBehaviour {
 
 	public List<Colonist> colonists = new List<Colonist>();
 
+	public enum ColonistNeedsEnum { Food, Sleep };
+	Dictionary<ColonistNeedsEnum,float> needsThresholds = new Dictionary<ColonistNeedsEnum,float>() {
+		{ ColonistNeedsEnum.Food, 30 },{ColonistNeedsEnum.Sleep,70 }
+	};
+
 	public class Colonist : Human {
 
 		public JobManager.Job job;
@@ -285,6 +288,8 @@ public class ColonistManager : MonoBehaviour {
 		public List<SkillInstance> skills = new List<SkillInstance>();
 
 		public Profession profession;
+
+		public SortedDictionary<ColonistNeedsEnum,float> needs = new SortedDictionary<ColonistNeedsEnum,float>();
 
 		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes, Profession profession) : base(spawnTile,colonistLookIndexes) {
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
@@ -302,19 +307,23 @@ public class ColonistManager : MonoBehaviour {
 				jobM.UpdateColonistJobCosts(this);
 			}
 			if (job == null) {
-				if(path.Count <= 0) {
-					List<ResourceManager.Container> validContainers = resourceM.containers.Where(container => container.parentObject.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
-					if (resourceM.containers.Count > 0 && inventory.CountResources() >= inventory.maxAmount / 2f && validContainers.Count > 0) {
-						List<ResourceManager.Container> closestContainers = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock,overTile.regionBlock,true,true)).ToList();
-						if (closestContainers.Count > 0) {
-							ResourceManager.Container closestContainer = closestContainers[0];
-							SetJob(new JobManager.ColonistJob(this,new JobManager.Job(closestContainer.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory),colonistM),null,null,jobM,pathM));
+				if (needs.Where(need => need.Value >= colonistM.needsThresholds[need.Key]).ToList().Count > 0) {
+
+				} else {
+					if (path.Count <= 0) {
+						List<ResourceManager.Container> validContainers = resourceM.containers.Where(container => container.parentObject.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
+						if (resourceM.containers.Count > 0 && inventory.CountResources() >= inventory.maxAmount / 2f && validContainers.Count > 0) {
+							List<ResourceManager.Container> closestContainers = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock,overTile.regionBlock,true,true)).ToList();
+							if (closestContainers.Count > 0) {
+								ResourceManager.Container closestContainer = closestContainers[0];
+								SetJob(new JobManager.ColonistJob(this,new JobManager.Job(closestContainer.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory),0,colonistM,resourceM),null,null,jobM,pathM));
+							}
+						} else {
+							Wander();
 						}
 					} else {
-						Wander();
+						wanderTimer = Random.Range(10f,20f);
 					}
-				} else {
-					wanderTimer = Random.Range(10f,20f);
 				}
 			} else {
 				if (!job.started && overTile == job.tile) {
@@ -331,7 +340,7 @@ public class ColonistManager : MonoBehaviour {
 			if (wanderTimer <= 0) {
 				List<TileManager.Tile> validWanderTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable && tile.tileType.buildable && colonistM.colonists.Find(colonist => colonist.overTile == tile) == null).ToList();
 				if (validWanderTiles.Count > 0) {
-					MoveToTile(validWanderTiles[Random.Range(0,validWanderTiles.Count)]);
+					MoveToTile(validWanderTiles[Random.Range(0,validWanderTiles.Count)],false);
 				}
 				wanderTimer = Random.Range(10f,20f);
 			} else {
@@ -340,15 +349,6 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void SetJob(JobManager.ColonistJob colonistJob) {
-			if (job != null) {
-				if (job.colonistResources != null) {
-					job.colonistResources.Clear();
-				}
-				if (job.containerPickups != null) {
-					job.containerPickups.Clear();
-				}
-			}
-
 			job = colonistJob.job;
 			job.colonistResources = colonistJob.colonistResources;
 			if (colonistJob.containerPickups != null) {
@@ -361,7 +361,7 @@ public class ColonistManager : MonoBehaviour {
 				}
 			}
 			job.SetColonist(this,resourceM,colonistM,jobM,pathM);
-			MoveToTile(job.tile);
+			MoveToTile(job.tile,!job.tile.walkable);
 		}
 
 		public void StartJob() {
@@ -386,22 +386,26 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void FinishJob() {
+			JobManager.Job finishedJob = job;
+			job = null;
 
-			Destroy(job.jobPreview);
-			job.tile.SetTileObject(job.prefab);
+			Destroy(finishedJob.jobPreview);
+			finishedJob.tile.SetTileObject(finishedJob.prefab,finishedJob.rotationIndex);
 
-			job.tile.objectInstances[job.prefab.layer].obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+			finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+			finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).FinishCreation();
+			if (!resourceM.GetBitmaskingTileObjects().Contains(finishedJob.prefab.type) && finishedJob.prefab.bitmaskSprites.Count > 0) {
+				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().sprite = finishedJob.prefab.bitmaskSprites[finishedJob.rotationIndex];
+			}
 
-			job.tile.objectInstances[job.prefab.layer].FinishCreation();
-
-			if (job.prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type != ResourceManager.TileObjectPrefabGroupsEnum.None) {
-				GetSkillFromJobType(job.prefab.jobType).AddExperience(job.prefab.timeToBuild);
+			if (finishedJob.prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type != ResourceManager.TileObjectPrefabGroupsEnum.None) {
+				GetSkillFromJobType(finishedJob.prefab.jobType).AddExperience(finishedJob.prefab.timeToBuild);
 			}
 
 			if (!overTile.walkable) {
 				List<TileManager.Tile> walkableSurroundingTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
 				if (walkableSurroundingTiles.Count > 0) {
-					MoveToTile(walkableSurroundingTiles[Random.Range(0,walkableSurroundingTiles.Count)]);
+					MoveToTile(walkableSurroundingTiles[Random.Range(0,walkableSurroundingTiles.Count)],false);
 				} else {
 					walkableSurroundingTiles.Clear();
 					List<TileManager.Tile> potentialWalkableSurroundingTiles = new List<TileManager.Tile>();
@@ -413,31 +417,32 @@ public class ColonistManager : MonoBehaviour {
 					walkableSurroundingTiles = potentialWalkableSurroundingTiles.Where(tile => tile.surroundingTiles.Find(nTile => !nTile.walkable && nTile.regionBlock == overTile.regionBlock) != null).ToList();
 					if (walkableSurroundingTiles.Count > 0) {
 						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
-						MoveToTile(walkableSurroundingTiles[0]);
+						MoveToTile(walkableSurroundingTiles[0],false);
 					} else {
 						List<TileManager.Tile> validTiles = tileM.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
 						if (validTiles.Count > 0) {
-							MoveToTile(validTiles[0]);
+							MoveToTile(validTiles[0],false);
 						}
 					}
 				}
 			}
 
-			if (job.prefab.jobType == JobManager.JobTypesEnum.Build) {
-				foreach (ResourceManager.ResourceAmount resourceAmount in job.prefab.resourcesToBuild) {
+			if (finishedJob.prefab.jobType == JobManager.JobTypesEnum.Build) {
+				foreach (ResourceManager.ResourceAmount resourceAmount in finishedJob.prefab.resourcesToBuild) {
 					inventory.ChangeResourceAmount(resourceAmount.resource,-resourceAmount.amount);
 				}
-			} else if (job.prefab.jobType == JobManager.JobTypesEnum.Remove) {
+			} else if (finishedJob.prefab.jobType == JobManager.JobTypesEnum.Remove) {
 
-			} else if (job.prefab.jobType == JobManager.JobTypesEnum.ChopPlant) {
-				foreach (ResourceManager.ResourceAmount resourceAmount in job.tile.plant.GetResources()) {
+			} else if (finishedJob.prefab.jobType == JobManager.JobTypesEnum.ChopPlant) {
+				finishedJob.tile.RemoveTileObjectAtLayer(finishedJob.prefab.layer);
+				foreach (ResourceManager.ResourceAmount resourceAmount in finishedJob.tile.plant.GetResources()) {
 					inventory.ChangeResourceAmount(resourceAmount.resource,resourceAmount.amount);
 				}
-				job.tile.SetPlant(true);
-				job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
-			} else if (job.prefab.jobType == JobManager.JobTypesEnum.PickupResources) {
+				finishedJob.tile.SetPlant(true);
+			} else if (finishedJob.prefab.jobType == JobManager.JobTypesEnum.PickupResources) {
+				finishedJob.tile.RemoveTileObjectAtLayer(finishedJob.prefab.layer);
 				ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == overTile);
-				print(containerOnTile + " " + storedJob.prefab.type.ToString());
+				print(containerOnTile + " " + storedJob.prefab.type.ToString() + " " + storedJob.containerPickups + " " + storedJob.containerPickups.Count);
 				if (containerOnTile != null && storedJob != null) {
 					JobManager.ContainerPickup containerPickup = storedJob.containerPickups.Find(pickup => pickup.container == containerOnTile);
 					print(containerPickup);
@@ -452,13 +457,12 @@ public class ColonistManager : MonoBehaviour {
 						storedJob.containerPickups.RemoveAt(0);
 					}
 				}
-				job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
-				if (storedJob.containerPickups.Count <= 0) {
-					job = null;
+				if (storedJob != null && storedJob.containerPickups.Count <= 0) {
 					print("Setting stored job on " + name);
 					SetJob(new JobManager.ColonistJob(this,storedJob,storedJob.colonistResources,null,jobM,pathM));
 				}
-			} else if (job.prefab.jobType == JobManager.JobTypesEnum.EmptyInventory) {
+			} else if (finishedJob.prefab.jobType == JobManager.JobTypesEnum.EmptyInventory) {
+				finishedJob.tile.RemoveTileObjectAtLayer(finishedJob.prefab.layer);
 				ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == overTile);
 				if (containerOnTile != null) {
 					List<ResourceManager.ResourceAmount> removeResourceAmounts = new List<ResourceManager.ResourceAmount>();
@@ -478,10 +482,11 @@ public class ColonistManager : MonoBehaviour {
 						inventory.ChangeResourceAmount(removeResourceAmount.resource,-removeResourceAmount.amount);
 					}
 				}
-				job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
+			} else if (finishedJob.prefab.jobType == JobManager.JobTypesEnum.Mine) {
+				finishedJob.tile.RemoveTileObjectAtLayer(finishedJob.prefab.layer);
+				inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),finishedJob.tile.tileType.type.ToString())),Random.Range(4,7));
+				finishedJob.tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Dirt),true,true,true,false);
 			}
-
-			job = null;
 
 			jobM.UpdateSingleColonistJobs(this);
 			uiM.SetJobElements();
@@ -493,9 +498,9 @@ public class ColonistManager : MonoBehaviour {
 			if (job != null) {
 				jobM.AddExistingJob(job);
 				job = null;
-				MoveToTile(tile);
+				MoveToTile(tile,false);
 			} else {
-				MoveToTile(tile);
+				MoveToTile(tile,false);
 			}
 		}
 

@@ -15,7 +15,7 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourceGroupsEnum { Natural, Materials };
 
-	public enum ResourcesEnum { Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Wood, Firewood };
+	public enum ResourcesEnum { Wood, Stone, Cloth, Dirt, Granite, Limestone, Marble, Sandstone, Slate, Clay, Firewood };
 
 	public List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
 
@@ -103,19 +103,24 @@ public class ResourceManager : MonoBehaviour {
 		None,
 	};
 	public enum TileObjectPrefabSubGroupsEnum {
-		Walls, Doors, Floors, Containers,
-		Plants,
+		Walls, Doors, Floors, Containers, Beds,
+		Plants, Terrain,
 		None
 	};
 	public enum TileObjectPrefabsEnum {
-		StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, WoodenChest,
-		ChopPlant,
+		StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, WoodenChest, WoodenBed,
+		ChopPlant, Mine,
 		PickupResources, EmptyInventory
 	};
 
 	List<TileObjectPrefabsEnum> BitmaskingTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall, TileObjectPrefabsEnum.WoodenDoor, TileObjectPrefabsEnum.StoneFloor, TileObjectPrefabsEnum.WoodenFloor
+		TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall, TileObjectPrefabsEnum.StoneFloor, TileObjectPrefabsEnum.WoodenFloor
 	};
+
+	public List<TileObjectPrefabsEnum> GetBitmaskingTileObjects() {
+		return BitmaskingTileObjects;
+	}
+
 	List<TileObjectPrefabsEnum> FloorEquivalentTileObjects = new List<TileObjectPrefabsEnum>() {
 		TileObjectPrefabsEnum.StoneFloor, TileObjectPrefabsEnum.WoodenFloor
 	};
@@ -300,12 +305,15 @@ public class ResourceManager : MonoBehaviour {
 		public TileObjectPrefab prefab;
 		public GameObject obj;
 
-		public TileObjectInstance(TileObjectPrefab prefab, TileManager.Tile tile) {
+		public int rotationIndex;
+
+		public TileObjectInstance(TileObjectPrefab prefab, TileManager.Tile tile,int rotationIndex) {
 
 			GetScriptReferences();
 
 			this.prefab = prefab;
 			this.tile = tile;
+			this.rotationIndex = rotationIndex;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 1 + prefab.layer; // Tile Object Sprite
@@ -344,7 +352,6 @@ public class ResourceManager : MonoBehaviour {
 
 		private UIManager uiM;
 		private JobManager jobM;
-		private ColonistManager colonistM;
 
 		private void GetScriptReferences() {
 
@@ -352,9 +359,6 @@ public class ResourceManager : MonoBehaviour {
 
 			uiM = GM.GetComponent<UIManager>();
 			jobM = GM.GetComponent<JobManager>();
-			colonistM = GM.GetComponent<ColonistManager>();
-
-
 		}
 
 		public List<ResourceAmount> resources = new List<ResourceAmount>();
@@ -580,7 +584,11 @@ public class ResourceManager : MonoBehaviour {
 					if (BitmaskingTileObjects.Contains(tileObjectInstance.prefab.type)) {
 						BitmaskTileObjects(tileObjectInstance,true,false,false,null);
 					} else {
-						tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.baseSprite;
+						if (tileObjectInstance.prefab.bitmaskSprites.Count > 0) {
+							tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.bitmaskSprites[tileObjectInstance.rotationIndex];
+						} else {
+							tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.baseSprite;
+						}
 					}
 				}
 			}
