@@ -4,7 +4,7 @@
 		Walls
 		<Object>
 			WoodenWall/
-			10/
+			20/
 			5/
 			Wood/
 			true/
@@ -16,7 +16,7 @@
 			2
 		<Object>
 			StoneWall/
-			15/
+			20/
 			5/
 			Stone/
 			true/
@@ -30,7 +30,7 @@
 		Doors
 		<Object>
 			WoodenDoor/
-			5/
+			15/
 			2/
 			Wood/
 			true/
@@ -44,7 +44,7 @@
 		Floors
 		<Object>
 			WoodenFloor/
-			5/
+			15/
 			2/
 			Wood/
 			true/
@@ -60,9 +60,23 @@
 		Containers
 		<Object>
 			WoodenChest/
-			15/
+			20/
 			3/
 			Wood/
+			true/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
+			Build/
+			1.0/
+			true/
+			0.5/
+			2
+	<SubGroup>
+		Beds
+		<Object>
+			WoodenBed/
+			20/
+			4,2/
+			Wood,Cloth/
 			true/
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -76,7 +90,7 @@
 		Plants
 		<Object>
 			ChopPlant/
-			20/
+			10/
 			0/
 			/
 			true/
@@ -85,7 +99,21 @@
 			0.0/
 			true/
 			1.0/
+			0
+	<SubGroup>
+		Terrain
+		<Object>
+			Mine/
+			15/
 			0/
+			/
+			true/
+			StoneTypes,OmitSameLayerJobs/
+			Mine/
+			0.0/
+			true/
+			1.0/
+			0
 <Group>
 	None
 	<SubGroup>

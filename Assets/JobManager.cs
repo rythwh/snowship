@@ -35,6 +35,8 @@ public class JobManager:MonoBehaviour {
 		public ResourceManager.TileObjectPrefab prefab;
 		public ColonistManager.Colonist colonist;
 
+		public int rotationIndex;
+
 		public GameObject jobPreview;
 
 		public bool accessible;
@@ -46,17 +48,22 @@ public class JobManager:MonoBehaviour {
 		public List<ResourceManager.ResourceAmount> colonistResources;
 		public List<ContainerPickup> containerPickups;
 
-		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab,ColonistManager colonistM) {
+		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab,int rotationIndex,ColonistManager colonistM,ResourceManager resourceM) {
 			this.tile = tile;
 			this.prefab = prefab;
+
+			this.rotationIndex = rotationIndex;
 
 			jobPreview = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
 			jobPreview.name = "JobPreview: " + prefab.name + " at " + tile.obj.transform.position;
 			SpriteRenderer jPSR = jobPreview.GetComponent<SpriteRenderer>();
 			if (prefab.baseSprite != null) {
 				jPSR.sprite = prefab.baseSprite;
-				jPSR.sortingOrder = 2 + prefab.layer; // Job Preview Sprite
 			}
+			if (!resourceM.GetBitmaskingTileObjects().Contains(prefab.type) && prefab.bitmaskSprites.Count > 0) {
+				jPSR.sprite = prefab.bitmaskSprites[rotationIndex];
+			}
+			jPSR.sortingOrder = 2 + prefab.layer; // Job Preview Sprite
 			jPSR.color = new Color(1f,1f,1f,0.25f);
 
 			jobProgress = prefab.timeToBuild;
@@ -74,8 +81,9 @@ public class JobManager:MonoBehaviour {
 		public void SetColonist(ColonistManager.Colonist colonist, ResourceManager resourceM, ColonistManager colonistM, JobManager jobM, PathManager pathM) {
 			this.colonist = colonist;
 			if (prefab.jobType != JobTypesEnum.PickupResources && containerPickups != null && containerPickups.Count > 0) {
+				print(containerPickups[0].resourcesToPickup.Count);
 				colonist.storedJob = this;
-				colonist.SetJob(new ColonistJob(colonist,new Job(containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),colonistM),null,null,jobM,pathM));
+				colonist.SetJob(new ColonistJob(colonist,new Job(containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),0,colonistM,resourceM),null,null,jobM,pathM));
 			}
 		}
 	}
@@ -100,7 +108,8 @@ public class JobManager:MonoBehaviour {
 		selectedPrefabPreview.transform.position = tile.obj.transform.position;
 	}
 
-	bool changedJobList = false;
+	private bool changedJobList = false;
+	private int rotationIndex = 0;
 	void Update() {
 		if (changedJobList) {
 			UpdateColonistJobs();
@@ -119,6 +128,15 @@ public class JobManager:MonoBehaviour {
 					uiM.SelectionSizeCanvasSetActive(false);
 				}
 				SelectedPrefabPreview();
+				if (Input.GetKeyDown(KeyCode.R)) {
+					if (!resourceM.GetBitmaskingTileObjects().Contains(selectedPrefab.type) && selectedPrefab.bitmaskSprites.Count > 0) {
+						rotationIndex += 1;
+						if (rotationIndex >= selectedPrefab.bitmaskSprites.Count) {
+							rotationIndex = 0;
+						}
+						selectedPrefabPreview.GetComponent<SpriteRenderer>().sprite = selectedPrefab.bitmaskSprites[rotationIndex];
+					}
+				}
 			} else {
 				if (selectedPrefabPreview.activeSelf) {
 					selectedPrefabPreview.SetActive(false);
@@ -300,6 +318,7 @@ public class JobManager:MonoBehaviour {
 					if (Input.GetMouseButtonUp(0)) {
 						CreateJobsInSelectionArea(selectedPrefab,selectionArea);
 						firstTile = null;
+						rotationIndex = 0;
 					}
 				}
 			}
@@ -315,7 +334,7 @@ public class JobManager:MonoBehaviour {
 
 	public void CreateJobsInSelectionArea(ResourceManager.TileObjectPrefab prefab, List<TileManager.Tile> selectionArea) {
 		foreach (TileManager.Tile tile in selectionArea) {
-			CreateJob(new Job(tile,prefab,colonistM));
+			CreateJob(new Job(tile,prefab,rotationIndex,colonistM,resourceM));
 		}
 	}
 
@@ -504,7 +523,7 @@ public class JobManager:MonoBehaviour {
 	}
 
 	public void UpdateSingleColonistJobs(ColonistManager.Colonist colonist) {
-		List<Job> sortedJobs = jobs.Where(job => job.tile.region == colonist.overTile.region).OrderBy(job => CalculateJobCost(colonist,job,null)).ToList();
+		List<Job> sortedJobs = jobs.Where(job => (job.tile.region == colonist.overTile.region) || (job.prefab.jobType == JobTypesEnum.Mine && job.tile.horizontalSurroundingTiles.Find(nTile => nTile != null && nTile.region == colonist.overTile.region) != null)).OrderBy(job => CalculateJobCost(colonist,job,null)).ToList();
 		List<ColonistJob> validJobs = new List<ColonistJob>();
 		foreach (Job job in sortedJobs) {
 			if (job.prefab.resourcesToBuild.Count > 0) {
