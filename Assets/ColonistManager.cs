@@ -84,7 +84,7 @@ public class ColonistManager : MonoBehaviour {
 		private Vector2 oldPosition;
 		public bool MoveToTile(TileManager.Tile tile, bool allowEndTileNonWalkable) {
 			if (tile != null) {
-				path = pathM.FindPathToTile(overTile,tile,allowEndTileNonWalkable,1,1,1);
+				path = pathM.FindPathToTile(overTile,tile,allowEndTileNonWalkable);
 				if (path.Count > 0) {
 					SetMoveSprite();
 				}
