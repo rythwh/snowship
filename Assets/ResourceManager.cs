@@ -108,7 +108,7 @@ public class ResourceManager : MonoBehaviour {
 		None
 	};
 	public enum TileObjectPrefabsEnum {
-		StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, WoodenChest, WoodenBed,
+		StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, Basket, WoodenChest, WoodenBed,
 		ChopPlant, Mine,
 		PickupResources, EmptyInventory
 	};
@@ -217,6 +217,8 @@ public class ResourceManager : MonoBehaviour {
 
 		public int layer;
 
+		public int maxInventoryAmount;
+
 		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup) {
 
 			GetScriptReferences();
@@ -257,6 +259,10 @@ public class ResourceManager : MonoBehaviour {
 			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-bitmask").ToList();
 			if (baseSprite == null && bitmaskSprites.Count > 0) {
 				baseSprite = bitmaskSprites[0];
+			}
+
+			if (resourceM.ContainerTileObjectTypes.Contains(type)) {
+				maxInventoryAmount = int.Parse(properties[11]);
 			}
 
 			resourceM.tileObjectPrefabs.Add(this);
@@ -332,7 +338,7 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	List<TileObjectPrefabsEnum> ContainerTileObjectTypes = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.WoodenChest
+		TileObjectPrefabsEnum.Basket, TileObjectPrefabsEnum.WoodenChest
 	};
 
 	public class Container {

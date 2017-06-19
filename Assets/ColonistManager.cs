@@ -242,6 +242,9 @@ public class ColonistManager : MonoBehaviour {
 
 		public Dictionary<SkillPrefab,int> skillRandomMaxValues = new Dictionary<SkillPrefab,int>();
 
+		public List<Colonist> colonistsInProfessionAtStart = new List<Colonist>();
+		public List<Colonist> colonistsInProfession = new List<Colonist>();
+
 		public Profession(List<string> data, ColonistManager colonistM) {
 			type = (ProfessionTypeEnum)System.Enum.Parse(typeof(ProfessionTypeEnum),data[0]);
 			name = type.ToString();
@@ -295,6 +298,8 @@ public class ColonistManager : MonoBehaviour {
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
 
 			this.profession = profession;
+			profession.colonistsInProfessionAtStart.Add(this);
+			profession.colonistsInProfession.Add(this);
 
 			foreach (SkillPrefab skillPrefab in colonistM.skillPrefabs) {
 				skills.Add(new SkillInstance(this,skillPrefab,Random.Range((profession.primarySkill != null && profession.primarySkill.type == skillPrefab.type ? Mathf.RoundToInt(profession.skillRandomMaxValues[skillPrefab]/2f) : 0),profession.skillRandomMaxValues[skillPrefab])));
@@ -515,6 +520,16 @@ public class ColonistManager : MonoBehaviour {
 				return 1 * (-(1f / (((skill.prefab.affectedJobTypes[jobType]) * (skill.level)) + 1)) + 1);
 			}
 			return 1.0f;
+		}
+
+		public void ChangeProfession(Profession newProfession) {
+			if (profession != newProfession) {
+				profession.colonistsInProfession.Remove(this);
+				profession = newProfession;
+				if (newProfession != null) {
+					profession.colonistsInProfession.Add(this);
+				}
+			}
 		}
 	}
 

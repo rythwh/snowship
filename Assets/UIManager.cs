@@ -6,7 +6,7 @@ using System;
 using System.Text.RegularExpressions;
 using System.Linq;
 
-public class UIManager:MonoBehaviour {
+public class UIManager : MonoBehaviour {
 
 	public string SplitByCapitals(string combinedString) {
 		var r = new Regex(@"
@@ -45,6 +45,7 @@ public class UIManager:MonoBehaviour {
 	private GameObject selectionSizeCanvas;
 	private GameObject selectionSizePanel;
 
+	private GameObject selectedContainerIndicator;
 	private GameObject selectedContainerInventoryPanel;
 
 	void Awake() {
@@ -80,6 +81,9 @@ public class UIManager:MonoBehaviour {
 		selectionSizePanel = selectionSizeCanvas.transform.Find("SelectionSize-Panel/Content-Panel").gameObject;
 
 		selectedContainerInventoryPanel = GameObject.Find("SelectedContainerInventory-Panel");
+
+		InitializeTileInformation();
+		InitializeSelectedContainerIndicator();
 	}
 
 	public ResourceManager.Container selectedContainer;
@@ -176,7 +180,7 @@ public class UIManager:MonoBehaviour {
 		}
 
 		foreach (KeyValuePair<GameObject,Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>>> menuKVP in menus) {
-			
+
 			menuKVP.Key.transform.Find("Panel").gameObject.SetActive(false);
 			foreach (KeyValuePair<GameObject,Dictionary<GameObject,List<GameObject>>> groupKVP in menuKVP.Value) {
 				groupKVP.Key.SetActive(false);
@@ -295,25 +299,33 @@ public class UIManager:MonoBehaviour {
 		return groupPanels;
 	}
 
+	public void InitializeTileInformation() {
+		plantObjectElements.Add(Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"),false));
+		plantObjectElements.Add(Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"),tileInformation.transform,false));
+	}
+
 	private List<GameObject> tileObjectElements = new List<GameObject>();
+	private List<GameObject> plantObjectElements = new List<GameObject>();
 	public void UpdateTileInformation() {
 		if (mouseOverTile != null) {
-			foreach (GameObject tileLayerSpriteObject in tileObjectElements) {
-				Destroy(tileLayerSpriteObject);
+			foreach (GameObject tileObjectElement in tileObjectElements) {
+				Destroy(tileObjectElement);
 			}
 			tileObjectElements.Clear();
 
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage").GetComponent<Image>().sprite = mouseOverTile.obj.GetComponent<SpriteRenderer>().sprite;
 
 			if (mouseOverTile.plant != null) {
-				GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage"),tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"),false);
-				tileLayerSpriteObject.GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
-				tileObjectElements.Add(tileLayerSpriteObject);
-
-				GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"),tileInformation.transform,false);
-				tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "Plant";
-				tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.group.name;
-				tileObjectElements.Add(tileObjectDataObject);
+				foreach (GameObject plantObjectElement in plantObjectElements) {
+					plantObjectElement.SetActive(true);
+				}
+				plantObjectElements[0].GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
+				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "Plant";
+				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.group.name;
+			} else {
+				foreach (GameObject plantObjectElement in plantObjectElements) {
+					plantObjectElement.SetActive(false);
+				}
 			}
 			if (mouseOverTile.GetAllObjectInstances().Count > 0) {
 				foreach (ResourceManager.TileObjectInstance tileObject in mouseOverTile.GetAllObjectInstances().OrderBy(o => o.prefab.layer).ToList()) {
@@ -346,7 +358,7 @@ public class UIManager:MonoBehaviour {
 		public ColonistManager.SkillInstance skill;
 		public GameObject obj;
 
-		public SkillElement(ColonistManager.Colonist colonist, ColonistManager.SkillInstance skill, Transform parent) {
+		public SkillElement(ColonistManager.Colonist colonist,ColonistManager.SkillInstance skill,Transform parent) {
 			this.colonist = colonist;
 			this.skill = skill;
 
@@ -373,7 +385,7 @@ public class UIManager:MonoBehaviour {
 		public ResourceManager.ResourceAmount resourceAmount;
 		public GameObject obj;
 
-		public InventoryElement(ColonistManager.Colonist colonist,ResourceManager.ResourceAmount resourceAmount, Transform parent) {
+		public InventoryElement(ColonistManager.Colonist colonist,ResourceManager.ResourceAmount resourceAmount,Transform parent) {
 			this.colonist = colonist;
 			this.resourceAmount = resourceAmount;
 
@@ -403,6 +415,8 @@ public class UIManager:MonoBehaviour {
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ReservedResourcesColonistInfoElement-Panel"),parent,false);
 
 			obj.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonist.name;
+			obj.transform.Find("ColonistReservedCount-Text").GetComponent<Text>().text = reservedResources.resources.Count.ToString();
+			obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
 
 			foreach (ResourceManager.ResourceAmount ra in reservedResources.resources) {
 				reservedResourceElements.Add(new ReservedResourceElement(colonist,ra,parent));
@@ -585,7 +599,7 @@ public class UIManager:MonoBehaviour {
 		public GameObject obj;
 		public GameObject colonistObj;
 
-		public JobElement(JobManager.Job job, ColonistManager.Colonist colonist, Transform parent, UIManager uiM, CameraManager cameraM) {
+		public JobElement(JobManager.Job job,ColonistManager.Colonist colonist,Transform parent,UIManager uiM,CameraManager cameraM) {
 			this.job = job;
 			this.colonist = colonist;
 
@@ -663,7 +677,7 @@ public class UIManager:MonoBehaviour {
 		}
 	}
 
-	public void UpdateDateTimeInformation(int minute, int hour, int day, int month, int year, bool isDay) {
+	public void UpdateDateTimeInformation(int minute,int hour,int day,int month,int year,bool isDay) {
 		dateTimeInformationPanel.transform.Find("DateTimeInformation-Time-Text").GetComponent<Text>().text = timeM.Get12HourTime() + ":" + (minute < 10 ? ("0" + minute) : minute.ToString()) + (hour < 13 ? "AM" : "PM") + "(" + (isDay ? "D" : "N") + ")";
 		dateTimeInformationPanel.transform.Find("DateTimeInformation-Speed-Text").GetComponent<Text>().text = (timeM.timeModifier > 0 ? new string('>',timeM.timeModifier) : "-");
 		dateTimeInformationPanel.transform.Find("DateTimeInformation-Date-Text").GetComponent<Text>().text = "D" + day + " M" + month + " Y" + year;
@@ -673,7 +687,7 @@ public class UIManager:MonoBehaviour {
 		selectionSizeCanvas.SetActive(active);
 	}
 
-	public void UpdateSelectionSizePanel(float xSize, float ySize, int selectionAreaCount, ResourceManager.TileObjectPrefab prefab) {
+	public void UpdateSelectionSizePanel(float xSize,float ySize,int selectionAreaCount,ResourceManager.TileObjectPrefab prefab) {
 		int ixSize = Mathf.Abs(Mathf.FloorToInt(xSize));
 		int iySize = Mathf.Abs(Mathf.FloorToInt(ySize));
 
@@ -689,10 +703,23 @@ public class UIManager:MonoBehaviour {
 		);
 	}
 
+	public void InitializeSelectedContainerIndicator() {
+		selectedContainerIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),Vector2.zero,Quaternion.identity);
+		SpriteRenderer sCISR = selectedContainerIndicator.GetComponent<SpriteRenderer>();
+		sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
+		sCISR.sortingOrder = 20; // Selected Container Indicator Sprite
+		sCISR.color = new Color(1f,1f,1f,0.75f);
+		selectedContainerIndicator.transform.localScale = new Vector2(1f,1f) * 1.2f;
+		selectedContainerIndicator.SetActive(false);
+	}
+
 	List<ReservedResourcesColonistElement> containerReservedResourcesColonistElements = new List<ReservedResourcesColonistElement>();
 	List<InventoryElement> containerInventoryElements = new List<InventoryElement>();
 	public void SetSelectedContainerInfo() {
 		if (selectedContainer != null) {
+			selectedContainerIndicator.SetActive(true);
+			selectedContainerIndicator.transform.position = selectedContainer.parentObject.obj.transform.position;
+
 			selectedContainerInventoryPanel.SetActive(true);
 			foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in containerReservedResourcesColonistElements) {
 				foreach (ReservedResourceElement reservedResourceElement in reservedResourcesColonistElement.reservedResourceElements) {
@@ -707,6 +734,12 @@ public class UIManager:MonoBehaviour {
 			}
 			containerInventoryElements.Clear();
 
+			int numResources = selectedContainer.inventory.CountResources();
+			selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-Slider").GetComponent<Slider>().minValue = 0;
+			selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-Slider").GetComponent<Slider>().maxValue = selectedContainer.maxAmount;
+			selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-Slider").GetComponent<Slider>().value = numResources;
+			selectedContainerInventoryPanel.transform.Find("SelectedContainerInventorySizeValue-Text").GetComponent<Text>().text = numResources + "/ " + selectedContainer.maxAmount;
+
 			foreach (ResourceManager.ReservedResources rr in selectedContainer.inventory.reservedResources) {
 				containerReservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.colonist,rr,selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel")));
 			}
@@ -714,6 +747,7 @@ public class UIManager:MonoBehaviour {
 				containerInventoryElements.Add(new InventoryElement(colonistM.selectedColonist,ra,selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel")));
 			}
 		} else {
+			selectedContainerIndicator.SetActive(false);
 			foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in containerReservedResourcesColonistElements) {
 				foreach (ReservedResourceElement reservedResourceElement in reservedResourcesColonistElement.reservedResourceElements) {
 					Destroy(reservedResourceElement.obj);
@@ -734,5 +768,59 @@ public class UIManager:MonoBehaviour {
 		foreach (InventoryElement inventoryElement in containerInventoryElements) {
 			inventoryElement.Update();
 		}
+	}
+
+	public class ProfessionElement {
+		public ColonistManager.Profession profession;
+		public GameObject obj;
+		public GameObject colonistsInProfessionListObj;
+		public GameObject editColonistsInProfessionListObj;
+
+		public ProfessionElement(ColonistManager.Profession profession, Transform parent) {
+			this.profession = profession;
+
+			obj = Instantiate(Resources.Load<GameObject>(@"UI/ProfessionInfoElement-Panel"),parent,false);
+
+			colonistsInProfessionListObj = obj.transform.Find("ColonistsInProfessionList-Panel").gameObject;
+			obj.transform.Find("ColonistsInProfession-Button").GetComponent<Button>().onClick.AddListener(delegate { colonistsInProfessionListObj.SetActive(!colonistsInProfessionListObj.activeSelf); });
+
+			editColonistsInProfessionListObj = obj.transform.Find("EditColonistsInProfessionList-Panel").gameObject;
+
+			obj.transform.Find("ColonistsInProfession-Button/ColonistsInProfessionAmount-Text").GetComponent<Text>().text = profession.colonistsInProfession.Count.ToString();
+
+			obj.transform.Find("ProfessionName-Text").GetComponent<Text>().text = profession.name;
+
+			//obj.transform.Find("AddColonists-Button").GetComponent<Button>().onClick.AddListener(delegate { editColonistsInProfessionListObj.SetActive(!editColonistsInProfessionListObj.activeSelf); });
+			//obj.transform.Find("RemoveColonists-Button").GetComponent<Button>().onClick.AddListener(delegate { editColonistsInProfessionListObj.SetActive(!edit
+		}
+	}
+
+	private List<GameObject> editColonistsInProfessionElement = new List<GameObject>();
+	public void SetEditColonistsInProfessionList(ColonistManager.Profession profession, Transform parent, bool remove) {
+		if (remove) {
+			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+				if (colonist.profession == profession) {
+					GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/EditColonistInProfessionInfoElement-Panel"),parent,false);
+					obj.GetComponent<Button>().onClick.AddListener(delegate {
+						colonist.ChangeProfession(null);
+						obj.GetComponent<SpriteRenderer>().color = new Color(200f,200f,200f,255f) / 255f;
+					});
+					editColonistsInProfessionElement.Add(obj);
+				}
+			}
+		} else {
+			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+				if (colonist.profession != profession) {
+					GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/EditColonistInProfessionInfoElement-Panel"),parent,false);
+					obj.GetComponent<Button>().onClick.AddListener(delegate { colonist.ChangeProfession(profession); });
+					editColonistsInProfessionElement.Add(obj);
+				}
+			}
+		}
+	}
+
+	private List<ProfessionElement> professionsElements = new List<ProfessionElement>();
+	public void SetProfessionsList() {
+
 	}
 }

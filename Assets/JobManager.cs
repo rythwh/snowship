@@ -226,6 +226,10 @@ public class JobManager:MonoBehaviour {
 				removeTiles.Add(tile);
 				return;
 			}
+			if (colonistM.colonists.Find(colonist => colonist.storedJob != null && colonist.storedJob.prefab.layer == selectedPrefab.layer && colonist.storedJob.tile == tile) != null) {
+				removeTiles.Add(tile);
+				return;
+			}
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitSameLayerObjectInstances,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tile.objectInstances.ContainsKey(selectedPrefab.layer) && tile.objectInstances[selectedPrefab.layer] != null) { removeTiles.Add(tile); }
