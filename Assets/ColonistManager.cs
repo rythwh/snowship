@@ -291,6 +291,7 @@ public class ColonistManager : MonoBehaviour {
 		public List<SkillInstance> skills = new List<SkillInstance>();
 
 		public Profession profession;
+		public Profession oldProfession;
 
 		public SortedDictionary<ColonistNeedsEnum,float> needs = new SortedDictionary<ColonistNeedsEnum,float>();
 
@@ -304,6 +305,8 @@ public class ColonistManager : MonoBehaviour {
 			foreach (SkillPrefab skillPrefab in colonistM.skillPrefabs) {
 				skills.Add(new SkillInstance(this,skillPrefab,Random.Range((profession.primarySkill != null && profession.primarySkill.type == skillPrefab.type ? Mathf.RoundToInt(profession.skillRandomMaxValues[skillPrefab]/2f) : 0),profession.skillRandomMaxValues[skillPrefab])));
 			}
+
+			oldProfession = colonistM.professions.Find(findProfession => findProfession.type == ColonistManager.ProfessionTypeEnum.Nothing);
 		}
 
 		public new void Update() {
