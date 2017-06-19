@@ -48,6 +48,9 @@ public class UIManager : MonoBehaviour {
 	private GameObject selectedContainerIndicator;
 	private GameObject selectedContainerInventoryPanel;
 
+	private GameObject professionMenuButton;
+	private GameObject professionsList;
+
 	void Awake() {
 		tileM = GetComponent<TileManager>();
 		jobM = GetComponent<JobManager>();
@@ -81,6 +84,10 @@ public class UIManager : MonoBehaviour {
 		selectionSizePanel = selectionSizeCanvas.transform.Find("SelectionSize-Panel/Content-Panel").gameObject;
 
 		selectedContainerInventoryPanel = GameObject.Find("SelectedContainerInventory-Panel");
+
+		professionMenuButton = GameObject.Find("ProfessionsMenu-Button");
+		professionsList = professionMenuButton.transform.Find("ProfessionsList-Panel").gameObject;
+		professionMenuButton.GetComponent<Button>().onClick.AddListener(delegate { SetProfessionsList(); });
 
 		InitializeTileInformation();
 		InitializeSelectedContainerIndicator();
@@ -774,15 +781,26 @@ public class UIManager : MonoBehaviour {
 		public ColonistManager.Profession profession;
 		public GameObject obj;
 		public GameObject colonistsInProfessionListObj;
+		public List<GameObject> colonistsInProfessionElements = new List<GameObject>();
 		public GameObject editColonistsInProfessionListObj;
+		public List<GameObject> editColonistsInProfessionElements = new List<GameObject>();
 
-		public ProfessionElement(ColonistManager.Profession profession, Transform parent) {
+		public ProfessionElement(ColonistManager.Profession profession, Transform parent, UIManager uiM) {
 			this.profession = profession;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/ProfessionInfoElement-Panel"),parent,false);
 
 			colonistsInProfessionListObj = obj.transform.Find("ColonistsInProfessionList-Panel").gameObject;
-			obj.transform.Find("ColonistsInProfession-Button").GetComponent<Button>().onClick.AddListener(delegate { colonistsInProfessionListObj.SetActive(!colonistsInProfessionListObj.activeSelf); });
+			obj.transform.Find("ColonistsInProfession-Button").GetComponent<Button>().onClick.AddListener(delegate {
+				colonistsInProfessionListObj.SetActive(!colonistsInProfessionListObj.activeSelf);
+				if (colonistsInProfessionListObj.activeSelf) {
+					uiM.SetColonistsInProfessionList(this);
+				} else {
+					foreach (GameObject obj in colonistsInProfessionElements) {
+						Destroy(obj);
+					}
+				}
+			});
 
 			editColonistsInProfessionListObj = obj.transform.Find("EditColonistsInProfessionList-Panel").gameObject;
 
@@ -790,37 +808,103 @@ public class UIManager : MonoBehaviour {
 
 			obj.transform.Find("ProfessionName-Text").GetComponent<Text>().text = profession.name;
 
-			//obj.transform.Find("AddColonists-Button").GetComponent<Button>().onClick.AddListener(delegate { editColonistsInProfessionListObj.SetActive(!editColonistsInProfessionListObj.activeSelf); });
-			//obj.transform.Find("RemoveColonists-Button").GetComponent<Button>().onClick.AddListener(delegate { editColonistsInProfessionListObj.SetActive(!edit
+			obj.transform.Find("AddColonists-Button").GetComponent<Button>().onClick.AddListener(delegate {
+				editColonistsInProfessionListObj.SetActive(!editColonistsInProfessionListObj.activeSelf);
+				if (editColonistsInProfessionListObj.activeSelf) {
+					uiM.SetEditColonistsInProfessionList(this,false);
+				} else {
+					foreach (GameObject obj in editColonistsInProfessionElements) {
+						Destroy(obj);
+					}
+				}
+			});
+			obj.transform.Find("RemoveColonists-Button").GetComponent<Button>().onClick.AddListener(delegate {
+				editColonistsInProfessionListObj.SetActive(!editColonistsInProfessionListObj.activeSelf);
+				if (editColonistsInProfessionListObj.activeSelf) {
+					uiM.SetEditColonistsInProfessionList(this,false);
+				} else {
+					foreach (GameObject obj in editColonistsInProfessionElements) {
+						Destroy(obj);
+					}
+				}
+			});
 		}
 	}
 
-	private List<GameObject> editColonistsInProfessionElement = new List<GameObject>();
-	public void SetEditColonistsInProfessionList(ColonistManager.Profession profession, Transform parent, bool remove) {
+	public void SetColonistsInProfessionList(ProfessionElement professionElement) {
+		foreach (GameObject obj in professionElement.colonistsInProfessionElements) {
+			Destroy(obj);
+		}
+		professionElement.colonistsInProfessionElements.Clear();
+		foreach (ColonistManager.Colonist colonist in professionElement.profession.colonistsInProfession) {
+			GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/ColonistInfoElement-Panel"),professionElement.colonistsInProfessionListObj.transform,false);
+			obj.transform.Find("BodySprite").GetComponent<Image>().sprite = colonist.moveSprites[0];
+			obj.transform.Find("Name").GetComponent<Text>().text = colonist.name;
+			professionElement.colonistsInProfessionElements.Add(obj);
+		}
+	}
+
+	public void SetEditColonistsInProfessionList(ProfessionElement professionElement, bool remove) {
+		foreach (GameObject obj in professionElement.editColonistsInProfessionElements) {
+			Destroy(obj);
+		}
+		professionElement.editColonistsInProfessionElements.Clear();
+		ColonistManager.Profession nothingProfession = colonistM.professions.Find(findProfession => findProfession.type == ColonistManager.ProfessionTypeEnum.Nothing);
 		if (remove) {
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-				if (colonist.profession == profession) {
-					GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/EditColonistInProfessionInfoElement-Panel"),parent,false);
+				if (colonist.profession == professionElement.profession) {
+					GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/EditColonistInProfessionInfoElement-Panel"),professionElement.editColonistsInProfessionListObj.transform,false);
 					obj.GetComponent<Button>().onClick.AddListener(delegate {
-						colonist.ChangeProfession(null);
-						obj.GetComponent<SpriteRenderer>().color = new Color(200f,200f,200f,255f) / 255f;
+						if (colonist.profession == professionElement.profession) {
+							colonist.ChangeProfession(nothingProfession);
+							obj.GetComponent<SpriteRenderer>().color = new Color(200f,200f,200f,255f) / 255f;
+						} else {
+							colonist.ChangeProfession(professionElement.profession);
+							obj.GetComponent<SpriteRenderer>().color = new Color(52f,152f,219f,255f) / 255f;
+						}
+						obj.transform.Find("ColonistCurrentProfession-Text").GetComponent<Text>().text = colonist.profession.name;
 					});
-					editColonistsInProfessionElement.Add(obj);
+					obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
+					obj.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonist.name;
+					obj.transform.Find("ColonistCurrentProfession-Text").GetComponent<Text>().text = colonist.profession.name;
+					obj.GetComponent<Image>().color = new Color(52f,152f,219f,255f) / 255f;
+					professionElement.editColonistsInProfessionElements.Add(obj);
 				}
 			}
 		} else {
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-				if (colonist.profession != profession) {
-					GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/EditColonistInProfessionInfoElement-Panel"),parent,false);
-					obj.GetComponent<Button>().onClick.AddListener(delegate { colonist.ChangeProfession(profession); });
-					editColonistsInProfessionElement.Add(obj);
+				if (colonist.profession != professionElement.profession) {
+					GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/EditColonistInProfessionInfoElement-Panel"),professionElement.editColonistsInProfessionListObj.transform,false);
+					obj.GetComponent<Button>().onClick.AddListener(delegate {
+						if (colonist.profession == professionElement.profession) {
+							colonist.ChangeProfession(nothingProfession);
+							obj.GetComponent<SpriteRenderer>().color = new Color(200f,200f,200f,255f) / 255f;
+						} else {
+							colonist.ChangeProfession(professionElement.profession);
+							obj.GetComponent<SpriteRenderer>().color = new Color(52f,152f,219f,255f) / 255f;
+						}
+						obj.transform.Find("ColonistCurrentProfession-Text").GetComponent<Text>().text = colonist.profession.name;
+					});
+					obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
+					obj.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonist.name;
+					obj.transform.Find("ColonistCurrentProfession-Text").GetComponent<Text>().text = colonist.profession.name;
+					professionElement.editColonistsInProfessionElements.Add(obj);
 				}
 			}
 		}
 	}
 
 	private List<ProfessionElement> professionsElements = new List<ProfessionElement>();
-	public void SetProfessionsList() {
+	public void InitializeProfessionsList() {
+		foreach (ColonistManager.Profession profession in colonistM.professions) {
+			ProfessionElement professionElement = new ProfessionElement(profession,professionsList.transform,this);
+		}
+	}
 
+	public void SetProfessionsList() {
+		professionsList.SetActive(!professionsList.activeSelf);
+		foreach (ProfessionElement professionElement in professionsElements) {
+			professionElement.obj.SetActive(professionsList.activeSelf);
+		}
 	}
 }
