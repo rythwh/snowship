@@ -94,6 +94,9 @@ public class JobManager:MonoBehaviour {
 		if (newSelectedPrefab != selectedPrefab) {
 			if (newSelectedPrefab != null) {
 				selectedPrefab = newSelectedPrefab;
+				if (selectedPrefabPreview.activeSelf) {
+					selectedPrefabPreview.GetComponent<SpriteRenderer>().sprite = selectedPrefab.baseSprite;
+				}
 			} else {
 				selectedPrefab = null;
 			}
@@ -108,18 +111,7 @@ public class JobManager:MonoBehaviour {
 		selectedPrefabPreview.transform.position = tile.obj.transform.position;
 	}
 
-	private bool changedJobList = false;
-	private int rotationIndex = 0;
-	void Update() {
-		if (changedJobList) {
-			UpdateColonistJobs();
-			uiM.SetJobElements();
-			changedJobList = false;
-		}
-		GetJobSelectionArea();
-		if (timeM.timeModifier > 0) {
-			GiveJobsToColonists();
-		}
+	public void UpdateSelectedPrefabInfo() {
 		if (selectedPrefab != null) {
 			if (enableSelectionPreview) {
 				if (!selectedPrefabPreview.activeSelf) {
@@ -147,23 +139,21 @@ public class JobManager:MonoBehaviour {
 			selectedPrefabPreview.SetActive(false);
 			uiM.SelectionSizeCanvasSetActive(false);
 		}
-		/*
-		if (enableSelectionPreview && selectedPrefab != null) {
-			print("Not selecting area");
-			if (!selectedPrefabPreview.activeSelf) {
-				selectedPrefabPreview.SetActive(false);
-				selectedPrefabPreview.GetComponent<SpriteRenderer>().sprite = selectedPrefab.baseSprite;
-				selectionSizePanel.SetActive(true);
-			}
-			SelectedPrefabPreview();
-		} else if (selectedPrefabPreview.activeSelf) {
-			print("Selecting area");
-			selectedPrefabPreview.SetActive(true);
-			selectionSizePanel.SetActive(false);
-		} else {
+	}
 
+	private bool changedJobList = false;
+	private int rotationIndex = 0;
+	void Update() {
+		if (changedJobList) {
+			UpdateColonistJobs();
+			uiM.SetJobElements();
+			changedJobList = false;
 		}
-		*/
+		GetJobSelectionArea();
+		if (timeM.timeModifier > 0) {
+			GiveJobsToColonists();
+		}
+		UpdateSelectedPrefabInfo();
 	}
 
 	public enum JobTypesEnum {
