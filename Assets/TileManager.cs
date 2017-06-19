@@ -576,8 +576,8 @@ public class TileManager:MonoBehaviour {
 
 		public void SetWalkSpeed() {
 			walkSpeed = tileType.walkSpeed;
-			if (plant != null && walkSpeed > 0.75f) {
-				walkSpeed = 0.75f;
+			if (plant != null && walkSpeed > 0.6f) {
+				walkSpeed = 0.6f;
 			}
 			float minObjectWalkSpeed = float.MaxValue; // Arbitrary value
 			foreach (KeyValuePair<int,ResourceManager.TileObjectInstance> kvp in objectInstances) {
@@ -615,6 +615,37 @@ public class TileManager:MonoBehaviour {
 		uiM.SetSelectedContainerInfo();
 		uiM.SetJobElements();
 		uiM.InitializeProfessionsList();
+
+		// Genetic Algorithm (commented out)
+		int shortestv2DistanceMod = 1;
+		int shortestpathDistanceMod = 2;
+		int shortestwalkSpeedMod = 2;
+		List<Tile> shortestPath = pathM.FindPathToTile(GetTileFromPosition(new Vector2(24,32)),GetTileFromPosition(new Vector2(65,2)),false,shortestv2DistanceMod,shortestpathDistanceMod,shortestwalkSpeedMod);
+		float shortestPathCount = shortestPath.Sum(tile => tile.walkSpeed);
+		print(shortestPath.Count + " " + shortestPathCount + " " + shortestv2DistanceMod + " " + shortestpathDistanceMod + " " + shortestwalkSpeedMod);
+		/*
+		// on seed 67267550, start at 0,92, end at 61,0 --- OR --- start at 24,32, end at 65,2
+		for (int j = 0;j < 100;j++) {
+			int v2Mod = Mathf.CeilToInt(Mathf.Clamp(Random.Range(0.1f,1000f),0.1f,1000));
+			int pathMod = Mathf.CeilToInt(Mathf.Clamp(Random.Range(0.1f,1000f),0.1f,1000));
+			int walkMod = Mathf.CeilToInt(Mathf.Clamp(Random.Range(0.1f,1000f),0.1f,1000));
+			List<Tile> path = pathM.FindPathToTile(GetTileFromPosition(new Vector2(24,32)),GetTileFromPosition(new Vector2(65,2)),false,v2Mod,pathMod,walkMod);
+			float count = path.Sum(tile => tile.walkSpeed);
+			if (count < shortestPathCount) {
+				shortestPath = path;
+				shortestPathCount = count;
+				shortestv2DistanceMod = v2Mod;
+				shortestpathDistanceMod = pathMod;
+				shortestwalkSpeedMod = walkMod;
+				print("SHORTEST " + shortestPath.Count + " " + shortestPathCount + " " + shortestv2DistanceMod + " " + shortestpathDistanceMod + " " + shortestwalkSpeedMod);
+			} else {
+				print("NOT " + shortestPath.Count + " " + shortestPathCount + " " + v2Mod + " " + pathMod + " " + walkMod);
+			}
+		}
+		*/
+		foreach (Tile tile in shortestPath) {
+			tile.obj.GetComponent<SpriteRenderer>().color = Color.black;
+		}
 	}
 
 	private bool debugMode;
@@ -747,6 +778,7 @@ public class TileManager:MonoBehaviour {
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0)) {
 					Tile tile = GetTileFromPosition(mousePosition);
+					print(tile.walkSpeed);
 					/*
 					ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == tile);
 					if (container != null) {
@@ -754,6 +786,7 @@ public class TileManager:MonoBehaviour {
 					}
 					*/
 					/*pathM.RegionBlockDistance(GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,tile.regionBlock,true,true);*/
+					/*
 					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 					foreach (Tile rTile in tile.regionBlock.tiles) {
 						rTile.obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
@@ -771,6 +804,7 @@ public class TileManager:MonoBehaviour {
 						GetTileFromPosition(nRegionBlock.averagePosition).obj.GetComponent<SpriteRenderer>().sprite = whiteSquare;
 						GetTileFromPosition(nRegionBlock.averagePosition).obj.GetComponent<SpriteRenderer>().color = Color.white;
 					}
+					*/
 					/*
 					tile.SetTileType(GetTileTypeByEnum(TileTypes.Stone),true,true,true,true);
 					RecalculateRegionsAtTile(tile);
@@ -798,6 +832,7 @@ public class TileManager:MonoBehaviour {
 		if (mapSeed < 0) {
 			mapSeed = Random.Range(0,int.MaxValue);
 		}
+		mapSeed = 67267550;
 		Random.InitState(mapSeed);
 		print("Map Seed: " + mapSeed);
 	}

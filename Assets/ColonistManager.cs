@@ -84,7 +84,7 @@ public class ColonistManager : MonoBehaviour {
 		private Vector2 oldPosition;
 		public bool MoveToTile(TileManager.Tile tile, bool allowEndTileNonWalkable) {
 			if (tile != null) {
-				path = pathM.FindPathToTile(overTile,tile,allowEndTileNonWalkable);
+				path = pathM.FindPathToTile(overTile,tile,allowEndTileNonWalkable,1,1,1);
 				if (path.Count > 0) {
 					SetMoveSprite();
 				}
@@ -321,7 +321,7 @@ public class ColonistManager : MonoBehaviour {
 					if (path.Count <= 0) {
 						List<ResourceManager.Container> validContainers = resourceM.containers.Where(container => container.parentObject.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
 						if (resourceM.containers.Count > 0 && inventory.CountResources() >= inventory.maxAmount / 2f && validContainers.Count > 0) {
-							List<ResourceManager.Container> closestContainers = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock,overTile.regionBlock,true,true)).ToList();
+							List<ResourceManager.Container> closestContainers = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock,overTile.regionBlock,true,true,false)).ToList();
 							if (closestContainers.Count > 0) {
 								ResourceManager.Container closestContainer = closestContainers[0];
 								SetJob(new JobManager.ColonistJob(this,new JobManager.Job(closestContainer.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory),0,colonistM,resourceM),null,null,jobM,pathM));

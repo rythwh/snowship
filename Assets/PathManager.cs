@@ -8,16 +8,22 @@ public class PathManager : MonoBehaviour {
 	public class PathfindingTile {
 		public TileManager.Tile tile;
 		public PathfindingTile cameFrom;
+		public int pathDistance = 0;
 		public float cost;
 
 		public PathfindingTile(TileManager.Tile tile,PathfindingTile cameFrom,float cost) {
 			this.tile = tile;
 			this.cameFrom = cameFrom;
 			this.cost = cost;
+			if (cameFrom != null) {
+				pathDistance = cameFrom.pathDistance + 1;
+			} else {
+				pathDistance = 0;
+			}
 		}
 	}
 
-	public List<TileManager.Tile> FindPathToTile(TileManager.Tile startTile, TileManager.Tile endTile, bool allowEndTileNonWalkable) {
+	public List<TileManager.Tile> FindPathToTile(TileManager.Tile startTile, TileManager.Tile endTile, bool allowEndTileNonWalkable, int v2distanceMod, int pathDistanceMod, int walkSpeedMod) {
 
 		bool stop = false;
 		if (!allowEndTileNonWalkable && (!endTile.walkable || startTile.region != endTile.region)) {
@@ -58,7 +64,7 @@ public class PathManager : MonoBehaviour {
 
 			foreach (TileManager.Tile nTile in (currentTile.tile.surroundingTiles.Find(tile => tile != null && !tile.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
 				if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (allowEndTileNonWalkable && nTile == endTile ? true : (walkable ? nTile.walkable : true))) {
-					float cost = Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position) - (nTile.walkSpeed * 10f);
+					float cost = Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position * v2distanceMod) + (currentTile.pathDistance * pathDistanceMod) - (nTile.walkSpeed * walkSpeedMod/*10f*/);
 					PathfindingTile pTile = new PathfindingTile(nTile,currentTile,cost);
 					frontier.Add(pTile);
 					checkedTiles.Add(pTile);
@@ -120,9 +126,9 @@ public class PathManager : MonoBehaviour {
 		}
 	}
 
-	public float RegionBlockDistance(TileManager.RegionBlock startRegionBlock,TileManager.RegionBlock endRegionBlock,bool careAboutWalkability,bool walkable) {
+	public float RegionBlockDistance(TileManager.RegionBlock startRegionBlock,TileManager.RegionBlock endRegionBlock,bool careAboutWalkability,bool walkable, bool allowEndTileNonWalkable) {
 
-		if (careAboutWalkability && (startRegionBlock.tileType.walkable != endRegionBlock.tileType.walkable || startRegionBlock.tiles[0].region != endRegionBlock.tiles[0].region)) {
+		if (!allowEndTileNonWalkable && (careAboutWalkability && (startRegionBlock.tileType.walkable != endRegionBlock.tileType.walkable || startRegionBlock.tiles[0].region != endRegionBlock.tiles[0].region))) {
 			return Mathf.Infinity;
 		}
 
@@ -141,7 +147,7 @@ public class PathManager : MonoBehaviour {
 			}
 			frontier.RemoveAt(0);
 			foreach (TileManager.RegionBlock regionBlock in currentRegionBlock.regionBlock.horizontalSurroundingRegionBlocks) {
-				if ((careAboutWalkability ? regionBlock.tileType.walkable == walkable : true) && !checkedBlocks.Contains(regionBlock)) {
+				if ((allowEndTileNonWalkable && regionBlock == endRegionBlock ? true : (careAboutWalkability ? regionBlock.tileType.walkable == walkable : true)) && !checkedBlocks.Contains(regionBlock)) {
 					PathfindingRegionBlock pRegionBlock = new PathfindingRegionBlock(regionBlock,currentRegionBlock,Vector2.Distance(regionBlock.averagePosition,endRegionBlock.averagePosition));
 					frontier.Add(pRegionBlock);
 					checkedBlocks.Add(regionBlock);
