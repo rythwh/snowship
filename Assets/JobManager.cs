@@ -471,18 +471,14 @@ public class JobManager:MonoBehaviour {
 		} else {
 			cost += pathM.RegionBlockDistance(job.tile.regionBlock,colonist.overTile.regionBlock,true,true,true);
 		}
-		print(colonist.name + " " + cost);
 		if (job.prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type != ResourceManager.TileObjectPrefabGroupsEnum.None) {
 			ColonistManager.Profession jobTypeProfession = colonistM.professions.Find(profession => profession.primarySkill == colonist.GetSkillFromJobType(job.prefab.jobType).prefab);
 			if (jobTypeProfession != null && jobTypeProfession == colonist.profession) {
-				print(colonist.name + " is the same profession");
 				cost -= 30 + (colonist.GetSkillFromJobType(job.prefab.jobType).level * 5f);
 			} else {
-				print(colonist.name + " is NOT the same profession");
 				cost -= colonist.GetSkillFromJobType(job.prefab.jobType).level * 5f;
 			}
 		}
-		print(colonist.name + " " + cost);
 		return cost;
 	}
 

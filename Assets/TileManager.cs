@@ -615,37 +615,6 @@ public class TileManager:MonoBehaviour {
 		uiM.SetSelectedContainerInfo();
 		uiM.SetJobElements();
 		uiM.InitializeProfessionsList();
-
-		// Genetic Algorithm (commented out)
-		int shortestv2DistanceMod = 1;
-		int shortestpathDistanceMod = 2;
-		int shortestwalkSpeedMod = 2;
-		List<Tile> shortestPath = pathM.FindPathToTile(GetTileFromPosition(new Vector2(24,32)),GetTileFromPosition(new Vector2(65,2)),false,shortestv2DistanceMod,shortestpathDistanceMod,shortestwalkSpeedMod);
-		float shortestPathCount = shortestPath.Sum(tile => tile.walkSpeed);
-		print(shortestPath.Count + " " + shortestPathCount + " " + shortestv2DistanceMod + " " + shortestpathDistanceMod + " " + shortestwalkSpeedMod);
-		/*
-		// on seed 67267550, start at 0,92, end at 61,0 --- OR --- start at 24,32, end at 65,2
-		for (int j = 0;j < 100;j++) {
-			int v2Mod = Mathf.CeilToInt(Mathf.Clamp(Random.Range(0.1f,1000f),0.1f,1000));
-			int pathMod = Mathf.CeilToInt(Mathf.Clamp(Random.Range(0.1f,1000f),0.1f,1000));
-			int walkMod = Mathf.CeilToInt(Mathf.Clamp(Random.Range(0.1f,1000f),0.1f,1000));
-			List<Tile> path = pathM.FindPathToTile(GetTileFromPosition(new Vector2(24,32)),GetTileFromPosition(new Vector2(65,2)),false,v2Mod,pathMod,walkMod);
-			float count = path.Sum(tile => tile.walkSpeed);
-			if (count < shortestPathCount) {
-				shortestPath = path;
-				shortestPathCount = count;
-				shortestv2DistanceMod = v2Mod;
-				shortestpathDistanceMod = pathMod;
-				shortestwalkSpeedMod = walkMod;
-				print("SHORTEST " + shortestPath.Count + " " + shortestPathCount + " " + shortestv2DistanceMod + " " + shortestpathDistanceMod + " " + shortestwalkSpeedMod);
-			} else {
-				print("NOT " + shortestPath.Count + " " + shortestPathCount + " " + v2Mod + " " + pathMod + " " + walkMod);
-			}
-		}
-		*/
-		foreach (Tile tile in shortestPath) {
-			tile.obj.GetComponent<SpriteRenderer>().color = Color.black;
-		}
 	}
 
 	private bool debugMode;
@@ -832,7 +801,6 @@ public class TileManager:MonoBehaviour {
 		if (mapSeed < 0) {
 			mapSeed = Random.Range(0,int.MaxValue);
 		}
-		mapSeed = 67267550;
 		Random.InitState(mapSeed);
 		print("Map Seed: " + mapSeed);
 	}
