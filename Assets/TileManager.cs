@@ -614,6 +614,7 @@ public class TileManager:MonoBehaviour {
 		uiM.SetSelectedColonistInformation();
 		uiM.SetSelectedContainerInfo();
 		uiM.SetJobElements();
+		uiM.InitializeProfessionsList();
 	}
 
 	private bool debugMode;
