@@ -364,7 +364,7 @@ public class JobManager:MonoBehaviour {
 
 	public List<ContainerPickup> CalculateColonistPickupContainers(ColonistManager.Colonist colonist,Job job,List<ResourceManager.ResourceAmount> resourcesToPickup) {
 		List<ContainerPickup> containersToPickupFrom = new List<ContainerPickup>();
-		List<ResourceManager.Container> sortedContainersByDistance = resourceM.containers.Where(container => container.parentObject.tile.region == colonist.overTile.region).OrderBy(container => pathM.RegionBlockDistance(colonist.overTile.regionBlock,container.parentObject.tile.regionBlock,true,true)).ToList();
+		List<ResourceManager.Container> sortedContainersByDistance = resourceM.containers.Where(container => container.parentObject.tile.region == colonist.overTile.region).OrderBy(container => pathM.RegionBlockDistance(colonist.overTile.regionBlock,container.parentObject.tile.regionBlock,true,true,false)).ToList();
 		if (sortedContainersByDistance.Count > 0) {
 			foreach (ResourceManager.Container container in sortedContainersByDistance) {
 				List<ResourceManager.ResourceAmount> resourcesToPickupAtContainer = new List<ResourceManager.ResourceAmount>();
@@ -462,19 +462,27 @@ public class JobManager:MonoBehaviour {
 		if (containerPickups != null) {
 			for (int i = 0;i < containerPickups.Count;i++) {
 				if (i == 0) {
-					cost += pathM.RegionBlockDistance(colonist.overTile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true);
+					cost += pathM.RegionBlockDistance(colonist.overTile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true,true);
 				} else {
-					cost += pathM.RegionBlockDistance(containerPickups[i - 1].container.parentObject.tile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true);
+					cost += pathM.RegionBlockDistance(containerPickups[i - 1].container.parentObject.tile.regionBlock,containerPickups[i].container.parentObject.tile.regionBlock,true,true,true);
 				}
 			}
-			cost += pathM.RegionBlockDistance(job.tile.regionBlock,containerPickups[containerPickups.Count-1].container.parentObject.tile.regionBlock,true,true);
+			cost += pathM.RegionBlockDistance(job.tile.regionBlock,containerPickups[containerPickups.Count-1].container.parentObject.tile.regionBlock,true,true,true);
 		} else {
-			cost += pathM.RegionBlockDistance(job.tile.regionBlock,colonist.overTile.regionBlock,true,true);
+			cost += pathM.RegionBlockDistance(job.tile.regionBlock,colonist.overTile.regionBlock,true,true,true);
 		}
+		print(colonist.name + " " + cost);
 		if (job.prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type != ResourceManager.TileObjectPrefabGroupsEnum.None) {
-			cost -= colonist.GetSkillFromJobType(job.prefab.jobType).level * 10f;
+			ColonistManager.Profession jobTypeProfession = colonistM.professions.Find(profession => profession.primarySkill == colonist.GetSkillFromJobType(job.prefab.jobType).prefab);
+			if (jobTypeProfession != null && jobTypeProfession == colonist.profession) {
+				print(colonist.name + " is the same profession");
+				cost -= 30 + (colonist.GetSkillFromJobType(job.prefab.jobType).level * 5f);
+			} else {
+				print(colonist.name + " is NOT the same profession");
+				cost -= colonist.GetSkillFromJobType(job.prefab.jobType).level * 5f;
+			}
 		}
-		cost += Vector2.Distance(colonist.overTile.obj.transform.position,job.tile.obj.transform.position);
+		print(colonist.name + " " + cost);
 		return cost;
 	}
 
