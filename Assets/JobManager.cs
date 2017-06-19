@@ -157,13 +157,13 @@ public class JobManager:MonoBehaviour {
 	}
 
 	public enum JobTypesEnum {
-		Build, Remove, Mine, PlantFarm, HarvestFarm,
-		ChopPlant,
+		Build, Remove, 
+		ChopPlant, Mine, PlantFarm, HarvestFarm,
 		PickupResources, EmptyInventory
 	};
 
 	public enum SelectionModifiersEnum { Outline, Walkable, OmitWalkable, Buildable, OmitBuildable, StoneTypes, OmitStoneTypes, AllWaterTypes, OmitAllWaterTypes, LiquidWaterTypes, OmitLiquidWaterTypes, OmitNonStoneAndWaterTypes,
-		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances
+		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances, Farms, OmitFarms
 	};
 	Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>> selectionModifierFunctions = new Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>>();
 
@@ -223,6 +223,12 @@ public class JobManager:MonoBehaviour {
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitSameLayerObjectInstances,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tile.objectInstances.ContainsKey(selectedPrefab.layer) && tile.objectInstances[selectedPrefab.layer] != null) { removeTiles.Add(tile); }
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.Farms,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
+			if (tile.farm == null) { removeTiles.Add(tile); }
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitFarms,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
+			if (tile.farm != null) { removeTiles.Add(tile); }
 		});
 	}
 
@@ -607,5 +613,18 @@ public class JobManager:MonoBehaviour {
 			uiM.SetJobElements();
 			UpdateColonistJobs();
 		}
+	}
+
+	public bool JobOfTypeExistsAtTile(JobTypesEnum jobType,TileManager.Tile tile) {
+		if (jobs.Find(job => job.prefab.jobType == jobType && job.tile == tile) != null) {
+			return true;
+		}
+		if (colonistM.colonists.Find(colonist => colonist.job != null && colonist.job.prefab.jobType == jobType && colonist.job.tile == tile) != null) {
+			return true;
+		}
+		if (colonistM.colonists.Find(colonist => colonist.storedJob != null && colonist.storedJob.prefab.jobType == jobType && colonist.storedJob.tile == tile) != null) {
+			return true;
+		}
+		return false;
 	}
 }

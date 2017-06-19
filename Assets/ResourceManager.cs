@@ -104,12 +104,12 @@ public class ResourceManager : MonoBehaviour {
 	};
 	public enum TileObjectPrefabSubGroupsEnum {
 		Walls, Doors, Floors, Containers, Beds,
-		Plants, Terrain,
+		Plants, Terrain, Farming,
 		None
 	};
 	public enum TileObjectPrefabsEnum {
 		StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, Basket, WoodenChest, WoodenBed,
-		ChopPlant, Mine,
+		ChopPlant, Mine, PlantFarm, HarvestFarm,
 		PickupResources, EmptyInventory
 	};
 
@@ -271,9 +271,9 @@ public class ResourceManager : MonoBehaviour {
 
 	public Dictionary<TileObjectPrefab,List<TileObjectInstance>> tileObjectInstances = new Dictionary<TileObjectPrefab,List<TileObjectInstance>>();
 
-	public List<TileObjectInstance> GetTileObjectInstanceList(TileObjectInstance tileObjectInstance) {
-		if (tileObjectInstances.ContainsKey(tileObjectInstance.prefab)) {
-			return tileObjectInstances[tileObjectInstance.prefab];
+	public List<TileObjectInstance> GetTileObjectInstanceList(TileObjectPrefab prefab) {
+		if (tileObjectInstances.ContainsKey(prefab)) {
+			return tileObjectInstances[prefab];
 		}
 		print("Tried accessing a tile object instance which isn't already in the list...");
 		return null;
@@ -349,6 +349,53 @@ public class ResourceManager : MonoBehaviour {
 			this.parentObject = parentObject;
 			this.maxAmount = maxAmount;
 			inventory = new Inventory(null,this,maxAmount);
+		}
+	}
+
+	public enum FarmTypesEnum { Wheat, Potatoes };
+	Dictionary<FarmTypesEnum,int> FarmGrowTimes = new Dictionary<FarmTypesEnum,int>() {
+		{FarmTypesEnum.Wheat,1000 },{FarmTypesEnum.Potatoes,300 }
+	};
+
+	public class Farm : TileObjectInstance{
+
+		private TimeManager timeM;
+		private JobManager jobM;
+		private ResourceManager resourceM;
+		private ColonistManager colonistM;
+
+		void GetScriptReferencecs() {
+			GameObject GM = GameObject.Find("GM");
+
+			timeM = GM.GetComponent<TimeManager>();
+			jobM = GM.GetComponent<JobManager>();
+			resourceM = GM.GetComponent<ResourceManager>();
+			colonistM = GM.GetComponent<ColonistManager>();
+		}
+
+		public FarmTypesEnum farmType;
+		public float growTimer = 0;
+		public float maxGrowthTime = 0;
+
+		public int growProgressSpriteIndex = 0;
+		public List<Sprite> growProgressSprites = new List<Sprite>();
+
+		public Farm(TileObjectPrefab prefab, TileManager.Tile tile, FarmTypesEnum farmType, float maxGrowthTime) : base(prefab,tile,0) {
+			this.farmType = farmType;
+			this.maxGrowthTime = maxGrowthTime;
+
+			growProgressSprites = Resources.LoadAll<Sprite>(@"Sprites/Farms/" + farmType.ToString()).ToList();
+		}
+
+		public void Update() {
+			if (growTimer >= maxGrowthTime) {
+				if (jobM.JobOfTypeExistsAtTile(JobManager.JobTypesEnum.HarvestFarm,tile)) {
+					jobM.CreateJob(new JobManager.Job(tile,resourceM.GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.HarvestFarm),0,colonistM,resourceM));
+				}
+			} else {
+				growTimer += 1 * timeM.deltaTime;
+			}
+			growProgressSpriteIndex = Mathf.FloorToInt((growTimer / maxGrowthTime) * growProgressSprites.Count);
 		}
 	}
 

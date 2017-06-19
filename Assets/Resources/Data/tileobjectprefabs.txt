@@ -128,6 +128,32 @@
 			true/
 			1.0/
 			0
+	<SubGroup>
+		Farming
+		<Object>
+			PlantFarm/
+			15
+			0/
+			/
+			true/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
+			PlantFarm/
+			1.0/
+			true/
+			0.3/
+			2
+		<Object>
+			HarvestFarm/
+			20
+			0/
+			/
+			true/
+			Walkable,Buildable,Farm,OmitPlants,OmitSameLayerJobs/
+			HarvestFarm/
+			1.0/
+			true/
+			0.3/
+			2
 <Group>
 	None
 	<SubGroup>
