@@ -59,6 +59,19 @@
 	<SubGroup>
 		Containers
 		<Object>
+			Basket/
+			10/
+			1/
+			Wood/
+			true/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
+			Build/
+			1.0/
+			true/
+			0.5/
+			2/
+			100
+		<Object>
 			WoodenChest/
 			20/
 			3/
@@ -69,7 +82,8 @@
 			1.0/
 			true/
 			0.5/
-			2
+			2/
+			250
 	<SubGroup>
 		Beds
 		<Object>
