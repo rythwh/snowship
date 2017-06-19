@@ -310,6 +310,7 @@ public class TileManager:MonoBehaviour {
 
 		public Biome biome;
 		public Plant plant;
+		public ResourceManager.Farm farm;
 
 		public float precipitation;
 		public float temperature;
@@ -542,6 +543,7 @@ public class TileManager:MonoBehaviour {
 			} else {
 				objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex));
 			}
+			tileM.resourceM.AddTileObjectInstance(objectInstances[tileObjectPrefab.layer]);
 			PostChangeTileObject();
 		}
 
