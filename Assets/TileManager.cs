@@ -941,7 +941,6 @@ public class TileManager:MonoBehaviour {
 		for (int halves = 0;halves < Mathf.CeilToInt(Mathf.Log(mapSize,2));halves++) {
 			int size = Mathf.CeilToInt(lastSize / 2f);
 			for (int sectionY = 0;sectionY < mapSize;sectionY += size) {
-
 				for (int sectionX = 0;sectionX < mapSize;sectionX += size) {
 					float sectionAverage = 0;
 					for (int y = sectionY;(y < sectionY + size && y < mapSize);y++) {
@@ -950,7 +949,12 @@ public class TileManager:MonoBehaviour {
 						}
 					}
 					sectionAverage /= (size * size);
-					sectionAverage += Random.Range(-0.25f,0.25f);
+					float maxDeviationSize = -(((float)(size - mapSize)) / (4 * mapSize));
+					sectionAverage += Random.Range(-maxDeviationSize,maxDeviationSize);
+					//sectionAverage += Random.Range(-0.25f,0.25f);
+					/*if (halves < 3) {
+						print(maxDeviationSize);
+					}*/
 					for (int y = sectionY;(y < sectionY + size && y < mapSize);y++) {
 						for (int x = sectionX;(x < sectionX + size && x < mapSize);x++) {
 							sortedTiles[y][x].height = sectionAverage;
