@@ -102,7 +102,7 @@ public class UIManager : MonoBehaviour {
 				mouseOverTile = newMouseOverTile;
 				UpdateTileInformation();
 			}
-			if (Input.GetMouseButtonDown(1)) {
+			if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape)) {
 				if (jobM.firstTile != null) {
 					jobM.StopSelection();
 				} else {

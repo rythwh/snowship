@@ -615,12 +615,11 @@ public class TileManager:MonoBehaviour {
 
 		public void SetFarm(ResourceManager.Farm farm) {
 			if (farm == null) {
-				tileM.resourceM.farms.Remove(farm);
-				tileM.resourceM.tileObjectInstances[farm.prefab].Remove(farm);
-				Destroy(farm.obj);
-				farm = null;
+				tileM.resourceM.farms.Remove(this.farm);
+				this.farm = null;
 			} else {
 				this.farm = farm;
+				tileM.resourceM.farms.Add(farm);
 			}
 		}
 	}

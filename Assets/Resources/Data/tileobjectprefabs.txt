@@ -151,7 +151,7 @@
 			1.0/
 			true/
 			0.3/
-			2
+			10
 <Group>
 	Command
 	<SubGroup>
