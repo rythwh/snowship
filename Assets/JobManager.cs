@@ -129,7 +129,10 @@ public class JobManager:MonoBehaviour {
 			finishJobFunctions[JobTypesEnum.Build](colonist,job);
 		});
 		finishJobFunctions.Add(JobTypesEnum.HarvestFarm,delegate (ColonistManager.Colonist colonist,Job job) {
-			
+			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(job.tile.farm.seedType),Random.Range(1,3));
+			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(resourceM.GetFarmSeedReturnResource()[job.tile.farm.seedType]),Random.Range(1,6));
+			job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
+			job.tile.SetFarm(null);
 		});
 		finishJobFunctions.Add(JobTypesEnum.ChopPlant,delegate (ColonistManager.Colonist colonist,Job job) {
 			job.tile.RemoveTileObjectAtLayer(job.prefab.layer);

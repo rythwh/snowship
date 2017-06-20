@@ -24,6 +24,12 @@ Materials:
 ~
 Seeds:
 	WheatSeeds/
-		5`
+		10`
 	PotatoSeeds/
+		5
+~
+Foods:
+	Wheat/
+		15`
+	Potatoes/
 		10

@@ -8,6 +8,7 @@ public class ColonistManager : MonoBehaviour {
 	private TileManager tileM;
 	private CameraManager cameraM;
 	private UIManager uiM;
+	private ResourceManager resourceM;
 
 	void Awake() {
 
@@ -18,6 +19,7 @@ public class ColonistManager : MonoBehaviour {
 		tileM = GetComponent<TileManager>();
 		cameraM = GetComponent<CameraManager>();
 		uiM = GetComponent<UIManager>();
+		resourceM = GetComponent<ResourceManager>();
 
 		CreateColonistSkills();
 		CreateColonistProfessions();
@@ -584,6 +586,9 @@ public class ColonistManager : MonoBehaviour {
 			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes,professions[Random.Range(0,professions.Count)]);
 			colonists.Add(colonist);
 		}
+
+		colonists[Random.Range(0,colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.WheatSeeds),Random.Range(5,11));
+		colonists[Random.Range(0,colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.PotatoSeeds),Random.Range(5,11));
 
 		uiM.SetColonistElements();
 	}
