@@ -1,6 +1,7 @@
 Building/
 	Build,0.1;
-	Remove,0.05`
+	RemoveObject,0.05;
+	RemoveFloor,0.05`
 Mining/
 	Mine,0.1`
 Farming/

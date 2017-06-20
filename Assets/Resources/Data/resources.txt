@@ -21,3 +21,9 @@ Natural:
 Materials:
 	Firewood/
 		2
+~
+Seeds:
+	WheatSeeds/
+		5`
+	PotatoSeeds/
+		10

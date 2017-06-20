@@ -435,12 +435,19 @@ public class ColonistManager : MonoBehaviour {
 				}
 			}
 
+			jobM.finishJobFunctions[finishedJob.prefab.jobType](this,finishedJob);
+
+			/*
 			if (finishedJob.prefab.jobType == JobManager.JobTypesEnum.Build) {
 				foreach (ResourceManager.ResourceAmount resourceAmount in finishedJob.prefab.resourcesToBuild) {
 					inventory.ChangeResourceAmount(resourceAmount.resource,-resourceAmount.amount);
 				}
 			} else if (finishedJob.prefab.jobType == JobManager.JobTypesEnum.Remove) {
 
+			} else if (finishedJob.prefab.jobType == JobManager.JobTypesEnum.PlantFarm) {
+				foreach (ResourceManager.ResourceAmount resourceAmount in finishedJob.prefab.resourcesToBuild) {
+					inventory.ChangeResourceAmount(resourceAmount.resource,-resourceAmount.amount);
+				}
 			} else if (finishedJob.prefab.jobType == JobManager.JobTypesEnum.ChopPlant) {
 				finishedJob.tile.RemoveTileObjectAtLayer(finishedJob.prefab.layer);
 				foreach (ResourceManager.ResourceAmount resourceAmount in finishedJob.tile.plant.GetResources()) {
@@ -495,6 +502,7 @@ public class ColonistManager : MonoBehaviour {
 				inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),finishedJob.tile.tileType.type.ToString())),Random.Range(4,7));
 				finishedJob.tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Dirt),true,true,true,false);
 			}
+			*/
 
 			jobM.UpdateSingleColonistJobs(this);
 			uiM.SetJobElements();

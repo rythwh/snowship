@@ -530,6 +530,7 @@ public class TileManager:MonoBehaviour {
 		}
 
 		public void SetTileObject(ResourceManager.TileObjectPrefab tileObjectPrefab,int rotationIndex) {
+			bool farm = tileM.resourceM.GetTileObjectPrefabByEnum(tileObjectPrefab.type).tileObjectPrefabSubGroup.type == ResourceManager.TileObjectPrefabSubGroupsEnum.PlantFarm;
 			if (objectInstances.ContainsKey(tileObjectPrefab.layer)) {
 				if (objectInstances[tileObjectPrefab.layer] != null) {
 					if (tileObjectPrefab != null) {
@@ -538,12 +539,23 @@ public class TileManager:MonoBehaviour {
 						objectInstances[tileObjectPrefab.layer] = null;
 					}
 				} else {
-					objectInstances[tileObjectPrefab.layer] = new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex);
+					if (farm) {
+						objectInstances[tileObjectPrefab.layer] = new ResourceManager.Farm(tileObjectPrefab,this);
+					} else {
+						objectInstances[tileObjectPrefab.layer] = new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex);
+					}
 				}
 			} else {
-				objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex));
+				if (farm) {
+					objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.Farm(tileObjectPrefab,this));
+				} else {
+					objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex));
+				}
 			}
 			tileM.resourceM.AddTileObjectInstance(objectInstances[tileObjectPrefab.layer]);
+			if (farm) {
+
+			}
 			PostChangeTileObject();
 		}
 
