@@ -21,7 +21,7 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourceGroupsEnum {
 		Natural, Materials,
-		Seeds
+		Seeds, Foods
 	};
 
 	public enum ResourcesEnum {
@@ -381,11 +381,17 @@ public class ResourceManager : MonoBehaviour {
 	public Dictionary<ResourcesEnum,int> GetFarmGrowTimes() {
 		return FarmGrowTimes;
 	}
-	public Dictionary<ResourcesEnum,ResourcesEnum> FarmSeedReturnResource = new Dictionary<ResourcesEnum,ResourcesEnum>() {
+	Dictionary<ResourcesEnum,ResourcesEnum> FarmSeedReturnResource = new Dictionary<ResourcesEnum,ResourcesEnum>() {
 		{ResourcesEnum.WheatSeeds,ResourcesEnum.Wheat },{ResourcesEnum.PotatoSeeds,ResourcesEnum.Potatoes }
 	};
 	public Dictionary<ResourcesEnum,ResourcesEnum> GetFarmSeedReturnResource() {
 		return FarmSeedReturnResource;
+	}
+	Dictionary<ResourcesEnum,TileObjectPrefabsEnum> FarmSeedsTileObject = new Dictionary<ResourcesEnum,TileObjectPrefabsEnum>() {
+		{ResourcesEnum.WheatSeeds,TileObjectPrefabsEnum.WheatFarm },{ResourcesEnum.PotatoSeeds,TileObjectPrefabsEnum.PotatoFarm }
+	};
+	public Dictionary<ResourcesEnum,TileObjectPrefabsEnum> GetFarmSeedsTileObject() {
+		return FarmSeedsTileObject;
 	}
 
 	public class Farm : TileObjectInstance {
@@ -428,13 +434,17 @@ public class ResourceManager : MonoBehaviour {
 
 		public void Update() {
 			if (growTimer >= maxGrowthTime) {
-				if (jobM.JobOfTypeExistsAtTile(JobManager.JobTypesEnum.HarvestFarm,tile)) {
+				if (!jobM.JobOfTypeExistsAtTile(JobManager.JobTypesEnum.HarvestFarm,tile)) {
 					jobM.CreateJob(new JobManager.Job(tile,resourceM.GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.HarvestFarm),0,colonistM,resourceM));
 				}
 			} else {
 				growTimer += 1 * timeM.deltaTime;
+				int newGrowProgressSpriteIndex = Mathf.FloorToInt((growTimer / (maxGrowthTime + 10)) * growProgressSprites.Count);
+				if (newGrowProgressSpriteIndex != growProgressSpriteIndex) {
+					growProgressSpriteIndex = newGrowProgressSpriteIndex;
+					obj.GetComponent<SpriteRenderer>().sprite = growProgressSprites[growProgressSpriteIndex];
+				}
 			}
-			growProgressSpriteIndex = Mathf.FloorToInt((growTimer / maxGrowthTime) * growProgressSprites.Count);
 		}
 	}
 
@@ -677,7 +687,9 @@ public class ResourceManager : MonoBehaviour {
 						BitmaskTileObjects(tileObjectInstance,true,false,false,null);
 					} else {
 						if (tileObjectInstance.prefab.bitmaskSprites.Count > 0) {
-							tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.bitmaskSprites[tileObjectInstance.rotationIndex];
+							if (tileObjectInstance.prefab.jobType != JobManager.JobTypesEnum.PlantFarm) {
+								tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.bitmaskSprites[tileObjectInstance.rotationIndex];
+							}
 						} else {
 							tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.baseSprite;
 						}
