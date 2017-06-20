@@ -26,7 +26,7 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourcesEnum {
 		Wood, Stone, Cloth, Dirt, Granite, Limestone, Marble, Sandstone, Slate, Clay, Firewood,
-		WheatSeeds, PotatoSeeds
+		WheatSeeds, Wheat, PotatoSeeds, Potatoes
 	};
 
 	public List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
@@ -279,6 +279,9 @@ public class ResourceManager : MonoBehaviour {
 			if (baseSprite == null && bitmaskSprites.Count > 0) {
 				baseSprite = bitmaskSprites[0];
 			}
+			if (jobType == JobManager.JobTypesEnum.PlantFarm) {
+				baseSprite = bitmaskSprites[bitmaskSprites.Count - 1];
+			}
 
 			if (resourceM.ContainerTileObjectTypes.Contains(type)) {
 				maxInventoryAmount = int.Parse(properties[11]);
@@ -378,8 +381,14 @@ public class ResourceManager : MonoBehaviour {
 	public Dictionary<ResourcesEnum,int> GetFarmGrowTimes() {
 		return FarmGrowTimes;
 	}
+	public Dictionary<ResourcesEnum,ResourcesEnum> FarmSeedReturnResource = new Dictionary<ResourcesEnum,ResourcesEnum>() {
+		{ResourcesEnum.WheatSeeds,ResourcesEnum.Wheat },{ResourcesEnum.PotatoSeeds,ResourcesEnum.Potatoes }
+	};
+	public Dictionary<ResourcesEnum,ResourcesEnum> GetFarmSeedReturnResource() {
+		return FarmSeedReturnResource;
+	}
 
-	public class Farm : TileObjectInstance{
+	public class Farm : TileObjectInstance {
 
 		private TimeManager timeM;
 		private JobManager jobM;
@@ -407,11 +416,14 @@ public class ResourceManager : MonoBehaviour {
 		public List<Sprite> growProgressSprites = new List<Sprite>();
 
 		public Farm(TileObjectPrefab prefab, TileManager.Tile tile) : base(prefab,tile,0) {
-			seedType = prefab.resourcesToBuild[0].resource.type;
-			name = uiM.SplitByCapitals(seedType.ToString()).Split(' ')[0] + " Farm";
-			this.maxGrowthTime = resourceM.GetFarmGrowTimes()[seedType];
 
-			growProgressSprites = Resources.LoadAll<Sprite>(@"Sprites/Farms/" + seedType.ToString()).ToList();
+			GetScriptReferencecs();
+
+			seedType = prefab.resourcesToBuild[0].resource.type;
+			name = (uiM.SplitByCapitals(seedType.ToString()).Split(' ')[0]).Replace(" ","") + " Farm";
+			maxGrowthTime = resourceM.GetFarmGrowTimes()[seedType];
+
+			growProgressSprites = prefab.bitmaskSprites;
 		}
 
 		public void Update() {

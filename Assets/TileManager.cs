@@ -318,6 +318,8 @@ public class TileManager:MonoBehaviour {
 		public bool walkable;
 		public float walkSpeed;
 
+		public bool roof;
+
 		public Dictionary<int,ResourceManager.TileObjectInstance> objectInstances = new Dictionary<int,ResourceManager.TileObjectInstance>();
 
 		public Tile(Vector2 position,float height,TileManager tileM) {
@@ -472,6 +474,9 @@ public class TileManager:MonoBehaviour {
 				SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater),false,false,false,false);
 			} else if (height > 0.75f) {
 				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Stone),false,false,false,false);
+				if (height >= 0.80f) {
+					roof = true;
+				}
 			} else {
 				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Grass),false,false,false,false);
 			}
@@ -540,14 +545,18 @@ public class TileManager:MonoBehaviour {
 					}
 				} else {
 					if (farm) {
-						objectInstances[tileObjectPrefab.layer] = new ResourceManager.Farm(tileObjectPrefab,this);
+						ResourceManager.Farm newFarm = new ResourceManager.Farm(tileObjectPrefab,this);
+						objectInstances[tileObjectPrefab.layer] = newFarm;
+						SetFarm(newFarm);
 					} else {
 						objectInstances[tileObjectPrefab.layer] = new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex);
 					}
 				}
 			} else {
 				if (farm) {
-					objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.Farm(tileObjectPrefab,this));
+					ResourceManager.Farm newFarm = new ResourceManager.Farm(tileObjectPrefab,this);
+					objectInstances.Add(tileObjectPrefab.layer,newFarm);
+					SetFarm(newFarm);
 				} else {
 					objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex));
 				}
@@ -601,6 +610,17 @@ public class TileManager:MonoBehaviour {
 			}
 			if (minObjectWalkSpeed < walkSpeed) {
 				walkSpeed = minObjectWalkSpeed;
+			}
+		}
+
+		public void SetFarm(ResourceManager.Farm farm) {
+			if (farm == null) {
+				tileM.resourceM.farms.Remove(farm);
+				tileM.resourceM.tileObjectInstances[farm.prefab].Remove(farm);
+				Destroy(farm.obj);
+				farm = null;
+			} else {
+				this.farm = farm;
 			}
 		}
 	}

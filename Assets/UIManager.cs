@@ -400,13 +400,13 @@ public class UIManager : MonoBehaviour {
 		public ResourceManager.ResourceAmount resourceAmount;
 		public GameObject obj;
 
-		public InventoryElement(ColonistManager.Colonist colonist,ResourceManager.ResourceAmount resourceAmount,Transform parent) {
+		public InventoryElement(ColonistManager.Colonist colonist,ResourceManager.ResourceAmount resourceAmount,Transform parent, UIManager uiM) {
 			this.colonist = colonist;
 			this.resourceAmount = resourceAmount;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ResourceInfoElement-Panel"),parent,false);
 
-			obj.transform.Find("Name").GetComponent<Text>().text = resourceAmount.resource.name;
+			obj.transform.Find("Name").GetComponent<Text>().text = uiM.SplitByCapitals(resourceAmount.resource.name);
 			// ADD RESOURCE IMAGE
 
 			Update();
@@ -450,7 +450,7 @@ public class UIManager : MonoBehaviour {
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ReservedResourceInfoElement-Panel"),parent,false);
 
-			obj.transform.Find("Name").GetComponent<Text>().text = resourceAmount.resource.name;
+			obj.transform.Find("Name").GetComponent<Text>().text = colonist.uiM.SplitByCapitals(resourceAmount.resource.name);
 			// ADD RESOURCE IMAGE
 
 			Update();
@@ -503,7 +503,7 @@ public class UIManager : MonoBehaviour {
 			}
 
 			foreach (ResourceManager.ResourceAmount ra in colonistM.selectedColonist.inventory.resources) {
-				inventoryElements.Add(new InventoryElement(colonistM.selectedColonist,ra,selectedColonistInformationPanel.transform.Find("Inventory-Panel/Inventory-ScrollPanel/InventoryList-Panel")));
+				inventoryElements.Add(new InventoryElement(colonistM.selectedColonist,ra,selectedColonistInformationPanel.transform.Find("Inventory-Panel/Inventory-ScrollPanel/InventoryList-Panel"),this));
 			}
 
 		} else {
@@ -759,7 +759,7 @@ public class UIManager : MonoBehaviour {
 				containerReservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.colonist,rr,selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel")));
 			}
 			foreach (ResourceManager.ResourceAmount ra in selectedContainer.inventory.resources) {
-				containerInventoryElements.Add(new InventoryElement(colonistM.selectedColonist,ra,selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel")));
+				containerInventoryElements.Add(new InventoryElement(colonistM.selectedColonist,ra,selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel"),this));
 			}
 		} else {
 			selectedContainerIndicator.SetActive(false);

@@ -64,7 +64,7 @@ public class PathManager : MonoBehaviour {
 
 			foreach (TileManager.Tile nTile in (currentTile.tile.surroundingTiles.Find(tile => tile != null && !tile.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
 				if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (allowEndTileNonWalkable && nTile == endTile ? true : (walkable ? nTile.walkable : true))) {
-					float cost = Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position * 1) + (currentTile.pathDistance * 2) - (nTile.walkSpeed * 2);
+					float cost = Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position * 1) + (currentTile.pathDistance * 2) - (nTile.walkSpeed * 10);
 					PathfindingTile pTile = new PathfindingTile(nTile,currentTile,cost);
 					frontier.Add(pTile);
 					checkedTiles.Add(pTile);
