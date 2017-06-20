@@ -215,20 +215,23 @@ public class UIManager : MonoBehaviour {
 		foreach (ResourceManager.TileObjectPrefabGroup group in resourceM.tileObjectPrefabGroups) {
 			if (group.type == ResourceManager.TileObjectPrefabGroupsEnum.None) {
 				continue;
-			} else if (group.type == ResourceManager.TileObjectPrefabGroupsEnum.Commands) {
-				menus.Add(GameObject.Find("CommandMenu-Button"),CreateCommandMenuButtons(group));
+			} else if (group.type == ResourceManager.TileObjectPrefabGroupsEnum.Command) {
+				menus.Add(GameObject.Find("CommandMenu-Button"),CreateAdditionalMenuButtons(GameObject.Find("CommandMenu-Button"),group));
+				continue;
+			} else if (group.type == ResourceManager.TileObjectPrefabGroupsEnum.Farm) {
+				menus.Add(GameObject.Find("FarmMenu-Button"),CreateAdditionalMenuButtons(GameObject.Find("FarmMenu-Button"),group));
 				continue;
 			}
 
 			GameObject groupButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildItem-Button-Prefab"),buildMenuPanel.transform,false);
-			groupButton.transform.Find("Text").GetComponent<Text>().text = group.name;
+			groupButton.transform.Find("Text").GetComponent<Text>().text = SplitByCapitals(group.name);
 			GameObject groupPanel = groupButton.transform.Find("Panel").gameObject;
 			groupPanel.GetComponent<GridLayoutGroup>().cellSize = new Vector2(100,21);
 
 			Dictionary<GameObject,List<GameObject>> subgroupPanels = new Dictionary<GameObject,List<GameObject>>();
 			foreach (ResourceManager.TileObjectPrefabSubGroup subgroup in group.tileObjectPrefabSubGroups) {
 				GameObject subgroupButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildItem-Button-Prefab"),groupPanel.transform,false);
-				subgroupButton.transform.Find("Text").GetComponent<Text>().text = subgroup.name;
+				subgroupButton.transform.Find("Text").GetComponent<Text>().text = SplitByCapitals(subgroup.name);
 				GameObject subgroupPanel = subgroupButton.transform.Find("Panel").gameObject;
 
 				List<GameObject> prefabButtons = new List<GameObject>();
@@ -272,17 +275,17 @@ public class UIManager : MonoBehaviour {
 		return menus;
 	}
 
-	public Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>> CreateCommandMenuButtons(ResourceManager.TileObjectPrefabGroup group) {
+	public Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>> CreateAdditionalMenuButtons(GameObject parentButton, ResourceManager.TileObjectPrefabGroup group) {
 
 		Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>> groupPanels = new Dictionary<GameObject,Dictionary<GameObject,List<GameObject>>>();
 
-		GameObject commandMenuButton = GameObject.Find("CommandMenu-Button");
-		GameObject commandMenuPanel = commandMenuButton.transform.Find("Panel").gameObject;
+		GameObject parentMenuButton = parentButton;
+		GameObject parentMenuPanel = parentMenuButton.transform.Find("Panel").gameObject;
 
 		Dictionary<GameObject,List<GameObject>> subgroupPanels = new Dictionary<GameObject,List<GameObject>>();
 		foreach (ResourceManager.TileObjectPrefabSubGroup subgroup in group.tileObjectPrefabSubGroups) {
-			GameObject subgroupButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildItem-Button-Prefab"),commandMenuPanel.transform,false);
-			subgroupButton.transform.Find("Text").GetComponent<Text>().text = subgroup.name;
+			GameObject subgroupButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/BuildItem-Button-Prefab"),parentMenuPanel.transform,false);
+			subgroupButton.transform.Find("Text").GetComponent<Text>().text = SplitByCapitals(subgroup.name);
 			GameObject subgroupPanel = subgroupButton.transform.Find("Panel").gameObject;
 
 			List<GameObject> prefabButtons = new List<GameObject>();
@@ -306,7 +309,7 @@ public class UIManager : MonoBehaviour {
 			});
 			subgroupButton.GetComponent<Button>().onClick.AddListener(delegate { subgroupPanel.SetActive(!subgroupPanel.activeSelf); });
 		}
-		groupPanels.Add(commandMenuPanel,subgroupPanels);
+		groupPanels.Add(parentMenuPanel,subgroupPanels);
 
 		return groupPanels;
 	}

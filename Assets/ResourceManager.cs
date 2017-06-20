@@ -13,9 +13,21 @@ public class ResourceManager : MonoBehaviour {
 		tileM = GetComponent<TileManager>();
 	}
 
-	public enum ResourceGroupsEnum { Natural, Materials };
+	void Update() {
+		foreach (Farm farm in farms) {
+			farm.Update();
+		}
+	}
 
-	public enum ResourcesEnum { Wood, Stone, Cloth, Dirt, Granite, Limestone, Marble, Sandstone, Slate, Clay, Firewood };
+	public enum ResourceGroupsEnum {
+		Natural, Materials,
+		Seeds
+	};
+
+	public enum ResourcesEnum {
+		Wood, Stone, Cloth, Dirt, Granite, Limestone, Marble, Sandstone, Slate, Clay, Firewood,
+		WheatSeeds, PotatoSeeds
+	};
 
 	public List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
 
@@ -99,17 +111,24 @@ public class ResourceManager : MonoBehaviour {
 	*/
 	public enum TileObjectPrefabGroupsEnum {
 		Structure, Furniture,
-		Commands,
+		Command,
+		Farm,
 		None,
 	};
 	public enum TileObjectPrefabSubGroupsEnum {
 		Walls, Doors, Floors, Containers, Beds,
-		Plants, Terrain, Farming,
+		Plants, Terrain,
+		PlantFarm, HarvestFarm,
 		None
 	};
 	public enum TileObjectPrefabsEnum {
-		StoneWall, WoodenWall, WoodenDoor, StoneFloor, WoodenFloor, Basket, WoodenChest, WoodenBed,
-		ChopPlant, Mine, PlantFarm, HarvestFarm,
+		StoneWall, WoodenWall, WoodenFence,
+		WoodenDoor,
+		StoneFloor, WoodenFloor,
+		Basket, WoodenChest,
+		WoodenBed,
+		ChopPlant, Mine,
+		WheatFarm, PotatoFarm, HarvestFarm,
 		PickupResources, EmptyInventory
 	};
 
@@ -270,6 +289,7 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	public Dictionary<TileObjectPrefab,List<TileObjectInstance>> tileObjectInstances = new Dictionary<TileObjectPrefab,List<TileObjectInstance>>();
+	public List<Farm> farms = new List<Farm>();
 
 	public List<TileObjectInstance> GetTileObjectInstanceList(TileObjectPrefab prefab) {
 		if (tileObjectInstances.ContainsKey(prefab)) {
@@ -326,7 +346,7 @@ public class ResourceManager : MonoBehaviour {
 			obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
 
 			if (resourceM.ContainerTileObjectTypes.Contains(prefab.type)) {
-				resourceM.containers.Add(new Container(this,250));
+				resourceM.containers.Add(new Container(this,prefab.maxInventoryAmount));
 			}
 		}
 
@@ -352,10 +372,12 @@ public class ResourceManager : MonoBehaviour {
 		}
 	}
 
-	public enum FarmTypesEnum { Wheat, Potatoes };
-	Dictionary<FarmTypesEnum,int> FarmGrowTimes = new Dictionary<FarmTypesEnum,int>() {
-		{FarmTypesEnum.Wheat,1000 },{FarmTypesEnum.Potatoes,300 }
+	Dictionary<ResourcesEnum,int> FarmGrowTimes = new Dictionary<ResourcesEnum,int>() {
+		{ResourcesEnum.WheatSeeds,1000 },{ResourcesEnum.PotatoSeeds,300 }
 	};
+	public Dictionary<ResourcesEnum,int> GetFarmGrowTimes() {
+		return FarmGrowTimes;
+	}
 
 	public class Farm : TileObjectInstance{
 
@@ -363,6 +385,7 @@ public class ResourceManager : MonoBehaviour {
 		private JobManager jobM;
 		private ResourceManager resourceM;
 		private ColonistManager colonistM;
+		private UIManager uiM;
 
 		void GetScriptReferencecs() {
 			GameObject GM = GameObject.Find("GM");
@@ -371,20 +394,24 @@ public class ResourceManager : MonoBehaviour {
 			jobM = GM.GetComponent<JobManager>();
 			resourceM = GM.GetComponent<ResourceManager>();
 			colonistM = GM.GetComponent<ColonistManager>();
+			uiM = GM.GetComponent<UIManager>();
 		}
 
-		public FarmTypesEnum farmType;
+		public ResourcesEnum seedType;
+		public string name;
+
 		public float growTimer = 0;
 		public float maxGrowthTime = 0;
 
 		public int growProgressSpriteIndex = 0;
 		public List<Sprite> growProgressSprites = new List<Sprite>();
 
-		public Farm(TileObjectPrefab prefab, TileManager.Tile tile, FarmTypesEnum farmType, float maxGrowthTime) : base(prefab,tile,0) {
-			this.farmType = farmType;
-			this.maxGrowthTime = maxGrowthTime;
+		public Farm(TileObjectPrefab prefab, TileManager.Tile tile) : base(prefab,tile,0) {
+			seedType = prefab.resourcesToBuild[0].resource.type;
+			name = uiM.SplitByCapitals(seedType.ToString()).Split(' ')[0] + " Farm";
+			this.maxGrowthTime = resourceM.GetFarmGrowTimes()[seedType];
 
-			growProgressSprites = Resources.LoadAll<Sprite>(@"Sprites/Farms/" + farmType.ToString()).ToList();
+			growProgressSprites = Resources.LoadAll<Sprite>(@"Sprites/Farms/" + seedType.ToString()).ToList();
 		}
 
 		public void Update() {

@@ -26,6 +26,18 @@
 			false/
 			0.1/
 			2
+		<Object>
+			WoodenFence/
+			15/
+			3/
+			Wood/
+			true/
+			Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
+			Build/
+			1.0/
+			false/
+			0.1/
+			2
 	<SubGroup>
 		Doors
 		<Object>
@@ -99,7 +111,49 @@
 			0.5/
 			2
 <Group>
-	Commands
+	Farm
+	<SubGroup>
+		PlantFarm
+		<Object>
+			WheatFarm/
+			15/
+			1/
+			WheatSeeds/
+			true/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs,OmitFarms/
+			PlantFarm/
+			1.0/
+			true/
+			0.3/
+			2
+		<Object>
+			PotatoFarm/
+			15/
+			1/
+			PotatoSeeds/
+			true/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs,OmitFarms/
+			PlantFarm/
+			1.0/
+			true/
+			0.3/
+			2
+	<SubGroup>
+		HarvestFarm
+		<Object>
+			HarvestFarm/
+			20/
+			0/
+			/
+			true/
+			Walkable,Buildable,Farms,OmitSameLayerJobs/
+			HarvestFarm/
+			1.0/
+			true/
+			0.3/
+			2
+<Group>
+	Command
 	<SubGroup>
 		Plants
 		<Object>
@@ -128,32 +182,6 @@
 			true/
 			1.0/
 			0
-	<SubGroup>
-		Farming
-		<Object>
-			PlantFarm/
-			15
-			0/
-			/
-			true/
-			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
-			PlantFarm/
-			1.0/
-			true/
-			0.3/
-			2
-		<Object>
-			HarvestFarm/
-			20
-			0/
-			/
-			true/
-			Walkable,Buildable,Farm,OmitPlants,OmitSameLayerJobs/
-			HarvestFarm/
-			1.0/
-			true/
-			0.3/
-			2
 <Group>
 	None
 	<SubGroup>
