@@ -412,30 +412,7 @@ public class ColonistManager : MonoBehaviour {
 				GetSkillFromJobType(finishedJob.prefab.jobType).AddExperience(finishedJob.prefab.timeToBuild);
 			}
 
-			if (!overTile.walkable) {
-				List<TileManager.Tile> walkableSurroundingTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
-				if (walkableSurroundingTiles.Count > 0) {
-					MoveToTile(walkableSurroundingTiles[Random.Range(0,walkableSurroundingTiles.Count)],false);
-				} else {
-					walkableSurroundingTiles.Clear();
-					List<TileManager.Tile> potentialWalkableSurroundingTiles = new List<TileManager.Tile>();
-					foreach (TileManager.RegionBlock regionBlock in overTile.regionBlock.horizontalSurroundingRegionBlocks) {
-						if (regionBlock.tileType.walkable) {
-							potentialWalkableSurroundingTiles.AddRange(regionBlock.tiles);
-						}
-					}
-					walkableSurroundingTiles = potentialWalkableSurroundingTiles.Where(tile => tile.surroundingTiles.Find(nTile => !nTile.walkable && nTile.regionBlock == overTile.regionBlock) != null).ToList();
-					if (walkableSurroundingTiles.Count > 0) {
-						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
-						MoveToTile(walkableSurroundingTiles[0],false);
-					} else {
-						List<TileManager.Tile> validTiles = tileM.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
-						if (validTiles.Count > 0) {
-							MoveToTile(validTiles[0],false);
-						}
-					}
-				}
-			}
+			MoveToClosestWalkableTile(true);
 
 			jobM.finishJobFunctions[finishedJob.prefab.jobType](this,finishedJob);
 
@@ -510,6 +487,33 @@ public class ColonistManager : MonoBehaviour {
 			uiM.SetJobElements();
 			uiM.UpdateSelectedColonistInformation();
 			uiM.UpdateSelectedContainerInfo();
+		}
+
+		public void MoveToClosestWalkableTile(bool careIfOvertileIsWalkable) {
+			if (careIfOvertileIsWalkable ? !overTile.walkable : true) {
+				List<TileManager.Tile> walkableSurroundingTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
+				if (walkableSurroundingTiles.Count > 0) {
+					MoveToTile(walkableSurroundingTiles[Random.Range(0,walkableSurroundingTiles.Count)],false);
+				} else {
+					walkableSurroundingTiles.Clear();
+					List<TileManager.Tile> potentialWalkableSurroundingTiles = new List<TileManager.Tile>();
+					foreach (TileManager.RegionBlock regionBlock in overTile.regionBlock.horizontalSurroundingRegionBlocks) {
+						if (regionBlock.tileType.walkable) {
+							potentialWalkableSurroundingTiles.AddRange(regionBlock.tiles);
+						}
+					}
+					walkableSurroundingTiles = potentialWalkableSurroundingTiles.Where(tile => tile.surroundingTiles.Find(nTile => !nTile.walkable && nTile.regionBlock == overTile.regionBlock) != null).ToList();
+					if (walkableSurroundingTiles.Count > 0) {
+						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
+						MoveToTile(walkableSurroundingTiles[0],false);
+					} else {
+						List<TileManager.Tile> validTiles = tileM.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
+						if (validTiles.Count > 0) {
+							MoveToTile(validTiles[0],false);
+						}
+					}
+				}
+			}
 		}
 
 		public void PlayerMoveToTile(TileManager.Tile tile) {

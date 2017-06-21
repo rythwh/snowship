@@ -51,6 +51,8 @@ public class UIManager : MonoBehaviour {
 	private GameObject professionMenuButton;
 	private GameObject professionsList;
 
+	private GameObject cancelButton;
+
 	void Awake() {
 		tileM = GetComponent<TileManager>();
 		jobM = GetComponent<JobManager>();
@@ -88,6 +90,9 @@ public class UIManager : MonoBehaviour {
 		professionMenuButton = GameObject.Find("ProfessionsMenu-Button");
 		professionsList = professionMenuButton.transform.Find("ProfessionsList-Panel").gameObject;
 		professionMenuButton.GetComponent<Button>().onClick.AddListener(delegate { SetProfessionsList(); });
+
+		cancelButton = GameObject.Find("Cancel-Button");
+		cancelButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Cancel)); });
 
 		InitializeTileInformation();
 		InitializeSelectedContainerIndicator();
@@ -644,6 +649,8 @@ public class UIManager : MonoBehaviour {
 				colonistObj.GetComponent<Outline>().enabled = false;
 			}
 
+			job.jobUIElement = this;
+
 			Update();
 		}
 
@@ -652,15 +659,23 @@ public class UIManager : MonoBehaviour {
 		}
 
 		public void DestroyObjects() {
+			job.jobUIElement = null;
 			Destroy(obj);
 			Destroy(colonistObj);
 		}
+
+		public void Remove(UIManager uiM) {
+			uiM.jobElements.Remove(this);
+			job.jobUIElement = null;
+			DestroyObjects();
+		}
 	}
 
-	List<JobElement> jobElements = new List<JobElement>();
+	public List<JobElement> jobElements = new List<JobElement>();
 
 	public void RemoveJobElements() {
 		foreach (JobElement jobElement in jobElements) {
+			jobElement.job.jobUIElement = null;
 			jobElement.DestroyObjects();
 		}
 		jobElements.Clear();

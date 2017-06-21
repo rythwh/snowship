@@ -57,7 +57,6 @@ public class PathManager : MonoBehaviour {
 				while (currentTile.cameFrom != null) {
 					path.Add(currentTile.tile);
 					currentTile = currentTile.cameFrom;
-					currentTile.tile.obj.GetComponent<SpriteRenderer>().color = Color.black;
 				}
 				path.Reverse();
 				return path;
@@ -65,8 +64,7 @@ public class PathManager : MonoBehaviour {
 
 			foreach (TileManager.Tile nTile in (currentTile.tile.surroundingTiles.Find(tile => tile != null && !tile.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
 				if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (allowEndTileNonWalkable && nTile == endTile ? true : (walkable ? nTile.walkable : true))) {
-					float cost = (RegionBlockDistance(nTile.regionBlock,endTile.regionBlock,true,true,true) * 1)/*Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position * 1)*/ + (currentTile.pathDistance * 5) - (nTile.walkSpeed * 10);
-					nTile.obj.GetComponent<SpriteRenderer>().color = Color.red;
+					float cost = (Vector2.Distance(nTile.obj.transform.position,endTile.obj.transform.position) * 1) + (RegionBlockDistance(nTile.regionBlock,endTile.regionBlock,true,true,true) * 10) + (currentTile.pathDistance * 5) - (nTile.walkSpeed * 15);
 					PathfindingTile pTile = new PathfindingTile(nTile,currentTile,cost);
 					frontier.Add(pTile);
 					checkedTiles.Add(pTile);
