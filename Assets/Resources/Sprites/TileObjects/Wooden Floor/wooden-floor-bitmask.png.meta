@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: bb04b90aa0573494597584bef4111861
-timeCreated: 1496033838
+timeCreated: 1498056582
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -52,6 +52,37 @@ TextureImporter:
     21300090: wooden-floor-bitmask_13
     21300092: wooden-floor-bitmask_14
     21300094: wooden-floor-bitmask_15
+    21300096: wooden-floor-bitmask_16
+    21300098: wooden-floor-bitmask_17
+    21300100: wooden-floor-bitmask_18
+    21300102: wooden-floor-bitmask_19
+    21300104: wooden-floor-bitmask_20
+    21300106: wooden-floor-bitmask_21
+    21300108: wooden-floor-bitmask_22
+    21300110: wooden-floor-bitmask_23
+    21300112: wooden-floor-bitmask_24
+    21300114: wooden-floor-bitmask_25
+    21300116: wooden-floor-bitmask_26
+    21300118: wooden-floor-bitmask_27
+    21300120: wooden-floor-bitmask_28
+    21300122: wooden-floor-bitmask_29
+    21300124: wooden-floor-bitmask_30
+    21300126: wooden-floor-bitmask_31
+    21300128: wooden-floor-bitmask_32
+    21300130: wooden-floor-bitmask_33
+    21300132: wooden-floor-bitmask_34
+    21300134: wooden-floor-bitmask_35
+    21300136: wooden-floor-bitmask_36
+    21300138: wooden-floor-bitmask_37
+    21300140: wooden-floor-bitmask_38
+    21300142: wooden-floor-bitmask_39
+    21300144: wooden-floor-bitmask_40
+    21300146: wooden-floor-bitmask_41
+    21300148: wooden-floor-bitmask_42
+    21300150: wooden-floor-bitmask_43
+    21300152: wooden-floor-bitmask_44
+    21300154: wooden-floor-bitmask_45
+    21300156: wooden-floor-bitmask_46
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -99,7 +130,7 @@ TextureImporter:
   textureFormatSet: 0
   platformSettings:
   - buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 8192
     textureFormat: -1
     textureCompression: 0
     compressionQuality: 50
@@ -107,7 +138,7 @@ TextureImporter:
     allowsAlphaSplitting: 0
     overridden: 0
   - buildTarget: Standalone
-    maxTextureSize: 2048
+    maxTextureSize: 8192
     textureFormat: -1
     textureCompression: 0
     compressionQuality: 50
@@ -122,7 +153,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2
-        y: 107
+        y: 212
         width: 32
         height: 32
       alignment: 0
@@ -135,7 +166,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 37
-        y: 107
+        y: 212
         width: 32
         height: 32
       alignment: 0
@@ -148,7 +179,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 72
-        y: 107
+        y: 212
         width: 32
         height: 32
       alignment: 0
@@ -161,7 +192,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 107
-        y: 107
+        y: 212
         width: 32
         height: 32
       alignment: 0
@@ -173,8 +204,8 @@ TextureImporter:
       name: wooden-floor-bitmask_4
       rect:
         serializedVersion: 2
-        x: 2
-        y: 72
+        x: 142
+        y: 212
         width: 32
         height: 32
       alignment: 0
@@ -186,8 +217,8 @@ TextureImporter:
       name: wooden-floor-bitmask_5
       rect:
         serializedVersion: 2
-        x: 37
-        y: 72
+        x: 177
+        y: 212
         width: 32
         height: 32
       alignment: 0
@@ -199,8 +230,8 @@ TextureImporter:
       name: wooden-floor-bitmask_6
       rect:
         serializedVersion: 2
-        x: 72
-        y: 72
+        x: 212
+        y: 212
         width: 32
         height: 32
       alignment: 0
@@ -212,8 +243,8 @@ TextureImporter:
       name: wooden-floor-bitmask_7
       rect:
         serializedVersion: 2
-        x: 107
-        y: 72
+        x: 2
+        y: 177
         width: 32
         height: 32
       alignment: 0
@@ -225,8 +256,8 @@ TextureImporter:
       name: wooden-floor-bitmask_8
       rect:
         serializedVersion: 2
-        x: 2
-        y: 37
+        x: 37
+        y: 177
         width: 32
         height: 32
       alignment: 0
@@ -238,6 +269,357 @@ TextureImporter:
       name: wooden-floor-bitmask_9
       rect:
         serializedVersion: 2
+        x: 72
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_10
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_11
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_12
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_13
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_14
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_15
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_16
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_17
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_18
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_19
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_20
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_21
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_22
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_23
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_24
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_25
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_26
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_27
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_28
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_29
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_30
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_31
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_32
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_33
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_34
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_35
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_36
+      rect:
+        serializedVersion: 2
         x: 37
         y: 37
         width: 32
@@ -248,7 +630,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wooden-floor-bitmask_10
+      name: wooden-floor-bitmask_37
       rect:
         serializedVersion: 2
         x: 72
@@ -261,7 +643,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wooden-floor-bitmask_11
+      name: wooden-floor-bitmask_38
       rect:
         serializedVersion: 2
         x: 107
@@ -274,7 +656,46 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wooden-floor-bitmask_12
+      name: wooden-floor-bitmask_39
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_40
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_41
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_42
       rect:
         serializedVersion: 2
         x: 2
@@ -287,7 +708,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wooden-floor-bitmask_13
+      name: wooden-floor-bitmask_43
       rect:
         serializedVersion: 2
         x: 37
@@ -300,7 +721,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wooden-floor-bitmask_14
+      name: wooden-floor-bitmask_44
       rect:
         serializedVersion: 2
         x: 72
@@ -313,10 +734,23 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wooden-floor-bitmask_15
+      name: wooden-floor-bitmask_45
       rect:
         serializedVersion: 2
         x: 107
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: wooden-floor-bitmask_46
+      rect:
+        serializedVersion: 2
+        x: 142
         y: 2
         width: 32
         height: 32

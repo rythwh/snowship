@@ -26,7 +26,7 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourcesEnum {
 		Wood, Stone, Cloth, Dirt, Granite, Limestone, Marble, Sandstone, Slate, Clay, Firewood,
-		WheatSeeds, Wheat, PotatoSeeds, Potatoes
+		WheatSeeds, Wheat, PotatoSeeds, Potatoes, Berries, Apples
 	};
 
 	public List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
@@ -376,7 +376,7 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	Dictionary<ResourcesEnum,int> FarmGrowTimes = new Dictionary<ResourcesEnum,int>() {
-		{ResourcesEnum.WheatSeeds,1000 },{ResourcesEnum.PotatoSeeds,300 }
+		{ResourcesEnum.WheatSeeds,5760 },{ResourcesEnum.PotatoSeeds,2880 }
 	};
 	public Dictionary<ResourcesEnum,int> GetFarmGrowTimes() {
 		return FarmGrowTimes;
