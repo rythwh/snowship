@@ -49,6 +49,8 @@ public class JobManager:MonoBehaviour {
 		public List<ResourceManager.ResourceAmount> colonistResources;
 		public List<ContainerPickup> containerPickups;
 
+		public UIManager.JobElement jobUIElement;
+
 		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab,int rotationIndex,ColonistManager colonistM,ResourceManager resourceM) {
 			this.tile = tile;
 			this.prefab = prefab;
@@ -87,12 +89,16 @@ public class JobManager:MonoBehaviour {
 				colonist.SetJob(new ColonistJob(colonist,new Job(containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),0,colonistM,resourceM),null,null,jobM,pathM));
 			}
 		}
+
+		public void Remove() {
+			Destroy(jobPreview);
+		}
 	}
 
 	public enum JobTypesEnum {
 		Build, RemoveObject, RemoveFloor,
 		ChopPlant, Mine, PlantFarm, HarvestFarm,
-		PickupResources, EmptyInventory
+		PickupResources, EmptyInventory, Cancel
 	};
 
 	public Dictionary<JobTypesEnum,System.Action<ColonistManager.Colonist,Job>> finishJobFunctions = new Dictionary<JobTypesEnum,System.Action<ColonistManager.Colonist,Job>>();
@@ -417,7 +423,11 @@ public class JobManager:MonoBehaviour {
 					}
 
 					if (Input.GetMouseButtonUp(0)) {
-						CreateJobsInSelectionArea(selectedPrefab,selectionArea);
+						if (selectedPrefab.jobType != JobTypesEnum.Cancel) {
+							CreateJobsInSelectionArea(selectedPrefab,selectionArea);
+						} else {
+							CancelJobsInSelectionArea(selectionArea);
+						}
 						firstTile = null;
 						rotationIndex = 0;
 					}
@@ -431,6 +441,58 @@ public class JobManager:MonoBehaviour {
 			listToModify.Remove(tile);
 		}
 		removeList.Clear();
+	}
+
+	public void CancelJobsInSelectionArea(List<TileManager.Tile> selectionArea) {
+		List<Job> removeJobs = new List<Job>();
+		foreach (Job job in jobs) {
+			if (selectionArea.Contains(job.tile)) {
+				removeJobs.Add(job);
+			}
+		}
+		foreach (Job job in removeJobs) {
+			job.jobUIElement.Remove(uiM);
+			job.Remove();
+			jobs.Remove(job);
+		}
+		removeJobs.Clear();
+
+		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+			if (colonist.storedJob == null) {
+				if (colonist.job != null && selectionArea.Contains(colonist.job.tile)) {
+					colonist.job.jobUIElement.Remove(uiM);
+					colonist.job.Remove();
+					colonist.job = null;
+					colonist.path.Clear();
+					colonist.MoveToClosestWalkableTile(false);
+					/*
+					if (colonist.overTile.walkable) {
+						colonist.MoveToTile(colonist.overTile,false);
+					} else {
+						colonist.MoveToClosestWalkableTile(false);
+					}
+					*/
+				}
+			} else {
+				if ((selectionArea.Contains(colonist.storedJob.tile)) || (!selectionArea.Contains(colonist.storedJob.tile) && colonist.job != null && selectionArea.Contains(colonist.job.tile))) {
+					colonist.storedJob.jobUIElement.Remove(uiM);
+					colonist.storedJob.Remove();
+					colonist.storedJob = null;
+					colonist.job.jobUIElement.Remove(uiM);
+					colonist.job.Remove();
+					colonist.job = null;
+					colonist.path.Clear();
+					colonist.MoveToClosestWalkableTile(false);
+					/*
+					if (colonist.overTile.walkable) {
+						colonist.MoveToTile(colonist.overTile,false);
+					} else {
+						colonist.MoveToClosestWalkableTile(false);
+					}
+					*/
+				}
+			}
+		}
 	}
 
 	public void CreateJobsInSelectionArea(ResourceManager.TileObjectPrefab prefab, List<TileManager.Tile> selectionArea) {
