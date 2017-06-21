@@ -1758,18 +1758,19 @@ public class TileManager:MonoBehaviour {
 	}
 
 	public void SetTileBrightness(float brightness) {
+		Color newColour = new Color(brightness,brightness,brightness,1f);
 		brightness += 0.2f;
 		foreach (Tile tile in tiles) {
-			tile.sr.color = new Color(brightness,brightness,brightness,1f);
+			tile.sr.color = newColour;
 			if (tile.plant != null) {
-				tile.plant.obj.GetComponent<SpriteRenderer>().color = new Color(brightness,brightness,brightness,1f);
+				tile.plant.obj.GetComponent<SpriteRenderer>().color = newColour;
 			}
 			foreach (ResourceManager.TileObjectInstance objectInstance in tile.GetAllObjectInstances()) {
-				objectInstance.obj.GetComponent<SpriteRenderer>().color = new Color(brightness,brightness,brightness,1f);
+				objectInstance.obj.GetComponent<SpriteRenderer>().color = newColour;
 			}
 		}
 		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-			colonist.obj.GetComponent<SpriteRenderer>().color = new Color(brightness,brightness,brightness,1f);
+			colonist.obj.GetComponent<SpriteRenderer>().color = newColour;
 		}
 	}
 }
