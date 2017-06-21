@@ -12,7 +12,7 @@
 			Build/
 			1.0/
 			false/
-			0.1/
+			1.0/
 			2
 		<Object>
 			StoneWall/
@@ -24,7 +24,7 @@
 			Build/
 			0.0/
 			false/
-			0.1/
+			1.0/
 			2
 		<Object>
 			WoodenFence/
@@ -36,7 +36,7 @@
 			Build/
 			1.0/
 			false/
-			0.1/
+			1.0/
 			2
 	<SubGroup>
 		Doors
@@ -148,9 +148,9 @@
 			true/
 			Walkable,Buildable,Farms,OmitSameLayerJobs/
 			HarvestFarm/
-			1.0/
+			0.0/
 			true/
-			0.3/
+			1.0/
 			10
 <Group>
 	Command
