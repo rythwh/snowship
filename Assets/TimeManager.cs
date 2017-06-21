@@ -5,9 +5,11 @@ using UnityEngine;
 public class TimeManager : MonoBehaviour {
 
 	private UIManager uiM;
+	private TileManager tileM;
 
 	void Awake() {
 		uiM = GetComponent<UIManager>();
+		tileM = GetComponent<TileManager>();
 	}
 
 	public int pauseTimeModifier = 0;
@@ -60,6 +62,7 @@ public class TimeManager : MonoBehaviour {
 			if (minute >= 60) {
 				minute = 1;
 				hour += 1;
+				SetTileBrightnessAtHour(hour);
 				if (hour >= 24) {
 					day += 1;
 					hour = 0;
@@ -81,5 +84,9 @@ public class TimeManager : MonoBehaviour {
 
 	public int Get12HourTime() {
 		return Mathf.FloorToInt(1 + (12 - (1 - hour)) % 12);
+	}
+
+	public void SetTileBrightnessAtHour(int hour) {
+		tileM.SetTileBrightness((-(1f / 144f)) * Mathf.Pow((hour - 12),2) + 1);
 	}
 }

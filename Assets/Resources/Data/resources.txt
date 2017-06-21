@@ -32,4 +32,8 @@ Foods:
 	Wheat/
 		15`
 	Potatoes/
-		10
+		10`
+	Berries/
+		3`
+	Apples/
+		5
