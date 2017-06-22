@@ -311,6 +311,7 @@ public class TileManager:MonoBehaviour {
 		public Region region;
 		public Region drainageBasin;
 		public RegionBlock regionBlock;
+		public RegionBlock squareRegionBlock;
 
 		public Biome biome;
 		public Plant plant;
@@ -680,12 +681,16 @@ public class TileManager:MonoBehaviour {
 	private int viewRiverAtIndex = 0;
 
 	void Update() {
+
+		if (generated) {
+			DetermineVisibleRegionBlocks();
+		}
+
 		if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.BackQuote)) {
 			debugMode = !debugMode;
 		}
 		if (debugMode) {
 			if (generated) {
-				DetermineVisibleRegionBlocks();
 				if (Input.GetKeyDown(KeyCode.Z)) {
 					foreach (Tile tile in tiles) {
 						tile.sr.color = Color.white;
@@ -783,7 +788,7 @@ public class TileManager:MonoBehaviour {
 					*/
 				}
 				if (Input.GetKeyDown(KeyCode.E)) {
-					foreach (Region region in regionBlocks) {
+					foreach (Region region in squareRegionBlocks) {
 						region.ColourRegion();
 					}
 				}
@@ -806,16 +811,15 @@ public class TileManager:MonoBehaviour {
 					}
 					*/
 					/*pathM.RegionBlockDistance(GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,tile.regionBlock,true,true);*/
-					/*
 					Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-					foreach (Tile rTile in tile.regionBlock.tiles) {
+					foreach (Tile rTile in tile.squareRegionBlock.tiles) {
 						rTile.sr.sprite = whiteSquare;
 						rTile.sr.color = Color.black;
 					}
-					GetTileFromPosition(tile.regionBlock.averagePosition).sr.sprite = whiteSquare;
-					GetTileFromPosition(tile.regionBlock.averagePosition).sr.color = Color.white;
-					print(tile.regionBlock.surroundingRegionBlocks.Count + " " + tile.regionBlock.horizontalSurroundingRegionBlocks.Count);
-					foreach (RegionBlock nRegionBlock in tile.regionBlock.surroundingRegionBlocks) {
+					GetTileFromPosition(tile.squareRegionBlock.averagePosition).sr.sprite = whiteSquare;
+					GetTileFromPosition(tile.squareRegionBlock.averagePosition).sr.color = Color.white;
+					print(tile.squareRegionBlock.surroundingRegionBlocks.Count + " " + tile.squareRegionBlock.horizontalSurroundingRegionBlocks.Count);
+					foreach (RegionBlock nRegionBlock in tile.squareRegionBlock.surroundingRegionBlocks) {
 						Color colour = nRegionBlock.tileType.walkable ? Color.blue : Color.red;
 						foreach (Tile rTile in nRegionBlock.tiles) {
 							rTile.sr.sprite = whiteSquare;
@@ -824,7 +828,6 @@ public class TileManager:MonoBehaviour {
 						GetTileFromPosition(nRegionBlock.averagePosition).sr.sprite = whiteSquare;
 						GetTileFromPosition(nRegionBlock.averagePosition).sr.color = Color.white;
 					}
-					*/
 					/*
 					tile.SetTileType(GetTileTypeByEnum(TileTypes.Stone),true,true,true,true);
 					RecalculateRegionsAtTile(tile);
@@ -1132,20 +1135,36 @@ public class TileManager:MonoBehaviour {
 	}
 
 	private int regionBlockSize = 10;
+	private List<RegionBlock> squareRegionBlocks = new List<RegionBlock>();
 	void CreateRegionBlocks() {
 		int size = regionBlockSize;
 		int regionIndex = 0;
 		for (int sectionY = 0; sectionY < mapSize; sectionY += size) {
 			for (int sectionX = 0; sectionX < mapSize; sectionX += size) {
 				RegionBlock regionBlock = new RegionBlock(GetTileTypeByEnum(TileTypes.Grass),regionIndex);
+				RegionBlock squareRegionBlock = new RegionBlock(GetTileTypeByEnum(TileTypes.Grass),regionIndex);
 				for (int y = sectionY; (y < sectionY + size && y < mapSize); y++) {
 					for (int x = sectionX; (x < sectionX + size && x < mapSize); x++) {
 						regionBlock.tiles.Add(sortedTiles[y][x]);
+						squareRegionBlock.tiles.Add(sortedTiles[y][x]);
+						sortedTiles[y][x].squareRegionBlock = squareRegionBlock;
 					}
 				}
 				regionIndex += 1;
 				regionBlocks.Add(regionBlock);
+				squareRegionBlocks.Add(squareRegionBlock);
 			}
+		}
+		foreach (RegionBlock squareRegionBlock in squareRegionBlocks) {
+			foreach (Tile tile in squareRegionBlock.tiles) {
+				foreach (Tile nTile in tile.surroundingTiles) {
+					if (nTile != null && nTile.squareRegionBlock != tile.squareRegionBlock && nTile.squareRegionBlock != null && !squareRegionBlock.surroundingRegionBlocks.Contains(nTile.squareRegionBlock)) {
+						squareRegionBlock.surroundingRegionBlocks.Add(nTile.squareRegionBlock);
+					}
+				}
+				squareRegionBlock.averagePosition = new Vector2(squareRegionBlock.averagePosition.x + tile.obj.transform.position.x,squareRegionBlock.averagePosition.y + tile.obj.transform.position.y);
+			}
+			squareRegionBlock.averagePosition = new Vector2(squareRegionBlock.averagePosition.x / squareRegionBlock.tiles.Count,squareRegionBlock.averagePosition.y / squareRegionBlock.tiles.Count);
 		}
 		regionIndex += 1;
 		List<RegionBlock> removeRegionBlocks = new List<RegionBlock>();
@@ -1780,44 +1799,46 @@ public class TileManager:MonoBehaviour {
 		return sortedTiles[Mathf.FloorToInt(position.y)][Mathf.FloorToInt(position.x)];
 	}
 
-	List<RegionBlock> visibleRegionBlocks = new List<RegionBlock>();
+	private List<RegionBlock> visibleRegionBlocks = new List<RegionBlock>();
+	private RegionBlock centreRegionBlock;
+	private int lastOrthographicSize = -1;
 
 	public void DetermineVisibleRegionBlocks() {
-		visibleRegionBlocks.Clear();
-		RegionBlock centreRegionBlock = GetTileFromPosition(cameraM.cameraGO.transform.position).regionBlock;
-		List<RegionBlock> frontier = new List<RegionBlock>() { centreRegionBlock };
-		List<RegionBlock> checkedBlocks = new List<RegionBlock>() { centreRegionBlock };
-		//Debug.DrawLine(cameraM.cameraGO.transform.position,new Vector3(cameraM.cameraGO.transform.position.x,cameraM.cameraGO.transform.position.y + ((/*(*/cameraM.cameraComponent.orthographicSize/* * (Screen.width / Screen.height))*/ + regionBlockSize) * 1.1f),cameraM.cameraGO.transform.position.z));
-		Debug.DrawLine(cameraM.cameraGO.transform.position,new Vector2(cameraM.cameraGO.transform.position.x,cameraM.cameraGO.transform.position.y + cameraM.cameraComponent.orthographicSize * (Screen.width/Screen.height)));
-		SetTileBrightness(12);
-		while (frontier.Count > 0) {
-			RegionBlock currentRegionBlock = frontier[0];
-			frontier.RemoveAt(0);
-			visibleRegionBlocks.Add(currentRegionBlock);
-			foreach (RegionBlock nBlock in currentRegionBlock.surroundingRegionBlocks) {
-				if (Vector2.Distance(currentRegionBlock.averagePosition,cameraM.cameraGO.transform.position) <= ((/*(*/cameraM.cameraComponent.orthographicSize/* * (Screen.width / Screen.height))*/ + regionBlockSize) * 1.1f)) {
-					if (!checkedBlocks.Contains(nBlock)) {
-						frontier.Add(nBlock);
-						checkedBlocks.Add(nBlock);
-					}
-				} else {
-					foreach (Tile tile in nBlock.tiles) {
-						tile.sr.color = Color.red;
+		RegionBlock newCentreRegionBlock = GetTileFromPosition(cameraM.cameraGO.transform.position).squareRegionBlock;
+		if (newCentreRegionBlock != centreRegionBlock || Mathf.RoundToInt(cameraM.cameraComponent.orthographicSize) != lastOrthographicSize) {
+			visibleRegionBlocks.Clear();
+			lastOrthographicSize = Mathf.RoundToInt(cameraM.cameraComponent.orthographicSize);
+			centreRegionBlock = newCentreRegionBlock;
+			List<RegionBlock> frontier = new List<RegionBlock>() { centreRegionBlock };
+			List<RegionBlock> checkedBlocks = new List<RegionBlock>() { centreRegionBlock };
+			while (frontier.Count > 0) {
+				RegionBlock currentRegionBlock = frontier[0];
+				frontier.RemoveAt(0);
+				visibleRegionBlocks.Add(currentRegionBlock);
+				foreach (RegionBlock nBlock in currentRegionBlock.surroundingRegionBlocks) {
+					if (Vector2.Distance(currentRegionBlock.averagePosition,cameraM.cameraGO.transform.position) <= cameraM.cameraComponent.orthographicSize * ((float)Screen.width / Screen.height)) {
+						if (!checkedBlocks.Contains(nBlock)) {
+							frontier.Add(nBlock);
+							checkedBlocks.Add(nBlock);
+						}
+					} else {
+						if (!checkedBlocks.Contains(nBlock)) {
+							visibleRegionBlocks.Add(nBlock);
+							checkedBlocks.Add(nBlock);
+						}
 					}
 				}
 			}
-		}
-		foreach (RegionBlock regionBlock in visibleRegionBlocks) {
-			foreach (Tile tile in regionBlock.tiles) {
-				tile.sr.color = Color.black;
-			}
+			SetTileBrightness(timeM.GetTileBrightnessTime());
 		}
 	}
 
 	public void SetTileBrightness(float time) {
 		Color newColour = GetTileColourAtHour(time);
-		foreach (Tile tile in tiles) {
-			tile.SetColour(newColour);
+		foreach (RegionBlock visibleRegionBlock in visibleRegionBlocks) {
+			foreach (Tile tile in visibleRegionBlock.tiles) {
+				tile.SetColour(newColour);
+			}
 		}
 		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
 			colonist.obj.GetComponent<SpriteRenderer>().color = colonist.overTile.sr.color;
