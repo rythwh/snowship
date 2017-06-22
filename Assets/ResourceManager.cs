@@ -327,12 +327,16 @@ public class ResourceManager : MonoBehaviour {
 	public class TileObjectInstance {
 
 		private ResourceManager resourceM;
+		private TimeManager timeM;
+		private TileManager tileM;
 
 		void GetScriptReferences() {
 
 			GameObject GM = GameObject.Find("GM");
 
 			resourceM = GM.GetComponent<ResourceManager>();
+			timeM = GM.GetComponent<TimeManager>();
+			tileM = GM.GetComponent<TileManager>();
 		}
 
 		public TileManager.Tile tile;
@@ -357,12 +361,18 @@ public class ResourceManager : MonoBehaviour {
 			if (resourceM.ContainerTileObjectTypes.Contains(prefab.type)) {
 				resourceM.containers.Add(new Container(this,prefab.maxInventoryAmount));
 			}
+
+			SetColour(tile.sr.color);
 		}
 
 		public void FinishCreation() {
 			List<TileManager.Tile> bitmaskingTiles = new List<TileManager.Tile>() { tile };
 			bitmaskingTiles.AddRange(tile.surroundingTiles);
 			resourceM.Bitmask(bitmaskingTiles);
+		}
+
+		public void SetColour(Color newColour) {
+			obj.GetComponent<SpriteRenderer>().color = newColour;
 		}
 	}
 

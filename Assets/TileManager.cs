@@ -324,6 +324,8 @@ public class TileManager:MonoBehaviour {
 
 		public bool roof;
 
+		public float brightness;
+
 		public Dictionary<int,ResourceManager.TileObjectInstance> objectInstances = new Dictionary<int,ResourceManager.TileObjectInstance>();
 
 		public Tile(Vector2 position,float height,TileManager tileM) {
@@ -337,6 +339,8 @@ public class TileManager:MonoBehaviour {
 			sr = obj.GetComponent<SpriteRenderer>();
 
 			SetTileHeight(height);
+
+			SetBrightness(1f);
 		}
 
 		public void SetTileHeight(float height) {
@@ -628,6 +632,21 @@ public class TileManager:MonoBehaviour {
 				tileM.resourceM.farms.Add(farm);
 			}
 		}
+
+		public void SetColour(Color newColour) {
+			sr.color = newColour * brightness;
+			if (plant != null) {
+				plant.obj.GetComponent<SpriteRenderer>().color = sr.color;
+			}
+			foreach (ResourceManager.TileObjectInstance instance in GetAllObjectInstances()) {
+				instance.SetColour(sr.color);
+			}
+		}
+
+		public void SetBrightness(float newBrightness) {
+			brightness = newBrightness;
+			SetColour(sr.color);
+		}
 	}
 
 	public bool generated;
@@ -666,6 +685,7 @@ public class TileManager:MonoBehaviour {
 		}
 		if (debugMode) {
 			if (generated) {
+				DetermineVisibleRegionBlocks();
 				if (Input.GetKeyDown(KeyCode.Z)) {
 					foreach (Tile tile in tiles) {
 						tile.sr.color = Color.white;
@@ -858,7 +878,8 @@ public class TileManager:MonoBehaviour {
 
 		Bitmasking(tiles);
 
-		timeM.SetTileBrightnessAtHour(6);
+		//timeM.SetTileBrightnessAtHour(6);
+		SetTileBrightness(6);
 	}
 
 	void CreateTiles() {
@@ -1110,8 +1131,9 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
+	private int regionBlockSize = 10;
 	void CreateRegionBlocks() {
-		int size = 10;
+		int size = regionBlockSize;
 		int regionIndex = 0;
 		for (int sectionY = 0; sectionY < mapSize; sectionY += size) {
 			for (int sectionX = 0; sectionX < mapSize; sectionX += size) {
@@ -1758,20 +1780,58 @@ public class TileManager:MonoBehaviour {
 		return sortedTiles[Mathf.FloorToInt(position.y)][Mathf.FloorToInt(position.x)];
 	}
 
-	public void SetTileBrightness(float brightness) {
-		Color newColour = new Color(brightness,brightness,brightness,1f);
-		brightness += 0.2f;
+	List<RegionBlock> visibleRegionBlocks = new List<RegionBlock>();
+
+	public void DetermineVisibleRegionBlocks() {
+		visibleRegionBlocks.Clear();
+		RegionBlock centreRegionBlock = GetTileFromPosition(cameraM.cameraGO.transform.position).regionBlock;
+		List<RegionBlock> frontier = new List<RegionBlock>() { centreRegionBlock };
+		List<RegionBlock> checkedBlocks = new List<RegionBlock>() { centreRegionBlock };
+		//Debug.DrawLine(cameraM.cameraGO.transform.position,new Vector3(cameraM.cameraGO.transform.position.x,cameraM.cameraGO.transform.position.y + ((/*(*/cameraM.cameraComponent.orthographicSize/* * (Screen.width / Screen.height))*/ + regionBlockSize) * 1.1f),cameraM.cameraGO.transform.position.z));
+		Debug.DrawLine(cameraM.cameraGO.transform.position,new Vector2(cameraM.cameraGO.transform.position.x,cameraM.cameraGO.transform.position.y + cameraM.cameraComponent.orthographicSize * (Screen.width/Screen.height)));
+		SetTileBrightness(12);
+		while (frontier.Count > 0) {
+			RegionBlock currentRegionBlock = frontier[0];
+			frontier.RemoveAt(0);
+			visibleRegionBlocks.Add(currentRegionBlock);
+			foreach (RegionBlock nBlock in currentRegionBlock.surroundingRegionBlocks) {
+				if (Vector2.Distance(currentRegionBlock.averagePosition,cameraM.cameraGO.transform.position) <= ((/*(*/cameraM.cameraComponent.orthographicSize/* * (Screen.width / Screen.height))*/ + regionBlockSize) * 1.1f)) {
+					if (!checkedBlocks.Contains(nBlock)) {
+						frontier.Add(nBlock);
+						checkedBlocks.Add(nBlock);
+					}
+				} else {
+					foreach (Tile tile in nBlock.tiles) {
+						tile.sr.color = Color.red;
+					}
+				}
+			}
+		}
+		foreach (RegionBlock regionBlock in visibleRegionBlocks) {
+			foreach (Tile tile in regionBlock.tiles) {
+				tile.sr.color = Color.black;
+			}
+		}
+	}
+
+	public void SetTileBrightness(float time) {
+		Color newColour = GetTileColourAtHour(time);
 		foreach (Tile tile in tiles) {
-			tile.sr.color = newColour;
-			if (tile.plant != null) {
-				tile.plant.obj.GetComponent<SpriteRenderer>().color = newColour;
-			}
-			foreach (ResourceManager.TileObjectInstance objectInstance in tile.GetAllObjectInstances()) {
-				objectInstance.obj.GetComponent<SpriteRenderer>().color = newColour;
-			}
+			tile.SetColour(newColour);
 		}
 		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-			colonist.obj.GetComponent<SpriteRenderer>().color = newColour;
+			colonist.obj.GetComponent<SpriteRenderer>().color = colonist.overTile.sr.color;
 		}
+	}
+
+	public Color GetTileColourAtHour(float time) {
+		float r = CalculateBrightnessLevelAtHour((time + 3) / 1.25f);
+		float g = Mathf.Pow(CalculateBrightnessLevelAtHour(0.5f * time + 6),10) / 5f;
+		float b = (-1.3f * Mathf.Pow(Mathf.Cos((CalculateBrightnessLevelAtHour(2 * time + 12)) / 1.5f),3) + 1.65f * (CalculateBrightnessLevelAtHour(time) /2f)) + 0.7f;
+		return new Color(r,g,b,1f);
+	}
+
+	public float CalculateBrightnessLevelAtHour(float time) {
+		return ((-(1f / 144f)) * Mathf.Pow(((1 + (24 - (1 - time))) % 24) - 12,2) + 1.2f);
 	}
 }

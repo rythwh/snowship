@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour {
 
-	private GameObject cameraGO;
+	public GameObject cameraGO;
 	public Camera cameraComponent;
 
 	private TileManager tileM;

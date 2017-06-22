@@ -59,10 +59,12 @@ public class TimeManager : MonoBehaviour {
 		if (timer >= 1) {
 			minute += 1;
 			timer = 0;
+			if (minute % 10 == 0) {
+				tileM.SetTileBrightness(hour + (minute / 60f));
+			}
 			if (minute >= 60) {
 				minute = 1;
 				hour += 1;
-				SetTileBrightnessAtHour(hour);
 				if (hour >= 24) {
 					day += 1;
 					hour = 0;
@@ -86,7 +88,7 @@ public class TimeManager : MonoBehaviour {
 		return Mathf.FloorToInt(1 + (12 - (1 - hour)) % 12);
 	}
 
-	public void SetTileBrightnessAtHour(int hour) {
-		tileM.SetTileBrightness((-(1f / 144f)) * Mathf.Pow((hour - 12),2) + 1);
+	public int GetHour() {
+		return hour;
 	}
 }
