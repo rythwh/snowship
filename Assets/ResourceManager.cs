@@ -305,16 +305,22 @@ public class ResourceManager : MonoBehaviour {
 	public void AddTileObjectInstance(TileObjectInstance tileObjectInstance) {
 		if (tileObjectInstances.ContainsKey(tileObjectInstance.prefab)) {
 			tileObjectInstances[tileObjectInstance.prefab].Add(tileObjectInstance);
+			uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Update,tileObjectInstance.prefab);
 		} else {
 			tileObjectInstances.Add(tileObjectInstance.prefab,new List<TileObjectInstance>() { tileObjectInstance });
+			uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Add,tileObjectInstance.prefab);
 		}
 	}
 
 	public void RemoveTileObjectInstance(TileObjectInstance tileObjectInstance) {
 		if (tileObjectInstances.ContainsKey(tileObjectInstance.prefab)) {
 			tileObjectInstances[tileObjectInstance.prefab].Remove(tileObjectInstance);
+			uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Remove,tileObjectInstance.prefab);
 		} else {
 			print("Tried removing a tile object instance which isn't in the list...");
+		}
+		if (tileObjectInstances[tileObjectInstance.prefab].Count <= 0) {
+			tileObjectInstances.Remove(tileObjectInstance.prefab);
 		}
 	}
 

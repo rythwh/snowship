@@ -636,7 +636,8 @@ public class TileManager:MonoBehaviour {
 		SetMapInformation(mapSize,mapSeed);
 
 		cameraM.SetCameraPosition(new Vector2(mapSize / 2f,mapSize / 2f));
-		cameraM.SetCameraZoom((mapSize / 2f) + 2);
+		cameraM.SetCameraZoom(20);
+		//cameraM.SetCameraZoom((mapSize / 2f) + 2);
 
 		resourceM.CreateResources();
 		resourceM.CreateTileObjectPrefabs();
@@ -656,7 +657,7 @@ public class TileManager:MonoBehaviour {
 		uiM.InitializeProfessionsList();
 	}
 
-	private bool debugMode;
+	public bool debugMode;
 	private int viewRiverAtIndex = 0;
 
 	void Update() {

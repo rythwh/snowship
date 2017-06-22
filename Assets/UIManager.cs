@@ -51,6 +51,9 @@ public class UIManager : MonoBehaviour {
 	private GameObject professionMenuButton;
 	private GameObject professionsList;
 
+	private GameObject objectsMenuButton;
+	private GameObject objectPrefabsList;
+
 	private GameObject cancelButton;
 
 	void Awake() {
@@ -90,6 +93,13 @@ public class UIManager : MonoBehaviour {
 		professionMenuButton = GameObject.Find("ProfessionsMenu-Button");
 		professionsList = professionMenuButton.transform.Find("ProfessionsList-Panel").gameObject;
 		professionMenuButton.GetComponent<Button>().onClick.AddListener(delegate { SetProfessionsList(); });
+
+		objectsMenuButton = GameObject.Find("ObjectsMenu-Button");
+		objectPrefabsList = objectsMenuButton.transform.Find("ObjectPrefabsList-ScrollPanel").gameObject;
+		objectsMenuButton.GetComponent<Button>().onClick.AddListener(delegate {
+			ToggleObjectPrefabsList();
+		});
+		objectPrefabsList.SetActive(false);
 
 		cancelButton = GameObject.Find("Cancel-Button");
 		cancelButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Cancel)); });
@@ -800,6 +810,15 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
+	public void DisableAdminPanels(GameObject parentObj) {
+		if (professionsList.activeSelf && parentObj != professionsList) {
+			SetProfessionsList();
+		}
+		if (objectPrefabsList.activeSelf && parentObj != objectPrefabsList) {
+			ToggleObjectPrefabsList();
+		}
+	}
+
 	public class ProfessionElement {
 		public ColonistManager.Profession profession;
 		public GameObject obj;
@@ -966,6 +985,7 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void SetProfessionsList() {
+		DisableAdminPanels(professionsList);
 		professionsList.SetActive(!professionsList.activeSelf);
 		foreach (ProfessionElement professionElement in professionElements) {
 			foreach (GameObject obj in professionElement.colonistsInProfessionElements) {
@@ -977,6 +997,160 @@ public class UIManager : MonoBehaviour {
 			professionElement.colonistsInProfessionListObj.SetActive(false);
 			professionElement.editColonistsInProfessionListObj.SetActive(false);
 			professionElement.obj.SetActive(professionsList.activeSelf);
+		}
+	}
+
+	public class ObjectPrefabElement {
+		public ResourceManager.TileObjectPrefab prefab;
+		public GameObject obj;
+		public GameObject objectInstancesList;
+		public List<ObjectInstanceElement> instanceElements = new List<ObjectInstanceElement>();
+
+		public ObjectPrefabElement(ResourceManager.TileObjectPrefab prefab,Transform parent,CameraManager cameraM,ResourceManager resourceM,UIManager uiM) {
+			this.prefab = prefab;
+
+			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ObjectPrefab-Button"),parent,false);
+
+			obj.transform.Find("ObjectPrefabSprite-Image").GetComponent<Image>().sprite = prefab.baseSprite;
+			obj.transform.Find("ObjectPrefabName-Text").GetComponent<Text>().text = prefab.name;
+
+			objectInstancesList = obj.transform.Find("ObjectInstancesList-ScrollPanel").gameObject;
+			obj.GetComponent<Button>().onClick.AddListener(delegate {
+				objectInstancesList.SetActive(!objectInstancesList.activeSelf);
+				if (objectInstancesList.activeSelf) {
+					objectInstancesList.transform.SetParent(GameObject.Find("Canvas").transform);
+					foreach (ObjectPrefabElement objectPrefabElement in uiM.objectPrefabElements) {
+						if (objectPrefabElement != this) {
+							objectPrefabElement.objectInstancesList.SetActive(false);
+						}
+					}
+				} else {
+					objectInstancesList.transform.SetParent(obj.transform);
+				}
+			});
+
+			AddObjectInstancesList(true,cameraM,resourceM,uiM);
+
+			Update();
+		}
+
+		public void AddObjectInstancesList(bool newList, CameraManager cameraM,ResourceManager resourceM,UIManager uiM) {
+			RemoveObjectInstances();
+			bool objectInstancesListState = objectInstancesList.activeSelf;
+			if (newList) {
+				objectInstancesListState = false;
+			}
+			objectInstancesList.SetActive(true);
+			foreach (ResourceManager.TileObjectInstance instance in resourceM.GetTileObjectInstanceList(prefab)) {
+				instanceElements.Add(new ObjectInstanceElement(instance,objectInstancesList.transform.Find("ObjectInstancesList-Panel"),cameraM,resourceM,uiM));
+			}
+			objectInstancesList.SetActive(objectInstancesListState);
+			Update();
+		}
+
+		public void Remove() {
+			RemoveObjectInstances();
+			Destroy(obj);
+		}
+
+		public void RemoveObjectInstances() {
+			foreach (ObjectInstanceElement instance in instanceElements) {
+				Destroy(instance.obj);
+			}
+			instanceElements.Clear();
+		}
+
+		public void Update() {
+			obj.transform.Find("ObjectPrefabAmount-Text").GetComponent<Text>().text = instanceElements.Count.ToString();
+		}
+	}
+
+	public class ObjectInstanceElement {
+		public ResourceManager.TileObjectInstance instance;
+		public GameObject obj;
+
+		public ObjectInstanceElement(ResourceManager.TileObjectInstance instance, Transform parent, CameraManager cameraM, ResourceManager resourceM, UIManager uiM) {
+			this.instance = instance;
+
+			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ObjectInstance-Button"),parent,false);
+
+			obj.transform.Find("ObjectInstanceSprite-Image").GetComponent<Image>().sprite = instance.obj.GetComponent<SpriteRenderer>().sprite;
+			obj.transform.Find("ObjectInstanceName-Text").GetComponent<Text>().text = instance.prefab.name;
+			obj.transform.Find("TilePosition-Text").GetComponent<Text>().text = "(" + Mathf.FloorToInt(instance.tile.obj.transform.position.x) + ", " + Mathf.FloorToInt(instance.tile.obj.transform.position.y) + ")"; ;
+
+			obj.GetComponent<Button>().onClick.AddListener(delegate {
+				cameraM.SetCameraPosition(instance.obj.transform.position);
+				cameraM.SetCameraZoom(5);
+			});
+
+			ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject == instance);
+			if (container != null) {
+				obj.GetComponent<Button>().onClick.AddListener(delegate {
+					uiM.selectedContainer = container;
+					uiM.SetSelectedContainerInfo();
+				});
+			}
+		}
+	}
+
+	public List<ObjectPrefabElement> objectPrefabElements = new List<ObjectPrefabElement>();
+
+	public void ToggleObjectPrefabsList() {
+		DisableAdminPanels(objectPrefabsList);
+		objectPrefabsList.SetActive(!objectPrefabsList.activeSelf);
+		foreach (ObjectPrefabElement objectPrefabElement in objectPrefabElements) {
+			objectPrefabElement.objectInstancesList.transform.SetParent(objectPrefabElement.obj.transform);
+			objectPrefabElement.objectInstancesList.SetActive(false);
+		}
+		if (objectPrefabElements.Count <= 0) {
+			objectPrefabsList.SetActive(false);
+		}
+	}
+
+	public enum ChangeTypesEnum { Add, Update, Remove };
+
+	public void ChangeObjectPrefabElements(ChangeTypesEnum changeType,ResourceManager.TileObjectPrefab prefab) {
+		if (prefab.tileObjectPrefabSubGroup.type == ResourceManager.TileObjectPrefabSubGroupsEnum.None || prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type == ResourceManager.TileObjectPrefabGroupsEnum.Command) {
+			return;
+		}
+		switch (changeType) {
+			case ChangeTypesEnum.Add:
+				AddObjectPrefabElement(prefab);
+				break;
+			case ChangeTypesEnum.Update:
+				UpdateObjectPrefabElement(prefab);
+				break;
+			case ChangeTypesEnum.Remove:
+				RemoveObjectPrefabElement(prefab);
+				break;
+		}
+	}
+
+	private void AddObjectPrefabElement(ResourceManager.TileObjectPrefab prefab) {
+		ObjectPrefabElement objectPrefabElement = objectPrefabElements.Find(element => element.prefab == prefab);
+		if (objectPrefabElement == null) {
+			objectPrefabElements.Add(new ObjectPrefabElement(prefab,objectPrefabsList.transform.Find("ObjectPrefabsList-Panel"),cameraM,resourceM,this));
+		} else {
+			UpdateObjectPrefabElement(prefab);
+		}
+	}
+
+	private void UpdateObjectPrefabElement(ResourceManager.TileObjectPrefab prefab) {
+		ObjectPrefabElement objectPrefabElement = objectPrefabElements.Find(element => element.prefab == prefab);
+		if (objectPrefabElement != null) {
+			objectPrefabElement.AddObjectInstancesList(false,cameraM,resourceM,this);
+		}
+	}
+
+	private void RemoveObjectPrefabElement(ResourceManager.TileObjectPrefab prefab) {
+		ObjectPrefabElement objectPrefabElement = objectPrefabElements.Find(element => element.prefab == prefab);
+		if (objectPrefabElement != null) {
+			objectPrefabElement.Remove();
+			objectPrefabElements.Remove(objectPrefabElement);
+		}
+		if (objectPrefabElements.Count <= 0) {
+			objectPrefabsList.SetActive(true);
+			ToggleObjectPrefabsList();
 		}
 	}
 }
