@@ -60,7 +60,7 @@ public class TimeManager : MonoBehaviour {
 			minute += 1;
 			timer = 0;
 			if (minute % 10 == 0) {
-				tileM.SetTileBrightness(hour + (minute / 60f));
+				tileM.SetTileBrightness(GetTileBrightnessTime());
 			}
 			if (minute >= 60) {
 				minute = 1;
@@ -90,5 +90,9 @@ public class TimeManager : MonoBehaviour {
 
 	public int GetHour() {
 		return hour;
+	}
+
+	public float GetTileBrightnessTime() {
+		return hour + (minute / 60f);
 	}
 }
