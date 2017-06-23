@@ -326,6 +326,7 @@ public class TileManager:MonoBehaviour {
 		public bool roof;
 
 		public float brightness;
+		public Dictionary<int,float> brightnessAtHour = new Dictionary<int,float>();
 
 		public Dictionary<int,ResourceManager.TileObjectInstance> objectInstances = new Dictionary<int,ResourceManager.TileObjectInstance>();
 
@@ -341,7 +342,7 @@ public class TileManager:MonoBehaviour {
 
 			SetTileHeight(height);
 
-			SetBrightness(1f);
+			SetBrightness(1f,12);
 		}
 
 		public void SetTileHeight(float height) {
@@ -481,11 +482,11 @@ public class TileManager:MonoBehaviour {
 		}
 
 		public void SetTileTypeBasedOnHeight() {
-			if (height < 0.40f) {
+			if (height < tileM.mapData.terrainTypeHeights[TileTypes.GrassWater]) {
 				SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater),false,false,false,false);
-			} else if (height > 0.75f) {
+			} else if (height > tileM.mapData.terrainTypeHeights[TileTypes.Stone]) {
 				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Stone),false,false,false,false);
-				if (height >= 0.80f) {
+				if (height >= tileM.mapData.terrainTypeHeights[TileTypes.GrassWater] + 0.05f) {
 					roof = true;
 				}
 			} else {
@@ -634,8 +635,8 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 
-		public void SetColour(Color newColour) {
-			sr.color = newColour * brightness;
+		public void SetColour(Color newColour, int hour) {
+			sr.color = newColour * (brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f);
 			if (plant != null) {
 				plant.obj.GetComponent<SpriteRenderer>().color = sr.color;
 			}
@@ -644,20 +645,19 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 
-		public void SetBrightness(float newBrightness) {
+		public void SetBrightness(float newBrightness, int hour) {
 			brightness = newBrightness;
-			SetColour(sr.color);
+			SetColour(sr.color, hour);
 		}
 	}
 
 	public bool generated;
 
-	public void Initialize(int mapSize,int mapSeed) {
-		SetMapInformation(mapSize,mapSeed);
+	public void Initialize(MapData mapData) {
+		SetMapInformation(mapData);
 
-		cameraM.SetCameraPosition(new Vector2(mapSize / 2f,mapSize / 2f));
+		cameraM.SetCameraPosition(new Vector2(mapData.mapSize / 2f,mapData.mapSize / 2f));
 		cameraM.SetCameraZoom(20);
-		//cameraM.SetCameraZoom((mapSize / 2f) + 2);
 
 		resourceM.CreateResources();
 		resourceM.CreateTileObjectPrefabs();
@@ -799,10 +799,10 @@ public class TileManager:MonoBehaviour {
 				}
 				*/
 			}
-			Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
+			//Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 			if (Input.GetMouseButtonDown(0)) {
-				Tile tile = GetTileFromPosition(mousePosition);
-				print(tile.walkSpeed);
+				//Tile tile = GetTileFromPosition(mousePosition);
+				//print(tile.walkSpeed);
 				/*
 				ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == tile);
 				if (container != null) {
@@ -810,6 +810,7 @@ public class TileManager:MonoBehaviour {
 				}
 				*/
 				/*pathM.RegionBlockDistance(GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,tile.regionBlock,true,true);*/
+				/*
 				Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 				foreach (Tile rTile in tile.squareRegionBlock.tiles) {
 					rTile.sr.sprite = whiteSquare;
@@ -827,6 +828,7 @@ public class TileManager:MonoBehaviour {
 					GetTileFromPosition(nRegionBlock.averagePosition).sr.sprite = whiteSquare;
 					GetTileFromPosition(nRegionBlock.averagePosition).sr.color = Color.white;
 				}
+				*/
 				/*
 				tile.SetTileType(GetTileTypeByEnum(TileTypes.Stone),true,true,true,true);
 				RecalculateRegionsAtTile(tile);
@@ -846,15 +848,36 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
-	public int mapSize;
+	public class MapData {
+		public int mapSeed;
+		public int mapSize;
 
-	public void SetMapInformation(int mapSize, int mapSeed) {
-		this.mapSize = mapSize;
-		if (mapSeed < 0) {
-			mapSeed = Random.Range(0,int.MaxValue);
+		public float equatorOffset;
+		public float averageTemperature;
+		public Dictionary<TileTypes,float> terrainTypeHeights;
+		public bool coast;
+
+		public MapData(int mapSeed, int mapSize, float equatorOffset, float averageTemperature, Dictionary<TileTypes,float> terrainTypeHeights, bool coast) {
+
+			if (mapSeed < 0) {
+				mapSeed = Random.Range(0,int.MaxValue);
+			}
+			Random.InitState(mapSeed);
+			this.mapSeed = mapSeed;
+			print("Map Seed: " + mapSeed);
+
+			this.mapSize = mapSize;
+
+			this.equatorOffset = equatorOffset;
+			this.averageTemperature = averageTemperature;
+			this.terrainTypeHeights = terrainTypeHeights;
+			this.coast = coast;
 		}
-		Random.InitState(mapSeed);
-		print("Map Seed: " + mapSeed);
+	}
+
+	public MapData mapData;
+	public void SetMapInformation(MapData mapData) {
+		this.mapData = mapData;
 	}
 
 	void CreateMap() {
@@ -862,8 +885,8 @@ public class TileManager:MonoBehaviour {
 
 		SetTileRegions(true);
 
-		ReduceNoise(Mathf.RoundToInt(mapSize / 5f),new List<TileTypes>() { TileTypes.GrassWater,TileTypes.Stone,TileTypes.Grass });
-		ReduceNoise(Mathf.RoundToInt(mapSize / 2f),new List<TileTypes>() { TileTypes.GrassWater });
+		ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f),new List<TileTypes>() { TileTypes.GrassWater,TileTypes.Stone,TileTypes.Grass });
+		ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f),new List<TileTypes>() { TileTypes.GrassWater });
 
 		CalculatePrecipitation();
 		CalculateTemperature();
@@ -880,13 +903,13 @@ public class TileManager:MonoBehaviour {
 		Bitmasking(tiles);
 
 		DetermineShadowTiles();
-		SetTileBrightness(6);
+		SetTileBrightness(12);
 	}
 
 	void CreateTiles() {
-		for (int y = 0;y < mapSize;y++) {
+		for (int y = 0;y < mapData.mapSize;y++) {
 			List<Tile> innerTiles = new List<Tile>();
-			for (int x = 0;x < mapSize;x++) {
+			for (int x = 0;x < mapData.mapSize;x++) {
 
 				float height = Random.Range(0f,1f);
 
@@ -906,15 +929,15 @@ public class TileManager:MonoBehaviour {
 	}
 
 	void SetSurroundingTiles() {
-		for (int y = 0;y < mapSize;y++) {
-			for (int x = 0;x < mapSize;x++) {
+		for (int y = 0;y < mapData.mapSize;y++) {
+			for (int x = 0;x < mapData.mapSize;x++) {
 				/* Horizontal */
-				if (y + 1 < mapSize) {
+				if (y + 1 < mapData.mapSize) {
 					sortedTiles[y][x].horizontalSurroundingTiles.Add(sortedTiles[y + 1][x]);
 				} else {
 					sortedTiles[y][x].horizontalSurroundingTiles.Add(null);
 				}
-				if (x + 1 < mapSize) {
+				if (x + 1 < mapData.mapSize) {
 					sortedTiles[y][x].horizontalSurroundingTiles.Add(sortedTiles[y][x + 1]);
 				} else {
 					sortedTiles[y][x].horizontalSurroundingTiles.Add(null);
@@ -931,12 +954,12 @@ public class TileManager:MonoBehaviour {
 				}
 
 				/* Diagonal */
-				if (x + 1 < mapSize && y + 1 < mapSize) {
+				if (x + 1 < mapData.mapSize && y + 1 < mapData.mapSize) {
 					sortedTiles[y][x].diagonalSurroundingTiles.Add(sortedTiles[y + 1][x + 1]);
 				} else {
 					sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
 				}
-				if (y - 1 >= 0 && x + 1 < mapSize) {
+				if (y - 1 >= 0 && x + 1 < mapData.mapSize) {
 					sortedTiles[y][x].diagonalSurroundingTiles.Add(sortedTiles[y - 1][x + 1]);
 				} else {
 					sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
@@ -946,7 +969,7 @@ public class TileManager:MonoBehaviour {
 				} else {
 					sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
 				}
-				if (y + 1 < mapSize && x - 1 >= 0) {
+				if (y + 1 < mapData.mapSize && x - 1 >= 0) {
 					sortedTiles[y][x].diagonalSurroundingTiles.Add(sortedTiles[y + 1][x - 1]);
 				} else {
 					sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
@@ -959,26 +982,22 @@ public class TileManager:MonoBehaviour {
 	}
 
 	void GenerateTerrain() {
-		int lastSize = mapSize;
-		for (int halves = 0;halves < Mathf.CeilToInt(Mathf.Log(mapSize,2));halves++) {
+		int lastSize = mapData.mapSize;
+		for (int halves = 0;halves < Mathf.CeilToInt(Mathf.Log(mapData.mapSize,2));halves++) {
 			int size = Mathf.CeilToInt(lastSize / 2f);
-			for (int sectionY = 0;sectionY < mapSize;sectionY += size) {
-				for (int sectionX = 0;sectionX < mapSize;sectionX += size) {
+			for (int sectionY = 0;sectionY < mapData.mapSize;sectionY += size) {
+				for (int sectionX = 0;sectionX < mapData.mapSize;sectionX += size) {
 					float sectionAverage = 0;
-					for (int y = sectionY;(y < sectionY + size && y < mapSize);y++) {
-						for (int x = sectionX;(x < sectionX + size && x < mapSize);x++) {
+					for (int y = sectionY;(y < sectionY + size && y < mapData.mapSize);y++) {
+						for (int x = sectionX;(x < sectionX + size && x < mapData.mapSize);x++) {
 							sectionAverage += sortedTiles[y][x].height;
 						}
 					}
 					sectionAverage /= (size * size);
-					float maxDeviationSize = -(((float)(size - mapSize)) / (4 * mapSize));
+					float maxDeviationSize = -(((float)(size - mapData.mapSize)) / (4 * mapData.mapSize));
 					sectionAverage += Random.Range(-maxDeviationSize,maxDeviationSize);
-					//sectionAverage += Random.Range(-0.25f,0.25f);
-					/*if (halves < 3) {
-						print(maxDeviationSize);
-					}*/
-					for (int y = sectionY;(y < sectionY + size && y < mapSize);y++) {
-						for (int x = sectionX;(x < sectionX + size && x < mapSize);x++) {
+					for (int y = sectionY;(y < sectionY + size && y < mapData.mapSize);y++) {
+						for (int x = sectionX;(x < sectionX + size && x < mapData.mapSize);x++) {
 							sortedTiles[y][x].height = sectionAverage;
 						}
 					}
@@ -1135,14 +1154,18 @@ public class TileManager:MonoBehaviour {
 	private int regionBlockSize = 10;
 	private List<RegionBlock> squareRegionBlocks = new List<RegionBlock>();
 	void CreateRegionBlocks() {
+
+		regionBlocks.Clear();
+		squareRegionBlocks.Clear();
+
 		int size = regionBlockSize;
 		int regionIndex = 0;
-		for (int sectionY = 0; sectionY < mapSize; sectionY += size) {
-			for (int sectionX = 0; sectionX < mapSize; sectionX += size) {
+		for (int sectionY = 0; sectionY < mapData.mapSize; sectionY += size) {
+			for (int sectionX = 0; sectionX < mapData.mapSize; sectionX += size) {
 				RegionBlock regionBlock = new RegionBlock(GetTileTypeByEnum(TileTypes.Grass),regionIndex);
 				RegionBlock squareRegionBlock = new RegionBlock(GetTileTypeByEnum(TileTypes.Grass),regionIndex);
-				for (int y = sectionY; (y < sectionY + size && y < mapSize); y++) {
-					for (int x = sectionX; (x < sectionX + size && x < mapSize); x++) {
+				for (int y = sectionY; (y < sectionY + size && y < mapData.mapSize); y++) {
+					for (int x = sectionX; (x < sectionX + size && x < mapData.mapSize); x++) {
 						regionBlock.tiles.Add(sortedTiles[y][x]);
 						squareRegionBlock.tiles.Add(sortedTiles[y][x]);
 						sortedTiles[y][x].squareRegionBlock = squareRegionBlock;
@@ -1315,7 +1338,7 @@ public class TileManager:MonoBehaviour {
 					if (!removeTiles.Contains(startTile)) {
 						foreach (Tile endTile in horizontalGroups) {
 							if (!removeTiles.Contains(endTile) && startTile != endTile) {
-								if (pathM.PathExists(startTile,endTile,true,mapSize,PathManager.WalkableSetting.Walkable,PathManager.DirectionSetting.Horizontal)) {
+								if (pathM.PathExists(startTile,endTile,true,mapData.mapSize,PathManager.WalkableSetting.Walkable,PathManager.DirectionSetting.Horizontal)) {
 									removeTiles.Add(endTile);
 								}
 							}
@@ -1369,8 +1392,8 @@ public class TileManager:MonoBehaviour {
 				bool yStartAtTop = (windDirection == 2);
 				bool xStartAtRight = (windDirection == 3);
 
-				for (int y = (yStartAtTop ? mapSize - 1 : 0);(yStartAtTop ? y >= 0 : y < mapSize);y += (yStartAtTop ? -1 : 1)) {
-					for (int x = (xStartAtRight ? mapSize - 1 : 0);(xStartAtRight ? x >= 0 : x < mapSize);x += (xStartAtRight ? -1 : 1)) {
+				for (int y = (yStartAtTop ? mapData.mapSize - 1 : 0);(yStartAtTop ? y >= 0 : y < mapData.mapSize);y += (yStartAtTop ? -1 : 1)) {
+					for (int x = (xStartAtRight ? mapData.mapSize - 1 : 0);(xStartAtRight ? x >= 0 : x < mapData.mapSize);x += (xStartAtRight ? -1 : 1)) {
 						Tile tile = sortedTiles[y][x];
 						Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
 						if (previousTile != null) {
@@ -1385,10 +1408,10 @@ public class TileManager:MonoBehaviour {
 					}
 				}
 			} else { // Wind is going diagonally
-				for (int k = 0; k < mapSize * 2; k++) {
+				for (int k = 0; k < mapData.mapSize * 2; k++) {
 					for (int x = 0; x <= k; x++) {
 						int y = k - x;
-						if (y < mapSize && x < mapSize) {
+						if (y < mapData.mapSize && x < mapData.mapSize) {
 							Tile tile = sortedTiles[y][x];
 							Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
 							if (previousTile != null) {
@@ -1459,7 +1482,7 @@ public class TileManager:MonoBehaviour {
 	}
 
 	float TemperatureFunction(float yPos,float temperatureOffset) {
-		return ((-2 * Mathf.Abs((yPos - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureOffset / 50f)))) + temperatureOffset);
+		return ((-2 * Mathf.Abs((yPos - (mapData.mapSize / 2f)) / ((mapData.mapSize / 100f) / (temperatureOffset / 50f)))) + temperatureOffset);
 	}
 
 	void CalculateTemperature() {
@@ -1514,16 +1537,16 @@ public class TileManager:MonoBehaviour {
 	}
 
 	void SetMapEdgeTiles() {
-		for (int i = 1;i < mapSize-1;i++) {
+		for (int i = 1;i < mapData.mapSize -1;i++) {
 			edgeTiles.Add(sortedTiles[0][i]);
-			edgeTiles.Add(sortedTiles[mapSize - 1][i]);
+			edgeTiles.Add(sortedTiles[mapData.mapSize - 1][i]);
 			edgeTiles.Add(sortedTiles[i][0]);
-			edgeTiles.Add(sortedTiles[i][mapSize - 1]);
+			edgeTiles.Add(sortedTiles[i][mapData.mapSize - 1]);
 		}
 		edgeTiles.Add(sortedTiles[0][0]);
-		edgeTiles.Add(sortedTiles[0][mapSize-1]);
-		edgeTiles.Add(sortedTiles[mapSize-1][0]);
-		edgeTiles.Add(sortedTiles[mapSize-1][mapSize-1]);
+		edgeTiles.Add(sortedTiles[0][mapData.mapSize -1]);
+		edgeTiles.Add(sortedTiles[mapData.mapSize -1][0]);
+		edgeTiles.Add(sortedTiles[mapData.mapSize -1][mapData.mapSize -1]);
 	}
 
 	public List<List<Tile>> rivers = new List<List<Tile>>();
@@ -1578,7 +1601,7 @@ public class TileManager:MonoBehaviour {
 				}
 			}
 		}
-		for (int i = 0;i < mapSize / 10f && i < riverStartTiles.Count;i++) {
+		for (int i = 0;i < mapData.mapSize / 10f && i < riverStartTiles.Count;i++) {
 			Tile riverStartTile = Enumerable.ToList(riverStartTiles.Keys)[Random.Range(0,riverStartTiles.Count)];
 			Tile riverEndTile = riverStartTiles[riverStartTile];
 			List<Tile> removeTiles = new List<Tile>();
@@ -1660,7 +1683,7 @@ public class TileManager:MonoBehaviour {
 							nTile.SetTileType(nTile.biome.waterType,false,false,false,true);
 							break;
 						}
-						float cost = Vector2.Distance(nTile.obj.transform.position,riverEndTile.obj.transform.position) + (nTile.height * (mapSize/10f)) + Random.Range(0,10);
+						float cost = Vector2.Distance(nTile.obj.transform.position,riverEndTile.obj.transform.position) + (nTile.height * (mapData.mapSize /10f)) + Random.Range(0,10);
 						PathManager.PathfindingTile pTile = new PathManager.PathfindingTile(nTile,currentTile,cost);
 						frontier.Add(pTile);
 						checkedTiles.Add(pTile);
@@ -1793,7 +1816,7 @@ public class TileManager:MonoBehaviour {
 	}
 
 	public Tile GetTileFromPosition(Vector2 position) {
-		position = new Vector2(Mathf.Clamp(position.x,0,mapSize - 1),Mathf.Clamp(position.y,0,mapSize - 1));
+		position = new Vector2(Mathf.Clamp(position.x,0,mapData.mapSize - 1),Mathf.Clamp(position.y,0,mapData.mapSize - 1));
 		return sortedTiles[Mathf.FloorToInt(position.y)][Mathf.FloorToInt(position.x)];
 	}
 
@@ -1835,7 +1858,7 @@ public class TileManager:MonoBehaviour {
 		Color newColour = GetTileColourAtHour(time);
 		foreach (RegionBlock visibleRegionBlock in visibleRegionBlocks) {
 			foreach (Tile tile in visibleRegionBlock.tiles) {
-				tile.SetColour(newColour);
+				tile.SetColour(newColour,Mathf.FloorToInt(time));
 			}
 		}
 		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
@@ -1862,8 +1885,58 @@ public class TileManager:MonoBehaviour {
 				shadowStartTiles.Add(tile);
 			}
 		}
-		foreach (Tile tile in shadowStartTiles) {
-			tile.SetColour(Color.red);
+		List<Vector2> hourDirections = new List<Vector2>();
+		for (int h = 0;h < 24;h++) {
+			float hShadow = -Mathf.Abs(mapData.equatorOffset) * (-(h / 12f) + 1);
+			float vShadow = -(mapData.equatorOffset / 144f) * Mathf.Pow(h - 12,2) + mapData.equatorOffset;
+			Vector2 hourDirection = new Vector2(hShadow,vShadow);
+			hourDirections.Add(hourDirection);
+
+			foreach (Tile tile in shadowStartTiles) {
+
+				Vector2 tilePosition = tile.obj.transform.position;
+
+				float oppositeTileMaxHeight = 0;
+				float oppositeDistance = 0;
+				Tile oppositeTile = tile;
+				int counter = 0;
+				while (oppositeTile != null && !oppositeTile.walkable) {
+					if (oppositeTile.height >= oppositeTileMaxHeight) {
+						oppositeTileMaxHeight = oppositeTile.height;
+					}
+					oppositeDistance += 0.25f;
+					oppositeTile = GetTileFromPosition(tilePosition + ((-hourDirection.normalized) * oppositeDistance));
+					counter++;
+					if (counter > 200) {
+						print("Broke");
+						break;
+					}
+				}
+				float heightModifer = (1 + (oppositeTileMaxHeight - mapData.terrainTypeHeights[TileTypes.Stone]));
+
+				float maxDistance = hourDirection.magnitude * heightModifer * 5f;
+
+				float distance = 0;
+				List<Tile> shadowTiles = new List<Tile>();
+				while (distance <= maxDistance) {
+					Tile shadowTile = GetTileFromPosition(tilePosition + (hourDirection.normalized * distance));
+					if (shadowTiles.Contains(shadowTile)) {
+						distance += 0.25f;
+						continue;
+					}
+					if (shadowTile.walkable && shadowTile != tile) {
+						//float newBrightness = Mathf.Clamp(((1 - ((maxDistance - distance) / maxDistance)) + 0.25f),0,1);// + ((1 - (CalculateBrightnessLevelAtHour(h) - 0.2f)) + 0.4f),0,1);
+						float newBrightness = Mathf.Clamp(1 - (0.6f * CalculateBrightnessLevelAtHour(h)) + 0.35f,0,1);
+						if (shadowTile.brightnessAtHour.ContainsKey(h)) {
+							shadowTile.brightnessAtHour[h] = (shadowTile.brightnessAtHour[h] + newBrightness) / 2f;
+						} else {
+							shadowTile.brightnessAtHour.Add(h,newBrightness);
+						}
+						shadowTiles.Add(shadowTile);
+					}
+					distance += 0.25f;
+				}
+			}
 		}
 	}
 }

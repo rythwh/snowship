@@ -501,7 +501,7 @@ public class ColonistManager : MonoBehaviour {
 			humanMoveSprites.Add(innerHumanMoveSprites);
 		}
 
-		int mapSize = tileM.mapSize;
+		int mapSize = tileM.mapData.mapSize;
 		for (int i = 0;i < amount;i++) {
 
 			Dictionary<ColonistLook,int> colonistLookIndexes = new Dictionary<ColonistLook,int>() {
