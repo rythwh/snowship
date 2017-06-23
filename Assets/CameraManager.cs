@@ -28,8 +28,10 @@ public class CameraManager : MonoBehaviour {
 
 	void Update() {
 
-		cameraGO.transform.Translate(new Vector2(Input.GetAxis("Horizontal"),Input.GetAxis("Vertical")) * cameraComponent.orthographicSize * Time.deltaTime);
-		cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x,0,tileM.mapSize),Mathf.Clamp(cameraGO.transform.position.y,0,tileM.mapSize));
+		if (tileM.generated) {
+			cameraGO.transform.Translate(new Vector2(Input.GetAxis("Horizontal"),Input.GetAxis("Vertical")) * cameraComponent.orthographicSize * Time.deltaTime);
+			cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x,0,tileM.mapData.mapSize),Mathf.Clamp(cameraGO.transform.position.y,0,tileM.mapData.mapSize));
+		}
 
 		if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
 			cameraComponent.orthographicSize -= Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") + (Input.GetAxis("KeyboardZoom") / 10f),-1f,1f) * cameraComponent.orthographicSize * Time.deltaTime * 100;

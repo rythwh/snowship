@@ -20,7 +20,7 @@ public class TimeManager : MonoBehaviour {
 	private float timer = 0;
 
 	private int minute = 0;
-	private int hour = 6;
+	private int hour = 12;
 	private int day = 1;
 	private int month = 1;
 	private int year = 1;
@@ -55,7 +55,7 @@ public class TimeManager : MonoBehaviour {
 		}
 		deltaTime = Time.deltaTime * timeModifier;
 
-		timer += 1f * deltaTime;
+		timer += 60f * deltaTime;
 		if (timer >= 1) {
 			minute += 1;
 			timer = 0;
@@ -93,6 +93,6 @@ public class TimeManager : MonoBehaviour {
 	}
 
 	public float GetTileBrightnessTime() {
-		return hour + (minute / 60f);
+		return (float)System.Math.Round(hour + (minute / 60f),2);
 	}
 }
