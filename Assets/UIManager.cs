@@ -73,8 +73,6 @@ public class UIManager : MonoBehaviour {
 
 		mainMenu = GameObject.Find("MainMenu");
 
-		GeneratePlanet();
-
 		tileInformation = GameObject.Find("TileInformation-Panel");
 
 		colonistListToggleButton = GameObject.Find("ColonistListToggle-Button");
@@ -110,6 +108,11 @@ public class UIManager : MonoBehaviour {
 
 		InitializeTileInformation();
 		InitializeSelectedContainerIndicator();
+	}
+
+	void Start() {
+		tileM.PreInitialize();
+		GeneratePlanet();
 	}
 
 	public ResourceManager.Container selectedContainer;
@@ -163,10 +166,27 @@ public class UIManager : MonoBehaviour {
 	public PlanetTile selectedPlanetTile;
 
 	public List<PlanetTile> planetTiles = new List<PlanetTile>();
+	public List<List<PlanetTile>> sortedPlanetTiles = new List<List<PlanetTile>>();
 
-	public class PlanetTile : TileManager.Tile {
+	public class PlanetTile {
+
+		private TileManager tileM;
+		private UIManager uiM;
+
+		void GetScriptReferences() {
+			GameObject GM = GameObject.Find("GM");
+
+			tileM = GM.GetComponent<TileManager>();
+			uiM = GM.GetComponent<UIManager>();
+		}
+
+		public TileManager.Tile tile;
+		public GameObject obj;
 
 		public Image image;
+
+		public Vector2 position;
+		public float height;
 
 		public TileManager.MapData data;
 		private int planetSize;
@@ -176,34 +196,49 @@ public class UIManager : MonoBehaviour {
 		public Dictionary<TileManager.TileTypes,float> terrainTypeHeights;
 		public bool coast;
 
-		public PlanetTile(Transform parent,Vector2 position,int planetSize,TileManager tileM,UIManager uiM) : base(position,0,tileM,false) {
+		public PlanetTile(TileManager.Tile tile, Transform parent,Vector2 position,int planetSize) {
+
+			GetScriptReferences();
+
+			this.tile = tile;
+
+			this.position = position;
+
+			this.planetSize = planetSize;
+
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/PlanetTile"),parent,false);
 			image = obj.GetComponent<Image>();
+			image.sprite = tile.obj.GetComponent<SpriteRenderer>().sprite;
 
 			obj.GetComponent<Button>().onClick.AddListener(delegate { uiM.selectedPlanetTile = this; });
 
 			SetMapData();
+
+			Destroy(tile.obj);
 		}
 
 		public void SetMapData() {
 			equatorOffset = ((position.y - (planetSize / 2f)) * 2) / planetSize;
-			averageTemperature = (equatorOffset * 50) + 45;
-			terrainTypeHeights = new Dictionary<TileManager.TileTypes,float>() {
-				{ TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f }
-			};
-			coast = false;
-		}
+			averageTemperature = tile.temperature;
 
-		public void SetTileTypeBasedOnHeight(float height) {
-			this.height = height;
-			if (height < 0.40f) {
-				image.color = new Color(52f,152f,219f,255f) / 255f;
-			} else if (height > 0.75f) {
-				image.color = new Color(128f,120f,112f,255f) / 255f;
-			} else {
-				image.color = new Color(46f,204f,113f,255f) / 255f;
+			coast = false;
+			if (!tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
+				foreach (TileManager.Tile nTile in tile.horizontalSurroundingTiles) {
+					if (nTile != null && tileM.GetWaterEquivalentTileTypes().Contains(nTile.tileType.type)) {
+						coast = true;
+					}
+				}
 			}
-			image.color *= (equatorOffset + 1) / 2f;
+
+			float waterThreshold = 0;
+			if (coast) {
+				waterThreshold = 0.5f;
+			}
+			waterThreshold += tile.precipitation * 0.5f;
+
+			terrainTypeHeights = new Dictionary<TileManager.TileTypes,float>() {
+				{ TileManager.TileTypes.GrassWater,0.40f},{ TileManager.TileTypes.Stone,0.75f }
+			};
 		}
 	}
 
@@ -211,20 +246,20 @@ public class UIManager : MonoBehaviour {
 
 		GameObject planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
 
-		int planetTileSize = 10;
+		int planetTileSize = 8;
 
 		int planetSeed = UnityEngine.Random.Range(0,int.MaxValue);
 		print("Planet Seed: " + planetSeed);
 		int planetSize = Mathf.FloorToInt(Mathf.FloorToInt(planetPreviewPanel.GetComponent<RectTransform>().sizeDelta.x) / planetTileSize);
 		print("Planet Size: " + planetSize);
 
-		for (int y = 0;y < planetSize;y++) {
-			for (int x = 0;x < planetSize;x++) {
-				planetTiles.Add(new PlanetTile(planetPreviewPanel.transform,new Vector2(x,y),planetSize,tileM,this));
-			}
-		}
-		foreach (PlanetTile planetTile in planetTiles) {
-			planetTile.SetTileTypeBasedOnHeight(UnityEngine.Random.Range(0f,1f));
+		planetPreviewPanel.GetComponent<GridLayoutGroup>().cellSize = new Vector2(planetTileSize,planetTileSize);
+		planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
+
+		tileM.SetMapInformation(new TileManager.MapData(planetSeed,planetSize,0,true,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,false));
+		tileM.CreateMap(false);
+		foreach (TileManager.Tile tile in tileM.tiles) {
+			planetTiles.Add(new PlanetTile(tile,planetPreviewPanel.transform,tile.position,planetSize));
 		}
 	}
 
@@ -243,7 +278,7 @@ public class UIManager : MonoBehaviour {
 			}
 		}
 
-		tileM.Initialize(new TileManager.MapData(mapSeed,mapSize,selectedPlanetTile.equatorOffset,selectedPlanetTile.averageTemperature,selectedPlanetTile.terrainTypeHeights,selectedPlanetTile.coast));
+		tileM.Initialize(new TileManager.MapData(mapSeed,mapSize,selectedPlanetTile.equatorOffset,false,selectedPlanetTile.averageTemperature,selectedPlanetTile.terrainTypeHeights,selectedPlanetTile.coast,false));
 		mainMenu.SetActive(false);
 	}
 

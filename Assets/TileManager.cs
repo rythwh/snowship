@@ -656,30 +656,6 @@ public class TileManager:MonoBehaviour {
 
 	public bool generated;
 
-	public void Initialize(MapData mapData) {
-		SetMapInformation(mapData);
-
-		cameraM.SetCameraPosition(new Vector2(mapData.mapSize / 2f,mapData.mapSize / 2f));
-		cameraM.SetCameraZoom(20);
-
-		resourceM.CreateResources();
-		resourceM.CreateTileObjectPrefabs();
-
-		CreatePlantGroups();
-		CreateTileTypes();
-		CreateBiomes();
-		CreateMap();
-
-		colonistM.SpawnColonists(3);
-
-		generated = true;
-
-		uiM.SetSelectedColonistInformation();
-		uiM.SetSelectedContainerInfo();
-		uiM.SetJobElements();
-		uiM.InitializeProfessionsList();
-	}
-
 	public bool debugMode;
 	private int viewRiverAtIndex = 0;
 
@@ -860,11 +836,14 @@ public class TileManager:MonoBehaviour {
 		public int mapSize;
 
 		public float equatorOffset;
+		public bool planetTemperature;
 		public float averageTemperature;
 		public Dictionary<TileTypes,float> terrainTypeHeights;
 		public bool coast;
 
-		public MapData(int mapSeed, int mapSize, float equatorOffset, float averageTemperature, Dictionary<TileTypes,float> terrainTypeHeights, bool coast) {
+		public bool preventEdgeTouching;
+
+		public MapData(int mapSeed, int mapSize, float equatorOffset, bool planetTemperature, float averageTemperature, Dictionary<TileTypes,float> terrainTypeHeights, bool coast, bool preventEdgeTouching) {
 
 			if (mapSeed < 0) {
 				mapSeed = Random.Range(0,int.MaxValue);
@@ -876,9 +855,11 @@ public class TileManager:MonoBehaviour {
 			this.mapSize = mapSize;
 
 			this.equatorOffset = equatorOffset;
+			this.planetTemperature = planetTemperature;
 			this.averageTemperature = averageTemperature;
 			this.terrainTypeHeights = terrainTypeHeights;
 			this.coast = coast;
+			this.preventEdgeTouching = preventEdgeTouching;
 		}
 	}
 
@@ -887,8 +868,46 @@ public class TileManager:MonoBehaviour {
 		this.mapData = mapData;
 	}
 
-	void CreateMap() {
+	public void PreInitialize() {
+		resourceM.CreateResources();
+		resourceM.CreateTileObjectPrefabs();
+
+		CreatePlantGroups();
+		CreateTileTypes();
+		CreateBiomes();
+	}
+
+	public void Initialize(MapData mapData) {
+		SetMapInformation(mapData);
+
+		cameraM.SetCameraPosition(new Vector2(mapData.mapSize / 2f,mapData.mapSize / 2f));
+		cameraM.SetCameraZoom(20);
+
+		CreateMap(true);
+
+		colonistM.SpawnColonists(3);
+
+		generated = true;
+
+		uiM.SetSelectedColonistInformation();
+		uiM.SetSelectedContainerInfo();
+		uiM.SetJobElements();
+		uiM.InitializeProfessionsList();
+	}
+
+	public void CreateMap(bool actualMap) {
+
+		sortedTiles.Clear();
+		tiles.Clear();
+		rivers.Clear();
+		drainageBasins.Clear();
+		regionBlocks.Clear();
+		squareRegionBlocks.Clear();
+	
 		CreateTiles();
+		if (mapData.preventEdgeTouching) {
+			PreventEdgeTouching();
+		}
 
 		SetTileRegions(true);
 
@@ -901,16 +920,20 @@ public class TileManager:MonoBehaviour {
 		SetTileRegions(false);
 		SetBiomes();
 
-		SetMapEdgeTiles();
-		DetermineDrainageBasins();
-		CreateRivers();
+		if (actualMap) {
+			SetMapEdgeTiles();
+			DetermineDrainageBasins();
+			CreateRivers();
+		}
 
 		CreateRegionBlocks();
 
 		Bitmasking(tiles);
 
-		DetermineShadowTiles(tiles);
-		SetTileBrightness(12);
+		if (actualMap) {
+			DetermineShadowTiles(tiles);
+			SetTileBrightness(12);
+		}
 	}
 
 	void CreateTiles() {
@@ -1049,6 +1072,14 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
+	void PreventEdgeTouching() {
+		print(0.5f * Mathf.Clamp(-Mathf.Pow(0.2f - 1.1f,10) + 1,0f,1f));
+		foreach (Tile tile in tiles) {
+			float edgeDistance = (mapData.mapSize - (Vector2.Distance(tile.obj.transform.position,new Vector2(mapData.mapSize / 2f,mapData.mapSize / 2f)))) / mapData.mapSize;
+			tile.SetTileHeight(tile.height * Mathf.Clamp(-Mathf.Pow(edgeDistance - 1.5f,10) + 1,0f,1f));
+		}
+	}
+
 	List<Region> regions = new List<Region>();
 	int currentRegionID = 0;
 
@@ -1158,7 +1189,7 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
-	private int regionBlockSize = 10;
+	private int regionBlockSize = 5;
 	private List<RegionBlock> squareRegionBlocks = new List<RegionBlock>();
 	void CreateRegionBlocks() {
 
@@ -1497,8 +1528,11 @@ public class TileManager:MonoBehaviour {
 		float temperatureOffset = 50;
 
 		foreach (Tile tile in tiles) {
-			//tile.temperature = TemperatureFromMapLatitude(tile.position.y,temperatureOffset,mapData.mapSize);
-			tile.temperature = mapData.averageTemperature;
+			if (mapData.planetTemperature) {
+				tile.temperature = TemperatureFromMapLatitude(tile.position.y,temperatureOffset,mapData.mapSize);
+			} else {
+				tile.temperature = mapData.averageTemperature;
+			}
 			tile.temperature += -(100f * Mathf.Pow(tile.height - 0.5f,3));
 		}
 
@@ -1875,9 +1909,9 @@ public class TileManager:MonoBehaviour {
 	}
 
 	public Color GetTileColourAtHour(float time) {
-		float r = CalculateBrightnessLevelAtHour((time + 3) / 1.25f);
-		float g = Mathf.Pow(CalculateBrightnessLevelAtHour(0.5f * time + 6),10) / 5f;
-		float b = (-1.3f * Mathf.Pow(Mathf.Cos((CalculateBrightnessLevelAtHour(2 * time + 12)) / 1.5f),3) + 1.65f * (CalculateBrightnessLevelAtHour(time) /2f)) + 0.7f;
+		float r = Mathf.Clamp((Mathf.Pow(CalculateBrightnessLevelAtHour(0.4f * time + 7.2f),10)) / 5f,0f,1f);
+		float g = Mathf.Clamp((Mathf.Pow(CalculateBrightnessLevelAtHour(0.5f * time + 6),10)) / 5f - 0.2f,0f,1f);
+		float b = Mathf.Clamp((-1.5f * Mathf.Pow(Mathf.Cos((CalculateBrightnessLevelAtHour(2 * time + 12)) / 1.5f),3) + 1.65f * (CalculateBrightnessLevelAtHour(time) / 2f)) + 0.7f,0f,1f);
 		return new Color(r,g,b,1f);
 	}
 
@@ -1885,7 +1919,6 @@ public class TileManager:MonoBehaviour {
 		return ((-(1f / 144f)) * Mathf.Pow(((1 + (24 - (1 - time))) % 24) - 12,2) + 1.2f);
 	}
 
-	public Dictionary<int,List<RegionBlock>> shadowsAtHours = new Dictionary<int,List<RegionBlock>>();
 	public void DetermineShadowTiles(List<Tile> tilesToInclude) {
 		List<Tile> shadowStartTiles = new List<Tile>();
 		foreach (Tile tile in tilesToInclude) {
