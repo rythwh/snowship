@@ -327,16 +327,12 @@ public class ResourceManager : MonoBehaviour {
 	public class TileObjectInstance {
 
 		private ResourceManager resourceM;
-		private TimeManager timeM;
-		private TileManager tileM;
 
 		void GetScriptReferences() {
 
 			GameObject GM = GameObject.Find("GM");
 
 			resourceM = GM.GetComponent<ResourceManager>();
-			timeM = GM.GetComponent<TimeManager>();
-			tileM = GM.GetComponent<TileManager>();
 		}
 
 		public TileManager.Tile tile;
