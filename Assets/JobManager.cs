@@ -96,7 +96,7 @@ public class JobManager:MonoBehaviour {
 	}
 
 	public enum JobTypesEnum {
-		Build, RemoveObject, RemoveFloor,
+		Build, Remove,
 		ChopPlant, Mine, PlantFarm, HarvestFarm,
 		PickupResources, EmptyInventory, Cancel
 	};
@@ -109,33 +109,26 @@ public class JobManager:MonoBehaviour {
 				colonist.inventory.ChangeResourceAmount(resourceAmount.resource,-resourceAmount.amount);
 			}
 		});
-		finishJobFunctions.Add(JobTypesEnum.RemoveObject,delegate (ColonistManager.Colonist colonist,Job job) {
-			/*
-			 * NOT SURE IF THIS WORKS, FIX WHEN IMPLEMENTING REMOVE (MAYBE REMOVE REDUNDANT FINISHJOBFUNCTIONS)
-			 * 
-			foreach (ResourceManager.ResourceAmount resourceAmount in job.tile.GetObjectInstanceAtLayer(job.prefab.layer).prefab.resourcesToBuild) {
-				colonist.inventory.ChangeResourceAmount(resourceAmount.resource,Mathf.RoundToInt(resourceAmount.amount / 2f));
+		finishJobFunctions.Add(JobTypesEnum.Remove,delegate (ColonistManager.Colonist colonist,Job job) {
+			foreach (ResourceManager.TileObjectInstance instance in (job.prefab.layer == 0 ? job.tile.GetAllObjectInstances() : new List<ResourceManager.TileObjectInstance>() { job.tile.GetObjectInstanceAtLayer(job.prefab.layer) })) {
+				foreach (ResourceManager.ResourceAmount resourceAmount in instance.prefab.resourcesToBuild) {
+					colonist.inventory.ChangeResourceAmount(resourceAmount.resource,Mathf.RoundToInt(resourceAmount.amount / 2f));
+				}
+				if (instance.prefab.jobType == JobTypesEnum.PlantFarm) {
+					if (instance.tile.farm.growProgressSpriteIndex == 0) {
+						job.colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(instance.tile.farm.seedType),1);
+					}
+					instance.tile.SetFarm(null);
+				}
+				colonist.resourceM.RemoveTileObjectInstance(instance);
+				job.tile.RemoveTileObjectAtLayer(instance.prefab.layer);
 			}
-			colonist.resourceM.RemoveTileObjectInstance(job.tile.GetObjectInstanceAtLayer(job.prefab.layer));
-			job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
-			*/
-		});
-		finishJobFunctions.Add(JobTypesEnum.RemoveFloor,delegate (ColonistManager.Colonist colonist,Job job) {
-			/*
-			 * NOT SURE IF THIS WORKS, FIX WHEN IMPLEMENTING REMOVE (MAYBE REMOVE REDUNDANT FINISHJOBFUNCTIONS)
-			 * 
-			foreach (ResourceManager.ResourceAmount resourceAmount in job.tile.GetObjectInstanceAtLayer(job.prefab.layer).prefab.resourcesToBuild) {
-				colonist.inventory.ChangeResourceAmount(resourceAmount.resource,Mathf.RoundToInt(resourceAmount.amount/2f));
-			}
-			colonist.resourceM.RemoveTileObjectInstance(job.tile.GetObjectInstanceAtLayer(job.prefab.layer));
-			job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
-			*/
+			resourceM.Bitmask(new List<TileManager.Tile>() { job.tile }.Concat(job.tile.surroundingTiles).ToList());
 		});
 		finishJobFunctions.Add(JobTypesEnum.PlantFarm,delegate (ColonistManager.Colonist colonist,Job job) {
 			finishJobFunctions[JobTypesEnum.Build](colonist,job);
 		});
 		finishJobFunctions.Add(JobTypesEnum.HarvestFarm,delegate (ColonistManager.Colonist colonist,Job job) {
-			job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(job.tile.farm.seedType),Random.Range(1,3));
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(resourceM.GetFarmSeedReturnResource()[job.tile.farm.seedType]),Random.Range(1,6));
 			CreateJob(new Job(job.tile,resourceM.GetTileObjectPrefabByEnum(resourceM.GetFarmSeedsTileObject()[job.tile.farm.seedType]),0,colonistM,resourceM));
@@ -143,19 +136,16 @@ public class JobManager:MonoBehaviour {
 			job.tile.SetFarm(null);
 		});
 		finishJobFunctions.Add(JobTypesEnum.ChopPlant,delegate (ColonistManager.Colonist colonist,Job job) {
-			job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
 			foreach (ResourceManager.ResourceAmount resourceAmount in job.tile.plant.GetResources()) {
 				colonist.inventory.ChangeResourceAmount(resourceAmount.resource,resourceAmount.amount);
 			}
 			job.tile.SetPlant(true);
 		});
 		finishJobFunctions.Add(JobTypesEnum.Mine,delegate (ColonistManager.Colonist colonist,Job job) {
-			job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),job.tile.tileType.type.ToString())),Random.Range(4,7));
 			job.tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Dirt),true,true,true,false);
 		});
 		finishJobFunctions.Add(JobTypesEnum.PickupResources,delegate (ColonistManager.Colonist colonist,Job job) {
-			job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
 			ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == colonist.overTile);
 			print(containerOnTile + " " + colonist.storedJob.prefab.type.ToString() + " " + colonist.storedJob.containerPickups + " " + colonist.storedJob.containerPickups.Count);
 			if (containerOnTile != null && colonist.storedJob != null) {
@@ -178,7 +168,6 @@ public class JobManager:MonoBehaviour {
 			}
 		});
 		finishJobFunctions.Add(JobTypesEnum.EmptyInventory,delegate (ColonistManager.Colonist colonist,Job job) {
-			job.tile.RemoveTileObjectAtLayer(job.prefab.layer);
 			ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == colonist.overTile);
 			if (containerOnTile != null) {
 				List<ResourceManager.ResourceAmount> removeResourceAmounts = new List<ResourceManager.ResourceAmount>();
@@ -270,7 +259,7 @@ public class JobManager:MonoBehaviour {
 	}
 
 	public enum SelectionModifiersEnum { Outline, Walkable, OmitWalkable, Buildable, OmitBuildable, StoneTypes, OmitStoneTypes, AllWaterTypes, OmitAllWaterTypes, LiquidWaterTypes, OmitLiquidWaterTypes, OmitNonStoneAndWaterTypes,
-		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances, Farms, OmitFarms
+		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances, Farms, OmitFarms, ObjectsAtSameLayer
 	};
 	Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>> selectionModifierFunctions = new Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>>();
 
@@ -336,6 +325,12 @@ public class JobManager:MonoBehaviour {
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitFarms,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tile.farm != null) { removeTiles.Add(tile); }
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.ObjectsAtSameLayer,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
+			if (tile.GetObjectInstanceAtLayer(selectedPrefab.layer) == null) { removeTiles.Add(tile); }
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.Objects,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
+			if (tile.GetAllObjectInstances().Count <= 0) { removeTiles.Add(tile); }
 		});
 	}
 

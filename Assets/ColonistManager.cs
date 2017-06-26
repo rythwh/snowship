@@ -78,8 +78,9 @@ public class ColonistManager : MonoBehaviour {
 			TileManager.Tile newOverTile = tileM.GetTileFromPosition(obj.transform.position);
 			if (overTile != newOverTile) {
 				overTileChanged = true;
+				overTile = newOverTile;
+				SetColour(overTile.sr.color);
 			}
-			overTile = newOverTile;
 			MoveToTile(null,false);
 		}
 
@@ -127,6 +128,10 @@ public class ColonistManager : MonoBehaviour {
 				bitsum = moveSpritesMap[bitsum];
 			}
 			obj.GetComponent<SpriteRenderer>().sprite = moveSprites[bitsum];
+		}
+
+		public void SetColour(Color newColour) {
+			obj.GetComponent<SpriteRenderer>().color = new Color(newColour.r,newColour.g,newColour.b,1f);
 		}
 	}
 
@@ -400,12 +405,13 @@ public class ColonistManager : MonoBehaviour {
 			job = null;
 
 			Destroy(finishedJob.jobPreview);
-			finishedJob.tile.SetTileObject(finishedJob.prefab,finishedJob.rotationIndex);
-
-			finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
-			finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).FinishCreation();
-			if (!resourceM.GetBitmaskingTileObjects().Contains(finishedJob.prefab.type) && finishedJob.prefab.bitmaskSprites.Count > 0) {
-				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().sprite = finishedJob.prefab.bitmaskSprites[finishedJob.rotationIndex];
+			if (finishedJob.prefab.addToTileWhenBuilt) {
+				finishedJob.tile.SetTileObject(finishedJob.prefab,finishedJob.rotationIndex);
+				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).FinishCreation();
+				if (!resourceM.GetBitmaskingTileObjects().Contains(finishedJob.prefab.type) && finishedJob.prefab.bitmaskSprites.Count > 0) {
+					finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().sprite = finishedJob.prefab.bitmaskSprites[finishedJob.rotationIndex];
+				}
 			}
 
 			if (finishedJob.prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type != ResourceManager.TileObjectPrefabGroupsEnum.None) {

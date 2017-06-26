@@ -1912,7 +1912,7 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-			colonist.obj.GetComponent<SpriteRenderer>().color = colonist.overTile.sr.color;
+			colonist.SetColour(colonist.overTile.sr.color);
 		}
 	}
 

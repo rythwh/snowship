@@ -117,7 +117,7 @@ public class ResourceManager : MonoBehaviour {
 	};
 	public enum TileObjectPrefabSubGroupsEnum {
 		Walls, Doors, Floors, Containers, Beds,
-		Plants, Terrain,
+		Plants, Terrain, Remove,
 		PlantFarm, HarvestFarm,
 		None
 	};
@@ -127,6 +127,7 @@ public class ResourceManager : MonoBehaviour {
 		StoneFloor, WoodenFloor,
 		Basket, WoodenChest,
 		WoodenBed,
+		RemoveL1, RemoveL2, RemoveAll,
 		ChopPlant, Mine,
 		WheatFarm, PotatoFarm, HarvestFarm,
 		PickupResources, EmptyInventory, Cancel
@@ -236,6 +237,8 @@ public class ResourceManager : MonoBehaviour {
 
 		public int layer;
 
+		public bool addToTileWhenBuilt;
+
 		public int maxInventoryAmount;
 
 		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup) {
@@ -274,6 +277,8 @@ public class ResourceManager : MonoBehaviour {
 
 			layer = int.Parse(properties[10]);
 
+			addToTileWhenBuilt = bool.Parse(properties[11]);
+
 			baseSprite = Resources.Load<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-base");
 			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-bitmask").ToList();
 			if (baseSprite == null && bitmaskSprites.Count > 0) {
@@ -284,7 +289,7 @@ public class ResourceManager : MonoBehaviour {
 			}
 
 			if (resourceM.ContainerTileObjectTypes.Contains(type)) {
-				maxInventoryAmount = int.Parse(properties[11]);
+				maxInventoryAmount = int.Parse(properties[12]);
 			}
 
 			resourceM.tileObjectPrefabs.Add(this);
@@ -365,10 +370,11 @@ public class ResourceManager : MonoBehaviour {
 			List<TileManager.Tile> bitmaskingTiles = new List<TileManager.Tile>() { tile };
 			bitmaskingTiles.AddRange(tile.surroundingTiles);
 			resourceM.Bitmask(bitmaskingTiles);
+			SetColour(tile.sr.color);
 		}
 
 		public void SetColour(Color newColour) {
-			obj.GetComponent<SpriteRenderer>().color = newColour;
+			obj.GetComponent<SpriteRenderer>().color = new Color(newColour.r,newColour.g,newColour.b,1f);
 		}
 	}
 
@@ -691,7 +697,7 @@ public class ResourceManager : MonoBehaviour {
 		}
 	}
 
-	void Bitmask(List<TileManager.Tile> tilesToBitmask) {
+	public void Bitmask(List<TileManager.Tile> tilesToBitmask) {
 		foreach (TileManager.Tile tile in tilesToBitmask) {
 			if (tile != null && tile.GetAllObjectInstances().Count > 0) {
 				foreach (TileObjectInstance tileObjectInstance in tile.GetAllObjectInstances()) {
