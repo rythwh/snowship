@@ -760,7 +760,7 @@ public class TileManager:MonoBehaviour {
 				tile.sr.color = new Color(tile.walkSpeed,tile.walkSpeed,tile.walkSpeed,1f);
 			}
 		}
-		if (Input.GetKeyDown(KeyCode.Q)) {
+		if (Input.GetKeyDown(KeyCode.Slash)) {
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
 				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),10);
 			}
@@ -770,12 +770,17 @@ public class TileManager:MonoBehaviour {
 			}
 			*/
 		}
-		if (Input.GetKeyDown(KeyCode.E)) {
+		if (Input.GetKeyDown(KeyCode.L)) {
+			foreach (Region region in regionBlocks) {
+				region.ColourRegion();
+			}
+		}
+		if (Input.GetKeyDown(KeyCode.K)) {
 			foreach (Region region in squareRegionBlocks) {
 				region.ColourRegion();
 			}
 		}
-		if (Input.GetKeyDown(KeyCode.T)) {
+		if (Input.GetKeyDown(KeyCode.J)) {
 			colonistM.colonists[0].inventory.ReserveResources(new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),5) },colonistM.colonists[1]);
 			/*
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
@@ -837,13 +842,14 @@ public class TileManager:MonoBehaviour {
 
 		public float equatorOffset;
 		public bool planetTemperature;
+		public float temperatureOffset;
 		public float averageTemperature;
 		public Dictionary<TileTypes,float> terrainTypeHeights;
 		public bool coast;
 
 		public bool preventEdgeTouching;
 
-		public MapData(int mapSeed, int mapSize, float equatorOffset, bool planetTemperature, float averageTemperature, Dictionary<TileTypes,float> terrainTypeHeights, bool coast, bool preventEdgeTouching) {
+		public MapData(int mapSeed, int mapSize, float equatorOffset, bool planetTemperature, float temperatureOffset, float averageTemperature, Dictionary<TileTypes,float> terrainTypeHeights, bool coast, bool preventEdgeTouching) {
 
 			if (mapSeed < 0) {
 				mapSeed = Random.Range(0,int.MaxValue);
@@ -856,6 +862,7 @@ public class TileManager:MonoBehaviour {
 
 			this.equatorOffset = equatorOffset;
 			this.planetTemperature = planetTemperature;
+			this.temperatureOffset = temperatureOffset;
 			this.averageTemperature = averageTemperature;
 			this.terrainTypeHeights = terrainTypeHeights;
 			this.coast = coast;
@@ -1519,17 +1526,18 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
-	public float TemperatureFromMapLatitude(float yPos,float temperatureOffset, int mapSize) {
-		return ((-2 * Mathf.Abs((yPos - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureOffset / 50f)))) + temperatureOffset);
+	public float TemperatureFromMapLatitude(float yPos,float temperatureSteepness, float temperatureOffset, int mapSize) {
+		return ((-2 * Mathf.Abs((yPos - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureSteepness / 50f)))) + temperatureSteepness) + temperatureOffset;
 	}
 
 	void CalculateTemperature() {
 
-		float temperatureOffset = 50;
+		float temperatureSteepness = 50;
+		float temperatureOffset = mapData.temperatureOffset;
 
 		foreach (Tile tile in tiles) {
 			if (mapData.planetTemperature) {
-				tile.temperature = TemperatureFromMapLatitude(tile.position.y,temperatureOffset,mapData.mapSize);
+				tile.temperature = TemperatureFromMapLatitude(tile.position.y,temperatureSteepness,mapData.temperatureOffset,mapData.mapSize);
 			} else {
 				tile.temperature = mapData.averageTemperature;
 			}
@@ -1539,7 +1547,7 @@ public class TileManager:MonoBehaviour {
 		AverageTileTemperatures();
 
 		foreach (Tile tile in tiles) {
-			tile.temperature = Mathf.Clamp(tile.temperature,-temperatureOffset,temperatureOffset);
+			tile.temperature = Mathf.Clamp(tile.temperature,-temperatureSteepness,temperatureSteepness);
 		}
 	}
 

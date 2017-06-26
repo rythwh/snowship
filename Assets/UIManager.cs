@@ -24,7 +24,11 @@ public class UIManager : MonoBehaviour {
 	private ColonistManager colonistM;
 	private TimeManager timeM;
 
-	public int mapSize;
+	public int mapSize = 0;
+	Text mapSizeText;
+
+	public float planetDistance = 0;
+	Text planetDistanceText;
 
 	private GameObject playButton;
 	private GameObject mainMenu;
@@ -68,8 +72,15 @@ public class UIManager : MonoBehaviour {
 		playButton = GameObject.Find("Play-Button");
 		playButton.GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
 
+		mapSizeText = GameObject.Find("MapSizeValue-Text").GetComponent<Text>();
 		GameObject.Find("MapSize-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdateMapSizeText(); });
 		GameObject.Find("MapSize-Slider").GetComponent<Slider>().value = 2;
+
+		planetDistanceText = GameObject.Find("PlanetDistanceValue-Text").GetComponent<Text>();
+		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdatePlanetDistanceText(); });
+		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value = 2;
+
+		GameObject.Find("ReloadPlanet-Button").GetComponent<Button>().onClick.AddListener(delegate { GeneratePlanet(); });
 
 		mainMenu = GameObject.Find("MainMenu");
 
@@ -118,6 +129,9 @@ public class UIManager : MonoBehaviour {
 	public ResourceManager.Container selectedContainer;
 	void Update() {
 		playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null);
+		if (Input.GetMouseButtonDown(1) && selectedPlanetTile != null) {
+			selectedPlanetTile = null;
+		}
 		if (tileM.generated) {
 			mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 			TileManager.Tile newMouseOverTile = tileM.GetTileFromPosition(mousePosition);
@@ -190,13 +204,14 @@ public class UIManager : MonoBehaviour {
 
 		public TileManager.MapData data;
 		private int planetSize;
+		private int planetTemperature;
 
 		public float equatorOffset;
 		public float averageTemperature;
 		public Dictionary<TileManager.TileTypes,float> terrainTypeHeights;
 		public bool coast;
 
-		public PlanetTile(TileManager.Tile tile, Transform parent,Vector2 position,int planetSize) {
+		public PlanetTile(TileManager.Tile tile, Transform parent,Vector2 position,int planetSize,int planetTemperature) {
 
 			GetScriptReferences();
 
@@ -219,7 +234,7 @@ public class UIManager : MonoBehaviour {
 
 		public void SetMapData() {
 			equatorOffset = ((position.y - (planetSize / 2f)) * 2) / planetSize;
-			averageTemperature = tile.temperature;
+			averageTemperature = tile.temperature + planetTemperature;
 
 			coast = false;
 			if (!tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
@@ -228,63 +243,126 @@ public class UIManager : MonoBehaviour {
 						coast = true;
 					}
 				}
+			} else {
+				obj.GetComponent<Button>().interactable = false;
 			}
 
+			/*
 			float waterThreshold = 0;
-			if (coast) {
+			if (coast || tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
 				waterThreshold = 0.5f;
 			}
 			waterThreshold += tile.precipitation * 0.5f;
 
+			float stoneThreshold = waterThreshold + (0.25f / 2f);
+			*/
+
+			float waterThreshold = 0;
+			if (coast || tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
+				waterThreshold = tile.height;
+			}
+
+			float stoneThreshold = waterThreshold + ((1 - waterThreshold) / 2f);
+			if (tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) {
+				stoneThreshold = (1.25f - tile.height) / 2f;
+			}
+
 			terrainTypeHeights = new Dictionary<TileManager.TileTypes,float>() {
-				{ TileManager.TileTypes.GrassWater,0.40f},{ TileManager.TileTypes.Stone,0.75f }
+				{ TileManager.TileTypes.GrassWater,waterThreshold},{ TileManager.TileTypes.Stone,stoneThreshold }
 			};
+
+			
 		}
+	}
+
+	public int CalculatePlanetTemperature(float distance) {
+
+		float starMass = 1;
+		float albedo = 29;
+		float greenhouse = 1;
+
+		float sigma = 5.6703f * Mathf.Pow(10,-5);
+		float L = 3.846f * Mathf.Pow(10,33) * Mathf.Pow(starMass,3);
+		float D = distance * 1.496f * Mathf.Pow(10,13);
+		float A = albedo / 100f;
+		float T = greenhouse * 0.5841f;
+		float X = Mathf.Sqrt((1 - A) * L / (16 * Mathf.PI * sigma));
+		float T_eff = Mathf.Sqrt(X) * (1 / Mathf.Sqrt(D));
+		float T_eq = (Mathf.Pow(T_eff,4)) * (1 + (3 * T / 4));
+		float T_sur = T_eq / 0.9f;
+		float T_kel = Mathf.Sqrt(Mathf.Sqrt(T_sur));
+		T_kel = Mathf.Round(T_kel);
+		int celsius = Mathf.RoundToInt(T_kel - 273);
+
+		return celsius;
 	}
 
 	public void GeneratePlanet() {
 
+		foreach (PlanetTile tile in planetTiles) {
+			Destroy(tile.obj);
+		}
+		planetTiles.Clear();
+
 		GameObject planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
 
-		int planetTileSize = 8;
+		int planetTileSize = 10; // 8
 
-		int planetSeed = UnityEngine.Random.Range(0,int.MaxValue);
+		Text planetSeedInput = GameObject.Find("PlanetSeedInput-Text").GetComponent<Text>();
+		string planetSeedString = planetSeedInput.text;
+		int planetSeed = SeedParser(planetSeedString,GameObject.Find("PlanetSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
 		print("Planet Seed: " + planetSeed);
+
 		int planetSize = Mathf.FloorToInt(Mathf.FloorToInt(planetPreviewPanel.GetComponent<RectTransform>().sizeDelta.x) / planetTileSize);
 		print("Planet Size: " + planetSize);
+		
+		int planetTemperature = CalculatePlanetTemperature(planetDistance);
+		print("Planet Temperature: " + planetTemperature);
 
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().cellSize = new Vector2(planetTileSize,planetTileSize);
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
 
-		tileM.SetMapInformation(new TileManager.MapData(planetSeed,planetSize,0,true,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,false));
+		tileM.SetMapInformation(new TileManager.MapData(planetSeed,planetSize,0,true,planetTemperature,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,false));
 		tileM.CreateMap(false);
 		foreach (TileManager.Tile tile in tileM.tiles) {
-			planetTiles.Add(new PlanetTile(tile,planetPreviewPanel.transform,tile.position,planetSize));
+			planetTiles.Add(new PlanetTile(tile,planetPreviewPanel.transform,tile.position,planetSize,planetTemperature));
 		}
+	}
+
+	public void UpdatePlanetDistanceText() {
+		planetDistance = (float)Math.Round(GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value / 2f,1);
+		planetDistanceText.text = planetDistance + " AU";
+	}
+
+	public int SeedParser(string seedString,InputField inputObject) {
+		if (string.IsNullOrEmpty(seedString)) {
+			seedString = UnityEngine.Random.Range(0,int.MaxValue).ToString();
+			inputObject.text = seedString;
+		}
+		int mapSeed = 0;
+		if (!int.TryParse(seedString,out mapSeed)) {
+			foreach (char c in seedString) {
+				mapSeed += c;
+			}
+		}
+		return mapSeed;
 	}
 
 	public void PlayButton() {
 
 		planetTiles.Clear();
 
-		string mapSeedString = GameObject.Find("MapSeedInput-Text").GetComponent<Text>().text;
-		if (string.IsNullOrEmpty(mapSeedString)) {
-			mapSeedString = UnityEngine.Random.Range(0,int.MaxValue).ToString();
-		}
-		int mapSeed = 0;
-		if (!int.TryParse(mapSeedString,out mapSeed)) {
-			foreach (char c in mapSeedString) {
-				mapSeed += c;
-			}
-		}
+		Text mapSeedInput = GameObject.Find("MapSeedInput-Text").GetComponent<Text>();
+		string mapSeedString = mapSeedInput.text;
+		int mapSeed = SeedParser(mapSeedString,GameObject.Find("MapSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
 
-		tileM.Initialize(new TileManager.MapData(mapSeed,mapSize,selectedPlanetTile.equatorOffset,false,selectedPlanetTile.averageTemperature,selectedPlanetTile.terrainTypeHeights,selectedPlanetTile.coast,false));
+		tileM.Initialize(new TileManager.MapData(mapSeed,mapSize,selectedPlanetTile.equatorOffset,false,0,selectedPlanetTile.averageTemperature,selectedPlanetTile.terrainTypeHeights,selectedPlanetTile.coast,false));
 		mainMenu.SetActive(false);
 	}
 
 	public void UpdateMapSizeText() {
 		mapSize = Mathf.RoundToInt(GameObject.Find("MapSize-Slider").GetComponent<Slider>().value * 50);
-		GameObject.Find("MapSizeValue-Text").GetComponent<Text>().text = mapSize.ToString();
+		mapSizeText.text = mapSize.ToString();
 	}
 
 	/*	Menu Structure:
