@@ -127,7 +127,7 @@ public class ResourceManager : MonoBehaviour {
 		StoneFloor, WoodenFloor,
 		Basket, WoodenChest,
 		WoodenBed,
-		RemoveL1, RemoveL2, RemoveAll,
+		RemoveLayer1, RemoveLayer2, RemoveAll,
 		ChopPlant, Mine,
 		WheatFarm, PotatoFarm, HarvestFarm,
 		PickupResources, EmptyInventory, Cancel

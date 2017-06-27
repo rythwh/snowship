@@ -110,19 +110,18 @@ public class JobManager:MonoBehaviour {
 			}
 		});
 		finishJobFunctions.Add(JobTypesEnum.Remove,delegate (ColonistManager.Colonist colonist,Job job) {
-			foreach (ResourceManager.TileObjectInstance instance in (job.prefab.layer == 0 ? job.tile.GetAllObjectInstances() : new List<ResourceManager.TileObjectInstance>() { job.tile.GetObjectInstanceAtLayer(job.prefab.layer) })) {
-				foreach (ResourceManager.ResourceAmount resourceAmount in instance.prefab.resourcesToBuild) {
-					colonist.inventory.ChangeResourceAmount(resourceAmount.resource,Mathf.RoundToInt(resourceAmount.amount / 2f));
-				}
-				if (instance.prefab.jobType == JobTypesEnum.PlantFarm) {
-					if (instance.tile.farm.growProgressSpriteIndex == 0) {
-						job.colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(instance.tile.farm.seedType),1);
-					}
-					instance.tile.SetFarm(null);
-				}
-				colonist.resourceM.RemoveTileObjectInstance(instance);
-				job.tile.RemoveTileObjectAtLayer(instance.prefab.layer);
+			ResourceManager.TileObjectInstance instance = job.tile.GetObjectInstanceAtLayer(job.prefab.layer);
+			foreach (ResourceManager.ResourceAmount resourceAmount in instance.prefab.resourcesToBuild) {
+				colonist.inventory.ChangeResourceAmount(resourceAmount.resource,Mathf.RoundToInt(resourceAmount.amount / 2f));
 			}
+			if (instance.prefab.jobType == JobTypesEnum.PlantFarm) {
+				if (instance.tile.farm.growProgressSpriteIndex == 0) {
+					job.colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(instance.tile.farm.seedType),1);
+				}
+				instance.tile.SetFarm(null);
+			}
+			colonist.resourceM.RemoveTileObjectInstance(instance);
+			job.tile.RemoveTileObjectAtLayer(instance.prefab.layer);
 			resourceM.Bitmask(new List<TileManager.Tile>() { job.tile }.Concat(job.tile.surroundingTiles).ToList());
 		});
 		finishJobFunctions.Add(JobTypesEnum.PlantFarm,delegate (ColonistManager.Colonist colonist,Job job) {
@@ -460,13 +459,6 @@ public class JobManager:MonoBehaviour {
 					colonist.job = null;
 					colonist.path.Clear();
 					colonist.MoveToClosestWalkableTile(false);
-					/*
-					if (colonist.overTile.walkable) {
-						colonist.MoveToTile(colonist.overTile,false);
-					} else {
-						colonist.MoveToClosestWalkableTile(false);
-					}
-					*/
 				}
 			} else {
 				if ((selectionArea.Contains(colonist.storedJob.tile)) || (!selectionArea.Contains(colonist.storedJob.tile) && colonist.job != null && selectionArea.Contains(colonist.job.tile))) {
@@ -478,21 +470,26 @@ public class JobManager:MonoBehaviour {
 					colonist.job = null;
 					colonist.path.Clear();
 					colonist.MoveToClosestWalkableTile(false);
-					/*
-					if (colonist.overTile.walkable) {
-						colonist.MoveToTile(colonist.overTile,false);
-					} else {
-						colonist.MoveToClosestWalkableTile(false);
-					}
-					*/
 				}
 			}
 		}
 	}
 
-	public void CreateJobsInSelectionArea(ResourceManager.TileObjectPrefab prefab, List<TileManager.Tile> selectionArea) {
+	Dictionary<int,ResourceManager.TileObjectPrefabsEnum> RemoveLayerMap = new Dictionary<int,ResourceManager.TileObjectPrefabsEnum>() {
+		{1,ResourceManager.TileObjectPrefabsEnum.RemoveLayer1 },{2,ResourceManager.TileObjectPrefabsEnum.RemoveLayer2 }
+	};
+
+	public void CreateJobsInSelectionArea(ResourceManager.TileObjectPrefab prefab,List<TileManager.Tile> selectionArea) {
 		foreach (TileManager.Tile tile in selectionArea) {
-			CreateJob(new Job(tile,prefab,rotationIndex,colonistM,resourceM));
+			if (selectedPrefab.type == ResourceManager.TileObjectPrefabsEnum.RemoveAll) {
+				foreach (ResourceManager.TileObjectInstance instance in tile.GetAllObjectInstances()) {
+					if (RemoveLayerMap.ContainsKey(instance.prefab.layer) && !JobOfPrefabTypeExistsAtTile(RemoveLayerMap[instance.prefab.layer],tile)) {
+						CreateJob(new Job(tile,resourceM.GetTileObjectPrefabByEnum(RemoveLayerMap[instance.prefab.layer]),rotationIndex,colonistM,resourceM));
+					}
+				}
+			} else {
+				CreateJob(new Job(tile,prefab,rotationIndex,colonistM,resourceM));
+			}
 		}
 	}
 
@@ -781,6 +778,19 @@ public class JobManager:MonoBehaviour {
 			return true;
 		}
 		if (colonistM.colonists.Find(colonist => colonist.storedJob != null && colonist.storedJob.prefab.jobType == jobType && colonist.storedJob.tile == tile) != null) {
+			return true;
+		}
+		return false;
+	}
+
+	public bool JobOfPrefabTypeExistsAtTile(ResourceManager.TileObjectPrefabsEnum prefabType,TileManager.Tile tile) {
+		if (jobs.Find(job => job.prefab.type == prefabType && job.tile == tile) != null) {
+			return true;
+		}
+		if (colonistM.colonists.Find(colonist => colonist.job != null && colonist.job.prefab.type == prefabType && colonist.job.tile == tile) != null) {
+			return true;
+		}
+		if (colonistM.colonists.Find(colonist => colonist.storedJob != null && colonist.storedJob.prefab.type == prefabType && colonist.storedJob.tile == tile) != null) {
 			return true;
 		}
 		return false;

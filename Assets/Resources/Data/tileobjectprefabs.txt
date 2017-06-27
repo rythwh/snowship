@@ -198,7 +198,7 @@
 	<SubGroup>
 		Remove
 		<Object>
-			RemoveL1/
+			RemoveLayer1/
 			15/
 			0/
 			/
@@ -211,7 +211,7 @@
 			1/
 			false
 		<Object>
-			RemoveL2/
+			RemoveLayer2/
 			15/
 			0/
 			/
