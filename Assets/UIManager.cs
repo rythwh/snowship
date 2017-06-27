@@ -98,7 +98,7 @@ public class UIManager : MonoBehaviour {
 		dateTimeInformationPanel = GameObject.Find("DateTimeInformation-Panel");
 
 		selectionSizeCanvas = GameObject.Find("SelectionSize-Canvas");
-		selectionSizeCanvas.GetComponent<Canvas>().sortingOrder = 100;
+		selectionSizeCanvas.GetComponent<Canvas>().sortingOrder = 100; // Selection Area Size Canvas
 		selectionSizePanel = selectionSizeCanvas.transform.Find("SelectionSize-Panel/Content-Panel").gameObject;
 
 		selectedContainerInventoryPanel = GameObject.Find("SelectedContainerInventory-Panel");
