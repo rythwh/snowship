@@ -662,8 +662,6 @@ public class TileManager:MonoBehaviour {
 	void Update() {
 
 		if (generated) {
-			
-			UpdateRivers();
 
 			if (debugMode) {
 				DebugFunctions();
@@ -1765,84 +1763,6 @@ public class TileManager:MonoBehaviour {
 			frontier = frontier.OrderBy(frontierTile => frontierTile.cost).ToList();
 		}
 		return river;
-	}
-
-	void UpdateRivers() {
-		foreach (River river in rivers) {
-			//Dictionary<int,Tile> insertRiverTiles = new Dictionary<int,Tile>();
-			//List<Tile> removeRiverTiles = new List<Tile>();
-
-			//List<Tile> addRiverTiles = new List<Tile>();
-
-			for (int i = 0; i < river.tiles.Count; i++) {
-				if (i < river.tiles.Count - 1 && i > 0) {
-					Tile riverTile = river.tiles[i];
-					riverTile.sr.color = new Color(1f,0f,0f,i / river.tiles.Count);
-					Vector2 forwardDirection = (Vector2)(river.tiles[i - 1].obj.transform.position - riverTile.obj.transform.position) * 2;
-					Vector2 forwardTilePosition = (Vector2)riverTile.obj.transform.position + forwardDirection;
-					Debug.DrawLine(riverTile.obj.transform.position,forwardTilePosition);
-					if (forwardTilePosition.x >= 0 && forwardTilePosition.x < mapData.mapSize && forwardTilePosition.y >= 0 && forwardTilePosition.y < mapData.mapSize) {
-						Tile forwardTile = GetTileFromPosition(forwardTilePosition);
-						if (!river.tiles.Contains(forwardTile)) {
-							forwardTile.height = forwardTile.height - 0.01f * timeM.deltaTime;
-
-							if (forwardTile.height < river.tiles[i + 1].height) {
-								for (int k = i + 1;k < river.tiles.Count;k++) {
-									Tile removeRiverTile = river.tiles[k];
-									river.tiles.Remove(removeRiverTile);
-									removeRiverTile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true,true,true,true);
-									
-								}
-								//river.tiles.AddRange(RiverPathfinding(forwardTile,river.endTile));
-								break;
-							}
-
-							/*
-							if (forwardTile.height < river[i+1].height) {
-								print("Changed");
-								forwardTile.sr.color = Color.red;
-								//river[i] = forwardTile;
-								//river.Insert(i + 1,forwardTile);
-								forwardTile.SetTileType(GetTileTypeByEnum(TileTypes.GrassWater),true,true,true,true);
-								river[i + 1].SetTileType(GetTileTypeByEnum(TileTypes.Grass),true,true,true,true);
-
-								Bitmasking(new List<Tile>() { forwardTile }.Concat(forwardTile.surroundingTiles).ToList());
-								Bitmasking(new List<Tile>() { river[i + 1] }.Concat(river[i + 1].surroundingTiles).ToList());
-
-								//removeRiverTiles.Add(riverTile);
-								//insertRiverTiles.Add(i,forwardTile);
-
-								//river[i] = forwardTile;
-
-								/*
-								if (forwardTile.horizontalSurroundingTiles.Find(nTile => nTile != null && nTile != river[i-1] && river.Contains(nTile)) == null) {
-									foreach (Tile nTile in forwardTile.horizontalSurroundingTiles) {
-										if (nTile != null) {
-											foreach (Tile nTile2 in nTile.horizontalSurroundingTiles) {
-												if (nTile2 != null && nTile2 != nTile && river.Contains(nTile2)) {
-													//insertRiverTiles.Add(river.IndexOf(nTile2),nTile);
-													river.Insert(river.IndexOf(
-													//addRiverTiles.Add(nTile);
-												}
-											}
-										}
-									}
-								}
-								*/
-							/*
-							}
-							*/
-						}
-					}
-				}
-			}
-			/*
-			foreach (Tile tile in addRiverTiles) {
-				river.Add(tile);
-				Bitmasking(new List<Tile>() { tile }.Concat(tile.surroundingTiles).ToList());
-			}
-			*/
-		}
 	}
 
 	KeyValuePair<Tile,River> RiversContainTile(Tile tile) {
