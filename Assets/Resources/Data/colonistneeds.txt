@@ -1,0 +1,50 @@
+Food/
+	0.01,	BRI		Base rate of increase per second while conditions met
+	true,	AMinVB	Whether there is any action taken at MinV
+	4.32, 	MinV	Points until they will want food
+	true,	AMaxVB	Whether there is any action taken at MaxV
+	72.0,	MaxV	Points until they will be starving without food
+	10,		CV		Percentage over MaxT until they begin dying from the need not being fulfilled
+	true,	DB		Whether they can die from this need not being fulfilled
+	0.01,	DR		Base rate of health loss due to the need not being fulfilled
+	100`	ClampV	Value above which the food value will be clamped
+Clothing/
+	0.01,	BRI		Base rate of increase per second while conditions met
+	false,	AMinVB	Whether there is any action taken at MinV
+	0, 		MinV	No min action
+	false,	AMaxVB	Whether there is any action taken at MaxV
+	0,		MaxV	No max action
+	0,		CV		No critical action
+	false,	DB		Whether they can die from this need not being fulfilled
+	0.0,	DR		Base rate of health loss due to the need not being fulfilled
+	100`	ClampV	Value above which the clothing value will be clamped
+Shelter/
+	0.01,	BRI		Base rate of increase per second while conditions met
+	false,	AMinVB	Whether there is any action taken at MinV
+	0, 		MinV	No min action
+	false,	AMaxVB	Whether there is any action taken at MaxV
+	0,		MaxV	No max action
+	0,		CV		No critical action
+	false,	DB		Whether they can die from this need not being fulfilled
+	0.0,	DR		Base rate of health loss due to the need not being fulfilled
+	100`	ClampV	Value above which the shelter value will be clamped
+Rest/
+	0.01,	BRI		Base rate of increase per second while conditions met
+	true,	AMinVB	Whether there is any action taken at MinV
+	0.6,	MinV	Days until they want to fall asleep
+	true,	AMaxVB	Whether there is any action taken at MaxV
+	2,		MaxV	Days until they must sleep
+	10,		CV		Percentage over MaxT until they pass out from no sleep
+	false,	DB		No dying but they will pass out using the CV value
+	0.0,	DR		Base rate of health loss due to the need not being fulfilled
+	100`	ClampV	Value above which the rest value will be clamped
+Temperature/
+	0.01,	BRI		Base rate of increase per second while conditions met
+	false,	AMinVB	Whether there is any action taken at MinV
+	0, 		MinV	No action
+	false,	AMaxVB	Whether there is any action taken at MaxV
+	0,		MaxV	No action
+	0,		CV		Percentage over MaxT until they begin dying from the need not being fulfilled
+	false,	DB		Whether they can die from this need not being fulfilled
+	0.0,	DR		Base rate of health loss due to the need not being fulfilled
+	100		ClampV	Value above which the temperature value will be clamped

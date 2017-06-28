@@ -141,12 +141,49 @@ public class ColonistManager : MonoBehaviour {
 
 	public Dictionary<NeedsEnum,System.Action<NeedsInstance>> needsValueFunctions = new Dictionary<NeedsEnum,System.Action<NeedsInstance>>();
 
+	/*
+
+	1440 seconds per in-game day
+	@ 0.01 BRI ... 14.4 points per in-game day
+	@ 0.05 BRI ... 72 points per in-game day
+	@ 0.1 BRI ... 144 points per in-game day
+
+	Convert days to points between 0-100
+	(days * 1440) * BRI = pointsAfterDays
+
+	Convert 
+
+	0	NeedName/
+	1	0.01,	BRI		Base rate of increase per second while conditions met
+	2	false,	AMinVB	Whether there is any action taken at MinV
+	3	0, 		MinV	No action
+	4	false,	AMaxVB	Whether there is any action taken at MaxV
+	5	0,		MaxV	No action
+	6	0,		CV		Percentage over MaxT until they begin dying from the need not being fulfilled
+	7	false,	DB		Whether they can die from this need not being fulfilled
+	8	0.0`	DR		Base rate of health loss due to the need not being fulfilled
+	9	100`	ClampV	Value above which the food value will be clamped
+	*/
+
 	public class NeedsPrefab {
 		public NeedsEnum type;
 		public float baseIncreaseRate;
-		public float baseMinimumValue;
-		public float baseMaximumValue;
+
+		public bool minimumValueAction;
+		public float minimumValue;
+
+		public bool maximumValueAction;
+		public float maximumValue;
+
+		public bool criticalValueAction;
 		public float criticalValue;
+
+		public bool canDie;
+		public float healthDecreaseRate;
+
+		public NeedsPrefab(List<string> data) {
+			baseIncreaseRate = float.Parse(data[0]);
+		}
 	}
 
 	public class NeedsInstance {
