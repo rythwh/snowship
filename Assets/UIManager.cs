@@ -26,6 +26,7 @@ public class UIManager : MonoBehaviour {
 
 	public int mapSize = 0;
 	Text mapSizeText;
+	Text mapSeedInput;
 
 	public float planetDistance = 0;
 	Text planetDistanceText;
@@ -75,6 +76,8 @@ public class UIManager : MonoBehaviour {
 		mapSizeText = GameObject.Find("MapSizeValue-Text").GetComponent<Text>();
 		GameObject.Find("MapSize-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdateMapSizeText(); });
 		GameObject.Find("MapSize-Slider").GetComponent<Slider>().value = 2;
+
+		mapSeedInput = GameObject.Find("MapSeedInput-Text").GetComponent<Text>();
 
 		planetDistanceText = GameObject.Find("PlanetDistanceValue-Text").GetComponent<Text>();
 		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdatePlanetDistanceText(); });
@@ -128,7 +131,7 @@ public class UIManager : MonoBehaviour {
 
 	public ResourceManager.Container selectedContainer;
 	void Update() {
-		playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null);
+		playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null/* || !string.IsNullOrEmpty(mapSeedInput.text)*/);
 		if (Input.GetMouseButtonDown(1) && selectedPlanetTile != null) {
 			selectedPlanetTile = null;
 		}
@@ -354,7 +357,6 @@ public class UIManager : MonoBehaviour {
 
 		planetTiles.Clear();
 
-		Text mapSeedInput = GameObject.Find("MapSeedInput-Text").GetComponent<Text>();
 		string mapSeedString = mapSeedInput.text;
 		int mapSeed = SeedParser(mapSeedString,GameObject.Find("MapSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
 

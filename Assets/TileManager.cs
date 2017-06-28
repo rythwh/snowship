@@ -641,7 +641,7 @@ public class TileManager:MonoBehaviour {
 		public void SetColour(Color newColour, int hour) {
 			sr.color = newColour * (brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f);
 			if (plant != null) {
-				plant.obj.GetComponent<SpriteRenderer>().color = sr.color;
+				plant.obj.GetComponent<SpriteRenderer>().color = new Color(sr.color.r,sr.color.g,sr.color.b,1f); ;
 			}
 			foreach (ResourceManager.TileObjectInstance instance in GetAllObjectInstances()) {
 				instance.SetColour(sr.color);
@@ -1991,7 +1991,7 @@ public class TileManager:MonoBehaviour {
 					}
 				}
 				float heightModifer = (1 + (oppositeTileMaxHeight - mapData.terrainTypeHeights[TileTypes.Stone]));
-				float maxDistance = hourDirection.magnitude * heightModifer * 5f;
+				float maxDistance = hourDirection.magnitude * heightModifer * 5f + (Mathf.Pow(h-12,2)/6f);
 				float distance = 0;
 
 				List<Tile> shadowTiles = new List<Tile>();
