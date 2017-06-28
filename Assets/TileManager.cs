@@ -1535,7 +1535,6 @@ public class TileManager:MonoBehaviour {
 	void CalculateTemperature() {
 
 		float temperatureSteepness = 50;
-		float temperatureOffset = mapData.temperatureOffset;
 
 		foreach (Tile tile in tiles) {
 			if (mapData.planetTemperature) {

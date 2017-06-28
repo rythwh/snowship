@@ -221,6 +221,8 @@ public class UIManager : MonoBehaviour {
 
 			this.planetSize = planetSize;
 
+			this.planetTemperature = planetTemperature;
+
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/PlanetTile"),parent,false);
 			image = obj.GetComponent<Image>();
 			image.sprite = tile.obj.GetComponent<SpriteRenderer>().sprite;
