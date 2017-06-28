@@ -135,6 +135,25 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
+	public enum TraitsEnum { Lazy, Workaholic, Alcoholic, Antisocial, Socialite, Attractive, Unattractive};
+
+	public enum NeedsEnum { Food, Clothing, Shelter, Rest, Temperature, Safety, Social, Esteem, Relaxation};
+
+	public Dictionary<NeedsEnum,System.Action<NeedsInstance>> needsValueFunctions = new Dictionary<NeedsEnum,System.Action<NeedsInstance>>();
+
+	public class NeedsPrefab {
+		public NeedsEnum type;
+		public float baseIncreaseRate;
+		public float baseMinimumValue;
+		public float baseMaximumValue;
+		public float criticalValue;
+	}
+
+	public class NeedsInstance {
+		public Colonist colonist;
+		public NeedsPrefab prefab;
+	}
+
 	public class Human : Life {
 
 		public string name;
@@ -148,6 +167,9 @@ public class ColonistManager : MonoBehaviour {
 
 		// Inventory
 		public ResourceManager.Inventory inventory;
+
+		// Needs
+		public SortedDictionary<NeedsEnum,float> needs = new SortedDictionary<NeedsEnum,float>();
 
 		public Human(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile) {
 			moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
@@ -283,11 +305,6 @@ public class ColonistManager : MonoBehaviour {
 
 	public List<Colonist> colonists = new List<Colonist>();
 
-	public enum ColonistNeedsEnum { Food, Sleep };
-	Dictionary<ColonistNeedsEnum,float> needsThresholds = new Dictionary<ColonistNeedsEnum,float>() {
-		{ ColonistNeedsEnum.Food, 30 },{ColonistNeedsEnum.Sleep,70 }
-	};
-
 	public class Colonist : Human {
 
 		public JobManager.Job job;
@@ -299,8 +316,6 @@ public class ColonistManager : MonoBehaviour {
 
 		public Profession profession;
 		public Profession oldProfession;
-
-		public SortedDictionary<ColonistNeedsEnum,float> needs = new SortedDictionary<ColonistNeedsEnum,float>();
 
 		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes, Profession profession) : base(spawnTile,colonistLookIndexes) {
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
@@ -322,7 +337,7 @@ public class ColonistManager : MonoBehaviour {
 				jobM.UpdateColonistJobCosts(this);
 			}
 			if (job == null) {
-				if (needs.Where(need => need.Value >= colonistM.needsThresholds[need.Key]).ToList().Count > 0) {
+				if (false/*needs.Where(need => need.Value >= colonistM.needsThresholds[need.Key]).ToList().Count > 0*/) {
 
 				} else {
 					if (path.Count <= 0) {

@@ -293,6 +293,7 @@ public class TileManager:MonoBehaviour {
 	public class Tile {
 
 		private TileManager tileM;
+		private TimeManager timeM;
 
 		public SpriteRenderer sr;
 
@@ -330,9 +331,10 @@ public class TileManager:MonoBehaviour {
 
 		public Dictionary<int,ResourceManager.TileObjectInstance> objectInstances = new Dictionary<int,ResourceManager.TileObjectInstance>();
 
-		public Tile(Vector2 position,float height,TileManager tileM, bool normalTile) {
+		public Tile(Vector2 position,float height,TileManager tileM, TimeManager timeM, bool normalTile) {
 
 			this.tileM = tileM;
+			this.timeM = timeM;
 
 			this.position = position;
 
@@ -589,6 +591,10 @@ public class TileManager:MonoBehaviour {
 				if (kvp.Value != null && !kvp.Value.prefab.walkable) {
 					walkable = false;
 					tileM.RecalculateRegionsAtTile(this);
+
+					tileM.DetermineShadowTiles(new List<Tile>() { this });
+					tileM.SetTileBrightness(timeM.GetTileBrightnessTime());
+
 					break;
 				}
 			}
@@ -954,7 +960,7 @@ public class TileManager:MonoBehaviour {
 
 				Vector2 position = new Vector2(x,y);
 
-				Tile tile = new Tile(position,height,this,true);
+				Tile tile = new Tile(position,height,this,timeM,true);
 
 				innerTiles.Add(tile);
 				tiles.Add(tile);
@@ -1198,7 +1204,7 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
-	private int regionBlockSize = 5;
+	private int regionBlockSize = 10;
 	private List<RegionBlock> squareRegionBlocks = new List<RegionBlock>();
 	void CreateRegionBlocks() {
 
@@ -2001,7 +2007,7 @@ public class TileManager:MonoBehaviour {
 						distance += 0.25f;
 						continue;
 					}
-					if (shadowTile.walkable && shadowTile != tile) {
+					if (shadowTile != tile && (shadowTile.tileType.walkable && shadowTile.GetAllObjectInstances().Find(instance => !instance.prefab.walkable) != null ? true : shadowTile.walkable)) {
 						float newBrightness = Mathf.Clamp((1 - (0.6f * CalculateBrightnessLevelAtHour(h)) + 0.3f),0,1);
 						if (shadowTile.brightnessAtHour.ContainsKey(h)) {
 							shadowTile.brightnessAtHour[h] = (shadowTile.brightnessAtHour[h] + newBrightness) / 2f;
