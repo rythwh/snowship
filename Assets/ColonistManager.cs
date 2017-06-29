@@ -167,6 +167,7 @@ public class ColonistManager : MonoBehaviour {
 
 	public class NeedsPrefab {
 		public NeedsEnum type;
+
 		public float baseIncreaseRate;
 
 		public bool minimumValueAction;
@@ -181,8 +182,28 @@ public class ColonistManager : MonoBehaviour {
 		public bool canDie;
 		public float healthDecreaseRate;
 
+		public int clampValue;
+
+		public int priority;
+
 		public NeedsPrefab(List<string> data) {
 			baseIncreaseRate = float.Parse(data[0]);
+
+			minimumValueAction = bool.Parse(data[1]);
+			minimumValue = float.Parse(data[2]);
+
+			maximumValueAction = bool.Parse(data[3]);
+			maximumValue = float.Parse(data[4]);
+
+			criticalValueAction = bool.Parse(data[5]);
+			criticalValue = float.Parse(data[6]);
+
+			canDie = bool.Parse(data[7]);
+			healthDecreaseRate = float.Parse(data[8]);
+
+			clampValue = int.Parse(data[9]);
+
+			priority = int.Parse(data[10]);
 		}
 	}
 
