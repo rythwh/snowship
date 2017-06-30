@@ -21,7 +21,7 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourceGroupsEnum {
 		Natural, Materials,
-		Seeds, Foods
+		Seeds, RawFoods, Foods
 	};
 
 	public enum ResourcesEnum {
@@ -63,6 +63,8 @@ public class ResourceManager : MonoBehaviour {
 
 		public int value;
 
+		public int nutrition = 0;
+
 		public Resource(List<string> resourceData,ResourceGroup resourceGroup, ResourceManager rm) {
 			type = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceData[0]);
 			name = type.ToString();
@@ -70,6 +72,10 @@ public class ResourceManager : MonoBehaviour {
 			this.resourceGroup = resourceGroup;
 
 			value = int.Parse(resourceData[1]);
+
+			if (resourceGroup.type == ResourceGroupsEnum.Foods) {
+				nutrition = int.Parse(resourceData[2]);
+			}
 		}
 	}
 

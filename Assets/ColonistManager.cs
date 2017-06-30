@@ -138,207 +138,6 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	public enum TraitsEnum { Lazy, Workaholic, Alcoholic, Antisocial, Socialite, Attractive, Unattractive, Dieter, Overeater};
-
-	public List<TraitPrefab> traitPrefabs = new List<TraitPrefab>();
-
-	public class TraitPrefab {
-
-		public TraitsEnum type;
-		public string name;
-
-		public float effectAmount;
-
-		public TraitPrefab(List<string> data) {
-
-		}
-	}
-
-	public class TraitInstance {
-
-		public Colonist colonist;
-		public TraitPrefab prefab;
-
-		public TraitInstance(Colonist colonist, TraitPrefab prefab) {
-			this.colonist = colonist;
-			this.prefab = prefab;
-		}
-	}
-
-	public enum NeedsEnum { Food, Clothing, Shelter, Rest, Temperature, Safety, Social, Esteem, Relaxation};
-
-	public Dictionary<NeedsEnum,System.Action<NeedsInstance>> needsValueFunctions = new Dictionary<NeedsEnum,System.Action<NeedsInstance>>();
-
-	public void InitializeNeedsValueFunctions() {
-		needsValueFunctions.Add(NeedsEnum.Food,delegate (NeedsInstance needsInstance) {
-
-		});
-		needsValueFunctions.Add(NeedsEnum.Clothing,delegate (NeedsInstance needsInstance) {
-
-		});
-		needsValueFunctions.Add(NeedsEnum.Shelter,delegate (NeedsInstance needsInstance) {
-
-		});
-		needsValueFunctions.Add(NeedsEnum.Rest,delegate (NeedsInstance needsInstance) {
-
-		});
-		needsValueFunctions.Add(NeedsEnum.Temperature,delegate (NeedsInstance needsInstance) {
-
-		});
-		needsValueFunctions.Add(NeedsEnum.Safety,delegate (NeedsInstance needsInstance) {
-
-		});
-		needsValueFunctions.Add(NeedsEnum.Social,delegate (NeedsInstance needsInstance) {
-
-		});
-		needsValueFunctions.Add(NeedsEnum.Esteem,delegate (NeedsInstance needsInstance) {
-
-		});
-		needsValueFunctions.Add(NeedsEnum.Relaxation,delegate (NeedsInstance needsInstance) {
-
-		});
-	}
-
-	/*
-
-	1440 seconds per in-game day
-	@ 0.01 BRI ... 14.4 points per in-game day
-	@ 0.05 BRI ... 72 points per in-game day
-	@ 0.1 BRI ... 144 points per in-game day
-
-	Convert days to points between 0-100
-	(days * 1440) * BRI = pointsAfterDays
-
-	Convert 
-
-	0	NeedName/
-	1	0.01,		BRI			Base rate of increase per second while conditions met
-	2	false,		AMinVB		Whether there is any action taken at MinV
-	3	0, 			MinV		No action
-	4	false,		AMaxVB		Whether there is any action taken at MaxV
-	5	0,			MaxV		No action
-	6	0,			CV			Percentage over MaxT until they begin dying from the need not being fulfilled
-	7	false,		DB			Whether they can die from this need not being fulfilled
-	8	0.0`		DR			Base rate of health loss due to the need not being fulfilled
-	9	100`		ClampV		Value above which the food value will be clamped
-	10	0			Priority	The priority of fulfilling the requirements of this need over others
-	*/
-
-	public List<NeedPrefab> needPrefabs = new List<NeedPrefab>();
-
-	public class NeedPrefab {
-
-		public NeedsEnum type;
-		public string name;
-
-		public float baseIncreaseRate;
-
-		public bool minimumValueAction;
-		public float minimumValue;
-
-		public bool maximumValueAction;
-		public float maximumValue;
-
-		public bool criticalValueAction;
-		public float criticalValue;
-
-		public bool canDie;
-		public float healthDecreaseRate;
-
-		public int clampValue;
-
-		public int priority;
-
-		List<TraitsEnum> traitsAffectingThisNeed = new List<TraitsEnum>();
-
-		public NeedPrefab(List<string> data) {
-			baseIncreaseRate = float.Parse(data[0]);
-
-			minimumValueAction = bool.Parse(data[1]);
-			minimumValue = float.Parse(data[2]);
-
-			maximumValueAction = bool.Parse(data[3]);
-			maximumValue = float.Parse(data[4]);
-
-			criticalValueAction = bool.Parse(data[5]);
-			criticalValue = float.Parse(data[6]);
-
-			canDie = bool.Parse(data[7]);
-			healthDecreaseRate = float.Parse(data[8]);
-
-			clampValue = int.Parse(data[9]);
-
-			priority = int.Parse(data[10]);
-
-			foreach (string traitString in data[11].Split(',')) {
-				traitsAffectingThisNeed.Add((TraitsEnum)System.Enum.Parse(typeof(TraitsEnum),traitString));
-			}
-		}
-	}
-
-	public class NeedsInstance {
-
-		public Colonist colonist;
-		public NeedPrefab prefab;
-		public float value = 0;
-
-		public NeedsInstance(Colonist colonist, NeedPrefab prefab) {
-			this.colonist = colonist;
-			this.prefab = prefab;
-		}
-
-		public void Update() {
-
-		}
-	}
-
-	public enum HappinessModifiersEnum { WitnessDeath, };
-
-	public List<HappinessModifierPrefab> happinessModifierPrefabs = new List<HappinessModifierPrefab>();
-
-	public class HappinessModifierPrefab {
-
-		public HappinessModifiersEnum type;
-		public string name;
-
-		public NeedPrefab needPrefab;
-
-		public int effectAmount;
-
-		public int effectLengthSeconds;
-
-		public HappinessModifierPrefab() {
-
-		}
-	}
-
-	public class HappinessModifierInstance {
-
-		public Colonist colonist;
-		public HappinessModifierPrefab prefab;
-
-		public float timer = 0;
-
-		public HappinessModifierInstance(Colonist colonist, HappinessModifierPrefab prefab) {
-			this.colonist = colonist;
-			this.prefab = prefab;
-
-			timer = prefab.effectLengthSeconds;
-		}
-
-		public void Update(TimeManager timeM) {
-			timer -= 1 * timeM.deltaTime;
-		}
-	}
-
-	public Dictionary<HappinessModifiersEnum,System.Action<HappinessModifierInstance>> happinessModifierFunctions = new Dictionary<HappinessModifiersEnum,System.Action<HappinessModifierInstance>>();
-
-	public void InitializeHappinessModifierFunctions() {
-		happinessModifierFunctions.Add(HappinessModifiersEnum.WitnessDeath,delegate (HappinessModifierInstance happinessModifierInstance) {
-
-		});
-	}
-
 	public class Human : Life {
 
 		public string name;
@@ -352,17 +151,6 @@ public class ColonistManager : MonoBehaviour {
 
 		// Inventory
 		public ResourceManager.Inventory inventory;
-
-		// Traits
-		public List<TraitInstance> traits = new List<TraitInstance>();
-
-		// Needs
-		public SortedDictionary<NeedsEnum,float> needs = new SortedDictionary<NeedsEnum,float>();
-
-		// Happiness
-		public float baseHappiness;
-		public float effectiveHappiness;
-		public List<HappinessModifierInstance> happinessModifiers = new List<HappinessModifierInstance>();
 
 		public Human(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile) {
 			moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
@@ -384,12 +172,6 @@ public class ColonistManager : MonoBehaviour {
 
 		public new void Update() {
 			base.Update();
-			foreach (HappinessModifierInstance happinessModifier in happinessModifiers) {
-				happinessModifier.Update(timeM);
-				if (happinessModifier.timer > 0) {
-
-				}
-			}
 		}
 	}
 
@@ -506,19 +288,281 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
+	public enum TraitsEnum { Lazy, Workaholic, Alcoholic, Antisocial, Socialite, Attractive, Unattractive, Dieter, Overeater };
+
+	public List<TraitPrefab> traitPrefabs = new List<TraitPrefab>();
+
+	public class TraitPrefab {
+
+		public TraitsEnum type;
+		public string name;
+
+		public float effectAmount;
+
+		public TraitPrefab(List<string> data) {
+
+		}
+	}
+
+	public class TraitInstance {
+
+		public Colonist colonist;
+		public TraitPrefab prefab;
+
+		public TraitInstance(Colonist colonist,TraitPrefab prefab) {
+			this.colonist = colonist;
+			this.prefab = prefab;
+		}
+	}
+
+	public enum NeedsEnum { Food, Clothing, Shelter, Rest, Temperature, Safety, Social, Esteem, Relaxation };
+
+	public Dictionary<NeedsEnum,System.Action<NeedInstance>> needsValueFunctions = new Dictionary<NeedsEnum,System.Action<NeedInstance>>();
+
+	public void CalculateNeedValue(NeedInstance need) {
+		float needIncreaseAmount = need.prefab.baseIncreaseRate;
+		foreach (TraitInstance trait in need.colonist.traits) {
+			if (need.prefab.traitsAffectingThisNeed.ContainsKey(trait.prefab.type)) {
+				needIncreaseAmount *= need.prefab.traitsAffectingThisNeed[trait.prefab.type];
+			}
+		}
+		need.value += needIncreaseAmount;
+	}
+
+	public ResourceManager.Container FindClosestFood(Colonist colonist, bool takeFromOtherColonists) {
+		if (colonist.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) != null) {
+			return null;
+		} else {
+			Dictionary<ResourceManager.Container,List<ResourceManager.ResourceAmount>> resourcesPerContainer = new Dictionary<ResourceManager.Container,List<ResourceManager.ResourceAmount>>();
+			foreach (ResourceManager.Container container in resourceM.containers) {
+				if (container.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) != null) {
+					List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
+					int totalNutrition = 0;
+					foreach (ResourceManager.ResourceAmount ra in container.inventory.resources.Where(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods).OrderBy(ra => ra.resource.nutrition).ToList()) {
+						int numReserved = 0;
+						for (int i = 0; i < ra.amount; i++) {
+							numReserved += 1;
+							totalNutrition += ra.resource.nutrition;
+							if (totalNutrition >= 0.3f) {
+
+							}
+						}
+						resourcesToReserve.Add(new ResourceManager.ResourceAmount(ra.resource,numReserved));
+					}
+					container.inventory.ReserveResources(
+				}
+			}
+		}
+	}
+
+	public void InitializeNeedsValueFunctions() {
+		needsValueFunctions.Add(NeedsEnum.Food,delegate (NeedInstance need) {
+			CalculateNeedValue(need);
+			if (need.prefab.minimumValueAction && need.value > need.prefab.minimumValue) {
+				if (need.colonist.job == null) {
+					if (Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
+						need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,new JobManager.Job(
+					}
+				}
+			}
+		});
+		needsValueFunctions.Add(NeedsEnum.Clothing,delegate (NeedInstance need) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Shelter,delegate (NeedInstance need) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Rest,delegate (NeedInstance need) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Temperature,delegate (NeedInstance need) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Safety,delegate (NeedInstance need) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Social,delegate (NeedInstance need) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Esteem,delegate (NeedInstance need) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Relaxation,delegate (NeedInstance need) {
+
+		});
+	}
+
+	/*
+
+	1440 seconds per in-game day
+	@ 0.01 BRI ... 14.4 points per in-game day
+	@ 0.05 BRI ... 72 points per in-game day
+	@ 0.1 BRI ... 144 points per in-game day
+
+	Convert days to points between 0-100
+	(days * 1440) * BRI = pointsAfterDays
+
+	Convert 
+
+	0	NeedName/
+	1	0.01,		BRI			Base rate of increase per second while conditions met
+	2	false,		AMinVB		Whether there is any action taken at MinV
+	3	0, 			MinV		No action
+	4	false,		AMaxVB		Whether there is any action taken at MaxV
+	5	0,			MaxV		No action
+	6	0,			CV			Percentage over MaxT until they begin dying from the need not being fulfilled
+	7	false,		DB			Whether they can die from this need not being fulfilled
+	8	0.0`		DR			Base rate of health loss due to the need not being fulfilled
+	9	100`		ClampV		Value above which the food value will be clamped
+	10	0			Priority	The priority of fulfilling the requirements of this need over others
+	*/
+
+	public List<NeedPrefab> needPrefabs = new List<NeedPrefab>();
+
+	public class NeedPrefab {
+
+		public NeedsEnum type;
+		public string name;
+
+		public float baseIncreaseRate;
+
+		public bool minimumValueAction;
+		public float minimumValue;
+
+		public bool maximumValueAction;
+		public float maximumValue;
+
+		public bool criticalValueAction;
+		public float criticalValue;
+
+		public bool canDie;
+		public float healthDecreaseRate;
+
+		public int clampValue;
+
+		public int priority;
+
+		public Dictionary<TraitsEnum,float> traitsAffectingThisNeed = new Dictionary<TraitsEnum,float>();
+
+		public NeedPrefab(List<string> data) {
+			baseIncreaseRate = float.Parse(data[0]);
+
+			minimumValueAction = bool.Parse(data[1]);
+			minimumValue = float.Parse(data[2]);
+
+			maximumValueAction = bool.Parse(data[3]);
+			maximumValue = float.Parse(data[4]);
+
+			criticalValueAction = bool.Parse(data[5]);
+			criticalValue = float.Parse(data[6]);
+
+			canDie = bool.Parse(data[7]);
+			healthDecreaseRate = float.Parse(data[8]);
+
+			clampValue = int.Parse(data[9]);
+
+			priority = int.Parse(data[10]);
+
+			List<string> traitNameStrings = data[11].Split(',').ToList();
+			List<string> traitEffectAmountStrings = data[12].Split(',').ToList();
+
+			for (int i = 0; i < traitNameStrings.Count; i++) {
+				traitsAffectingThisNeed.Add((TraitsEnum)System.Enum.Parse(typeof(TraitsEnum),traitNameStrings[i]),float.Parse(traitEffectAmountStrings[i]));
+			}
+		}
+	}
+
+	public class NeedInstance {
+
+		public Colonist colonist;
+		public NeedPrefab prefab;
+		public float value = 0;
+
+		public NeedInstance(Colonist colonist,NeedPrefab prefab) {
+			this.colonist = colonist;
+			this.prefab = prefab;
+		}
+
+		public void Update() {
+
+		}
+	}
+
+	public enum HappinessModifiersEnum { WitnessDeath, };
+
+	public List<HappinessModifierPrefab> happinessModifierPrefabs = new List<HappinessModifierPrefab>();
+
+	public class HappinessModifierPrefab {
+
+		public HappinessModifiersEnum type;
+		public string name;
+
+		public NeedPrefab needPrefab;
+
+		public int effectAmount;
+
+		public int effectLengthSeconds;
+
+		public HappinessModifierPrefab() {
+
+		}
+	}
+
+	public class HappinessModifierInstance {
+
+		public Colonist colonist;
+		public HappinessModifierPrefab prefab;
+
+		public float timer = 0;
+
+		public HappinessModifierInstance(Colonist colonist,HappinessModifierPrefab prefab) {
+			this.colonist = colonist;
+			this.prefab = prefab;
+
+			timer = prefab.effectLengthSeconds;
+		}
+
+		public void Update(TimeManager timeM) {
+			timer -= 1 * timeM.deltaTime;
+		}
+	}
+
+	public Dictionary<HappinessModifiersEnum,System.Action<HappinessModifierInstance>> happinessModifierFunctions = new Dictionary<HappinessModifiersEnum,System.Action<HappinessModifierInstance>>();
+
+	public void InitializeHappinessModifierFunctions() {
+		happinessModifierFunctions.Add(HappinessModifiersEnum.WitnessDeath,delegate (HappinessModifierInstance happinessModifierInstance) {
+
+		});
+	}
+
 	public List<Colonist> colonists = new List<Colonist>();
 
 	public class Colonist : Human {
 
+		public bool playerMoved;
+
+		// Job
 		public JobManager.Job job;
 		public JobManager.Job storedJob;
 
-		public bool playerMoved;
-
-		public List<SkillInstance> skills = new List<SkillInstance>();
-
+		// Profession
 		public Profession profession;
 		public Profession oldProfession;
+
+		// Skills
+		public List<SkillInstance> skills = new List<SkillInstance>();
+
+		// Traits
+		public List<TraitInstance> traits = new List<TraitInstance>();
+
+		// Needs
+		public List<NeedInstance> needs = new List<NeedInstance>();
+
+		// Happiness
+		public int baseHappiness;
+		public int happinessModifiersSum;
+		public int effectiveHappiness;
+		public List<HappinessModifierInstance> happinessModifiers = new List<HappinessModifierInstance>();
 
 		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes, Profession profession) : base(spawnTile,colonistLookIndexes) {
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
@@ -531,32 +575,34 @@ public class ColonistManager : MonoBehaviour {
 				skills.Add(new SkillInstance(this,skillPrefab,Random.Range((profession.primarySkill != null && profession.primarySkill.type == skillPrefab.type ? Mathf.RoundToInt(profession.skillRandomMaxValues[skillPrefab]/2f) : 0),profession.skillRandomMaxValues[skillPrefab])));
 			}
 
-			oldProfession = colonistM.professions.Find(findProfession => findProfession.type == ColonistManager.ProfessionTypeEnum.Nothing);
+			foreach (NeedPrefab needPrefab in colonistM.needPrefabs) {
+				needs.Add(new NeedInstance(this,needPrefab));
+			}
+			needs = needs.OrderBy(need => need.prefab.priority).ToList();
+
+			oldProfession = colonistM.professions.Find(findProfession => findProfession.type == ProfessionTypeEnum.Nothing);
 		}
 
 		public new void Update() {
 			base.Update();
+			UpdateNeeds();
 			if (overTileChanged) {
 				jobM.UpdateColonistJobCosts(this);
 			}
 			if (job == null) {
-				if (false/*needs.Where(need => need.Value >= colonistM.needsThresholds[need.Key]).ToList().Count > 0*/) {
-
-				} else {
-					if (path.Count <= 0) {
-						List<ResourceManager.Container> validContainers = resourceM.containers.Where(container => container.parentObject.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
-						if (resourceM.containers.Count > 0 && inventory.CountResources() >= inventory.maxAmount / 2f && validContainers.Count > 0) {
-							List<ResourceManager.Container> closestContainers = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock,overTile.regionBlock,true,true,false)).ToList();
-							if (closestContainers.Count > 0) {
-								ResourceManager.Container closestContainer = closestContainers[0];
-								SetJob(new JobManager.ColonistJob(this,new JobManager.Job(closestContainer.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory),0,colonistM,resourceM),null,null,jobM,pathM));
-							}
-						} else {
-							Wander();
+				if (path.Count <= 0) {
+					List<ResourceManager.Container> validContainers = resourceM.containers.Where(container => container.parentObject.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
+					if (resourceM.containers.Count > 0 && inventory.CountResources() >= inventory.maxAmount / 2f && validContainers.Count > 0) {
+						List<ResourceManager.Container> closestContainers = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock,overTile.regionBlock,true,true,false)).ToList();
+						if (closestContainers.Count > 0) {
+							ResourceManager.Container closestContainer = closestContainers[0];
+							SetJob(new JobManager.ColonistJob(this,new JobManager.Job(closestContainer.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory),0,colonistM,resourceM),null,null,jobM,pathM));
 						}
 					} else {
-						wanderTimer = Random.Range(10f,20f);
+						Wander();
 					}
+				} else {
+					wanderTimer = Random.Range(10f,20f);
 				}
 			} else {
 				if (!job.started && overTile == job.tile) {
@@ -566,6 +612,23 @@ public class ColonistManager : MonoBehaviour {
 					WorkJob();
 				}
 			}
+		}
+
+		private void UpdateNeeds() {
+			foreach (NeedInstance need in needs) {
+				colonistM.needsValueFunctions[need.prefab.type](need);
+			}
+			for (int i = 0; i < happinessModifiers.Count; i++) {
+				HappinessModifierInstance happinessModifier = happinessModifiers[i];
+				happinessModifier.Update(timeM);
+				if (happinessModifier.timer > 0) {
+					happinessModifiers.Remove(happinessModifier);
+					i -= 1;
+				}
+			}
+			baseHappiness = Mathf.Clamp(Mathf.RoundToInt(needs.Sum(need => need.value * need.prefab.priority)),0,100);
+			happinessModifiersSum = happinessModifiers.Sum(hM => hM.prefab.effectAmount);
+			effectiveHappiness = baseHappiness + happinessModifiersSum;
 		}
 
 		private float wanderTimer = Random.Range(10f,20f);
