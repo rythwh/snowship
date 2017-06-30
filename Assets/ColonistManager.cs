@@ -23,6 +23,9 @@ public class ColonistManager : MonoBehaviour {
 
 		CreateColonistSkills();
 		CreateColonistProfessions();
+
+		InitializeNeedsValueFunctions();
+		InitializeHappinessModifierFunctions();
 	}
 
 	public List<Life> animals = new List<Life>();
@@ -135,11 +138,66 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	public enum TraitsEnum { Lazy, Workaholic, Alcoholic, Antisocial, Socialite, Attractive, Unattractive};
+	public enum TraitsEnum { Lazy, Workaholic, Alcoholic, Antisocial, Socialite, Attractive, Unattractive, Dieter, Overeater};
+
+	public List<TraitPrefab> traitPrefabs = new List<TraitPrefab>();
+
+	public class TraitPrefab {
+
+		public TraitsEnum type;
+		public string name;
+
+		public float effectAmount;
+
+		public TraitPrefab(List<string> data) {
+
+		}
+	}
+
+	public class TraitInstance {
+
+		public Colonist colonist;
+		public TraitPrefab prefab;
+
+		public TraitInstance(Colonist colonist, TraitPrefab prefab) {
+			this.colonist = colonist;
+			this.prefab = prefab;
+		}
+	}
 
 	public enum NeedsEnum { Food, Clothing, Shelter, Rest, Temperature, Safety, Social, Esteem, Relaxation};
 
 	public Dictionary<NeedsEnum,System.Action<NeedsInstance>> needsValueFunctions = new Dictionary<NeedsEnum,System.Action<NeedsInstance>>();
+
+	public void InitializeNeedsValueFunctions() {
+		needsValueFunctions.Add(NeedsEnum.Food,delegate (NeedsInstance needsInstance) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Clothing,delegate (NeedsInstance needsInstance) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Shelter,delegate (NeedsInstance needsInstance) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Rest,delegate (NeedsInstance needsInstance) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Temperature,delegate (NeedsInstance needsInstance) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Safety,delegate (NeedsInstance needsInstance) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Social,delegate (NeedsInstance needsInstance) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Esteem,delegate (NeedsInstance needsInstance) {
+
+		});
+		needsValueFunctions.Add(NeedsEnum.Relaxation,delegate (NeedsInstance needsInstance) {
+
+		});
+	}
 
 	/*
 
@@ -154,19 +212,24 @@ public class ColonistManager : MonoBehaviour {
 	Convert 
 
 	0	NeedName/
-	1	0.01,	BRI		Base rate of increase per second while conditions met
-	2	false,	AMinVB	Whether there is any action taken at MinV
-	3	0, 		MinV	No action
-	4	false,	AMaxVB	Whether there is any action taken at MaxV
-	5	0,		MaxV	No action
-	6	0,		CV		Percentage over MaxT until they begin dying from the need not being fulfilled
-	7	false,	DB		Whether they can die from this need not being fulfilled
-	8	0.0`	DR		Base rate of health loss due to the need not being fulfilled
-	9	100`	ClampV	Value above which the food value will be clamped
+	1	0.01,		BRI			Base rate of increase per second while conditions met
+	2	false,		AMinVB		Whether there is any action taken at MinV
+	3	0, 			MinV		No action
+	4	false,		AMaxVB		Whether there is any action taken at MaxV
+	5	0,			MaxV		No action
+	6	0,			CV			Percentage over MaxT until they begin dying from the need not being fulfilled
+	7	false,		DB			Whether they can die from this need not being fulfilled
+	8	0.0`		DR			Base rate of health loss due to the need not being fulfilled
+	9	100`		ClampV		Value above which the food value will be clamped
+	10	0			Priority	The priority of fulfilling the requirements of this need over others
 	*/
 
-	public class NeedsPrefab {
+	public List<NeedPrefab> needPrefabs = new List<NeedPrefab>();
+
+	public class NeedPrefab {
+
 		public NeedsEnum type;
+		public string name;
 
 		public float baseIncreaseRate;
 
@@ -186,7 +249,9 @@ public class ColonistManager : MonoBehaviour {
 
 		public int priority;
 
-		public NeedsPrefab(List<string> data) {
+		List<TraitsEnum> traitsAffectingThisNeed = new List<TraitsEnum>();
+
+		public NeedPrefab(List<string> data) {
 			baseIncreaseRate = float.Parse(data[0]);
 
 			minimumValueAction = bool.Parse(data[1]);
@@ -204,12 +269,74 @@ public class ColonistManager : MonoBehaviour {
 			clampValue = int.Parse(data[9]);
 
 			priority = int.Parse(data[10]);
+
+			foreach (string traitString in data[11].Split(',')) {
+				traitsAffectingThisNeed.Add((TraitsEnum)System.Enum.Parse(typeof(TraitsEnum),traitString));
+			}
 		}
 	}
 
 	public class NeedsInstance {
+
 		public Colonist colonist;
-		public NeedsPrefab prefab;
+		public NeedPrefab prefab;
+		public float value = 0;
+
+		public NeedsInstance(Colonist colonist, NeedPrefab prefab) {
+			this.colonist = colonist;
+			this.prefab = prefab;
+		}
+
+		public void Update() {
+
+		}
+	}
+
+	public enum HappinessModifiersEnum { WitnessDeath, };
+
+	public List<HappinessModifierPrefab> happinessModifierPrefabs = new List<HappinessModifierPrefab>();
+
+	public class HappinessModifierPrefab {
+
+		public HappinessModifiersEnum type;
+		public string name;
+
+		public NeedPrefab needPrefab;
+
+		public int effectAmount;
+
+		public int effectLengthSeconds;
+
+		public HappinessModifierPrefab() {
+
+		}
+	}
+
+	public class HappinessModifierInstance {
+
+		public Colonist colonist;
+		public HappinessModifierPrefab prefab;
+
+		public float timer = 0;
+
+		public HappinessModifierInstance(Colonist colonist, HappinessModifierPrefab prefab) {
+			this.colonist = colonist;
+			this.prefab = prefab;
+
+			timer = prefab.effectLengthSeconds;
+		}
+
+		public void Update(TimeManager timeM) {
+			timer -= 1 * timeM.deltaTime;
+		}
+	}
+
+	public Dictionary<HappinessModifiersEnum,System.Action<HappinessModifierInstance>> happinessModifierFunctions = new Dictionary<HappinessModifiersEnum,System.Action<HappinessModifierInstance>>();
+
+	public void InitializeHappinessModifierFunctions() {
+		happinessModifierFunctions.Add(HappinessModifiersEnum.WitnessDeath,delegate (HappinessModifierInstance happinessModifierInstance) {
+
+		});
 	}
 
 	public class Human : Life {
@@ -226,8 +353,16 @@ public class ColonistManager : MonoBehaviour {
 		// Inventory
 		public ResourceManager.Inventory inventory;
 
+		// Traits
+		public List<TraitInstance> traits = new List<TraitInstance>();
+
 		// Needs
 		public SortedDictionary<NeedsEnum,float> needs = new SortedDictionary<NeedsEnum,float>();
+
+		// Happiness
+		public float baseHappiness;
+		public float effectiveHappiness;
+		public List<HappinessModifierInstance> happinessModifiers = new List<HappinessModifierInstance>();
 
 		public Human(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile) {
 			moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
@@ -245,6 +380,16 @@ public class ColonistManager : MonoBehaviour {
 				tempName += character;
 			}
 			name = tempName;
+		}
+
+		public new void Update() {
+			base.Update();
+			foreach (HappinessModifierInstance happinessModifier in happinessModifiers) {
+				happinessModifier.Update(timeM);
+				if (happinessModifier.timer > 0) {
+
+				}
+			}
 		}
 	}
 
