@@ -11,7 +11,7 @@ Food/
 	100;
 	0;
 	Overeater,Dieter;
-	1,1`
+	1.1,1.1`
 Rest/
 	1.0;
 	true;

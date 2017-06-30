@@ -1343,7 +1343,7 @@ public class TileManager:MonoBehaviour {
 		for (int i = 0;i < regions.Count;i++) {
 			if (regions[i].tiles.Count <= 0) {
 				regions.RemoveAt(i);
-				i = (i - 1 < 0 ? 0 : i - 1);
+				i -= 1;
 			}
 		}
 

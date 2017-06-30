@@ -28,9 +28,11 @@ Seeds:
 	PotatoSeeds/
 		5
 ~
-Foods:
+RawFoods:
 	Wheat/
-		15`
+		15
+~
+Foods:
 	Potatoes/
 		10`
 	Berries/
