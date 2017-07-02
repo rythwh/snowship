@@ -136,7 +136,7 @@ public class ResourceManager : MonoBehaviour {
 		RemoveLayer1, RemoveLayer2, RemoveAll,
 		ChopPlant, Mine,
 		WheatFarm, PotatoFarm, HarvestFarm,
-		PickupResources, EmptyInventory, Cancel
+		PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep
 	};
 
 	List<TileObjectPrefabsEnum> BitmaskingTileObjects = new List<TileObjectPrefabsEnum>() {

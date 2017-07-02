@@ -279,3 +279,42 @@
 			1.0/
 			0/
 			false
+		<Object>
+			CollectFood/
+			0/
+			0/
+			/
+			false/
+			/
+			CollectFood/
+			0.0/
+			true/
+			1.0/
+			0/
+			false
+		<Object>
+			Eat/
+			0/
+			0/
+			/
+			false/
+			/
+			Eat/
+			0.0/
+			true/
+			1.0/
+			0/
+			false
+		<Object>
+			Sleep/
+			0/
+			0/
+			/
+			false/
+			/
+			Sleep/
+			0.0/
+			true/
+			1.0/
+			0/
+			false

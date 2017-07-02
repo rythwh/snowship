@@ -9,6 +9,9 @@ public class ColonistManager : MonoBehaviour {
 	private CameraManager cameraM;
 	private UIManager uiM;
 	private ResourceManager resourceM;
+	private PathManager pathM;
+	private JobManager jobM;
+	private TimeManager timeM;
 
 	void Awake() {
 
@@ -20,9 +23,13 @@ public class ColonistManager : MonoBehaviour {
 		cameraM = GetComponent<CameraManager>();
 		uiM = GetComponent<UIManager>();
 		resourceM = GetComponent<ResourceManager>();
+		pathM = GetComponent<PathManager>();
+		jobM = GetComponent<JobManager>();
+		timeM = GetComponent<TimeManager>();
 
 		CreateColonistSkills();
 		CreateColonistProfessions();
+		CreateColonistNeeds();
 
 		InitializeNeedsValueFunctions();
 		InitializeHappinessModifierFunctions();
@@ -326,32 +333,33 @@ public class ColonistManager : MonoBehaviour {
 				needIncreaseAmount *= need.prefab.traitsAffectingThisNeed[trait.prefab.type];
 			}
 		}
-		need.value += needIncreaseAmount;
+		need.value += needIncreaseAmount * timeM.deltaTime;
+		need.value = Mathf.Clamp(need.value,0,need.prefab.clampValue);
 	}
 
-	public ResourceManager.Container FindClosestFood(Colonist colonist, bool takeFromOtherColonists) {
-		if (colonist.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) != null) {
-			return null;
-		} else {
-			Dictionary<ResourceManager.Container,List<ResourceManager.ResourceAmount>> resourcesPerContainer = new Dictionary<ResourceManager.Container,List<ResourceManager.ResourceAmount>>();
-			foreach (ResourceManager.Container container in resourceM.containers) {
-				if (container.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) != null) {
-					List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
-					int totalNutrition = 0;
-					foreach (ResourceManager.ResourceAmount ra in container.inventory.resources.Where(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods).OrderBy(ra => ra.resource.nutrition).ToList()) {
-						int numReserved = 0;
-						for (int i = 0; i < ra.amount; i++) {
-							numReserved += 1;
-							totalNutrition += ra.resource.nutrition;
-							if (totalNutrition >= 0.3f) {
-
-							}
-						}
-						resourcesToReserve.Add(new ResourceManager.ResourceAmount(ra.resource,numReserved));
+	public KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>> FindClosestFood(Colonist colonist, bool takeFromOtherColonists, float minimumNutritionRequired) {
+		List<KeyValuePair<KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>,int>> resourcesPerContainer = new List<KeyValuePair<KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>,int>>();
+		foreach (ResourceManager.Container container in resourceM.containers.Where(c => c.parentObject.tile.region == colonist.overTile.region).OrderBy(c => pathM.RegionBlockDistance(colonist.overTile.regionBlock,c.parentObject.tile.regionBlock,true,true,false))) {
+			if (container.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) != null) {
+				List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
+				int totalNutrition = 0;
+				foreach (ResourceManager.ResourceAmount ra in container.inventory.resources.Where(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods).OrderBy(ra => ra.resource.nutrition).ToList()) {
+					int numReserved = 0;
+					for (int i = 0; i < ra.amount; i++) {
+						numReserved += 1;
+						totalNutrition += ra.resource.nutrition;
 					}
-					container.inventory.ReserveResources(
+					resourcesToReserve.Add(new ResourceManager.ResourceAmount(ra.resource,numReserved));
+				}
+				if (totalNutrition >= minimumNutritionRequired) {
+					resourcesPerContainer.Add(new KeyValuePair<KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>,int>(new KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>(container,resourcesToReserve),totalNutrition));
 				}
 			}
+		}
+		if (resourcesPerContainer.Count > 0) {
+			return resourcesPerContainer[0].Key;
+		} else {
+			return new KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>(null,null);
 		}
 	}
 
@@ -361,7 +369,18 @@ public class ColonistManager : MonoBehaviour {
 			if (need.prefab.minimumValueAction && need.value > need.prefab.minimumValue) {
 				if (need.colonist.job == null) {
 					if (Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
-						need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,new JobManager.Job(
+						if (need.colonist.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) == null) {
+							KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>> closestFood = FindClosestFood(need.colonist,false,need.value);
+							ResourceManager.Container container = closestFood.Key;
+							List<ResourceManager.ResourceAmount> resourcesToReserve = closestFood.Value;
+							if (container != null) {
+								container.inventory.ReserveResources(resourcesToReserve,need.colonist);
+								JobManager.Job job = new JobManager.Job(container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.CollectFood),0,this,resourceM);
+								need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,job,null,null,jobM,pathM));
+							}
+						} else {
+							need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,new JobManager.Job(need.colonist.overTile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat),0,this,resourceM),null,null,jobM,pathM));
+						}
 					}
 				}
 			}
@@ -445,29 +464,35 @@ public class ColonistManager : MonoBehaviour {
 		public Dictionary<TraitsEnum,float> traitsAffectingThisNeed = new Dictionary<TraitsEnum,float>();
 
 		public NeedPrefab(List<string> data) {
-			baseIncreaseRate = float.Parse(data[0]);
 
-			minimumValueAction = bool.Parse(data[1]);
-			minimumValue = float.Parse(data[2]);
+			type = (NeedsEnum)System.Enum.Parse(typeof(NeedsEnum),data[0]);
+			name = type.ToString();
 
-			maximumValueAction = bool.Parse(data[3]);
-			maximumValue = float.Parse(data[4]);
+			baseIncreaseRate = float.Parse(data[1]);
 
-			criticalValueAction = bool.Parse(data[5]);
-			criticalValue = float.Parse(data[6]);
+			minimumValueAction = bool.Parse(data[2]);
+			minimumValue = float.Parse(data[3]);
 
-			canDie = bool.Parse(data[7]);
-			healthDecreaseRate = float.Parse(data[8]);
+			maximumValueAction = bool.Parse(data[4]);
+			maximumValue = float.Parse(data[5]);
 
-			clampValue = int.Parse(data[9]);
+			criticalValueAction = bool.Parse(data[6]);
+			criticalValue = float.Parse(data[7]);
 
-			priority = int.Parse(data[10]);
+			canDie = bool.Parse(data[8]);
+			healthDecreaseRate = float.Parse(data[9]);
 
-			List<string> traitNameStrings = data[11].Split(',').ToList();
-			List<string> traitEffectAmountStrings = data[12].Split(',').ToList();
+			clampValue = int.Parse(data[10]);
 
-			for (int i = 0; i < traitNameStrings.Count; i++) {
-				traitsAffectingThisNeed.Add((TraitsEnum)System.Enum.Parse(typeof(TraitsEnum),traitNameStrings[i]),float.Parse(traitEffectAmountStrings[i]));
+			priority = int.Parse(data[11]);
+
+			if (int.Parse(data[12]) != 0) {
+				List<string> traitNameStrings = data[13].Split(',').ToList();
+				List<string> traitEffectAmountStrings = data[14].Split(',').ToList();
+
+				for (int i = 0; i < traitNameStrings.Count; i++) {
+					traitsAffectingThisNeed.Add((TraitsEnum)System.Enum.Parse(typeof(TraitsEnum),traitNameStrings[i]),float.Parse(traitEffectAmountStrings[i]));
+				}
 			}
 		}
 	}
@@ -482,9 +507,16 @@ public class ColonistManager : MonoBehaviour {
 			this.colonist = colonist;
 			this.prefab = prefab;
 		}
+	}
 
-		public void Update() {
-
+	void CreateColonistNeeds() {
+		List<string> stringNeeds = Resources.Load<TextAsset>(@"Data/colonistneeds").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('`').ToList();
+		foreach (string stringNeed in stringNeeds) {
+			List<string> stringNeedData = stringNeed.Split('/').ToList();
+			needPrefabs.Add(new NeedPrefab(stringNeedData));
+		}
+		foreach (NeedPrefab needPrefab in needPrefabs) {
+			needPrefab.name = uiM.SplitByCapitals(needPrefab.name);
 		}
 	}
 
