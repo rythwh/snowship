@@ -34,8 +34,11 @@ RawFoods:
 ~
 Foods:
 	Potatoes/
-		10`
+		10/
+		5`
 	Berries/
-		3`
+		3/
+		1`
 	Apples/
+		5/
 		5

@@ -98,7 +98,7 @@ public class JobManager:MonoBehaviour {
 	public enum JobTypesEnum {
 		Build, Remove,
 		ChopPlant, Mine, PlantFarm, HarvestFarm,
-		PickupResources, EmptyInventory, Cancel
+		PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep
 	};
 
 	public Dictionary<JobTypesEnum,System.Action<ColonistManager.Colonist,Job>> finishJobFunctions = new Dictionary<JobTypesEnum,System.Action<ColonistManager.Colonist,Job>>();
@@ -148,7 +148,7 @@ public class JobManager:MonoBehaviour {
 			ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == colonist.overTile);
 			print(containerOnTile + " " + colonist.storedJob.prefab.type.ToString() + " " + colonist.storedJob.containerPickups + " " + colonist.storedJob.containerPickups.Count);
 			if (containerOnTile != null && colonist.storedJob != null) {
-				JobManager.ContainerPickup containerPickup = colonist.storedJob.containerPickups.Find(pickup => pickup.container == containerOnTile);
+				ContainerPickup containerPickup = colonist.storedJob.containerPickups.Find(pickup => pickup.container == containerOnTile);
 				print(containerPickup);
 				if (containerPickup != null) {
 					foreach (ResourceManager.ReservedResources rr in containerPickup.container.inventory.TakeReservedResources(colonist)) {
@@ -163,7 +163,7 @@ public class JobManager:MonoBehaviour {
 			}
 			if (colonist.storedJob != null && colonist.storedJob.containerPickups.Count <= 0) {
 				print("Setting stored job on " + name);
-				colonist.SetJob(new JobManager.ColonistJob(colonist,colonist.storedJob,colonist.storedJob.colonistResources,null,colonist.jobM,pathM));
+				colonist.SetJob(new ColonistJob(colonist,colonist.storedJob,colonist.storedJob.colonistResources,null,colonist.jobM,pathM));
 			}
 		});
 		finishJobFunctions.Add(JobTypesEnum.EmptyInventory,delegate (ColonistManager.Colonist colonist,Job job) {
@@ -186,6 +186,37 @@ public class JobManager:MonoBehaviour {
 					colonist.inventory.ChangeResourceAmount(removeResourceAmount.resource,-removeResourceAmount.amount);
 				}
 			}
+		});
+		finishJobFunctions.Add(JobTypesEnum.CollectFood,delegate (ColonistManager.Colonist colonist,Job job) {
+			ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == colonist.overTile);
+			if (containerOnTile != null) {
+				foreach (ResourceManager.ReservedResources rr in containerOnTile.inventory.TakeReservedResources(colonist)) {
+					foreach (ResourceManager.ResourceAmount ra in rr.resources) {
+						colonist.inventory.ChangeResourceAmount(ra.resource,ra.amount);
+					}
+				}
+			}
+			colonist.SetJob(new ColonistJob(colonist,new Job(colonist.overTile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat),0,colonistM,resourceM),null,null,this,pathM));
+		});
+		finishJobFunctions.Add(JobTypesEnum.Eat,delegate (ColonistManager.Colonist colonist,Job job) {
+			List<ResourceManager.ResourceAmount> resourcesToEat = colonist.inventory.resources.Where(r => r.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods).OrderBy(r => r.resource.nutrition).ToList();
+			ColonistManager.NeedInstance foodNeed = colonist.needs.Find(need => need.prefab.type == ColonistManager.NeedsEnum.Food);
+			foreach (ResourceManager.ResourceAmount ra in resourcesToEat) {
+				bool stopEating = false;
+				for (int i = 0; i < ra.amount; i++) {
+					if (foodNeed.value - ra.resource.nutrition < 0) {
+						stopEating = true;
+						break;
+					}
+					foodNeed.value -= ra.resource.nutrition;
+				}
+				if (stopEating) {
+					break;
+				}
+			}
+		});
+		finishJobFunctions.Add(JobTypesEnum.Sleep,delegate (ColonistManager.Colonist colonist,Job job) {
+			print("Sleeping");
 		});
 	}
 

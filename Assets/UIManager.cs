@@ -100,9 +100,10 @@ public class UIManager : MonoBehaviour {
 
 		selectedColonistInformationPanel = GameObject.Find("SelectedColonistInfo-Panel");
 
-		happinessModifiersPanel = selectedColonistInformationPanel.transform.Find("HappinessModifiers-Panel").gameObject;
+		happinessModifiersPanel = selectedColonistInformationPanel.transform.Find("HappinessModifier-Panel").gameObject;
 		happinessModifiersButton = selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessModifiers-Button").gameObject;
 		happinessModifiersButton.GetComponent<Button>().onClick.AddListener(delegate { happinessModifiersPanel.SetActive(!happinessModifiersPanel.activeSelf); });
+		happinessModifiersPanel.SetActive(false);
 
 		dateTimeInformationPanel = GameObject.Find("DateTimeInformation-Panel");
 
@@ -697,7 +698,7 @@ public class UIManager : MonoBehaviour {
 		}
 
 		public void Update() {
-			obj.transform.Find("NeedValue-Text").GetComponent<Text>().text = needInstance.prefab.name;
+			obj.transform.Find("NeedValue-Text").GetComponent<Text>().text = (Mathf.RoundToInt((needInstance.value / needInstance.prefab.clampValue) * 100)) + "%";
 
 			obj.transform.Find("Need-Slider").GetComponent<Slider>().value = needInstance.value;
 			obj.transform.Find("Need-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(darkGreen,darkRed,(needInstance.value / needInstance.prefab.clampValue));
@@ -827,10 +828,10 @@ public class UIManager : MonoBehaviour {
 
 	public void UpdateSelectedColonistInformation() {
 		if (colonistM.selectedColonist != null) {
-			selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().minValue = 0;
-			selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().maxValue = colonistM.selectedColonist.inventory.maxAmount;
-			selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventory-Slider").GetComponent<Slider>().value = colonistM.selectedColonist.inventory.CountResources();
-			selectedColonistInformationPanel.transform.Find("ColonistInventoryToggle-Button/ColonistInventoryValue-Text").GetComponent<Text>().text = colonistM.selectedColonist.inventory.CountResources() + "/ " + colonistM.selectedColonist.inventory.maxAmount;
+			selectedColonistInformationPanel.transform.Find("ColonistInventory-Panel/ColonistInventory-Slider").GetComponent<Slider>().minValue = 0;
+			selectedColonistInformationPanel.transform.Find("ColonistInventory-Panel/ColonistInventory-Slider").GetComponent<Slider>().maxValue = colonistM.selectedColonist.inventory.maxAmount;
+			selectedColonistInformationPanel.transform.Find("ColonistInventory-Panel/ColonistInventory-Slider").GetComponent<Slider>().value = colonistM.selectedColonist.inventory.CountResources();
+			selectedColonistInformationPanel.transform.Find("ColonistInventory-Panel/ColonistInventoryValue-Text").GetComponent<Text>().text = colonistM.selectedColonist.inventory.CountResources() + "/ " + colonistM.selectedColonist.inventory.maxAmount;
 
 			selectedColonistInformationPanel.transform.Find("ColonistAction-Text").GetComponent<Text>().text = "NO ACTION TEXT";
 
@@ -838,7 +839,7 @@ public class UIManager : MonoBehaviour {
 
 			int happinessLength = Mathf.Abs(colonistM.selectedColonist.happinessModifiersSum).ToString().Length;
 			happinessModifiersButton.GetComponent<RectTransform>().sizeDelta = new Vector2(happinessModifierButtonSizeMap[happinessLength],20);
-			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<RectTransform>().offsetMax = new Vector2(happinessModifierValueHorizontalPositionMap[happinessLength],20);
+			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<RectTransform>().offsetMin = new Vector2(happinessModifierValueHorizontalPositionMap[happinessLength],-20);
 
 			foreach (SkillElement skillElement in skillElements) {
 				skillElement.Update();
