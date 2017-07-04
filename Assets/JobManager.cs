@@ -239,7 +239,7 @@ public class JobManager:MonoBehaviour {
 	private GameObject selectionSizePanel;
 	public void SelectedPrefabPreview() {
 		Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
-		TileManager.Tile tile = tileM.GetTileFromPosition(mousePosition);
+		TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
 		selectedPrefabPreview.transform.position = tile.obj.transform.position;
 	}
 
@@ -386,7 +386,7 @@ public class JobManager:MonoBehaviour {
 		if (selectedPrefab != null) {
 			Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 			if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
-				firstTile = tileM.GetTileFromPosition(mousePosition);
+				firstTile = tileM.map.GetTileFromPosition(mousePosition);
 			}
 			if (firstTile != null) {
 				if (stopSelection) {
@@ -394,7 +394,7 @@ public class JobManager:MonoBehaviour {
 					firstTile = null;
 					return;
 				}
-				TileManager.Tile secondTile = tileM.GetTileFromPosition(mousePosition);
+				TileManager.Tile secondTile = tileM.map.GetTileFromPosition(mousePosition);
 				if (secondTile != null) {
 
 					enableSelectionPreview = false;
@@ -411,7 +411,7 @@ public class JobManager:MonoBehaviour {
 
 					for (float y = smallerY; y < maxY; y++) {
 						for (float x = smallerX; x < maxX; x++) {
-							TileManager.Tile tile = tileM.GetTileFromPosition(new Vector2(x,y));
+							TileManager.Tile tile = tileM.map.GetTileFromPosition(new Vector2(x,y));
 							if (selectedPrefab.selectionModifiers.Contains(SelectionModifiersEnum.Outline)) {
 								if (x == smallerX || y == smallerY || x == ((largerX - smallerX) + smallerX) || y == ((largerY - smallerY) + smallerY)) {
 									selectionArea.Add(tile);

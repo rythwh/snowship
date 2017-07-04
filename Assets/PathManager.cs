@@ -115,18 +115,18 @@ public class PathManager : MonoBehaviour {
 	}
 
 	public class PathfindingRegionBlock {
-		public TileManager.RegionBlock regionBlock;
+		public TileManager.Map.RegionBlock regionBlock;
 		public PathfindingRegionBlock cameFrom;
 		public float cost;
 
-		public PathfindingRegionBlock(TileManager.RegionBlock regionBlock,PathfindingRegionBlock cameFrom, float cost) {
+		public PathfindingRegionBlock(TileManager.Map.RegionBlock regionBlock,PathfindingRegionBlock cameFrom, float cost) {
 			this.regionBlock = regionBlock;
 			this.cameFrom = cameFrom;
 			this.cost = cost;
 		}
 	}
 
-	public float RegionBlockDistance(TileManager.RegionBlock startRegionBlock,TileManager.RegionBlock endRegionBlock,bool careAboutWalkability,bool walkable, bool allowEndTileNonWalkable) {
+	public float RegionBlockDistance(TileManager.Map.RegionBlock startRegionBlock,TileManager.Map.RegionBlock endRegionBlock,bool careAboutWalkability,bool walkable, bool allowEndTileNonWalkable) {
 
 		if (!allowEndTileNonWalkable && (careAboutWalkability && (startRegionBlock.tileType.walkable != endRegionBlock.tileType.walkable || startRegionBlock.tiles[0].region != endRegionBlock.tiles[0].region))) {
 			return Mathf.Infinity;
@@ -134,7 +134,7 @@ public class PathManager : MonoBehaviour {
 
 		PathfindingRegionBlock currentRegionBlock = new PathfindingRegionBlock(startRegionBlock,null,0);
 		List<PathfindingRegionBlock> frontier = new List<PathfindingRegionBlock>() { currentRegionBlock };
-		List<TileManager.RegionBlock> checkedBlocks = new List<TileManager.RegionBlock>() { startRegionBlock };
+		List<TileManager.Map.RegionBlock> checkedBlocks = new List<TileManager.Map.RegionBlock>() { startRegionBlock };
 		while (frontier.Count > 0) {
 			currentRegionBlock = frontier[0];
 			if (currentRegionBlock.regionBlock == endRegionBlock) {
@@ -146,7 +146,7 @@ public class PathManager : MonoBehaviour {
 				return distance;
 			}
 			frontier.RemoveAt(0);
-			foreach (TileManager.RegionBlock regionBlock in currentRegionBlock.regionBlock.horizontalSurroundingRegionBlocks) {
+			foreach (TileManager.Map.RegionBlock regionBlock in currentRegionBlock.regionBlock.horizontalSurroundingRegionBlocks) {
 				if ((allowEndTileNonWalkable && regionBlock == endRegionBlock ? true : (careAboutWalkability ? regionBlock.tileType.walkable == walkable : true)) && !checkedBlocks.Contains(regionBlock)) {
 					PathfindingRegionBlock pRegionBlock = new PathfindingRegionBlock(regionBlock,currentRegionBlock,Vector2.Distance(regionBlock.averagePosition,endRegionBlock.averagePosition));
 					frontier.Add(pRegionBlock);

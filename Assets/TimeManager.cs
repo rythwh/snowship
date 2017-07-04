@@ -27,6 +27,8 @@ public class TimeManager : MonoBehaviour {
 
 	public bool isDay;
 
+	public bool minuteChanged;
+
 	void Update() {
 		if (Input.GetKeyDown(KeyCode.Alpha1)) {
 			if (timeModifier > 0) {
@@ -56,12 +58,14 @@ public class TimeManager : MonoBehaviour {
 		deltaTime = Time.deltaTime * timeModifier;
 
 		timer += 1f * deltaTime;
+		minuteChanged = false;
 		if (timer >= 1) {
 			minute += 1;
 			timer = 0;
 			if (minute % 10 == 0) {
-				tileM.SetTileBrightness(GetTileBrightnessTime());
+				tileM.map.SetTileBrightness(GetTileBrightnessTime());
 			}
+			minuteChanged = true;
 			if (minute >= 60) {
 				minute = 1;
 				hour += 1;

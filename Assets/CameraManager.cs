@@ -30,7 +30,7 @@ public class CameraManager : MonoBehaviour {
 
 		if (tileM.generated) {
 			cameraGO.transform.Translate(new Vector2(Input.GetAxis("Horizontal"),Input.GetAxis("Vertical")) * cameraComponent.orthographicSize * Time.deltaTime);
-			cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x,0,tileM.mapData.mapSize),Mathf.Clamp(cameraGO.transform.position.y,0,tileM.mapData.mapSize));
+			cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x,0,tileM.map.mapData.mapSize),Mathf.Clamp(cameraGO.transform.position.y,0,tileM.map.mapData.mapSize));
 		}
 
 		if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
