@@ -1,5 +1,5 @@
 Food/
-	1.0/
+	0.01/
 	true/
 	4.32/
 	true/
@@ -14,11 +14,11 @@ Food/
 	Overeater,Dieter/
 	1.1,1.1`
 Rest/
-	1.0/
+	0.01/
 	true/
-	0.6/
+	10.08/
 	true/
-	2/
+	28.8/
 	true/
 	10/
 	false/
@@ -29,7 +29,7 @@ Rest/
 	/
 	`
 Temperature/
-	1.0/
+	0.01/
 	false/
 	0/
 	false/
@@ -44,7 +44,7 @@ Temperature/
 	/
 	`
 Shelter/
-	1.0/
+	0.01/
 	false/
 	0/
 	false/
@@ -59,7 +59,7 @@ Shelter/
 	/
 	`
 Clothing/
-	1.0/
+	0.01/
 	false/
 	0/
 	false/

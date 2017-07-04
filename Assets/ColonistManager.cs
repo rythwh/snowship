@@ -85,7 +85,7 @@ public class ColonistManager : MonoBehaviour {
 
 		public void Update() {
 			overTileChanged = false;
-			TileManager.Tile newOverTile = tileM.GetTileFromPosition(obj.transform.position);
+			TileManager.Tile newOverTile = tileM.map.GetTileFromPosition(obj.transform.position);
 			if (overTile != newOverTile) {
 				overTileChanged = true;
 				overTile = newOverTile;
@@ -365,10 +365,9 @@ public class ColonistManager : MonoBehaviour {
 
 	public void InitializeNeedsValueFunctions() {
 		needsValueFunctions.Add(NeedsEnum.Food,delegate (NeedInstance need) {
-			CalculateNeedValue(need);
 			if (need.prefab.minimumValueAction && need.value > need.prefab.minimumValue) {
 				if (need.colonist.job == null) {
-					if (Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
+					if (timeM.minuteChanged && Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
 						if (need.colonist.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) == null) {
 							KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>> closestFood = FindClosestFood(need.colonist,false,need.value);
 							ResourceManager.Container container = closestFood.Key;
@@ -424,16 +423,19 @@ public class ColonistManager : MonoBehaviour {
 	Convert 
 
 	0	NeedName/
-	1	0.01,		BRI			Base rate of increase per second while conditions met
-	2	false,		AMinVB		Whether there is any action taken at MinV
-	3	0, 			MinV		No action
-	4	false,		AMaxVB		Whether there is any action taken at MaxV
-	5	0,			MaxV		No action
-	6	0,			CV			Percentage over MaxT until they begin dying from the need not being fulfilled
-	7	false,		DB			Whether they can die from this need not being fulfilled
-	8	0.0`		DR			Base rate of health loss due to the need not being fulfilled
-	9	100`		ClampV		Value above which the food value will be clamped
-	10	0			Priority	The priority of fulfilling the requirements of this need over others
+	1	0.01/		BRI			Base rate of increase per second while conditions met
+	2	false/		AMinVB		Whether there is any action taken at MinV
+	3	0/			MinV		No action
+	4	false/		AMaxVB		Whether there is any action taken at MaxV
+	5	0/			MaxV		No action
+	6	0/			CV			Percentage over MaxT until they begin dying from the need not being fulfilled
+	7	false/		DB			Whether they can die from this need not being fulfilled
+	8	0.0/		DR			Base rate of health loss due to the need not being fulfilled
+	9	100/		ClampV		Value above which the food value will be clamped
+	10	0/			Priority	The priority of fulfilling the requirements of this need over others
+	11	2/			Number of Affected Traits
+	12	TraitName,TraitName/	Names of the affected traits
+	13	1.1,1.1`	Multiplier of the BRI for each trait
 	*/
 
 	public List<NeedPrefab> needPrefabs = new List<NeedPrefab>();
@@ -648,6 +650,7 @@ public class ColonistManager : MonoBehaviour {
 
 		private void UpdateNeeds() {
 			foreach (NeedInstance need in needs) {
+				colonistM.CalculateNeedValue(need);
 				colonistM.needsValueFunctions[need.prefab.type](need);
 			}
 			for (int i = 0; i < happinessModifiers.Count; i++) {
@@ -749,7 +752,7 @@ public class ColonistManager : MonoBehaviour {
 				} else {
 					walkableSurroundingTiles.Clear();
 					List<TileManager.Tile> potentialWalkableSurroundingTiles = new List<TileManager.Tile>();
-					foreach (TileManager.RegionBlock regionBlock in overTile.regionBlock.horizontalSurroundingRegionBlocks) {
+					foreach (TileManager.Map.RegionBlock regionBlock in overTile.regionBlock.horizontalSurroundingRegionBlocks) {
 						if (regionBlock.tileType.walkable) {
 							potentialWalkableSurroundingTiles.AddRange(regionBlock.tiles);
 						}
@@ -759,7 +762,7 @@ public class ColonistManager : MonoBehaviour {
 						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
 						MoveToTile(walkableSurroundingTiles[0],false);
 					} else {
-						List<TileManager.Tile> validTiles = tileM.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
+						List<TileManager.Tile> validTiles = tileM.map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
 						if (validTiles.Count > 0) {
 							MoveToTile(validTiles[0],false);
 						}
@@ -820,7 +823,7 @@ public class ColonistManager : MonoBehaviour {
 			humanMoveSprites.Add(innerHumanMoveSprites);
 		}
 
-		int mapSize = tileM.mapData.mapSize;
+		int mapSize = tileM.map.mapData.mapSize;
 		for (int i = 0;i < amount;i++) {
 
 			Dictionary<ColonistLook,int> colonistLookIndexes = new Dictionary<ColonistLook,int>() {
@@ -828,13 +831,13 @@ public class ColonistManager : MonoBehaviour {
 				{ColonistLook.Shirt, Random.Range(0,0) },{ColonistLook.Pants, Random.Range(0,0) }
 			};
 
-			List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
+			List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 			if (walkableTilesByDistanceToCentre.Count <= 0) {
-				foreach (TileManager.Tile tile in tileM.tiles.Where(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f)) <= 4f)) {
+				foreach (TileManager.Tile tile in tileM.map.tiles.Where(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f)) <= 4f)) {
 					tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Grass),true,true,true,true);
 				}
-				tileM.Bitmasking(tileM.tiles);
-				walkableTilesByDistanceToCentre = tileM.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
+				tileM.map.Bitmasking(tileM.map.tiles);
+				walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 			}
 			TileManager.Tile colonistSpawnTile = walkableTilesByDistanceToCentre[Random.Range(0,(walkableTilesByDistanceToCentre.Count > 30 ? 30 : walkableTilesByDistanceToCentre.Count))];
 
@@ -879,7 +882,7 @@ public class ColonistManager : MonoBehaviour {
 			}
 
 			if (!foundColonist && selectedColonist != null) {
-				selectedColonist.PlayerMoveToTile(tileM.GetTileFromPosition(mousePosition));
+				selectedColonist.PlayerMoveToTile(tileM.map.GetTileFromPosition(mousePosition));
 			}
 		}
 		if (Input.GetMouseButtonDown(1)) {
