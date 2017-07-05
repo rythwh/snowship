@@ -17,24 +17,75 @@ public class TileManager:MonoBehaviour {
 		colonistM = GetComponent<ColonistManager>();
 	}
 
-	public enum PlantGroups { Cactus, ColourfulShrub, ColourfulTree, DeadTree, Shrub, SnowTree, ThinTree, WideTree };
-	private Dictionary<PlantGroups,List<ResourceManager.ResourceAmount>> plantResources = new Dictionary<PlantGroups,List<ResourceManager.ResourceAmount>>();
+	public enum PlantGroupsEnum { Cactus, ColourfulShrub, ColourfulTree, DeadTree, Shrub, SnowTree, ThinTree, WideTree };
 
-	public void CreatePlantResources() {
+	private Dictionary<PlantGroupsEnum,ResourceManager.ResourcesEnum> plantSeeds = new Dictionary<PlantGroupsEnum,ResourceManager.ResourcesEnum>() {
+		{ PlantGroupsEnum.ColourfulShrub,ResourceManager.ResourcesEnum.ShrubSeeds },
+		{ PlantGroupsEnum.ColourfulTree,ResourceManager.ResourcesEnum.TreeSeeds },
+		{ PlantGroupsEnum.DeadTree,ResourceManager.ResourcesEnum.TreeSeeds },
+		{ PlantGroupsEnum.Shrub,ResourceManager.ResourcesEnum.ShrubSeeds },
+		{ PlantGroupsEnum.SnowTree,ResourceManager.ResourcesEnum.TreeSeeds },
+		{ PlantGroupsEnum.ThinTree,ResourceManager.ResourcesEnum.TreeSeeds },
+		{ PlantGroupsEnum.WideTree,ResourceManager.ResourcesEnum.TreeSeeds },
+		{ PlantGroupsEnum.Cactus,ResourceManager.ResourcesEnum.CactusSeeds }
+	};
+	public Dictionary<PlantGroupsEnum,ResourceManager.ResourcesEnum> GetPlantSeeds() {
+		return plantSeeds;
+	}
+
+	private Dictionary<PlantGroupsEnum,ResourceManager.TileObjectPrefabsEnum> plantPlantObjectPrefabs = new Dictionary<PlantGroupsEnum,ResourceManager.TileObjectPrefabsEnum>() {
+		{ PlantGroupsEnum.ColourfulShrub,ResourceManager.TileObjectPrefabsEnum.PlantShrub },
+		{ PlantGroupsEnum.ColourfulTree,ResourceManager.TileObjectPrefabsEnum.PlantTree },
+		{ PlantGroupsEnum.DeadTree,ResourceManager.TileObjectPrefabsEnum.PlantTree },
+		{ PlantGroupsEnum.Shrub,ResourceManager.TileObjectPrefabsEnum.PlantShrub },
+		{ PlantGroupsEnum.SnowTree,ResourceManager.TileObjectPrefabsEnum.PlantTree },
+		{ PlantGroupsEnum.ThinTree,ResourceManager.TileObjectPrefabsEnum.PlantTree },
+		{ PlantGroupsEnum.WideTree,ResourceManager.TileObjectPrefabsEnum.PlantTree },
+		{ PlantGroupsEnum.Cactus,ResourceManager.TileObjectPrefabsEnum.PlantCactus }
+	};
+	public Dictionary<PlantGroupsEnum,ResourceManager.TileObjectPrefabsEnum> GetPlantPlantObjectPrefabs() {
+		return plantPlantObjectPrefabs;
+	}
+
+	private Dictionary<PlantGroupsEnum,List<ResourceManager.ResourceAmount>> plantResources = new Dictionary<PlantGroupsEnum,List<ResourceManager.ResourceAmount>>();
+	public void SetPlantResources() {
 		ResourceManager.Resource woodResource = resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood);
-		plantResources.Add(PlantGroups.ColourfulShrub,	new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,2) });
-		plantResources.Add(PlantGroups.ColourfulTree,	new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,5) });
-		plantResources.Add(PlantGroups.DeadTree,		new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,3) });
-		plantResources.Add(PlantGroups.Shrub,			new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,2) });
-		plantResources.Add(PlantGroups.SnowTree,		new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,5) });
-		plantResources.Add(PlantGroups.ThinTree,		new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,5) });
-		plantResources.Add(PlantGroups.WideTree,		new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(woodResource,6) });
+		plantResources.Add(PlantGroupsEnum.ColourfulShrub,	new List<ResourceManager.ResourceAmount>() {
+			new ResourceManager.ResourceAmount(woodResource,2),
+			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.ColourfulShrub]),2)
+		});
+		plantResources.Add(PlantGroupsEnum.ColourfulTree,	new List<ResourceManager.ResourceAmount>() {
+			new ResourceManager.ResourceAmount(woodResource,5),
+			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.ColourfulTree]),3)
+		});
+		plantResources.Add(PlantGroupsEnum.DeadTree,		new List<ResourceManager.ResourceAmount>() {
+			new ResourceManager.ResourceAmount(woodResource,3)
+		});
+		plantResources.Add(PlantGroupsEnum.Shrub,			new List<ResourceManager.ResourceAmount>() {
+			new ResourceManager.ResourceAmount(woodResource,2),
+			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.Shrub]),2)
+		});
+		plantResources.Add(PlantGroupsEnum.SnowTree,		new List<ResourceManager.ResourceAmount>() {
+			new ResourceManager.ResourceAmount(woodResource,5),
+			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.SnowTree]),3)
+		});
+		plantResources.Add(PlantGroupsEnum.ThinTree,		new List<ResourceManager.ResourceAmount>() {
+			new ResourceManager.ResourceAmount(woodResource,5),
+			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.ThinTree]),3)
+		});
+		plantResources.Add(PlantGroupsEnum.WideTree,		new List<ResourceManager.ResourceAmount>() {
+			new ResourceManager.ResourceAmount(woodResource,6),
+			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.WideTree]),3)
+		});
+		plantResources.Add(PlantGroupsEnum.Cactus,new List<ResourceManager.ResourceAmount>() {
+			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.Cactus]),3)
+		});
 	}
 
 	public List<PlantGroup> plantGroups = new List<PlantGroup>();
 
 	public class PlantGroup {
-		public PlantGroups type;
+		public PlantGroupsEnum type;
 		public string name;
 
 		public List<Sprite> smallPlants = new List<Sprite>();
@@ -42,7 +93,7 @@ public class TileManager:MonoBehaviour {
 
 		public List<ResourceManager.ResourceAmount> returnResources = new List<ResourceManager.ResourceAmount>();
 
-		public PlantGroup(PlantGroups type,List<ResourceManager.ResourceAmount> returnResources) {
+		public PlantGroup(PlantGroupsEnum type,List<ResourceManager.ResourceAmount> returnResources) {
 			this.type = type;
 			name = type.ToString();
 
@@ -54,7 +105,7 @@ public class TileManager:MonoBehaviour {
 	}
 
 	public void CreatePlantGroups() {
-		foreach (PlantGroups plantGroup in System.Enum.GetValues(typeof(PlantGroups))) {
+		foreach (PlantGroupsEnum plantGroup in System.Enum.GetValues(typeof(PlantGroupsEnum))) {
 			plantGroups.Add(new PlantGroup(plantGroup,(plantResources.ContainsKey(plantGroup) ? plantResources[plantGroup] : new List<ResourceManager.ResourceAmount>())));
 		}
 		foreach (PlantGroup plantGroup in plantGroups) {
@@ -62,7 +113,7 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
-	public PlantGroup GetPlantGroupByEnum(PlantGroups plantGroup) {
+	public PlantGroup GetPlantGroupByEnum(PlantGroupsEnum plantGroup) {
 		return plantGroups.Find(group => group.type == plantGroup);
 	}
 
@@ -73,19 +124,16 @@ public class TileManager:MonoBehaviour {
 
 		bool small;
 
-		public Plant(PlantGroup group, Tile tile) {
+		public Plant(PlantGroup group, Tile tile, bool randomSmall, bool smallValue) {
 			this.group = group;
 			this.tile = tile;
 			
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform.position,Quaternion.identity);
+
 			SpriteRenderer pSR = obj.GetComponent<SpriteRenderer>();
-			if (Random.Range(0f,1f) < 0.1f) {
-				small = true;
-				pSR.sprite = group.smallPlants[Random.Range(0,group.smallPlants.Count)];
-			} else {
-				small = false;
-				pSR.sprite = group.fullPlants[Random.Range(0,group.fullPlants.Count)];
-			}
+
+			small = (randomSmall ? Random.Range(0f,1f) < 0.1f : smallValue);
+			pSR.sprite = (small ? group.smallPlants[Random.Range(0,group.smallPlants.Count)] : group.fullPlants[Random.Range(0,group.fullPlants.Count)]);
 			pSR.sortingOrder = 1; // Plant Sprite
 
 			obj.name = "PLANT " + pSR.sprite.name;
@@ -103,6 +151,21 @@ public class TileManager:MonoBehaviour {
 			}
 			return resourcesToReturn;
 		}
+	}
+
+	public PlantGroup GetPlantGroupByBiome(Biome biome, bool guaranteedTree) {
+		if (guaranteedTree) {
+			List<PlantGroupsEnum> biomePlantGroupsEnums = biome.vegetationChances.Keys.Where(group => group != PlantGroupsEnum.DeadTree).ToList();
+			return GetPlantGroupByEnum(biomePlantGroupsEnums[Random.Range(0,biomePlantGroupsEnums.Count)]);
+		} else {
+			foreach (KeyValuePair<PlantGroupsEnum,float> kvp in biome.vegetationChances) {
+				PlantGroupsEnum plantGroup = kvp.Key;
+				if (Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
+					return GetPlantGroupByEnum(plantGroup);
+				}
+			}
+		}
+		return null;
 	}
 
 	public enum TileTypes { GrassWater, Ice, Dirt, DirtWater, Mud, DirtGrass, DirtThinGrass, DirtDryGrass, Grass, ThickGrass, ColdGrass, ColdGrassWater, DryGrass, DryGrassWater, Sand, SandWater,
@@ -205,7 +268,7 @@ public class TileManager:MonoBehaviour {
 		public List<int> temperatureRange = new List<int>();
 		public List<float> precipitationRange = new List<float>();
 
-		public Dictionary<PlantGroups,float> vegetationChances = new Dictionary<PlantGroups,float>();
+		public Dictionary<PlantGroupsEnum,float> vegetationChances = new Dictionary<PlantGroupsEnum,float>();
 
 		public Color colour;
 
@@ -249,7 +312,7 @@ public class TileManager:MonoBehaviour {
 			if (float.Parse(biomeData[4].Split(',')[0]) != 0) {
 				int vegetationIndex = 0;
 				foreach (string vegetationChance in biomeData[4].Split(',').ToList()) {
-					vegetationChances.Add((PlantGroups)System.Enum.Parse(typeof(PlantGroups),biomeData[5].Split(',').ToList()[vegetationIndex]),float.Parse(vegetationChance));
+					vegetationChances.Add((PlantGroupsEnum)System.Enum.Parse(typeof(PlantGroupsEnum),biomeData[5].Split(',').ToList()[vegetationIndex]),float.Parse(vegetationChance));
 					vegetationIndex += 1;
 				}
 			}
@@ -516,22 +579,32 @@ public class TileManager:MonoBehaviour {
 				}
 			}
 			if (tileM.PlantableTileTypes.Contains(tileType.type)) {
-				SetPlant(false);
+				SetPlant(false,null);
 			}
 		}
 
-		public void SetPlant(bool removePlant) {
+		public void SetPlant(bool removePlant, Plant specificPlant) {
 			if (plant != null) {
 				Destroy(plant.obj);
 				plant = null;
 			}
 			if (!removePlant) {
-				foreach (KeyValuePair<PlantGroups,float> kvp in biome.vegetationChances) {
-					PlantGroups plantGroup = kvp.Key;
-					if (Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
-						plant = new Plant(tileM.GetPlantGroupByEnum(plantGroup),this);
-						break;
+				if (specificPlant == null) {
+					/*
+					foreach (KeyValuePair<PlantGroupsEnum,float> kvp in biome.vegetationChances) {
+						PlantGroupsEnum plantGroup = kvp.Key;
+						if (Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
+							plant = new Plant(tileM.GetPlantGroupByEnum(plantGroup),this,true,false);
+							break;
+						}
 					}
+					*/
+					PlantGroup biomePlantGroup = tileM.GetPlantGroupByBiome(biome,false);
+					if (biomePlantGroup != null) {
+						plant = new Plant(biomePlantGroup,this,true,false);
+					}
+				} else {
+					plant = specificPlant;
 				}
 			}
 			SetWalkSpeed();
@@ -641,7 +714,12 @@ public class TileManager:MonoBehaviour {
 		}
 
 		public void SetColour(Color newColour, int hour) {
-			sr.color = newColour * (brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f);
+			//sr.color = newColour * (brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f);
+			
+			float currentHourBrightness = (brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f);
+			int nextHour = (hour == 23 ? 0 : hour + 1);
+			float nextHourBrightness = (brightnessAtHour.ContainsKey(nextHour) ? brightnessAtHour[nextHour] : 1f);
+			sr.color = newColour * Mathf.Lerp(currentHourBrightness,nextHourBrightness,(timeM.GetTileBrightnessTime() - hour));
 			if (plant != null) {
 				plant.obj.GetComponent<SpriteRenderer>().color = new Color(sr.color.r,sr.color.g,sr.color.b,1f); ;
 			}

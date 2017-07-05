@@ -26,7 +26,8 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourcesEnum {
 		Wood, Stone, Cloth, Dirt, Granite, Limestone, Marble, Sandstone, Slate, Clay, Firewood,
-		WheatSeeds, Wheat, PotatoSeeds, Potatoes, Berries, Apples
+		WheatSeeds, PotatoSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
+		Wheat, Potatoes, Berries, Apples
 	};
 
 	public List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
@@ -86,7 +87,7 @@ public class ResourceManager : MonoBehaviour {
 			ResourceGroup resourceGroup = new ResourceGroup(resourceGroupData,this);
 			resourceGroups.Add(resourceGroup);
 		}
-		tileM.CreatePlantResources();
+		tileM.SetPlantResources();
 	}
 
 	public Resource GetResourceByEnum(ResourcesEnum resourceEnum) {
@@ -134,9 +135,10 @@ public class ResourceManager : MonoBehaviour {
 		Basket, WoodenChest,
 		WoodenBed,
 		RemoveLayer1, RemoveLayer2, RemoveAll,
-		ChopPlant, Mine,
+		ChopPlant, PlantPlant, Mine,
 		WheatFarm, PotatoFarm, HarvestFarm,
-		PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep
+		PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep,
+		PlantTree, PlantShrub, PlantCactus
 	};
 
 	List<TileObjectPrefabsEnum> BitmaskingTileObjects = new List<TileObjectPrefabsEnum>() {
@@ -245,6 +247,8 @@ public class ResourceManager : MonoBehaviour {
 
 		public bool addToTileWhenBuilt;
 
+		public Vector2 blockingAmount;
+
 		public int maxInventoryAmount;
 
 		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup) {
@@ -294,8 +298,11 @@ public class ResourceManager : MonoBehaviour {
 				baseSprite = bitmaskSprites[bitmaskSprites.Count - 1];
 			}
 
+			List<string> blockingDirections = properties[12].Split(',').ToList();
+			blockingAmount = new Vector2(float.Parse(blockingDirections[0]),float.Parse(blockingDirections[1]));
+
 			if (resourceM.ContainerTileObjectTypes.Contains(type)) {
-				maxInventoryAmount = int.Parse(properties[12]);
+				maxInventoryAmount = int.Parse(properties[13]);
 			}
 
 			resourceM.tileObjectPrefabs.Add(this);
@@ -423,7 +430,6 @@ public class ResourceManager : MonoBehaviour {
 		private TimeManager timeM;
 		private JobManager jobM;
 		private ResourceManager resourceM;
-		private ColonistManager colonistM;
 		private UIManager uiM;
 
 		void GetScriptReferencecs() {
@@ -432,7 +438,6 @@ public class ResourceManager : MonoBehaviour {
 			timeM = GM.GetComponent<TimeManager>();
 			jobM = GM.GetComponent<JobManager>();
 			resourceM = GM.GetComponent<ResourceManager>();
-			colonistM = GM.GetComponent<ColonistManager>();
 			uiM = GM.GetComponent<UIManager>();
 		}
 
@@ -459,7 +464,7 @@ public class ResourceManager : MonoBehaviour {
 		public void Update() {
 			if (growTimer >= maxGrowthTime) {
 				if (!jobM.JobOfTypeExistsAtTile(JobManager.JobTypesEnum.HarvestFarm,tile)) {
-					jobM.CreateJob(new JobManager.Job(tile,resourceM.GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.HarvestFarm),0,colonistM,resourceM));
+					jobM.CreateJob(new JobManager.Job(tile,resourceM.GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.HarvestFarm),0));
 				}
 			} else {
 				growTimer += 1 * timeM.deltaTime;
