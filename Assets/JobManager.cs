@@ -32,6 +32,19 @@ public class JobManager:MonoBehaviour {
 	public List<Job> jobs = new List<Job>();
 
 	public class Job {
+
+		private ColonistManager colonistM;
+		private ResourceManager resourceM;
+		private TileManager tileM;
+
+		private void GetScriptReferences() {
+			GameObject GM = GameObject.Find("GM");
+
+			colonistM = GM.GetComponent<ColonistManager>();
+			resourceM = GM.GetComponent<ResourceManager>();
+			tileM = GM.GetComponent<TileManager>();
+		}
+
 		public TileManager.Tile tile;
 		public ResourceManager.TileObjectPrefab prefab;
 		public ColonistManager.Colonist colonist;
@@ -51,9 +64,20 @@ public class JobManager:MonoBehaviour {
 
 		public UIManager.JobElement jobUIElement;
 
-		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab,int rotationIndex,ColonistManager colonistM,ResourceManager resourceM) {
+		public TileManager.Plant plant;
+
+		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab,int rotationIndex) {
+
+			GetScriptReferences();
+
 			this.tile = tile;
 			this.prefab = prefab;
+
+			if (prefab.jobType == JobTypesEnum.PlantPlant) {
+				plant = new TileManager.Plant(tileM.GetPlantGroupByBiome(tile.biome,true),tile,false,true);
+				plant.obj.SetActive(false);
+				this.prefab = resourceM.GetTileObjectPrefabByEnum(tileM.GetPlantPlantObjectPrefabs()[plant.group.type]);
+			}
 
 			this.rotationIndex = rotationIndex;
 
@@ -79,6 +103,8 @@ public class JobManager:MonoBehaviour {
 					break;
 				}
 			}
+
+			
 		}
 
 		public void SetColonist(ColonistManager.Colonist colonist, ResourceManager resourceM, ColonistManager colonistM, JobManager jobM, PathManager pathM) {
@@ -86,7 +112,7 @@ public class JobManager:MonoBehaviour {
 			if (prefab.jobType != JobTypesEnum.PickupResources && containerPickups != null && containerPickups.Count > 0) {
 				print(containerPickups[0].resourcesToPickup.Count);
 				colonist.storedJob = this;
-				colonist.SetJob(new ColonistJob(colonist,new Job(containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),0,colonistM,resourceM),null,null,jobM,pathM));
+				colonist.SetJob(new ColonistJob(colonist,new Job(containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),0),null,null,jobM,pathM));
 			}
 		}
 
@@ -97,7 +123,7 @@ public class JobManager:MonoBehaviour {
 
 	public enum JobTypesEnum {
 		Build, Remove,
-		ChopPlant, Mine, PlantFarm, HarvestFarm,
+		ChopPlant, PlantPlant, Mine, PlantFarm, HarvestFarm,
 		PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep
 	};
 
@@ -130,7 +156,7 @@ public class JobManager:MonoBehaviour {
 		finishJobFunctions.Add(JobTypesEnum.HarvestFarm,delegate (ColonistManager.Colonist colonist,Job job) {
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(job.tile.farm.seedType),Random.Range(1,3));
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(resourceM.GetFarmSeedReturnResource()[job.tile.farm.seedType]),Random.Range(1,6));
-			CreateJob(new Job(job.tile,resourceM.GetTileObjectPrefabByEnum(resourceM.GetFarmSeedsTileObject()[job.tile.farm.seedType]),0,colonistM,resourceM));
+			CreateJob(new Job(job.tile,resourceM.GetTileObjectPrefabByEnum(resourceM.GetFarmSeedsTileObject()[job.tile.farm.seedType]),0));
 			job.tile.RemoveTileObjectAtLayer(job.tile.farm.prefab.layer);
 			job.tile.SetFarm(null);
 		});
@@ -138,7 +164,13 @@ public class JobManager:MonoBehaviour {
 			foreach (ResourceManager.ResourceAmount resourceAmount in job.tile.plant.GetResources()) {
 				colonist.inventory.ChangeResourceAmount(resourceAmount.resource,resourceAmount.amount);
 			}
-			job.tile.SetPlant(true);
+			job.tile.SetPlant(true,null);
+		});
+		finishJobFunctions.Add(JobTypesEnum.PlantPlant,delegate (ColonistManager.Colonist colonist,Job job) {
+			job.plant.obj.SetActive(true);
+			job.tile.SetPlant(false,job.plant);
+			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(tileM.GetPlantSeeds()[job.tile.plant.group.type]),-1);
+			tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 		});
 		finishJobFunctions.Add(JobTypesEnum.Mine,delegate (ColonistManager.Colonist colonist,Job job) {
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),job.tile.tileType.type.ToString())),Random.Range(4,7));
@@ -196,7 +228,7 @@ public class JobManager:MonoBehaviour {
 					}
 				}
 			}
-			colonist.SetJob(new ColonistJob(colonist,new Job(colonist.overTile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat),0,colonistM,resourceM),null,null,this,pathM));
+			colonist.SetJob(new ColonistJob(colonist,new Job(colonist.overTile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat),0),null,null,this,pathM));
 		});
 		finishJobFunctions.Add(JobTypesEnum.Eat,delegate (ColonistManager.Colonist colonist,Job job) {
 			List<ResourceManager.ResourceAmount> resourcesToEat = colonist.inventory.resources.Where(r => r.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods).OrderBy(r => r.resource.nutrition).ToList();
@@ -362,6 +394,9 @@ public class JobManager:MonoBehaviour {
 		selectionModifierFunctions.Add(SelectionModifiersEnum.Objects,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tile.GetAllObjectInstances().Count <= 0) { removeTiles.Add(tile); }
 		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitObjects,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
+			if (tile.GetAllObjectInstances().Count > 0) { removeTiles.Add(tile); }
+		});
 	}
 
 	private List<GameObject> selectionIndicators = new List<GameObject>();
@@ -515,11 +550,11 @@ public class JobManager:MonoBehaviour {
 			if (selectedPrefab.type == ResourceManager.TileObjectPrefabsEnum.RemoveAll) {
 				foreach (ResourceManager.TileObjectInstance instance in tile.GetAllObjectInstances()) {
 					if (RemoveLayerMap.ContainsKey(instance.prefab.layer) && !JobOfPrefabTypeExistsAtTile(RemoveLayerMap[instance.prefab.layer],tile)) {
-						CreateJob(new Job(tile,resourceM.GetTileObjectPrefabByEnum(RemoveLayerMap[instance.prefab.layer]),rotationIndex,colonistM,resourceM));
+						CreateJob(new Job(tile,resourceM.GetTileObjectPrefabByEnum(RemoveLayerMap[instance.prefab.layer]),rotationIndex));
 					}
 				}
 			} else {
-				CreateJob(new Job(tile,prefab,rotationIndex,colonistM,resourceM));
+				CreateJob(new Job(tile,prefab,rotationIndex));
 			}
 		}
 	}

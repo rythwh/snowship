@@ -26,7 +26,13 @@ Seeds:
 	WheatSeeds/
 		10`
 	PotatoSeeds/
-		5
+		5`
+	TreeSeeds/
+		5`
+	ShrubSeeds/
+		5`
+	CactusSeeds/
+		10
 ~
 RawFoods:
 	Wheat/

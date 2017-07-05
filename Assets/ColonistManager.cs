@@ -374,11 +374,11 @@ public class ColonistManager : MonoBehaviour {
 							List<ResourceManager.ResourceAmount> resourcesToReserve = closestFood.Value;
 							if (container != null) {
 								container.inventory.ReserveResources(resourcesToReserve,need.colonist);
-								JobManager.Job job = new JobManager.Job(container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.CollectFood),0,this,resourceM);
+								JobManager.Job job = new JobManager.Job(container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.CollectFood),0);
 								need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,job,null,null,jobM,pathM));
 							}
 						} else {
-							need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,new JobManager.Job(need.colonist.overTile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat),0,this,resourceM),null,null,jobM,pathM));
+							need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,new JobManager.Job(need.colonist.overTile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat),0),null,null,jobM,pathM));
 						}
 					}
 				}
@@ -630,7 +630,7 @@ public class ColonistManager : MonoBehaviour {
 						List<ResourceManager.Container> closestContainers = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock,overTile.regionBlock,true,true,false)).ToList();
 						if (closestContainers.Count > 0) {
 							ResourceManager.Container closestContainer = closestContainers[0];
-							SetJob(new JobManager.ColonistJob(this,new JobManager.Job(closestContainer.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory),0,colonistM,resourceM),null,null,jobM,pathM));
+							SetJob(new JobManager.ColonistJob(this,new JobManager.Job(closestContainer.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory),0),null,null,jobM,pathM));
 						}
 					} else {
 						Wander();

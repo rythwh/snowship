@@ -14,7 +14,8 @@
 			false/
 			1.0/
 			2/
-			true
+			true/
+			1.0,1.0
 		<Object>
 			StoneWall/
 			20/
@@ -27,7 +28,8 @@
 			false/
 			1.0/
 			2/
-			true
+			true/
+			1.0,1.0
 		<Object>
 			WoodenFence/
 			15/
@@ -40,7 +42,8 @@
 			false/
 			1.0/
 			2/
-			true
+			true/
+			0.5,0.5
 	<SubGroup>
 		Doors
 		<Object>
@@ -55,7 +58,8 @@
 			true/
 			0.5/
 			2/
-			true
+			true/
+			1.0,1.0
 	<SubGroup>
 		Floors
 		<Object>
@@ -70,7 +74,8 @@
 			true/
 			1.0/
 			1/
-			true
+			true/
+			0.0,0.0
 <Group>
 	Furniture
 	<SubGroup>
@@ -88,6 +93,7 @@
 			0.5/
 			2/
 			true/
+			0.35,0.5/
 			100
 		<Object>
 			WoodenChest/
@@ -102,6 +108,7 @@
 			0.5/
 			2/
 			true/
+			0.8,0.3/
 			250
 	<SubGroup>
 		Beds
@@ -117,7 +124,8 @@
 			true/
 			0.5/
 			2/
-			true
+			true/
+			1.0,0.3
 <Group>
 	Farm
 	<SubGroup>
@@ -128,26 +136,28 @@
 			1/
 			WheatSeeds/
 			true/
-			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs,OmitFarms/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
 			PlantFarm/
 			1.0/
 			true/
 			0.3/
 			2/
-			true
+			true/
+			0.0,0.0
 		<Object>
 			PotatoFarm/
 			15/
 			1/
 			PotatoSeeds/
 			true/
-			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs,OmitFarms/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
 			PlantFarm/
 			1.0/
 			true/
 			0.3/
 			2/
-			true
+			true/
+			0.0,0.0
 	<SubGroup>
 		HarvestFarm
 		<Object>
@@ -162,7 +172,8 @@
 			true/
 			1.0/
 			0/
-			false
+			false/
+			0.0,0.0
 <Group>
 	Command
 	<SubGroup>
@@ -179,7 +190,22 @@
 			true/
 			1.0/
 			0/
-			false
+			false/
+			0.0,0.0
+		<Object>
+			PlantPlant/
+			10/
+			0/
+			/
+			true/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			PlantPlant/
+			0.0/
+			true/
+			1.0/
+			0/
+			false/
+			0.0,0.0
 	<SubGroup>
 		Terrain
 		<Object>
@@ -194,7 +220,8 @@
 			true/
 			1.0/
 			0/
-			false
+			false/
+			0.0,0.0
 	<SubGroup>
 		Remove
 		<Object>
@@ -209,7 +236,8 @@
 			true/
 			1.0/
 			1/
-			false
+			false/
+			0.0,0.0
 		<Object>
 			RemoveLayer2/
 			15/
@@ -222,7 +250,8 @@
 			true/
 			1.0/
 			2/
-			false
+			false/
+			0.0,0.0
 		<Object>
 			RemoveAll/
 			15/
@@ -235,7 +264,8 @@
 			true/
 			1.0/
 			0/
-			false
+			false/
+			0.0,0.0
 <Group>
 	None
 	<SubGroup>
@@ -252,7 +282,8 @@
 			true/
 			1.0/
 			0/
-			false
+			false/
+			0.0,0.0
 		<Object>
 			EmptyInventory/
 			5/
@@ -265,7 +296,8 @@
 			true/
 			1.0/
 			0/
-			false
+			false/
+			0.0,0.0
 		<Object>
 			Cancel/
 			0/
@@ -278,7 +310,8 @@
 			true/
 			1.0/
 			0/
-			false
+			false/
+			0.0,0.0
 		<Object>
 			CollectFood/
 			0/
@@ -291,7 +324,8 @@
 			true/
 			1.0/
 			0/
-			false
+			false/
+			0.0,0.0
 		<Object>
 			Eat/
 			0/
@@ -304,7 +338,8 @@
 			true/
 			1.0/
 			0/
-			false
+			false/
+			0.0,0.0
 		<Object>
 			Sleep/
 			0/
@@ -317,4 +352,47 @@
 			true/
 			1.0/
 			0/
-			false
+			false/
+			0.0,0.0
+		<Object>
+			PlantTree/
+			10/
+			1/
+			TreeSeeds/
+			true/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			PlantPlant/
+			0.0/
+			true/
+			1.0/
+			0/
+			false/
+			0.0,0.0
+		<Object>
+			PlantShrub/
+			10/
+			1/
+			ShrubSeeds/
+			true/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			PlantPlant/
+			0.0/
+			true/
+			1.0/
+			0/
+			false/
+			0.0,0.0
+		<Object>
+			PlantCactus/
+			10/
+			1/
+			CactusSeeds/
+			true/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			PlantPlant/
+			0.0/
+			true/
+			1.0/
+			0/
+			false/
+			0.0,0.0

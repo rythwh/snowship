@@ -8,15 +8,15 @@ Nothing/
 Builder/
 	swims in pools of reinforced concrete./
 	Building/
-	Building,10;
-	Mining,5;
+	Building,5;
+	Mining,2;
 	Farming,2;
 	Forestry,2`
 Miner/
 	worked deep in the mines for their entire life./
 	Mining/
-	Building,5;
-	Mining,10;
+	Building,2;
+	Mining,5;
 	Farming,2;
 	Forestry,2`
 Farmer/
@@ -24,7 +24,7 @@ Farmer/
 	Farming/
 	Building,2;
 	Mining,2;
-	Farming,10;
+	Farming,5;
 	Forestry,2`
 Forester/
 	turns trees into logs with surgical precision./
@@ -32,4 +32,4 @@ Forester/
 	Building,2;
 	Mining,2;
 	Farming,4;
-	Forestry,10
+	Forestry,5
