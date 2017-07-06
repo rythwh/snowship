@@ -625,7 +625,7 @@ public class TileManager:MonoBehaviour {
 			if (objectInstances.ContainsKey(tileObjectPrefab.layer)) {
 				if (objectInstances[tileObjectPrefab.layer] != null) {
 					if (tileObjectPrefab != null) {
-						print("Trying to add object where one already exists at " + obj.transform.position);
+						Debug.LogError("Trying to add object where one already exists at " + obj.transform.position);
 					} else {
 						objectInstances[tileObjectPrefab.layer] = null;
 					}
