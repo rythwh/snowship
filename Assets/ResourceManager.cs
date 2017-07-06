@@ -467,7 +467,7 @@ public class ResourceManager : MonoBehaviour {
 					jobM.CreateJob(new JobManager.Job(tile,resourceM.GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.HarvestFarm),0));
 				}
 			} else {
-				growTimer += 1 * timeM.deltaTime;
+				growTimer += 1 * timeM.deltaTime * 100;
 				int newGrowProgressSpriteIndex = Mathf.FloorToInt((growTimer / (maxGrowthTime + 10)) * growProgressSprites.Count);
 				if (newGrowProgressSpriteIndex != growProgressSpriteIndex) {
 					growProgressSpriteIndex = newGrowProgressSpriteIndex;
