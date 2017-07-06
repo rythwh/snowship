@@ -337,7 +337,7 @@ public class ColonistManager : MonoBehaviour {
 		need.value = Mathf.Clamp(need.value,0,need.prefab.clampValue);
 	}
 
-	public KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>> FindClosestFood(Colonist colonist, bool takeFromOtherColonists, float minimumNutritionRequired) {
+	KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>> FindClosestFood(Colonist colonist, float minimumNutritionRequired,bool takeFromOtherColonists,bool eatAnything) {
 		List<KeyValuePair<KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>,int>> resourcesPerContainer = new List<KeyValuePair<KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>,int>>();
 		foreach (ResourceManager.Container container in resourceM.containers.Where(c => c.parentObject.tile.region == colonist.overTile.region).OrderBy(c => pathM.RegionBlockDistance(colonist.overTile.regionBlock,c.parentObject.tile.regionBlock,true,true,false))) {
 			if (container.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) != null) {
@@ -370,23 +370,41 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
+	void GetFood(NeedInstance need, bool takeFromOtherColonists,bool eatAnything) {
+		if (need.colonist.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) == null) {
+			KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>> closestFood = FindClosestFood(need.colonist,need.value,takeFromOtherColonists,eatAnything);
+			ResourceManager.Container container = closestFood.Key;
+			List<ResourceManager.ResourceAmount> resourcesToReserve = closestFood.Value;
+			if (container != null) {
+				container.inventory.ReserveResources(resourcesToReserve,need.colonist);
+				JobManager.Job job = new JobManager.Job(container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.CollectFood),0);
+				need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,job,null,null,jobM,pathM));
+				return;
+			}
+		} else {
+			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,new JobManager.Job(need.colonist.overTile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat),0),null,null,jobM,pathM));
+			return;
+		}
+	}
+
 	public void InitializeNeedsValueFunctions() {
 		needsValueFunctions.Add(NeedsEnum.Food,delegate (NeedInstance need) {
+			if (need.prefab.criticalValueAction && need.value >= need.prefab.criticalValue) {
+				if (need.colonist.job != null) {
+					need.colonist.ReturnJob();
+				}
+				GetFood(need,true,true);
+			}
+			if (need.prefab.maximumValueAction && need.value > need.prefab.maximumValue) {
+				if (need.colonist.job != null) {
+					need.colonist.ReturnJob();
+				}
+				GetFood(need,true,false);
+			}
 			if (need.prefab.minimumValueAction && need.value > need.prefab.minimumValue) {
 				if (need.colonist.job == null) {
 					if (timeM.minuteChanged && Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
-						if (need.colonist.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) == null) {
-							KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>> closestFood = FindClosestFood(need.colonist,false,need.value);
-							ResourceManager.Container container = closestFood.Key;
-							List<ResourceManager.ResourceAmount> resourcesToReserve = closestFood.Value;
-							if (container != null) {
-								container.inventory.ReserveResources(resourcesToReserve,need.colonist);
-								JobManager.Job job = new JobManager.Job(container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.CollectFood),0);
-								need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,job,null,null,jobM,pathM));
-							}
-						} else {
-							need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,new JobManager.Job(need.colonist.overTile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat),0),null,null,jobM,pathM));
-						}
+						GetFood(need,false,false);
 					}
 				}
 			}
@@ -769,6 +787,13 @@ public class ColonistManager : MonoBehaviour {
 			uiM.SetJobElements();
 			uiM.UpdateSelectedColonistInformation();
 			uiM.UpdateSelectedContainerInfo();
+		}
+
+		public void ReturnJob() {
+			jobM.AddExistingJob(job);
+			job.jobUIElement.Remove(uiM);
+			job.jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,0.25f);
+			job = null;
 		}
 
 		public void MoveToClosestWalkableTile(bool careIfOvertileIsWalkable) {
