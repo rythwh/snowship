@@ -348,11 +348,18 @@ public class ColonistManager : MonoBehaviour {
 					for (int i = 0; i < ra.amount; i++) {
 						numReserved += 1;
 						totalNutrition += ra.resource.nutrition;
+						if (totalNutrition >= minimumNutritionRequired) {
+							break;
+						}
 					}
 					resourcesToReserve.Add(new ResourceManager.ResourceAmount(ra.resource,numReserved));
+					if (totalNutrition >= minimumNutritionRequired) {
+						break;
+					}
 				}
 				if (totalNutrition >= minimumNutritionRequired) {
 					resourcesPerContainer.Add(new KeyValuePair<KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>,int>(new KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>(container,resourcesToReserve),totalNutrition));
+					break;
 				}
 			}
 		}
@@ -626,7 +633,7 @@ public class ColonistManager : MonoBehaviour {
 			if (job == null) {
 				if (path.Count <= 0) {
 					List<ResourceManager.Container> validContainers = resourceM.containers.Where(container => container.parentObject.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
-					if (resourceM.containers.Count > 0 && inventory.CountResources() >= inventory.maxAmount / 2f && validContainers.Count > 0) {
+					if (inventory.CountResources() > 0 && resourceM.containers.Count > 0 && validContainers.Count > 0) {
 						List<ResourceManager.Container> closestContainers = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock,overTile.regionBlock,true,true,false)).ToList();
 						if (closestContainers.Count > 0) {
 							ResourceManager.Container closestContainer = closestContainers[0];
@@ -711,6 +718,18 @@ public class ColonistManager : MonoBehaviour {
 				job.Remove();
 				job = null;
 				return;
+			} else if (
+				job.prefab.jobType == JobManager.JobTypesEnum.EmptyInventory ||
+				job.prefab.jobType == JobManager.JobTypesEnum.CollectFood ||
+				job.prefab.jobType == JobManager.JobTypesEnum.PickupResources) {
+
+				ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == job.tile);
+				if (containerOnTile == null) {
+					job.jobUIElement.Remove(uiM);
+					job.Remove();
+					job = null;
+					return;
+				}
 			}
 
 			job.jobProgress -= 1 * timeM.deltaTime;
@@ -866,6 +885,9 @@ public class ColonistManager : MonoBehaviour {
 		SetSelectedColonistFromInput();
 		foreach (Colonist colonist in colonists) {
 			colonist.Update();
+		}
+		if (timeM.timeModifier > 0) {
+			jobM.GiveJobsToColonists();
 		}
 		if (Input.GetKey(KeyCode.F) && selectedColonist != null) {
 			cameraM.SetCameraPosition(selectedColonist.obj.transform.position);

@@ -220,6 +220,7 @@ public class UIManager : MonoBehaviour {
 
 		public float equatorOffset;
 		public float averageTemperature;
+		public float averagePrecipitation;
 		public Dictionary<TileManager.TileTypes,float> terrainTypeHeights;
 		public bool coast;
 
@@ -249,6 +250,7 @@ public class UIManager : MonoBehaviour {
 		public void SetMapData() {
 			equatorOffset = ((position.y - (planetSize / 2f)) * 2) / planetSize;
 			averageTemperature = tile.temperature + planetTemperature;
+			averagePrecipitation = tile.precipitation;
 
 			coast = false;
 			if (!tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
@@ -322,7 +324,7 @@ public class UIManager : MonoBehaviour {
 
 		GameObject planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
 
-		int planetTileSize = 60; // 10; // 8;
+		int planetTileSize = 10; // 10; // 8; (60 for debug)
 
 		Text planetSeedInput = GameObject.Find("PlanetSeedInput-Text").GetComponent<Text>();
 		string planetSeedString = planetSeedInput.text;
@@ -341,7 +343,7 @@ public class UIManager : MonoBehaviour {
 		//tileM.SetMapInformation(new TileManager.MapData(planetSeed,planetSize,0,true,planetTemperature,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,false));
 		//tileM.CreateMap(false);
 
-		TileManager.MapData mapData = new TileManager.MapData(planetSeed,planetSize,0,true,planetTemperature,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,false);
+		TileManager.MapData mapData = new TileManager.MapData(planetSeed,planetSize,0,true,planetTemperature,0,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,false);
 		planet = new TileManager.Map(mapData,false);
 		foreach (TileManager.Tile tile in planet.tiles) {
 			planetTiles.Add(new PlanetTile(tile,planetPreviewPanel.transform,tile.position,planetSize,planetTemperature));
@@ -372,7 +374,7 @@ public class UIManager : MonoBehaviour {
 		string mapSeedString = mapSeedInput.text;
 		int mapSeed = SeedParser(mapSeedString,GameObject.Find("MapSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
 
-		tileM.Initialize(new TileManager.MapData(mapSeed,mapSize,selectedPlanetTile.equatorOffset,false,0,selectedPlanetTile.averageTemperature,selectedPlanetTile.terrainTypeHeights,selectedPlanetTile.coast,false));
+		tileM.Initialize(new TileManager.MapData(mapSeed,mapSize,selectedPlanetTile.equatorOffset,false,0,selectedPlanetTile.averageTemperature,selectedPlanetTile.averagePrecipitation,selectedPlanetTile.terrainTypeHeights,selectedPlanetTile.coast,false));
 		mainMenu.SetActive(false);
 	}
 

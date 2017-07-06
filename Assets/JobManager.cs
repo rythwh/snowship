@@ -318,9 +318,6 @@ public class JobManager:MonoBehaviour {
 			changedJobList = false;
 		}
 		GetJobSelectionArea();
-		if (timeM.timeModifier > 0) {
-			GiveJobsToColonists();
-		}
 		UpdateSelectedPrefabInfo();
 	}
 
@@ -494,7 +491,6 @@ public class JobManager:MonoBehaviour {
 						}
 						firstTile = null;
 						rotationIndex = 0;
-						print(jobs.Count);
 					}
 				}
 			}
@@ -798,7 +794,7 @@ public class JobManager:MonoBehaviour {
 		}
 	}
 
-	void GiveJobsToColonists() {
+	public void GiveJobsToColonists() {
 		bool gaveJob = false;
 		Dictionary<ColonistManager.Colonist,ColonistJob> jobsGiven = new Dictionary<ColonistManager.Colonist,ColonistJob>();
 		foreach (KeyValuePair<ColonistManager.Colonist,List<ColonistJob>> colonistKVP in colonistJobs) {
