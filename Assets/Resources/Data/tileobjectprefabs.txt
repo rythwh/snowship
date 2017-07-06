@@ -314,7 +314,7 @@
 			0.0,0.0
 		<Object>
 			CollectFood/
-			0/
+			5/
 			0/
 			/
 			false/
@@ -328,7 +328,7 @@
 			0.0,0.0
 		<Object>
 			Eat/
-			0/
+			5/
 			0/
 			/
 			false/

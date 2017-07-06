@@ -395,6 +395,9 @@ public class ResourceManager : MonoBehaviour {
 	List<TileObjectPrefabsEnum> ContainerTileObjectTypes = new List<TileObjectPrefabsEnum>() {
 		TileObjectPrefabsEnum.Basket, TileObjectPrefabsEnum.WoodenChest
 	};
+	public List<TileObjectPrefabsEnum> GetContainerTileObjectTypes() {
+		return ContainerTileObjectTypes;
+	}
 
 	public class Container {
 		public TileObjectInstance parentObject;
@@ -470,7 +473,7 @@ public class ResourceManager : MonoBehaviour {
 					jobM.CreateJob(new JobManager.Job(tile,resourceM.GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.HarvestFarm),0));
 				}
 			} else {
-				growTimer += 1 * timeM.deltaTime * 100;
+				growTimer += 1 * timeM.deltaTime;
 				int newGrowProgressSpriteIndex = Mathf.FloorToInt((growTimer / (maxGrowthTime + 10)) * growProgressSprites.Count);
 				if (newGrowProgressSpriteIndex != growProgressSpriteIndex) {
 					growProgressSpriteIndex = newGrowProgressSpriteIndex;

@@ -841,7 +841,7 @@ public class TileManager:MonoBehaviour {
 		}
 		if (Input.GetKeyDown(KeyCode.Slash)) {
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),10);
+				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Potatoes),10);
 			}
 			/*
 			foreach (ResourceManager.Container container in resourceM.containers) {
@@ -924,12 +924,13 @@ public class TileManager:MonoBehaviour {
 		public bool planetTemperature;
 		public float temperatureOffset;
 		public float averageTemperature;
+		public float averagePrecipitation;
 		public Dictionary<TileTypes,float> terrainTypeHeights;
 		public bool coast;
 
 		public bool preventEdgeTouching;
 
-		public MapData(int mapSeed, int mapSize, float equatorOffset, bool planetTemperature, float temperatureOffset, float averageTemperature, Dictionary<TileTypes,float> terrainTypeHeights, bool coast, bool preventEdgeTouching) {
+		public MapData(int mapSeed, int mapSize, float equatorOffset, bool planetTemperature, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, bool coast, bool preventEdgeTouching) {
 
 			if (mapSeed < 0) {
 				mapSeed = Random.Range(0,int.MaxValue);
@@ -944,6 +945,7 @@ public class TileManager:MonoBehaviour {
 			this.planetTemperature = planetTemperature;
 			this.temperatureOffset = temperatureOffset;
 			this.averageTemperature = averageTemperature;
+			this.averagePrecipitation = averagePrecipitation;
 			this.terrainTypeHeights = terrainTypeHeights;
 			this.coast = coast;
 			this.preventEdgeTouching = preventEdgeTouching;
@@ -1598,7 +1600,7 @@ public class TileManager:MonoBehaviour {
 			AverageTilePrecipitations();
 
 			foreach (Tile tile in tiles) {
-				tile.precipitation = Mathf.Clamp(tile.precipitation,0f,1f);
+				tile.precipitation = Mathf.Clamp(tile.precipitation + (mapData.averagePrecipitation / 2f),0f,1f);
 			}
 		}
 
