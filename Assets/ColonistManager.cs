@@ -705,6 +705,14 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void WorkJob() {
+
+			if (job.prefab.jobType == JobManager.JobTypesEnum.HarvestFarm && job.tile.farm == null) {
+				job.jobUIElement.Remove(uiM);
+				job.Remove();
+				job = null;
+				return;
+			}
+
 			job.jobProgress -= 1 * timeM.deltaTime;
 
 			if (job.jobProgress <= 0 || Mathf.Approximately(job.jobProgress,0)) {

@@ -333,12 +333,13 @@ public class ResourceManager : MonoBehaviour {
 	public void RemoveTileObjectInstance(TileObjectInstance tileObjectInstance) {
 		if (tileObjectInstances.ContainsKey(tileObjectInstance.prefab)) {
 			tileObjectInstances[tileObjectInstance.prefab].Remove(tileObjectInstance);
-			uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Remove,tileObjectInstance.prefab);
+			uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Update,tileObjectInstance.prefab);
 		} else {
 			print("Tried removing a tile object instance which isn't in the list...");
 		}
 		if (tileObjectInstances[tileObjectInstance.prefab].Count <= 0) {
 			tileObjectInstances.Remove(tileObjectInstance.prefab);
+			uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Remove,tileObjectInstance.prefab);
 		}
 	}
 
@@ -449,6 +450,7 @@ public class ResourceManager : MonoBehaviour {
 
 		public int growProgressSpriteIndex = 0;
 		public List<Sprite> growProgressSprites = new List<Sprite>();
+		public int maxSpriteIndex = 0;
 
 		public Farm(TileObjectPrefab prefab, TileManager.Tile tile) : base(prefab,tile,0) {
 
@@ -459,6 +461,7 @@ public class ResourceManager : MonoBehaviour {
 			maxGrowthTime = resourceM.GetFarmGrowTimes()[seedType];
 
 			growProgressSprites = prefab.bitmaskSprites;
+			maxSpriteIndex = growProgressSprites.Count - 1;
 		}
 
 		public void Update() {
@@ -471,7 +474,7 @@ public class ResourceManager : MonoBehaviour {
 				int newGrowProgressSpriteIndex = Mathf.FloorToInt((growTimer / (maxGrowthTime + 10)) * growProgressSprites.Count);
 				if (newGrowProgressSpriteIndex != growProgressSpriteIndex) {
 					growProgressSpriteIndex = newGrowProgressSpriteIndex;
-					obj.GetComponent<SpriteRenderer>().sprite = growProgressSprites[growProgressSpriteIndex];
+					obj.GetComponent<SpriteRenderer>().sprite = growProgressSprites[Mathf.Clamp(growProgressSpriteIndex,0,maxSpriteIndex)];
 				}
 			}
 		}

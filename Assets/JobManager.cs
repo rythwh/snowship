@@ -156,9 +156,13 @@ public class JobManager:MonoBehaviour {
 		finishJobFunctions.Add(JobTypesEnum.HarvestFarm,delegate (ColonistManager.Colonist colonist,Job job) {
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(job.tile.farm.seedType),Random.Range(1,3));
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(resourceM.GetFarmSeedReturnResource()[job.tile.farm.seedType]),Random.Range(1,6));
+
 			CreateJob(new Job(job.tile,resourceM.GetTileObjectPrefabByEnum(resourceM.GetFarmSeedsTileObject()[job.tile.farm.seedType]),0));
+
+			colonist.resourceM.RemoveTileObjectInstance(job.tile.farm);
 			job.tile.RemoveTileObjectAtLayer(job.tile.farm.prefab.layer);
 			job.tile.SetFarm(null);
+			resourceM.Bitmask(new List<TileManager.Tile>() { job.tile }.Concat(job.tile.surroundingTiles).ToList());
 		});
 		finishJobFunctions.Add(JobTypesEnum.ChopPlant,delegate (ColonistManager.Colonist colonist,Job job) {
 			foreach (ResourceManager.ResourceAmount resourceAmount in job.tile.plant.GetResources()) {
@@ -490,6 +494,7 @@ public class JobManager:MonoBehaviour {
 						}
 						firstTile = null;
 						rotationIndex = 0;
+						print(jobs.Count);
 					}
 				}
 			}
@@ -539,6 +544,8 @@ public class JobManager:MonoBehaviour {
 				}
 			}
 		}
+
+		UpdateColonistJobs();
 	}
 
 	Dictionary<int,ResourceManager.TileObjectPrefabsEnum> RemoveLayerMap = new Dictionary<int,ResourceManager.TileObjectPrefabsEnum>() {
