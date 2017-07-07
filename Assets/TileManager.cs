@@ -265,9 +265,6 @@ public class TileManager:MonoBehaviour {
 		public BiomeTypes type;
 		public string name;
 
-		public List<int> temperatureRange = new List<int>();
-		public List<float> precipitationRange = new List<float>();
-
 		public Dictionary<PlantGroupsEnum,float> vegetationChances = new Dictionary<PlantGroupsEnum,float>();
 
 		public Color colour;
@@ -275,51 +272,25 @@ public class TileManager:MonoBehaviour {
 		public TileType tileType;
 		public TileType waterType;
 
-		public Biome(List<string> biomeData, TileManager tm) {
+		public Biome(List<string> biomeData, TileManager tileM) {
 			type = (BiomeTypes)System.Enum.Parse(typeof(BiomeTypes),biomeData[0]);
 			name = type.ToString();
 
-			List <string> stringTemperatureRange = biomeData[1].Split(',').ToList();
+			List<string> tileTypeData = biomeData[1].Split(',').ToList();
+			tileType = tileM.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes),tileTypeData[0]));
+			waterType = tileM.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes),tileTypeData[1]));
 
-			if (int.Parse(stringTemperatureRange[0]) == -1000) {
-				temperatureRange.Add(Mathf.RoundToInt(-1000));
-			} else {
-				temperatureRange.Add(int.Parse(stringTemperatureRange[0]));
-			}
-			if (int.Parse(stringTemperatureRange[1]) == 1000) {
-				temperatureRange.Add(Mathf.RoundToInt(1000));
-			} else {
-				temperatureRange.Add(int.Parse(stringTemperatureRange[1]));
-			}
-
-			List<string> stringPrecipitationRange = biomeData[2].Split(',').ToList();
-
-			if (float.Parse(stringPrecipitationRange[0]) == -1) {
-				precipitationRange.Add(-1);
-			} else {
-				precipitationRange.Add(float.Parse(stringPrecipitationRange[0]));
-			}
-			if (float.Parse(stringPrecipitationRange[1]) == 2) {
-				precipitationRange.Add(2);
-			} else {
-				precipitationRange.Add(float.Parse(stringPrecipitationRange[1]));
-			}
-
-			List<string> tileTypeData = biomeData[3].Split(',').ToList();
-			tileType = tm.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes),tileTypeData[0]));
-			waterType = tm.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes),tileTypeData[1]));
-
-			if (float.Parse(biomeData[4].Split(',')[0]) != 0) {
+			if (float.Parse(biomeData[2].Split(',')[0]) != 0) {
 				int vegetationIndex = 0;
-				foreach (string vegetationChance in biomeData[4].Split(',').ToList()) {
-					vegetationChances.Add((PlantGroupsEnum)System.Enum.Parse(typeof(PlantGroupsEnum),biomeData[5].Split(',').ToList()[vegetationIndex]),float.Parse(vegetationChance));
+				foreach (string vegetationChance in biomeData[2].Split(',').ToList()) {
+					vegetationChances.Add((PlantGroupsEnum)System.Enum.Parse(typeof(PlantGroupsEnum),biomeData[3].Split(',').ToList()[vegetationIndex]),float.Parse(vegetationChance));
 					vegetationIndex += 1;
 				}
 			}
 
-			int r = System.Int32.Parse("" + biomeData[6][2] + biomeData[6][3],System.Globalization.NumberStyles.HexNumber);
-			int g = System.Int32.Parse("" + biomeData[6][4] + biomeData[6][5],System.Globalization.NumberStyles.HexNumber);
-			int b = System.Int32.Parse("" + biomeData[6][6] + biomeData[6][7],System.Globalization.NumberStyles.HexNumber);
+			int r = int.Parse("" + biomeData[4][2] + biomeData[4][3],System.Globalization.NumberStyles.HexNumber);
+			int g = int.Parse("" + biomeData[4][4] + biomeData[4][5],System.Globalization.NumberStyles.HexNumber);
+			int b = int.Parse("" + biomeData[4][6] + biomeData[4][7],System.Globalization.NumberStyles.HexNumber);
 			colour = new Color(r,g,b,255f) / 255f;
 
 		}
@@ -333,6 +304,70 @@ public class TileManager:MonoBehaviour {
 		}
 		foreach (Biome biome in biomes) {
 			biome.name = uiM.SplitByCapitals(biome.name);
+		}
+	}
+
+	public class PrecipitationRange {
+
+		public float min = 0;
+		public float max = 0;
+
+		public List<TemperatureRange> temperatureRanges = new List<TemperatureRange>();
+
+		public PrecipitationRange(string dataString, TileManager tileM) {
+			List<string> precipitationRangeData = dataString.Split(':').ToList();
+
+			min = float.Parse(precipitationRangeData[0].Split(',')[0]);
+			max = float.Parse(precipitationRangeData[0].Split(',')[1]);
+
+			if (Mathf.RoundToInt(min) == -1) {
+				min = float.MinValue;
+			}
+			if (Mathf.RoundToInt(max) == 2) {
+				max = float.MaxValue;
+			}
+
+			foreach (string temperatureRangeString in precipitationRangeData[1].Split('`')) {
+				temperatureRanges.Add(new TemperatureRange(temperatureRangeString,this,tileM));
+			}
+		}
+
+		public class TemperatureRange {
+
+			public PrecipitationRange precipitationRange;
+
+			public int min = 0;
+			public int max = 0;
+
+			public Biome biome;
+
+			public TemperatureRange(string dataString,PrecipitationRange precipitationRange, TileManager tileM) {
+
+				this.precipitationRange = precipitationRange;
+
+				List<string> temperatureRangeData = dataString.Split('/').ToList();
+
+				min = int.Parse(temperatureRangeData[0].Split(',')[0]);
+				max = int.Parse(temperatureRangeData[0].Split(',')[1]);
+
+				if (min == -1000) {
+					min = int.MinValue;
+				}
+				if (max == 1000) {
+					max = int.MaxValue;
+				}
+
+				biome = tileM.biomes.Find(b => b.type == (BiomeTypes)System.Enum.Parse(typeof(BiomeTypes),temperatureRangeData[1]));
+			}
+		}
+	}
+
+	public List<PrecipitationRange> biomeRanges = new List<PrecipitationRange>();
+
+	public void CreateBiomeRanges() {
+		List<string> biomeRangeStrings = Resources.Load<TextAsset>(@"Data/biomeRanges").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('~').ToList();
+		foreach (string biomeRangeString in biomeRangeStrings) {
+			biomeRanges.Add(new PrecipitationRange(biomeRangeString,this));
 		}
 	}
 
@@ -418,7 +453,7 @@ public class TileManager:MonoBehaviour {
 			TileType oldTileType = this.tileType;
 			this.tileType = tileType;
 			if (setBiomeTileType && biome != null) {
-				SetBiome(this.biome);
+				SetBiome(biome);
 			}
 			walkable = tileType.walkable;
 			if (bitmask) {
@@ -590,15 +625,6 @@ public class TileManager:MonoBehaviour {
 			}
 			if (!removePlant) {
 				if (specificPlant == null) {
-					/*
-					foreach (KeyValuePair<PlantGroupsEnum,float> kvp in biome.vegetationChances) {
-						PlantGroupsEnum plantGroup = kvp.Key;
-						if (Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
-							plant = new Plant(tileM.GetPlantGroupByEnum(plantGroup),this,true,false);
-							break;
-						}
-					}
-					*/
 					PlantGroup biomePlantGroup = tileM.GetPlantGroupByBiome(biome,false);
 					if (biomePlantGroup != null) {
 						plant = new Plant(biomePlantGroup,this,true,false);
@@ -961,6 +987,7 @@ public class TileManager:MonoBehaviour {
 		CreatePlantGroups();
 		CreateTileTypes();
 		CreateBiomes();
+		CreateBiomeRanges();
 	}
 
 	public Map map;
@@ -1027,6 +1054,14 @@ public class TileManager:MonoBehaviour {
 
 			CalculatePrecipitation();
 			CalculateTemperature();
+
+			/*
+			foreach (Tile tile in tiles) {
+				tile.SetTileHeight(0.5f);
+				tile.precipitation = tile.position.x / mapData.mapSize;
+				tile.temperature = ((1 - (tile.position.y / mapData.mapSize)) * 140) - 50;
+			}
+			*/
 
 			SetTileRegions(false);
 			SetBiomes();
@@ -1635,7 +1670,7 @@ public class TileManager:MonoBehaviour {
 
 		void CalculateTemperature() {
 
-			float temperatureSteepness = 50;
+			float temperatureSteepness = 70; // 50
 
 			foreach (Tile tile in tiles) {
 				if (mapData.planetTemperature) {
@@ -1647,12 +1682,6 @@ public class TileManager:MonoBehaviour {
 			}
 
 			AverageTileTemperatures();
-
-			/*
-			foreach (Tile tile in tiles) {
-				tile.temperature = Mathf.Clamp(tile.temperature,-temperatureSteepness,temperatureSteepness);
-			}
-			*/
 		}
 
 		void AverageTileTemperatures() {
@@ -1681,9 +1710,18 @@ public class TileManager:MonoBehaviour {
 
 		void SetBiomes() {
 			foreach (Tile tile in tiles) {
-				foreach (Biome biome in tileM.biomes) {
-					if ((biome.temperatureRange[0] <= tile.temperature) && (biome.temperatureRange[1] >= tile.temperature) && (biome.precipitationRange[0] <= tile.precipitation) && (biome.precipitationRange[1] >= tile.precipitation)) {
-						tile.SetBiome(biome);
+				bool next = false;
+				foreach (PrecipitationRange precipitationRange in tileM.biomeRanges) {
+					if (tile.precipitation >= precipitationRange.min && tile.precipitation < precipitationRange.max) {
+						foreach (PrecipitationRange.TemperatureRange temperatureRange in precipitationRange.temperatureRanges) {
+							if (tile.temperature >= temperatureRange.min && tile.temperature < temperatureRange.max) {
+								tile.SetBiome(temperatureRange.biome);
+								next = true;
+								break;
+							}
+						}
+					}
+					if (next) {
 						break;
 					}
 				}
