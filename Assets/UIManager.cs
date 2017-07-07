@@ -343,8 +343,8 @@ public class UIManager : MonoBehaviour {
 		//tileM.SetMapInformation(new TileManager.MapData(planetSeed,planetSize,0,true,planetTemperature,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,false));
 		//tileM.CreateMap(false);
 
-		TileManager.MapData mapData = new TileManager.MapData(planetSeed,planetSize,0,true,planetTemperature,0,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,false);
-		planet = new TileManager.Map(mapData,false);
+		TileManager.MapData mapData = new TileManager.MapData(planetSeed,planetSize,false,0,true,planetTemperature,0,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,true);
+		planet = new TileManager.Map(mapData);
 		foreach (TileManager.Tile tile in planet.tiles) {
 			planetTiles.Add(new PlanetTile(tile,planetPreviewPanel.transform,tile.position,planetSize,planetTemperature));
 		}
@@ -374,7 +374,7 @@ public class UIManager : MonoBehaviour {
 		string mapSeedString = mapSeedInput.text;
 		int mapSeed = SeedParser(mapSeedString,GameObject.Find("MapSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
 
-		tileM.Initialize(new TileManager.MapData(mapSeed,mapSize,selectedPlanetTile.equatorOffset,false,0,selectedPlanetTile.averageTemperature,selectedPlanetTile.averagePrecipitation,selectedPlanetTile.terrainTypeHeights,selectedPlanetTile.coast,false));
+		tileM.Initialize(new TileManager.MapData(mapSeed,mapSize,true,selectedPlanetTile.equatorOffset,false,0,selectedPlanetTile.averageTemperature,selectedPlanetTile.averagePrecipitation,selectedPlanetTile.terrainTypeHeights,selectedPlanetTile.coast,false));
 		mainMenu.SetActive(false);
 	}
 

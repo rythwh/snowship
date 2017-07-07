@@ -254,7 +254,7 @@ public class TileManager:MonoBehaviour {
 
 	public enum BiomeTypes {
 		None,
-		PolarDesert, IceCap, Tundra, WetTundra, PolarWetlands, CoolDesert, Steppe, BorealForest, TemperateWoodlands, TemperateForest,
+		PolarDesert, IceCap, Tundra, WetTundra, PolarWetlands, CoolDesert, TemperateDesert, Steppe, BorealForest, TemperateWoodlands, TemperateForest,
 		TemperateWetForest, TemperateWetlands, ExtremeDesert, Desert, SubtropicalScrub, TropicalScrub, SubtropicalWoodlands, TropicalWoodlands,
 		Mediterranean, SubtropicalDryForest, TropicalDryForest, SubtropicalForest, SubtropicalWetForest, SubtropicalWetlands, TropicalWetForest, TropicalWetlands
 	};
@@ -919,6 +919,7 @@ public class TileManager:MonoBehaviour {
 	public class MapData {
 		public int mapSeed;
 		public int mapSize;
+		public bool actualMap;
 
 		public float equatorOffset;
 		public bool planetTemperature;
@@ -930,7 +931,7 @@ public class TileManager:MonoBehaviour {
 
 		public bool preventEdgeTouching;
 
-		public MapData(int mapSeed, int mapSize, float equatorOffset, bool planetTemperature, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, bool coast, bool preventEdgeTouching) {
+		public MapData(int mapSeed, int mapSize, bool actualMap, float equatorOffset, bool planetTemperature, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, bool coast, bool preventEdgeTouching) {
 
 			if (mapSeed < 0) {
 				mapSeed = Random.Range(0,int.MaxValue);
@@ -940,6 +941,7 @@ public class TileManager:MonoBehaviour {
 			print("Map Seed: " + mapSeed);
 
 			this.mapSize = mapSize;
+			this.actualMap = actualMap;
 
 			this.equatorOffset = equatorOffset;
 			this.planetTemperature = planetTemperature;
@@ -964,7 +966,7 @@ public class TileManager:MonoBehaviour {
 	public Map map;
 
 	public void Initialize(MapData mapData) {
-		map = new Map(mapData,true);
+		map = new Map(mapData);
 
 		cameraM.SetCameraPosition(new Vector2(mapData.mapSize / 2f,mapData.mapSize / 2f));
 		cameraM.SetCameraZoom(20);
@@ -998,20 +1000,20 @@ public class TileManager:MonoBehaviour {
 		}
 
 		public MapData mapData;
-		public Map(MapData mapData, bool actualMap) {
+		public Map(MapData mapData) {
 
 			GetScriptReferences();
 
 			this.mapData = mapData;
 
-			CreateMap(actualMap);
+			CreateMap();
 		}
 
 		public List<Tile> tiles = new List<Tile>();
 		public List<List<Tile>> sortedTiles = new List<List<Tile>>();
 		public List<Tile> edgeTiles = new List<Tile>();
 
-		public void CreateMap(bool actualMap) {
+		public void CreateMap() {
 
 			CreateTiles();
 			if (mapData.preventEdgeTouching) {
@@ -1029,7 +1031,7 @@ public class TileManager:MonoBehaviour {
 			SetTileRegions(false);
 			SetBiomes();
 
-			if (actualMap) {
+			if (mapData.actualMap) {
 				SetMapEdgeTiles();
 				DetermineDrainageBasins();
 				CreateRivers();
@@ -1039,7 +1041,7 @@ public class TileManager:MonoBehaviour {
 
 			Bitmasking(tiles);
 
-			if (actualMap) {
+			if (mapData.actualMap) {
 				DetermineShadowTiles(tiles);
 				SetTileBrightness(12);
 			}
@@ -1600,7 +1602,7 @@ public class TileManager:MonoBehaviour {
 			AverageTilePrecipitations();
 
 			foreach (Tile tile in tiles) {
-				tile.precipitation = Mathf.Clamp(tile.precipitation + (mapData.averagePrecipitation / 2f),0f,1f);
+				tile.precipitation = Mathf.Clamp(tile.precipitation + (mapData.averagePrecipitation - (mapData.averagePrecipitation / 2f)),0f,1f);
 			}
 		}
 
