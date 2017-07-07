@@ -140,10 +140,6 @@ public class UIManager : MonoBehaviour {
 
 	public ResourceManager.Container selectedContainer;
 	void Update() {
-		playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null/* || !string.IsNullOrEmpty(mapSeedInput.text)*/);
-		if (Input.GetMouseButtonDown(1) && selectedPlanetTile != null) {
-			selectedPlanetTile = null;
-		}
 		if (tileM.generated) {
 			mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 			TileManager.Tile newMouseOverTile = tileM.map.GetTileFromPosition(mousePosition);
@@ -186,6 +182,12 @@ public class UIManager : MonoBehaviour {
 					professionElement.Update();
 				}
 			}
+		} else {
+			playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null/* || !string.IsNullOrEmpty(mapSeedInput.text)*/);
+			if (Input.GetMouseButtonDown(1) && selectedPlanetTile != null) {
+				selectedPlanetTile = null;
+			}
+			SetSelectedPlanetTileInfo();
 		}
 	}
 
@@ -212,7 +214,6 @@ public class UIManager : MonoBehaviour {
 		public Image image;
 
 		public Vector2 position;
-		public float height;
 
 		public TileManager.MapData data;
 		private int planetSize;
@@ -233,7 +234,6 @@ public class UIManager : MonoBehaviour {
 			this.position = position;
 
 			this.planetSize = planetSize;
-
 			this.planetTemperature = planetTemperature;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/PlanetTile"),parent,false);
@@ -263,17 +263,7 @@ public class UIManager : MonoBehaviour {
 				obj.GetComponent<Button>().interactable = false;
 			}
 
-			/*
-			float waterThreshold = 0;
-			if (coast || tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
-				waterThreshold = 0.5f;
-			}
-			waterThreshold += tile.precipitation * 0.5f;
-
-			float stoneThreshold = waterThreshold + (0.25f / 2f);
-			*/
-
-			float waterThreshold = 0;
+			float waterThreshold = 0.45f;
 			if (coast || tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
 				waterThreshold = tile.height;
 			}
@@ -288,6 +278,18 @@ public class UIManager : MonoBehaviour {
 			};
 
 			
+		}
+	}
+
+	void SetSelectedPlanetTileInfo() {
+		if (selectedPlanetTile != null) {
+			GameObject.Find("SelectedPlanetTileTemperature-Panel").transform.Find("TemperatureValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedPlanetTile.averageTemperature) + "°C";
+			GameObject.Find("SelectedPlanetTilePrecipitation-Panel").transform.Find("PrecipitationValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedPlanetTile.averagePrecipitation * 100) + "%";
+			GameObject.Find("SelectedPlanetTileAltitude-Panel").transform.Find("AltitudeValue-Text").GetComponent<Text>().text = Mathf.RoundToInt((selectedPlanetTile.tile.height - selectedPlanetTile.terrainTypeHeights[TileManager.TileTypes.GrassWater]) * 10000f) + "m";
+		} else {
+			GameObject.Find("SelectedPlanetTileTemperature-Panel").transform.Find("TemperatureValue-Text").GetComponent<Text>().text = "";
+			GameObject.Find("SelectedPlanetTilePrecipitation-Panel").transform.Find("PrecipitationValue-Text").GetComponent<Text>().text = "";
+			GameObject.Find("SelectedPlanetTileAltitude-Panel").transform.Find("AltitudeValue-Text").GetComponent<Text>().text = "";
 		}
 	}
 
@@ -324,7 +326,7 @@ public class UIManager : MonoBehaviour {
 
 		GameObject planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
 
-		int planetTileSize = 10; // 10; // 8; (60 for debug)
+		int planetTileSize = 4; // 10; // 8; (60 for debug)
 
 		Text planetSeedInput = GameObject.Find("PlanetSeedInput-Text").GetComponent<Text>();
 		string planetSeedString = planetSeedInput.text;
@@ -339,9 +341,6 @@ public class UIManager : MonoBehaviour {
 
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().cellSize = new Vector2(planetTileSize,planetTileSize);
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
-
-		//tileM.SetMapInformation(new TileManager.MapData(planetSeed,planetSize,0,true,planetTemperature,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,false));
-		//tileM.CreateMap(false);
 
 		TileManager.MapData mapData = new TileManager.MapData(planetSeed,planetSize,false,0,true,planetTemperature,0,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,true);
 		planet = new TileManager.Map(mapData);

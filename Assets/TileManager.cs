@@ -1184,7 +1184,6 @@ public class TileManager:MonoBehaviour {
 		}
 
 		void PreventEdgeTouching() {
-			print(0.5f * Mathf.Clamp(-Mathf.Pow(0.2f - 1.1f,10) + 1,0f,1f));
 			foreach (Tile tile in tiles) {
 				float edgeDistance = (mapData.mapSize - (Vector2.Distance(tile.obj.transform.position,new Vector2(mapData.mapSize / 2f,mapData.mapSize / 2f)))) / mapData.mapSize;
 				tile.SetTileHeight(tile.height * Mathf.Clamp(-Mathf.Pow(edgeDistance - 1.5f,10) + 1,0f,1f));
@@ -1649,9 +1648,11 @@ public class TileManager:MonoBehaviour {
 
 			AverageTileTemperatures();
 
+			/*
 			foreach (Tile tile in tiles) {
 				tile.temperature = Mathf.Clamp(tile.temperature,-temperatureSteepness,temperatureSteepness);
 			}
+			*/
 		}
 
 		void AverageTileTemperatures() {
