@@ -389,20 +389,20 @@ public class ColonistManager : MonoBehaviour {
 
 	public void InitializeNeedsValueFunctions() {
 		needsValueFunctions.Add(NeedsEnum.Food,delegate (NeedInstance need) {
-			if (need.prefab.criticalValueAction && need.value >= need.prefab.criticalValue) {
-				if (need.colonist.job != null) {
-					need.colonist.ReturnJob();
+			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.CollectFood || need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Eat)) {
+				if (need.prefab.criticalValueAction && need.value >= need.prefab.criticalValue) {
+					if (need.colonist.job != null) {
+						need.colonist.ReturnJob();
+					}
+					GetFood(need,true,true);
 				}
-				GetFood(need,true,true);
-			}
-			if (need.prefab.maximumValueAction && need.value > need.prefab.maximumValue) {
-				if (need.colonist.job != null) {
-					need.colonist.ReturnJob();
+				if (need.prefab.maximumValueAction && need.value > need.prefab.maximumValue) {
+					if (need.colonist.job != null) {
+						need.colonist.ReturnJob();
+					}
+					GetFood(need,true,false);
 				}
-				GetFood(need,true,false);
-			}
-			if (need.prefab.minimumValueAction && need.value > need.prefab.minimumValue) {
-				if (need.colonist.job == null) {
+				if (need.prefab.minimumValueAction && need.value > need.prefab.minimumValue) {
 					if (timeM.minuteChanged && Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
 						GetFood(need,false,false);
 					}

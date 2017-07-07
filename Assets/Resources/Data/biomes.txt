@@ -33,12 +33,19 @@ PolarWetlands/
 	Shrub,ThinTree/
 	#60497B`
 CoolDesert/
-	-30,10/
+	-30,-10/
 	-1.0,0.1/
 	StoneSnow,StoneWater/
 	0.05/
 	DeadTree/
 	#953735`
+TemperateDesert/
+	-10,10/
+	-1.0,0.1/
+	Stone,StoneWater/
+	0.1/
+	DeadTree/
+	#77574A`
 Steppe/
 	-30,10/
 	0.1,0.2/
