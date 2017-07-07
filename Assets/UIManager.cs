@@ -83,7 +83,7 @@ public class UIManager : MonoBehaviour {
 		mapSeedInput = GameObject.Find("MapSeedInput-Text").GetComponent<Text>();
 
 		planetDistanceText = GameObject.Find("PlanetDistanceValue-Text").GetComponent<Text>();
-		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdatePlanetDistanceText(); });
+		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
 		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value = 2;
 
 		GameObject.Find("ReloadPlanet-Button").GetComponent<Button>().onClick.AddListener(delegate { GeneratePlanet(); });
@@ -186,8 +186,8 @@ public class UIManager : MonoBehaviour {
 			playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null/* || !string.IsNullOrEmpty(mapSeedInput.text)*/);
 			if (Input.GetMouseButtonDown(1) && selectedPlanetTile != null) {
 				selectedPlanetTile = null;
+				SetSelectedPlanetTileInfo();
 			}
-			SetSelectedPlanetTileInfo();
 		}
 	}
 
@@ -240,7 +240,10 @@ public class UIManager : MonoBehaviour {
 			image = obj.GetComponent<Image>();
 			image.sprite = tile.obj.GetComponent<SpriteRenderer>().sprite;
 
-			obj.GetComponent<Button>().onClick.AddListener(delegate { uiM.selectedPlanetTile = this; });
+			obj.GetComponent<Button>().onClick.AddListener(delegate {
+				uiM.selectedPlanetTile = this;
+				uiM.SetSelectedPlanetTileInfo();
+			});
 
 			SetMapData();
 
@@ -295,9 +298,9 @@ public class UIManager : MonoBehaviour {
 
 	public int CalculatePlanetTemperature(float distance) {
 
-		float starMass = 1;
-		float albedo = 29;
-		float greenhouse = 1;
+		float starMass = 1; // 1 (lower = colder)
+		float albedo = 29; // 29 (higher = colder)
+		float greenhouse = 0.4f; // 1 (lower = colder)
 
 		float sigma = 5.6703f * Mathf.Pow(10,-5);
 		float L = 3.846f * Mathf.Pow(10,33) * Mathf.Pow(starMass,3);
@@ -308,8 +311,7 @@ public class UIManager : MonoBehaviour {
 		float T_eff = Mathf.Sqrt(X) * (1 / Mathf.Sqrt(D));
 		float T_eq = (Mathf.Pow(T_eff,4)) * (1 + (3 * T / 4));
 		float T_sur = T_eq / 0.9f;
-		float T_kel = Mathf.Sqrt(Mathf.Sqrt(T_sur));
-		T_kel = Mathf.Round(T_kel);
+		float T_kel = Mathf.Round(Mathf.Sqrt(Mathf.Sqrt(T_sur)));
 		int celsius = Mathf.RoundToInt(T_kel - 273);
 
 		return celsius;
@@ -326,7 +328,7 @@ public class UIManager : MonoBehaviour {
 
 		GameObject planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
 
-		int planetTileSize = 4; // 10; // 8; (60 for debug)
+		int planetTileSize = 10; // 10; // 8; (60 for debug)
 
 		Text planetSeedInput = GameObject.Find("PlanetSeedInput-Text").GetComponent<Text>();
 		string planetSeedString = planetSeedInput.text;
@@ -349,7 +351,7 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
-	public void UpdatePlanetDistanceText() {
+	public void UpdatePlanetInfo() {
 		planetDistance = (float)Math.Round(GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value / 2f,1);
 		planetDistanceText.text = planetDistance + " AU";
 	}
