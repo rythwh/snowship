@@ -328,7 +328,7 @@ public class UIManager : MonoBehaviour {
 
 		GameObject planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
 
-		int planetTileSize = 10; // 10; // 8; (60 for debug)
+		int planetTileSize = 100; // 10; // 8; (60 for debug)
 
 		Text planetSeedInput = GameObject.Find("PlanetSeedInput-Text").GetComponent<Text>();
 		string planetSeedString = planetSeedInput.text;
