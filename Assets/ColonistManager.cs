@@ -333,7 +333,7 @@ public class ColonistManager : MonoBehaviour {
 				needIncreaseAmount *= need.prefab.traitsAffectingThisNeed[trait.prefab.type];
 			}
 		}
-		need.value += needIncreaseAmount * timeM.deltaTime;
+		need.value += needIncreaseAmount * timeM.deltaTime * 25;
 		need.value = Mathf.Clamp(need.value,0,need.prefab.clampValue);
 	}
 
@@ -396,15 +396,15 @@ public class ColonistManager : MonoBehaviour {
 					}
 					GetFood(need,true,true);
 				}
-				if (need.prefab.maximumValueAction && need.value > need.prefab.maximumValue) {
+				if (need.prefab.maximumValueAction && need.value >= need.prefab.maximumValue) {
 					if (need.colonist.job != null) {
 						need.colonist.ReturnJob();
 					}
 					GetFood(need,true,false);
 				}
-				if (need.prefab.minimumValueAction && need.value > need.prefab.minimumValue) {
+				if (need.prefab.minimumValueAction && need.value >= need.prefab.minimumValue) {
 					if (timeM.minuteChanged && Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
-						GetFood(need,false,false);
+						//GetFood(need,false,false);
 					}
 				}
 			}
