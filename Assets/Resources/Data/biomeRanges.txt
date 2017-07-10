@@ -161,7 +161,8 @@
 	65,70/TropicalDryForest`
 	70,75/TropicalWoodlands`
 	75,80/TropicalScrub`
-	80,1000/Desert
+	80,85/Desert`
+	85,1000/ExtremeDesert
 	~
 0.75,0.8:
 	-1000,-40/IceCap`
@@ -173,7 +174,8 @@
 	65,70/TropicalDryForest`
 	70,75/TropicalWoodlands`
 	75,80/TropicalScrub`
-	80,1000/Desert
+	80,85/Desert`
+	85,1000/ExtremeDesert
 	~
 0.8,0.85:
 	-1000,-40/IceCap`
@@ -185,7 +187,8 @@
 	65,70/TropicalDryForest`
 	70,75/TropicalWoodlands`
 	75,80/TropicalScrub`
-	80,1000/Desert
+	80,85/Desert`
+	85,1000/ExtremeDesert
 	~
 0.85,0.9:
 	-1000,-40/IceCap`
@@ -199,7 +202,8 @@
 	65,70/TropicalDryForest`
 	70,75/TropicalWoodlands`
 	75,80/TropicalScrub`
-	80,1000/Desert
+	80,85/Desert`
+	85,1000/ExtremeDesert
 	~
 0.9,0.95:
 	-1000,-40/IceCap`
@@ -211,7 +215,8 @@
 	65,70/TropicalDryForest`
 	70,75/TropicalWoodlands`
 	75,80/TropicalScrub`
-	80,1000/Desert
+	80,85/Desert`
+	85,1000/ExtremeDesert
 	~
 0.95,2.0:
 	-1000,-40/IceCap`
@@ -223,4 +228,5 @@
 	65,70/TropicalDryForest`
 	70,75/TropicalWoodlands`
 	75,80/TropicalScrub`
-	80,1000/Desert
+	80,85/Desert`
+	85,1000/ExtremeDesert

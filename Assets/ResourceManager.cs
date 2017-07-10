@@ -7,10 +7,12 @@ public class ResourceManager : MonoBehaviour {
 
 	private UIManager uiM;
 	private TileManager tileM;
+	private ColonistManager colonistM;
 
 	void Awake() {
 		uiM = GetComponent<UIManager>();
 		tileM = GetComponent<TileManager>();
+		colonistM = GetComponent<ColonistManager>();
 	}
 
 	void Update() {
@@ -65,6 +67,11 @@ public class ResourceManager : MonoBehaviour {
 		public int value;
 
 		public int nutrition = 0;
+
+		public int worldTotalAmount;
+		public int colonistsTotalAmount;
+		public int containerTotalAmount;
+		public int unreservedContainerTotalAmount;
 
 		public Resource(List<string> resourceData,ResourceGroup resourceGroup, ResourceManager rm) {
 			type = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceData[0]);
@@ -489,6 +496,7 @@ public class ResourceManager : MonoBehaviour {
 
 		private UIManager uiM;
 		private JobManager jobM;
+		private ResourceManager resourceM;
 
 		private void GetScriptReferences() {
 
@@ -496,6 +504,7 @@ public class ResourceManager : MonoBehaviour {
 
 			uiM = GM.GetComponent<UIManager>();
 			jobM = GM.GetComponent<JobManager>();
+			resourceM = GM.GetComponent<ResourceManager>();
 		}
 
 		public List<ResourceAmount> resources = new List<ResourceAmount>();
@@ -550,6 +559,7 @@ public class ResourceManager : MonoBehaviour {
 					print(human.name + " now has " + existingResourceAmount.amount + " of " + existingResourceAmount.resource.name);
 				}*/
 			}
+			resourceM.CalculateResourceTotals();
 			uiM.SetSelectedColonistInformation();
 			uiM.SetSelectedContainerInfo();
 			jobM.UpdateColonistJobs();
@@ -592,6 +602,40 @@ public class ResourceManager : MonoBehaviour {
 			uiM.SetSelectedColonistInformation();
 			uiM.SetSelectedContainerInfo();
 			return reservedResourcesByColonist;
+		}
+	}
+
+	public void CalculateResourceTotals() {
+		foreach (Resource resource in resources) {
+			resource.worldTotalAmount = 0;
+			resource.colonistsTotalAmount = 0;
+			resource.containerTotalAmount = 0;
+			resource.unreservedContainerTotalAmount = 0;
+		}
+		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+			foreach (ResourceAmount resourceAmount in colonist.inventory.resources) {
+				resourceAmount.resource.worldTotalAmount += resourceAmount.amount;
+				resourceAmount.resource.colonistsTotalAmount += resourceAmount.amount;
+			}
+			foreach (ReservedResources reservedResources in colonist.inventory.reservedResources) {
+				foreach (ResourceAmount resourceAmount in reservedResources.resources) {
+					resourceAmount.resource.worldTotalAmount += resourceAmount.amount;
+					resourceAmount.resource.colonistsTotalAmount += resourceAmount.amount;
+				}
+			}
+		}
+		foreach (Container container in containers) {
+			foreach (ResourceAmount resourceAmount in container.inventory.resources) {
+				resourceAmount.resource.worldTotalAmount += resourceAmount.amount;
+				resourceAmount.resource.containerTotalAmount += resourceAmount.amount;
+				resourceAmount.resource.unreservedContainerTotalAmount += resourceAmount.amount;
+			}
+			foreach (ReservedResources reservedResources in container.inventory.reservedResources) {
+				foreach (ResourceAmount resourceAmount in reservedResources.resources) {
+					resourceAmount.resource.worldTotalAmount += resourceAmount.amount;
+					resourceAmount.resource.containerTotalAmount += resourceAmount.amount;
+				}
+			}
 		}
 	}
 

@@ -149,6 +149,7 @@ public class JobManager:MonoBehaviour {
 			colonist.resourceM.RemoveTileObjectInstance(instance);
 			job.tile.RemoveTileObjectAtLayer(instance.prefab.layer);
 			resourceM.Bitmask(new List<TileManager.Tile>() { job.tile }.Concat(job.tile.surroundingTiles).ToList());
+			tileM.map.DetermineShadowTiles(tileM.map.tiles);
 		});
 		finishJobFunctions.Add(JobTypesEnum.PlantFarm,delegate (ColonistManager.Colonist colonist,Job job) {
 			finishJobFunctions[JobTypesEnum.Build](colonist,job);
@@ -179,6 +180,7 @@ public class JobManager:MonoBehaviour {
 		finishJobFunctions.Add(JobTypesEnum.Mine,delegate (ColonistManager.Colonist colonist,Job job) {
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),job.tile.tileType.type.ToString())),Random.Range(4,7));
 			job.tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Dirt),true,true,true,false);
+			tileM.map.DetermineShadowTiles(tileM.map.tiles);
 		});
 		finishJobFunctions.Add(JobTypesEnum.PickupResources,delegate (ColonistManager.Colonist colonist,Job job) {
 			ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == colonist.overTile);
