@@ -420,6 +420,8 @@ public class TileManager:MonoBehaviour {
 
 		public float brightness;
 		public Dictionary<int,float> brightnessAtHour = new Dictionary<int,float>();
+		public Dictionary<int,Dictionary<Tile,float>> tilesAffectingBrightnessOfThisTile = new Dictionary<int,Dictionary<Tile,float>>();
+		public Dictionary<int,Dictionary<Tile,float>> tilesBrightnessBeingAffectedByThisTile = new Dictionary<int,Dictionary<Tile,float>>();
 
 		public Dictionary<int,ResourceManager.TileObjectInstance> objectInstances = new Dictionary<int,ResourceManager.TileObjectInstance>();
 
@@ -687,8 +689,7 @@ public class TileManager:MonoBehaviour {
 					walkable = false;
 					map.RecalculateRegionsAtTile(this);
 
-					map.DetermineShadowTiles(new List<Tile>() { this });
-					map.SetTileBrightness(timeM.GetTileBrightnessTime());
+					map.DetermineShadowTiles(new List<Tile>() { this },true);
 
 					break;
 				}
@@ -894,9 +895,27 @@ public class TileManager:MonoBehaviour {
 			*/
 		}
 		Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
+		if (Input.GetKeyDown(KeyCode.H)) {
+			map.SetTileBrightness(12);
+			Tile tile = map.GetTileFromPosition(mousePosition);
+			foreach (KeyValuePair<int,Dictionary<Tile,float>> hourKVP in tile.tilesAffectingBrightnessOfThisTile) {
+				foreach (KeyValuePair<Tile,float> sTile in hourKVP.Value) {
+					sTile.Key.SetColour(new Color(hourKVP.Key / 24f,1 - (hourKVP.Key / 24f),hourKVP.Key / 24f,1f),12);
+				}
+			}
+		}
+		if (Input.GetKeyDown(KeyCode.G)) {
+			map.SetTileBrightness(12);
+			Tile tile = map.GetTileFromPosition(mousePosition);
+			foreach (KeyValuePair<int,Dictionary<Tile,float>> hourKVP in tile.tilesBrightnessBeingAffectedByThisTile) {
+				foreach (KeyValuePair<Tile,float> sTile in hourKVP.Value) {
+					sTile.Key.SetColour(new Color(hourKVP.Key / 24f,1 - (hourKVP.Key / 24f),hourKVP.Key / 24f,1f),12);
+				}
+			}
+		}
 		if (Input.GetMouseButtonDown(0)) {
 			Tile tile = map.GetTileFromPosition(mousePosition);
-			print(tile.height);
+			//print(tile.height);
 			//print(tile.walkSpeed);
 			/*
 			ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == tile);
@@ -1077,7 +1096,7 @@ public class TileManager:MonoBehaviour {
 			Bitmasking(tiles);
 
 			if (mapData.actualMap) {
-				DetermineShadowTiles(tiles);
+				DetermineShadowTiles(tiles,false);
 				SetTileBrightness(12);
 			}
 		}
@@ -2082,23 +2101,8 @@ public class TileManager:MonoBehaviour {
 			return ((-(1f / 144f)) * Mathf.Pow(((1 + (24 - (1 - time))) % 24) - 12,2) + 1.2f);
 		}
 
-		public void DetermineShadowTiles(List<Tile> tilesToInclude) {
-			if (tilesToInclude.Count == tiles.Count) {
-				foreach (Tile tile in tilesToInclude) {
-					for (int h = 0; h < 24; h++) {
-						tile.brightnessAtHour[h] = 0;
-					}
-				}
-			} else {
-				List<RegionBlock> checkedRegionBlocks = new List<RegionBlock>();
-				foreach (Tile tile in tiles) {
-					if (!checkedRegionBlocks.Contains(tile.regionBlock)) {
-						foreach (Tile rbTile in tile.regionBlock) {
-							
-						}
-					}
-				}
-			}
+		public void DetermineShadowTiles(List<Tile> tilesToInclude, bool resetBrightness) {
+
 			List<Tile> shadowStartTiles = new List<Tile>();
 			foreach (Tile tile in tilesToInclude) {
 				if (!tile.walkable && tile.surroundingTiles.Find(nTile => nTile != null && nTile.walkable) != null) {
@@ -2113,6 +2117,9 @@ public class TileManager:MonoBehaviour {
 				hourDirections.Add(hourDirection);
 
 				foreach (Tile tile in shadowStartTiles) {
+
+					tile.tilesAffectingBrightnessOfThisTile.Clear();
+					tile.tilesBrightnessBeingAffectedByThisTile.Clear();
 
 					Vector2 tilePosition = tile.obj.transform.position;
 
@@ -2144,27 +2151,73 @@ public class TileManager:MonoBehaviour {
 					}
 					float heightModifer = (1 + (oppositeTileMaxHeight - mapData.terrainTypeHeights[TileTypes.Stone]));
 					float maxDistance = hourDirection.magnitude * heightModifer * 5f + (Mathf.Pow(h - 12,2) / 6f);
-					float distance = 0;
 
 					List<Tile> shadowTiles = new List<Tile>();
-					while (distance <= maxDistance) {
+					for (float distance = 0; distance <= maxDistance; distance += 0.25f) {
 						Tile shadowTile = GetTileFromPosition(tilePosition + (hourDirection.normalized * distance));
 						if (shadowTiles.Contains(shadowTile)) {
 							distance += 0.25f;
 							continue;
 						}
-						if (shadowTile != tile && (shadowTile.tileType.walkable && shadowTile.GetAllObjectInstances().Find(instance => !instance.prefab.walkable) != null ? true : shadowTile.walkable)) {
-							float newBrightness = Mathf.Clamp((1 - (0.6f * CalculateBrightnessLevelAtHour(h)) + 0.3f),0,1);
-							if (shadowTile.brightnessAtHour.ContainsKey(h)) {
-								shadowTile.brightnessAtHour[h] = (shadowTile.brightnessAtHour[h] + newBrightness) / 2f;
-							} else {
-								shadowTile.brightnessAtHour.Add(h,newBrightness);
+						if (shadowTile != tile) {
+							float newBrightness = 1;
+							if ((shadowTile.tileType.walkable && shadowTile.GetAllObjectInstances().Find(instance => !instance.prefab.walkable) != null ? true : shadowTile.walkable)) {
+								newBrightness = Mathf.Clamp((1 - (0.6f * CalculateBrightnessLevelAtHour(h)) + 0.3f),0,1);
+								if (shadowTile.brightnessAtHour.ContainsKey(h)) {
+									shadowTile.brightnessAtHour[h] = Mathf.Min(shadowTile.brightnessAtHour[h],newBrightness);
+								} else {
+									shadowTile.brightnessAtHour.Add(h,newBrightness);
+								}
+								shadowTiles.Add(shadowTile);
 							}
-							shadowTiles.Add(shadowTile);
+							if (tile.tilesBrightnessBeingAffectedByThisTile.ContainsKey(h)) {
+								if (tile.tilesBrightnessBeingAffectedByThisTile[h].ContainsKey(shadowTile)) {
+									tile.tilesBrightnessBeingAffectedByThisTile[h][shadowTile] = newBrightness;
+								} else {
+									tile.tilesBrightnessBeingAffectedByThisTile[h].Add(shadowTile,newBrightness);
+								}
+							} else {
+								tile.tilesBrightnessBeingAffectedByThisTile.Add(h,new Dictionary<Tile,float>() { { shadowTile,newBrightness } });
+							}
+							if (shadowTile.tilesAffectingBrightnessOfThisTile.ContainsKey(h)) {
+								if (shadowTile.tilesAffectingBrightnessOfThisTile[h].ContainsKey(tile)) {
+									shadowTile.tilesAffectingBrightnessOfThisTile[h][tile] = newBrightness;
+								} else {
+									shadowTile.tilesAffectingBrightnessOfThisTile[h].Add(tile,newBrightness);
+								}
+							} else {
+								shadowTile.tilesAffectingBrightnessOfThisTile.Add(h,new Dictionary<Tile,float>() { { tile,newBrightness } });
+							}
 						}
-						distance += 0.25f;
 					}
 				}
+			}
+			SetTileBrightness(timeM.GetTileBrightnessTime());
+		}
+
+		public void RemoveTileBrightnessEffect(Tile tile) {
+			foreach (KeyValuePair<int,Dictionary<Tile,float>> affectingTilesKVP in tile.tilesBrightnessBeingAffectedByThisTile) {
+				int h = affectingTilesKVP.Key;
+				foreach (Tile affectingTile in affectingTilesKVP.Value.Keys) {
+					foreach (KeyValuePair<int,Dictionary<Tile,float>> brightnessFromOtherTilesKVP in affectingTile.tilesAffectingBrightnessOfThisTile) {
+						float minBrightness = 1f;
+						List<KeyValuePair<Tile,float>> validTiles = affectingTilesKVP.Value.Where(tileBrightness => tileBrightness.Key != tile).ToList();
+						if (validTiles.Count > 0) {
+							minBrightness = validTiles.Min(tileBrightness => tileBrightness.Value);
+						}
+						if (affectingTile.brightnessAtHour.ContainsKey(h)) {
+							affectingTile.brightnessAtHour[h] = minBrightness;
+						} else {
+							affectingTile.brightnessAtHour.Add(h,minBrightness);
+						}
+						if (affectingTile.tilesAffectingBrightnessOfThisTile.ContainsKey(h)) {
+							affectingTile.tilesAffectingBrightnessOfThisTile[h].Remove(tile);
+						}
+					}
+				}
+			}
+			foreach (KeyValuePair<int,Dictionary<Tile,float>> tilesAffectingBrightnessOfTile in tile.tilesAffectingBrightnessOfThisTile) {
+				DetermineShadowTiles(tilesAffectingBrightnessOfTile.Value.Keys.ToList(),false);
 			}
 		}
 
