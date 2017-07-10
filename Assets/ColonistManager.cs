@@ -387,24 +387,72 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
+	public int FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum resourceGroup, Colonist colonist, bool worldTotal, bool includeOtherColonists) {
+		if (worldTotal) {
+			int total = 0;
+			foreach (ResourceManager.Resource resource in resourceM.resources) {
+				if (resource.resourceGroup.type == resourceGroup) {
+					total += resource.worldTotalAmount;
+				}
+			}
+			return total;
+		} else {
+			int total = 0;
+
+			int amountOnThisColonist = 0;
+			foreach (ResourceManager.ResourceAmount resourceAmount in colonist.inventory.resources) {
+				if (resourceAmount.resource.resourceGroup.type == resourceGroup) {
+					amountOnThisColonist += resourceAmount.amount;
+				}
+			}
+			total += amountOnThisColonist;
+
+			int amountUnreservedInContainers = 0;
+			foreach (ResourceManager.Resource resource in resourceM.resources) {
+				if (resource.resourceGroup.type == resourceGroup) {
+					amountUnreservedInContainers += resource.unreservedContainerTotalAmount;
+				}
+			}
+			total += amountUnreservedInContainers;
+
+			if (includeOtherColonists) {
+				int amountOnOtherColonists = 0;
+				foreach (Colonist otherColonist in colonists) {
+					if (colonist != otherColonist) {
+
+					}
+				}
+				total += amountOnOtherColonists;
+			}
+
+			return total;
+		}
+	}
+
 	public void InitializeNeedsValueFunctions() {
 		needsValueFunctions.Add(NeedsEnum.Food,delegate (NeedInstance need) {
 			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.CollectFood || need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Eat)) {
 				if (need.prefab.criticalValueAction && need.value >= need.prefab.criticalValue) {
-					if (need.colonist.job != null) {
-						need.colonist.ReturnJob();
+					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,true,true) > 0) {
+						if (need.colonist.job != null) {
+							need.colonist.ReturnJob();
+						}
+						GetFood(need,true,true);
 					}
-					GetFood(need,true,true);
 				}
 				if (need.prefab.maximumValueAction && need.value >= need.prefab.maximumValue) {
-					if (need.colonist.job != null) {
-						need.colonist.ReturnJob();
+					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,false,true) > 0) {
+						if (need.colonist.job != null) {
+							need.colonist.ReturnJob();
+						}
+						GetFood(need,true,false);
 					}
-					GetFood(need,true,false);
 				}
 				if (need.prefab.minimumValueAction && need.value >= need.prefab.minimumValue) {
-					if (timeM.minuteChanged && Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
-						//GetFood(need,false,false);
+					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,false,false) > 0) {
+						if (timeM.minuteChanged && Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
+							//GetFood(need,false,false);
+						}
 					}
 				}
 			}

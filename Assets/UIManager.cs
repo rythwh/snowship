@@ -266,6 +266,7 @@ public class UIManager : MonoBehaviour {
 				obj.GetComponent<Button>().interactable = false;
 			}
 
+			/*
 			float waterThreshold = 0.45f;
 			if (coast || tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
 				waterThreshold = tile.height;
@@ -275,6 +276,12 @@ public class UIManager : MonoBehaviour {
 			if (tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) {
 				stoneThreshold = (1.25f - tile.height) / 2f;
 			}
+			*/
+
+			float waterThreshold = 0.40f;
+			float stoneThreshold = 0.75f;
+			waterThreshold = waterThreshold * tile.precipitation * (1 - tile.height);
+			stoneThreshold = stoneThreshold * (1 - (tile.height - (1 - stoneThreshold)));
 
 			terrainTypeHeights = new Dictionary<TileManager.TileTypes,float>() {
 				{ TileManager.TileTypes.GrassWater,waterThreshold},{ TileManager.TileTypes.Stone,stoneThreshold }
@@ -328,7 +335,7 @@ public class UIManager : MonoBehaviour {
 
 		GameObject planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
 
-		int planetTileSize = 100; // 10; // 8; (60 for debug)
+		int planetTileSize = 10; // 10; // 8; (60 for debug)
 
 		Text planetSeedInput = GameObject.Find("PlanetSeedInput-Text").GetComponent<Text>();
 		string planetSeedString = planetSeedInput.text;
@@ -344,7 +351,7 @@ public class UIManager : MonoBehaviour {
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().cellSize = new Vector2(planetTileSize,planetTileSize);
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
 
-		TileManager.MapData mapData = new TileManager.MapData(planetSeed,planetSize,false,0,true,planetTemperature,0,0,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,true);
+		TileManager.MapData mapData = new TileManager.MapData(planetSeed,planetSize,false,-1,true,planetTemperature,-1,-1,new Dictionary<TileManager.TileTypes,float>() { { TileManager.TileTypes.GrassWater,0.40f },{ TileManager.TileTypes.Stone,0.75f } },false,true);
 		planet = new TileManager.Map(mapData);
 		foreach (TileManager.Tile tile in planet.tiles) {
 			planetTiles.Add(new PlanetTile(tile,planetPreviewPanel.transform,tile.position,planetSize,planetTemperature));
@@ -961,7 +968,11 @@ public class UIManager : MonoBehaviour {
 				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x,105);
 				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().minValue = 0;
 				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().maxValue = job.colonistBuildTime;
-				obj.GetComponent<Image>().color = new Color(52f,152f,219f,255f) / 255f;
+				if (colonist.job.started) {
+					obj.GetComponent<Image>().color = new Color(52f,152f,219f,255f) / 255f;
+				} else {
+					obj.GetComponent<Image>().color = new Color(230f,126f,34f,255f) / 255f;
+				}
 
 				colonistObj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ColonistInfoElement-Panel"),obj.transform,false);
 
@@ -1010,8 +1021,11 @@ public class UIManager : MonoBehaviour {
 		if (jobM.jobs.Count > 0 || colonistM.colonists.Where(colonist => colonist.job != null).ToList().Count > 0) {
 			jobList.SetActive(true);
 			RemoveJobElements();
-			List<ColonistManager.Colonist> orderedColonists = colonistM.colonists.Where(colonist => colonist.job != null).OrderByDescending(colonist => 1 - (colonist.job.jobProgress / colonist.job.colonistBuildTime)).ToList();
-			foreach (ColonistManager.Colonist jobColonist in orderedColonists) {
+			List<ColonistManager.Colonist> orderedColonists = colonistM.colonists.Where(colonist => colonist.job != null).OrderBy(colonist => colonist.job.jobProgress).ToList();
+			foreach (ColonistManager.Colonist jobColonist in orderedColonists.Where(colonist => colonist.job.started)) {
+				jobElements.Add(new JobElement(jobColonist.job,jobColonist,jobList.transform.Find("JobList-Panel"),this,cameraM));
+			}
+			foreach (ColonistManager.Colonist jobColonist in orderedColonists.Where(colonist => !colonist.job.started)) {
 				jobElements.Add(new JobElement(jobColonist.job,jobColonist,jobList.transform.Find("JobList-Panel"),this,cameraM));
 			}
 			foreach (JobManager.Job job in jobM.jobs) {

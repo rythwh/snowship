@@ -1636,7 +1636,7 @@ public class TileManager:MonoBehaviour {
 			AverageTilePrecipitations();
 
 			foreach (Tile tile in tiles) {
-				tile.precipitation = Mathf.Clamp(tile.precipitation + (mapData.averagePrecipitation - (mapData.averagePrecipitation / 2f)),0f,1f);
+				tile.precipitation = Mathf.Clamp((Mathf.RoundToInt(mapData.averagePrecipitation) != -1 ? (tile.precipitation + mapData.averagePrecipitation) / 2f : tile.precipitation),0f,1f);
 			}
 		}
 
@@ -2083,6 +2083,22 @@ public class TileManager:MonoBehaviour {
 		}
 
 		public void DetermineShadowTiles(List<Tile> tilesToInclude) {
+			if (tilesToInclude.Count == tiles.Count) {
+				foreach (Tile tile in tilesToInclude) {
+					for (int h = 0; h < 24; h++) {
+						tile.brightnessAtHour[h] = 0;
+					}
+				}
+			} else {
+				List<RegionBlock> checkedRegionBlocks = new List<RegionBlock>();
+				foreach (Tile tile in tiles) {
+					if (!checkedRegionBlocks.Contains(tile.regionBlock)) {
+						foreach (Tile rbTile in tile.regionBlock) {
+							
+						}
+					}
+				}
+			}
 			List<Tile> shadowStartTiles = new List<Tile>();
 			foreach (Tile tile in tilesToInclude) {
 				if (!tile.walkable && tile.surroundingTiles.Find(nTile => nTile != null && nTile.walkable) != null) {
