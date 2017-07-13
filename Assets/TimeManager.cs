@@ -57,7 +57,7 @@ public class TimeManager : MonoBehaviour {
 		}
 		deltaTime = Time.deltaTime * timeModifier;
 
-		timer += 1f * deltaTime;
+		timer += 120f * deltaTime;
 		minuteChanged = false;
 		if (timer >= 1) {
 			minute += 1;
