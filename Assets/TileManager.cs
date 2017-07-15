@@ -420,11 +420,11 @@ public class TileManager:MonoBehaviour {
 
 		public float brightness;
 		public Dictionary<int,float> brightnessAtHour = new Dictionary<int,float>();
-		public Dictionary<int,Dictionary<Tile,float>> shadowsFrom = new Dictionary<int,Dictionary<Tile,float>>();
+		public Dictionary<int,Dictionary<Tile,float>> shadowsFrom = new Dictionary<int,Dictionary<Tile,float>>(); // Tiles that affect the shadow on this tile
 		//public Dictionary<int,Dictionary<Tile,float>> tilesBrightnessBeingAffectedByThisTile = new Dictionary<int,Dictionary<Tile,float>>();
-		public Dictionary<int,List<Tile>> shadowsTo = new Dictionary<int,List<Tile>>();
-		public Dictionary<int,List<Tile>> blockingShadowsFrom = new Dictionary<int,List<Tile>>();
-		public List<Tile> shadowTiles = new List<Tile>();
+		public Dictionary<int,List<Tile>> shadowsTo = new Dictionary<int,List<Tile>>(); // Tiles that have shadows due to this tile
+		public Dictionary<int,List<Tile>> blockingShadowsFrom = new Dictionary<int,List<Tile>>(); // Tiles that have shadows that were cut short because this tile was in the way
+		public List<Tile> shadowTiles = new List<Tile>(); // Tiles that have shadows due to this tile
 
 		public Dictionary<int,ResourceManager.TileObjectInstance> objectInstances = new Dictionary<int,ResourceManager.TileObjectInstance>();
 
@@ -2161,11 +2161,13 @@ public class TileManager:MonoBehaviour {
 				}
 			}
 			for (int h = 0; h < 24; h++) {
+				/*
 				foreach (Tile tile in shadowStartTiles) {
 					tile.shadowsFrom.Clear();
 					tile.shadowsTo.Clear();
 					//tile.tilesBrightnessBeingAffectedByThisTile.Clear();
 				}
+				*/
 			}
 			List<Vector2> hourDirections = new List<Vector2>();
 			for (int h = 0; h < 24; h++) {
@@ -2213,6 +2215,7 @@ public class TileManager:MonoBehaviour {
 							break;
 						}
 						Tile shadowTile = GetTileFromPosition(nextTilePosition);
+						shadowTile.shadowsFrom.Clear();
 						if (shadowTiles.Contains(shadowTile)) {
 							distance += 0.25f;
 							continue;
@@ -2233,6 +2236,7 @@ public class TileManager:MonoBehaviour {
 								} else {
 									shadowTile.blockingShadowsFrom.Add(h,new List<Tile>() { tile });
 								}
+								shadowTile.blockingShadowsFrom[h] = shadowTile.blockingShadowsFrom[h].Distinct().ToList();
 							}
 							if (shadowTile.shadowsFrom.ContainsKey(h)) {
 								if (shadowTile.shadowsFrom[h].ContainsKey(tile)) {
@@ -2257,14 +2261,14 @@ public class TileManager:MonoBehaviour {
 						}
 					}
 					tile.shadowTiles.AddRange(shadowTiles);
-					tile.shadowTiles = tile.shadowTiles.Distinct().ToList();
-
 					if (tile.shadowsTo.ContainsKey(h)) {
-						tile.shadowsTo[h].Clear();
+						//tile.shadowsTo[h].Clear();
 						tile.shadowsTo[h].AddRange(shadowTiles);
 					} else {
 						tile.shadowsTo.Add(h,shadowTiles);
 					}
+					tile.shadowsTo[h] = tile.shadowsTo[h].Distinct().ToList();
+					tile.shadowTiles = tile.shadowTiles.Distinct().ToList();
 				}
 			}
 			if (setBrightnessAtEnd) {
@@ -2273,6 +2277,31 @@ public class TileManager:MonoBehaviour {
 		}
 
 		public void RemoveTileBrightnessEffect(Tile tile) {
+			List<Tile> tilesToRecalculateShadowsFor = new List<Tile>();
+			for (int h = 0; h < 24; h++) {
+				if (tile.shadowsTo.ContainsKey(h)) {
+					foreach (Tile nTile in tile.shadowsTo[h]) {
+						if (nTile.shadowsFrom.ContainsKey(h)) {
+							nTile.shadowsFrom[h].Remove(tile);
+						}
+						if (nTile.brightnessAtHour.ContainsKey(h)) {
+							nTile.brightnessAtHour[h] = 1f;
+						}
+						nTile.SetBrightness(1f,12);
+					}
+				}
+				if (tile.shadowsFrom.ContainsKey(h)) {
+					tilesToRecalculateShadowsFor.AddRange(tile.shadowsFrom[h].Keys);
+				}
+				if (tile.blockingShadowsFrom.ContainsKey(h)) {
+					tilesToRecalculateShadowsFor.AddRange(tile.blockingShadowsFrom[h]);
+				}
+			}
+			tilesToRecalculateShadowsFor.AddRange(tile.surroundingTiles.Where(nTile => nTile != null));
+			DetermineShadowTiles(tilesToRecalculateShadowsFor.Distinct().ToList(),true);
+		}
+
+		public void RemoveTileBrightnessEffect2(Tile tile) {
 			/*
 			foreach (KeyValuePair<int,Dictionary<Tile,float>> affectingTilesKVP in tile.tilesBrightnessBeingAffectedByThisTile) {
 				int h = affectingTilesKVP.Key;
