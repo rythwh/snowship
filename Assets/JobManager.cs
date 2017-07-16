@@ -242,6 +242,13 @@ public class JobManager:MonoBehaviour {
 		finishJobFunctions.Add(JobTypesEnum.Eat,delegate (ColonistManager.Colonist colonist,Job job) {
 			List<ResourceManager.ResourceAmount> resourcesToEat = colonist.inventory.resources.Where(r => r.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods).OrderBy(r => r.resource.nutrition).ToList();
 			ColonistManager.NeedInstance foodNeed = colonist.needs.Find(need => need.prefab.type == ColonistManager.NeedsEnum.Food);
+			/*
+			if (resourcesToEat.Count > 0) {
+				ResourceManager.ResourceAmount resourceToEat = resourcesToEat[0];
+				colonist.inventory.ChangeResourceAmount(resourceToEat.resource,-1);
+				foodNeed.value -= resourceToEat.resource.nutrition;
+			}
+			*/
 			foreach (ResourceManager.ResourceAmount ra in resourcesToEat) {
 				bool stopEating = false;
 				for (int i = 0; i < ra.amount; i++) {

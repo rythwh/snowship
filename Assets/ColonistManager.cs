@@ -326,14 +326,26 @@ public class ColonistManager : MonoBehaviour {
 
 	public Dictionary<NeedsEnum,System.Action<NeedInstance>> needsValueFunctions = new Dictionary<NeedsEnum,System.Action<NeedInstance>>();
 
+	private Dictionary<NeedsEnum,JobManager.JobTypesEnum> needToJobMap = new Dictionary<NeedsEnum,JobManager.JobTypesEnum>() {
+		{NeedsEnum.Food,JobManager.JobTypesEnum.Eat },
+		{ NeedsEnum.Rest,JobManager.JobTypesEnum.Sleep}
+	};
+
 	public void CalculateNeedValue(NeedInstance need) {
+
+		if (needToJobMap.ContainsKey(need.prefab.type) && need.colonist.job.prefab.jobType == needToJobMap[need.prefab.type]) {
+			return;
+		} else if (!needToJobMap.ContainsKey(need.prefab.type)) {
+			print("Need not in needToJobMap, is this correct?");
+		}
+
 		float needIncreaseAmount = need.prefab.baseIncreaseRate;
 		foreach (TraitInstance trait in need.colonist.traits) {
 			if (need.prefab.traitsAffectingThisNeed.ContainsKey(trait.prefab.type)) {
 				needIncreaseAmount *= need.prefab.traitsAffectingThisNeed[trait.prefab.type];
 			}
 		}
-		need.value += needIncreaseAmount * timeM.deltaTime * 25;
+		need.value += needIncreaseAmount * timeM.deltaTime * 25f;
 		need.value = Mathf.Clamp(need.value,0,need.prefab.clampValue);
 	}
 
@@ -772,6 +784,11 @@ public class ColonistManager : MonoBehaviour {
 			job.started = true;
 
 			job.jobProgress *= (1 + (1 - GetJobSkillMultiplier(job.prefab.jobType)));
+
+			if (job.prefab.jobType == JobManager.JobTypesEnum.Eat) {
+				job.jobProgress += 10 * (needs.Find(need => need.prefab.type == NeedsEnum.Food).value / 100f);
+			}
+
 			job.colonistBuildTime = job.jobProgress;
 
 			uiM.SetJobElements();

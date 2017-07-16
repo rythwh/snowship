@@ -16,6 +16,7 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	void Update() {
+		CalculateResourceTotals();
 		foreach (Farm farm in farms) {
 			farm.Update();
 		}
