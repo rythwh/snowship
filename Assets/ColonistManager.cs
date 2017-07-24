@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.UI;
 
 public class ColonistManager : MonoBehaviour {
 
@@ -175,6 +176,19 @@ public class ColonistManager : MonoBehaviour {
 				tempName += character;
 			}
 			name = tempName;
+
+			obj.name = "Human: " + name;
+
+			GameObject nameCanvas = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"),obj.transform,false);
+			nameCanvas.transform.Find("NameBackground-Image/Name-Text").GetComponent<Text>().text = name;
+			Canvas.ForceUpdateCanvases(); // The charInfo.advance is not calculated until the text is rendered
+			int textWidthPixels = 0;
+			foreach (char character in name) {
+				CharacterInfo charInfo;
+				Resources.Load<Font>(@"UI/Fonts/Quicksand/Quicksand-Bold").GetCharacterInfo(character,out charInfo,48,FontStyle.Normal);
+				textWidthPixels += charInfo.advance;
+			}
+			nameCanvas.transform.Find("NameBackground-Image").GetComponent<RectTransform>().sizeDelta = new Vector2(textWidthPixels/2.8f,20);
 		}
 
 		public new void Update() {
@@ -332,13 +346,9 @@ public class ColonistManager : MonoBehaviour {
 	};
 
 	public void CalculateNeedValue(NeedInstance need) {
-
-		if (needToJobMap.ContainsKey(need.prefab.type) && need.colonist.job.prefab.jobType == needToJobMap[need.prefab.type]) {
+		if (needToJobMap.ContainsKey(need.prefab.type) && need.colonist.job != null && need.colonist.job.prefab.jobType == needToJobMap[need.prefab.type]) {
 			return;
-		} else if (!needToJobMap.ContainsKey(need.prefab.type)) {
-			print("Need not in needToJobMap, is this correct?");
 		}
-
 		float needIncreaseAmount = need.prefab.baseIncreaseRate;
 		foreach (TraitInstance trait in need.colonist.traits) {
 			if (need.prefab.traitsAffectingThisNeed.ContainsKey(trait.prefab.type)) {
@@ -1021,6 +1031,7 @@ public class ColonistManager : MonoBehaviour {
 
 	void CreateColonistIndicator() {
 		selectedColonistIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),selectedColonist.obj.transform,false);
+		selectedColonistIndicator.name = "Selected Colonist Indicator";
 		SpriteRenderer sCISR = selectedColonistIndicator.GetComponent<SpriteRenderer>();
 		sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
 		sCISR.sortingOrder = 20; // Selected Colonist Indicator Sprite

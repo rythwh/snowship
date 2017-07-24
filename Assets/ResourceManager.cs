@@ -378,6 +378,7 @@ public class ResourceManager : MonoBehaviour {
 			this.rotationIndex = rotationIndex;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
+			obj.name = "Tile Object Instance: " + prefab.name;
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 1 + prefab.layer; // Tile Object Sprite
 			obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
 

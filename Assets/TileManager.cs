@@ -136,7 +136,7 @@ public class TileManager:MonoBehaviour {
 			pSR.sprite = (small ? group.smallPlants[Random.Range(0,group.smallPlants.Count)] : group.fullPlants[Random.Range(0,group.fullPlants.Count)]);
 			pSR.sortingOrder = 1; // Plant Sprite
 
-			obj.name = "PLANT " + pSR.sprite.name;
+			obj.name = "Plant: " + pSR.sprite.name;
 			obj.transform.parent = tile.obj.transform;
 		}
 
@@ -438,6 +438,7 @@ public class TileManager:MonoBehaviour {
 			if (normalTile) {
 				obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),new Vector2(position.x + 0.5f,position.y + 0.5f),Quaternion.identity);
 				obj.transform.SetParent(GameObject.Find("TileParent").transform,true);
+				obj.name = "Tile: " + position;
 
 				sr = obj.GetComponent<SpriteRenderer>();
 
