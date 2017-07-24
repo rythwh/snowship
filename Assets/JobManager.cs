@@ -487,6 +487,7 @@ public class JobManager:MonoBehaviour {
 
 					foreach (TileManager.Tile tile in selectionArea) {
 						GameObject selectionIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
+						selectionIndicator.name = "Selection Indicator";
 						SpriteRenderer sISR = selectionIndicator.GetComponent<SpriteRenderer>();
 						sISR.sprite = Resources.Load<Sprite>(@"UI/selectionIndicator");
 						//sISR.color = new Color(241f,196f,15f,255f) / 255f; // Yellow

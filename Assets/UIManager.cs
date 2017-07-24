@@ -136,6 +136,7 @@ public class UIManager : MonoBehaviour {
 	void Start() {
 		tileM.PreInitialize();
 		GeneratePlanet();
+		SetSelectedPlanetTileInfo();
 	}
 
 	public ResourceManager.Container selectedContainer;
@@ -237,6 +238,7 @@ public class UIManager : MonoBehaviour {
 			this.planetTemperature = planetTemperature;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/PlanetTile"),parent,false);
+			obj.name = "Planet Tile: " + position;
 			image = obj.GetComponent<Image>();
 			image.sprite = tile.obj.GetComponent<SpriteRenderer>().sprite;
 
