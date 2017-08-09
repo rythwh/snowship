@@ -9,6 +9,17 @@ public class CameraManager : MonoBehaviour {
 
 	private TileManager tileM;
 
+	private int minOrthoSize = 1;
+	private int maxOrthoSize = 20;
+
+	public int GetMinOrthoSize() {
+		return minOrthoSize;
+	}
+
+	public int GetMaxOrthoSize() {
+		return maxOrthoSize;
+	}
+
 	void Awake() {
 		cameraGO = GameObject.Find("Camera");
 		cameraComponent = cameraGO.GetComponent<Camera>();
@@ -36,9 +47,9 @@ public class CameraManager : MonoBehaviour {
 		if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
 			cameraComponent.orthographicSize -= Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") + (Input.GetAxis("KeyboardZoom") / 10f),-1f,1f) * cameraComponent.orthographicSize * Time.deltaTime * 100;
 			if (tileM.debugMode) {
-				cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize,1,500);
+				cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize,minOrthoSize,maxOrthoSize*25);
 			} else {
-				cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize,1,20);
+				cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize,minOrthoSize,maxOrthoSize);
 			}
 		}
 	}

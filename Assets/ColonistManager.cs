@@ -47,6 +47,7 @@ public class ColonistManager : MonoBehaviour {
 		public JobManager jobM;
 		public ResourceManager resourceM;
 		public UIManager uiM;
+		public CameraManager cameraM;
 
 		void GetScriptReferences() {
 			GameObject GM = GameObject.Find("GM");
@@ -58,6 +59,7 @@ public class ColonistManager : MonoBehaviour {
 			jobM = GM.GetComponent<JobManager>();
 			resourceM = GM.GetComponent<ResourceManager>();
 			uiM = GM.GetComponent<UIManager>();
+			cameraM = GM.GetComponent<CameraManager>();
 		}
 
 		public int health;
@@ -149,6 +151,7 @@ public class ColonistManager : MonoBehaviour {
 	public class Human : Life {
 
 		public string name;
+		public GameObject nameCanvas;
 
 		public int skinIndex;
 		public int hairIndex;
@@ -179,7 +182,7 @@ public class ColonistManager : MonoBehaviour {
 
 			obj.name = "Human: " + name;
 
-			GameObject nameCanvas = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"),obj.transform,false);
+			nameCanvas = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"),obj.transform,false);
 			nameCanvas.transform.Find("NameBackground-Image/Name-Text").GetComponent<Text>().text = name;
 			Canvas.ForceUpdateCanvases(); // The charInfo.advance is not calculated until the text is rendered
 			int textWidthPixels = 0;
@@ -193,6 +196,7 @@ public class ColonistManager : MonoBehaviour {
 
 		public new void Update() {
 			base.Update();
+			nameCanvas.transform.Find("NameBackground-Image").localScale = Vector2.one * Mathf.Clamp(cameraM.cameraComponent.orthographicSize,2,10) * 0.005f;
 		}
 	}
 
