@@ -1,10 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Xml;
-using System.Xml.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
+using System.IO;
 
 public class PersistenceManager : MonoBehaviour {
+
+	private int gameVersion;
+	private int saveVersion;
+
+	public int GetGameVersion() {
+		return gameVersion;
+	}
+
+	public int GetSaveVersion() {
+		return saveVersion;
+	}
 
 	private CameraManager cameraM; // Save the camera zoom and position
 	private ColonistManager colonistM; // Save all instances of colonists, humans, life, etc.
@@ -20,11 +32,17 @@ public class PersistenceManager : MonoBehaviour {
 		tileM = GetComponent<TileManager>();
 		timeM = GetComponent<TimeManager>();
 		uiM = GetComponent<UIManager>();
+
+		print(Application.persistentDataPath + "Saves\\snowship-save.snowship");
 	}
 
 	/* https://stackoverflow.com/questions/13266496/easily-write-a-whole-class-instance-to-xml-file-and-read-back-in */
 
 	public void Save() {
+
+		//FileStream file = new FileStream(Application.persistentDataPath + "snowship-save.snowship",FileMode.Create);
+		
+
 		// 1: Save the map data
 
 		// 2: Save the colonist data
