@@ -196,7 +196,7 @@ public class ColonistManager : MonoBehaviour {
 
 		public new void Update() {
 			base.Update();
-			nameCanvas.transform.Find("NameBackground-Image").localScale = Vector2.one * Mathf.Clamp(cameraM.cameraComponent.orthographicSize,2,10) * 0.005f;
+			nameCanvas.transform.Find("NameBackground-Image").localScale = Vector2.one * Mathf.Clamp(cameraM.cameraComponent.orthographicSize,2,10) * 0.0025f;
 		}
 	}
 

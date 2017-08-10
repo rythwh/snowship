@@ -393,6 +393,10 @@ public class UIManager : MonoBehaviour {
 		mapSizeText.text = mapSize.ToString();
 	}
 
+	void SetMenuBackground() {
+
+	}
+
 	/*	Menu Structure:
 	 *		Build Menu Button -> Build Menu Panel
 	 *			Build Menu Group Button -> Group Panel
