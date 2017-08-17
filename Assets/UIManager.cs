@@ -66,12 +66,15 @@ public class UIManager : MonoBehaviour {
 	private GameObject cancelButton;
 
 	void Awake() {
+
 		tileM = GetComponent<TileManager>();
 		jobM = GetComponent<JobManager>();
 		resourceM = GetComponent<ResourceManager>();
 		cameraM = GetComponent<CameraManager>();
 		colonistM = GetComponent<ColonistManager>();
 		timeM = GetComponent<TimeManager>();
+
+		SetMenuBackground();
 
 		playButton = GameObject.Find("Play-Button");
 		playButton.GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
@@ -395,6 +398,22 @@ public class UIManager : MonoBehaviour {
 
 	void SetMenuBackground() {
 
+		GameObject menuBackground = GameObject.Find("MainMenuBackground-Image");
+
+		List<Sprite> backgroundImages = Resources.LoadAll<Sprite>(@"UI/Backgrounds/SingleMap").ToList();
+		menuBackground.GetComponent<Image>().sprite = backgroundImages[UnityEngine.Random.Range(0, backgroundImages.Count)];
+
+		Vector2 menuBackgroundSize = new Vector2(menuBackground.GetComponent<Image>().sprite.texture.width, menuBackground.GetComponent<Image>().sprite.texture.height);
+
+		Vector2 screenResolution = new Vector2(Screen.currentResolution.width, Screen.currentResolution.height);
+
+		float targetSize = Mathf.Max(menuBackgroundSize.x,menuBackgroundSize.y);
+		float targetNewSize = Mathf.Max(screenResolution.x, screenResolution.x);
+
+		float ratio = targetSize / targetNewSize;
+
+		Vector2 newMenuBackgroundSize = menuBackgroundSize / ratio;
+		menuBackground.GetComponent<RectTransform>().sizeDelta = newMenuBackgroundSize;
 	}
 
 	/*	Menu Structure:
