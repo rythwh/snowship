@@ -527,14 +527,15 @@ public class ColonistManager : MonoBehaviour {
 	3	0/			MinV		No action
 	4	false/		AMaxVB		Whether there is any action taken at MaxV
 	5	0/			MaxV		No action
-	6	0/			CV			Percentage over MaxT until they begin dying from the need not being fulfilled
-	7	false/		DB			Whether they can die from this need not being fulfilled
-	8	0.0/		DR			Base rate of health loss due to the need not being fulfilled
-	9	100/		ClampV		Value above which the food value will be clamped
-	10	0/			Priority	The priority of fulfilling the requirements of this need over others
-	11	2/			Number of Affected Traits
-	12	TraitName,TraitName/	Names of the affected traits
-	13	1.1,1.1`	Multiplier of the BRI for each trait
+	6	false/		ACVB		Whether there is any action taken at CV
+	7	0/			CV			Percentage over MaxT until they begin dying from the need not being fulfilled
+	8	false/		DB			Whether they can die from this need not being fulfilled
+	9	0.0/		DR			Base rate of health loss due to the need not being fulfilled
+	10	100/		ClampV		Value above which the food value will be clamped
+	11	0/			Priority	The priority of fulfilling the requirements of this need over others
+	12	2/			Number of Affected Traits
+	13	TraitName,TraitName/	Names of the affected traits
+	14	1.1,1.1`	Multiplier of the BRI for each trait
 	*/
 
 	public List<NeedPrefab> needPrefabs = new List<NeedPrefab>();
