@@ -24,6 +24,8 @@ public class UIManager : MonoBehaviour {
 	private ColonistManager colonistM;
 	private TimeManager timeM;
 
+	private GameObject debugIndicator;
+
 	public int mapSize = 0;
 	Text mapSizeText;
 	Text mapSeedInput;
@@ -73,6 +75,9 @@ public class UIManager : MonoBehaviour {
 		cameraM = GetComponent<CameraManager>();
 		colonistM = GetComponent<ColonistManager>();
 		timeM = GetComponent<TimeManager>();
+
+		debugIndicator = GameObject.Find("DebugIndicator-Image");
+		debugIndicator.SetActive(false);
 
 		SetMenuBackground();
 
@@ -193,6 +198,10 @@ public class UIManager : MonoBehaviour {
 				SetSelectedPlanetTileInfo();
 			}
 		}
+	}
+
+	public void ToggleDebugIndicator() {
+		debugIndicator.SetActive(tileM.debugMode);
 	}
 
 	public PlanetTile selectedPlanetTile;
