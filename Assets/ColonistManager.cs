@@ -349,6 +349,18 @@ public class ColonistManager : MonoBehaviour {
 		{ NeedsEnum.Rest,JobManager.JobTypesEnum.Sleep}
 	};
 
+	public Dictionary<NeedsEnum,System.Func<NeedInstance,float>> needsValueSpecialIncreases = new Dictionary<NeedsEnum,System.Func<NeedInstance,float>>();
+
+	public void InitializeNeedsValueSpecialIncreases() {
+		needsValueSpecialIncreases.Add(NeedsEnum.Rest,delegate (NeedInstance need) {
+			float totalSpecialIncrease = 0;
+			if (!timeM.isDay) {
+				totalSpecialIncrease += 0.05f;
+			}
+			return totalSpecialIncrease;
+		});
+	}
+
 	public void CalculateNeedValue(NeedInstance need) {
 		if (needToJobMap.ContainsKey(need.prefab.type) && need.colonist.job != null && need.colonist.job.prefab.jobType == needToJobMap[need.prefab.type]) {
 			return;
@@ -359,7 +371,7 @@ public class ColonistManager : MonoBehaviour {
 				needIncreaseAmount *= need.prefab.traitsAffectingThisNeed[trait.prefab.type];
 			}
 		}
-		need.value += needIncreaseAmount * timeM.deltaTime * 25f;
+		need.value += (needIncreaseAmount + (needsValueSpecialIncreases.ContainsKey(need.prefab.type) ? needsValueSpecialIncreases[need.prefab.type](need) : 0)) * timeM.deltaTime * (tileM.debugMode ? 25f : 1f);
 		need.value = Mathf.Clamp(need.value,0,need.prefab.clampValue);
 	}
 
@@ -477,35 +489,45 @@ public class ColonistManager : MonoBehaviour {
 				if (need.prefab.minimumValueAction && need.value >= need.prefab.minimumValue) {
 					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,false,false) > 0) {
 						if (timeM.minuteChanged && Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
-							//GetFood(need,false,false);
+							GetFood(need,false,false);
 						}
 					}
 				}
 			}
 		});
-		needsValueFunctions.Add(NeedsEnum.Clothing,delegate (NeedInstance need) {
+		needsValueFunctions.Add(NeedsEnum.Rest,delegate (NeedInstance need) {
+			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Sleep)) {
+				if (need.prefab.criticalValueAction && need.value >= need.prefab.criticalValue) {
 
+				}
+				if (need.prefab.maximumValueAction && need.value >= need.prefab.maximumValue) {
+
+				}
+				if (need.prefab.minimumValueAction && need.value >= need.prefab.minimumValue) {
+
+				}
+			}
+		});
+		needsValueFunctions.Add(NeedsEnum.Clothing,delegate (NeedInstance need) {
+			need.value = 0; // Value set to 0 while need not being used
 		});
 		needsValueFunctions.Add(NeedsEnum.Shelter,delegate (NeedInstance need) {
-
-		});
-		needsValueFunctions.Add(NeedsEnum.Rest,delegate (NeedInstance need) {
-
+			need.value = 0; // Value set to 0 while need not being used
 		});
 		needsValueFunctions.Add(NeedsEnum.Temperature,delegate (NeedInstance need) {
-
+			need.value = 0; // Value set to 0 while need not being used
 		});
 		needsValueFunctions.Add(NeedsEnum.Safety,delegate (NeedInstance need) {
-
+			need.value = 0; // Value set to 0 while need not being used
 		});
 		needsValueFunctions.Add(NeedsEnum.Social,delegate (NeedInstance need) {
-
+			need.value = 0; // Value set to 0 while need not being used
 		});
 		needsValueFunctions.Add(NeedsEnum.Esteem,delegate (NeedInstance need) {
-
+			need.value = 0; // Value set to 0 while need not being used
 		});
 		needsValueFunctions.Add(NeedsEnum.Relaxation,delegate (NeedInstance need) {
-
+			need.value = 0; // Value set to 0 while need not being used
 		});
 	}
 
@@ -519,7 +541,8 @@ public class ColonistManager : MonoBehaviour {
 	Convert days to points between 0-100
 	(days * 1440) * BRI = pointsAfterDays
 
-	Convert 
+	Convert points between 0-100 to days
+	(paintsAfterDays / BRI) / 1440 = days
 
 	0	NeedName/
 	1	0.01/		BRI			Base rate of increase per second while conditions met
@@ -536,6 +559,7 @@ public class ColonistManager : MonoBehaviour {
 	12	2/			Number of Affected Traits
 	13	TraitName,TraitName/	Names of the affected traits
 	14	1.1,1.1`	Multiplier of the BRI for each trait
+
 	*/
 
 	public List<NeedPrefab> needPrefabs = new List<NeedPrefab>();

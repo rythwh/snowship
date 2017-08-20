@@ -778,6 +778,7 @@ public class TileManager:MonoBehaviour {
 		}
 		if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.BackQuote)) {
 			debugMode = !debugMode;
+			uiM.ToggleDebugIndicator();
 		}
 	}
 
