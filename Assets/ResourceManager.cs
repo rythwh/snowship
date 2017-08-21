@@ -69,6 +69,10 @@ public class ResourceManager : MonoBehaviour {
 
 		public int nutrition = 0;
 
+		public Sprite image;
+
+		public int desiredAmount;
+
 		public int worldTotalAmount;
 		public int colonistsTotalAmount;
 		public int containerTotalAmount;
