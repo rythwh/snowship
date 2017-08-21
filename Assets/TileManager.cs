@@ -1070,6 +1070,7 @@ public class TileManager:MonoBehaviour {
 		uiM.SetSelectedContainerInfo();
 		uiM.SetJobElements();
 		uiM.InitializeProfessionsList();
+		uiM.InitializeResourcesList();
 	}
 
 	public class Map {
