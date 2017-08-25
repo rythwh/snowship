@@ -195,9 +195,10 @@ public class UIManager : MonoBehaviour {
 				}
 			}
 			if (professionsList.activeSelf) {
-				foreach (ProfessionElement professionElement in professionElements) {
-					professionElement.Update();
-				}
+				UpdateProfessionsList();
+			}
+			if (resourcesList.activeSelf) {
+				UpdateResourcesList();
 			}
 		} else {
 			playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null/* || !string.IsNullOrEmpty(mapSeedInput.text)*/);
@@ -1373,6 +1374,12 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
+	public void UpdateProfessionsList() {
+		foreach (ProfessionElement professionElement in professionElements) {
+			professionElement.Update();
+		}
+	}
+
 	public class ObjectPrefabElement {
 		public ResourceManager.TileObjectPrefab prefab;
 		public GameObject obj;
@@ -1534,26 +1541,31 @@ public class UIManager : MonoBehaviour {
 		public InputField desiredAmountInput;
 		public Text desiredAmountText;
 
-		public ResourceInstanceElement(ResourceManager.Resource resource, Transform parent) {
+		public ResourceInstanceElement(ResourceManager.Resource resource, Transform parent, UIManager uiM) {
 			this.resource = resource;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ResourceListResourceElement-Panel"), parent, false);
 
-			obj.transform.Find("Name").GetComponent<Text>().text = resource.name;
-			obj.transform.Find("Amount").GetComponent<Text>().text = resource.worldTotalAmount.ToString();
+			obj.transform.Find("Name").GetComponent<Text>().text = uiM.SplitByCapitals(resource.name);
+			
 			obj.transform.Find("Image").GetComponent<Image>().sprite = resource.image;
 
 			desiredAmountInput = obj.transform.Find("DesiredAmount-Input").GetComponent<InputField>();
 			desiredAmountText = desiredAmountInput.transform.Find("Text").GetComponent<Text>();
 			desiredAmountInput.onValueChanged.AddListener(delegate {
-				int newDesiredAmount = int.Parse(desiredAmountInput.text);
+				int newDesiredAmount = 0;
+				int.TryParse(desiredAmountInput.text,out newDesiredAmount);
 				if (newDesiredAmount >= 0) {
 					resource.desiredAmount = newDesiredAmount;
 				}
 			});
+
+			Update();
 		}
 
+		private int worldTotalAmountPrev = 0;
 		public void Update() {
+			obj.transform.Find("Amount").GetComponent<Text>().text = resource.worldTotalAmount.ToString();
 			if (resource.desiredAmount > 0) {
 				if (resource.desiredAmount > resource.worldTotalAmount) {
 					desiredAmountText.color = new Color(231f, 76f, 60f, 255f) / 255f;
@@ -1561,14 +1573,25 @@ public class UIManager : MonoBehaviour {
 					desiredAmountText.color = new Color(46f, 204f, 113f, 255f) / 255f;
 				}
 			}
+
+			worldTotalAmountPrev = resource.worldTotalAmount;
+
+			if (worldTotalAmountPrev != resource.worldTotalAmount) {
+				if (resource.worldTotalAmount > 0) {
+					obj.GetComponent<Image>().color = new Color(220f, 220f, 220f, 220f) / 255f;
+					obj.transform.Find("DesiredAmount-Input").GetComponent<Image>().color = new Color(220f, 220f, 220f, 220f) / 255f;
+				} else {
+					obj.GetComponent<Image>().color = new Color(150f, 150f, 150f, 255f) / 255f;
+					obj.transform.Find("DesiredAmount-Input").GetComponent<Image>().color = new Color(150f, 150f, 150f, 255f) / 255f;
+				}
+			}
 		}
 	}
 
 	public void InitializeResourcesList() {
 		foreach (ResourceManager.Resource resource in resourceM.resources) {
-			resourceInstanceElements.Add(new ResourceInstanceElement(resource, resourcesList.transform));
+			resourceInstanceElements.Add(new ResourceInstanceElement(resource, resourcesList.transform.Find("ResourcesList-Panel"),this));
 		}
-		SetResourcesList();
 	}
 
 	public List<ResourceInstanceElement> resourceInstanceElements = new List<ResourceInstanceElement>();
@@ -1582,8 +1605,14 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void UpdateResourcesList() {
+		Transform resourcesListParent = resourcesList.transform.Find("ResourcesList-Panel");
 		foreach (ResourceInstanceElement resourceInstanceElement in resourceInstanceElements) {
 			resourceInstanceElement.Update();
+		}
+		int index = 0;
+		foreach (ResourceInstanceElement resourceInstanceElement in resourceInstanceElements.OrderByDescending(element => element.resource.worldTotalAmount)) {
+			resourceInstanceElement.obj.transform.SetSiblingIndex(index);
+			index += 1;
 		}
 	}
 }
