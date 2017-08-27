@@ -13,13 +13,9 @@ public class ColonistManager : MonoBehaviour {
 	private PathManager pathM;
 	private JobManager jobM;
 	private TimeManager timeM;
+	private DebugManager debugM;
 
-	void Awake() {
-
-		foreach (string name in Resources.Load<TextAsset>(@"Data/names").text.Split(' ').ToList()) {
-			humanNames.Add(name);
-		}
-
+	private void GetScriptReferences() {
 		tileM = GetComponent<TileManager>();
 		cameraM = GetComponent<CameraManager>();
 		uiM = GetComponent<UIManager>();
@@ -27,6 +23,15 @@ public class ColonistManager : MonoBehaviour {
 		pathM = GetComponent<PathManager>();
 		jobM = GetComponent<JobManager>();
 		timeM = GetComponent<TimeManager>();
+		debugM = GetComponent<DebugManager>();
+	}
+
+	void Awake() {
+		GetScriptReferences();
+
+		foreach (string name in Resources.Load<TextAsset>(@"Data/names").text.Split(' ').ToList()) {
+			humanNames.Add(name);
+		}
 
 		CreateColonistSkills();
 		CreateColonistProfessions();
@@ -62,7 +67,7 @@ public class ColonistManager : MonoBehaviour {
 			cameraM = GM.GetComponent<CameraManager>();
 		}
 
-		public int health;
+		public float health;
 
 		public GameObject obj;
 
@@ -70,13 +75,15 @@ public class ColonistManager : MonoBehaviour {
 		public TileManager.Tile overTile;
 		public List<Sprite> moveSprites = new List<Sprite>();
 
-		public Life(TileManager.Tile spawnTile) {
+		public Life(TileManager.Tile spawnTile, float startingHealth) {
 
 			GetScriptReferences();
 
 			overTile = spawnTile;
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),overTile.obj.transform.position,Quaternion.identity);
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 10; // Life Sprite
+
+			health = startingHealth;
 		}
 
 		private Dictionary<int,int> moveSpritesMap = new Dictionary<int,int>() {
@@ -146,6 +153,13 @@ public class ColonistManager : MonoBehaviour {
 		public void SetColour(Color newColour) {
 			obj.GetComponent<SpriteRenderer>().color = new Color(newColour.r,newColour.g,newColour.b,1f);
 		}
+
+
+
+		public void ChangeHealthValue(float amount) {
+			health += amount;
+			health = Mathf.Clamp(health, 0f, 1f);
+		}
 	}
 
 	public class Human : Life {
@@ -163,7 +177,7 @@ public class ColonistManager : MonoBehaviour {
 		// Inventory
 		public ResourceManager.Inventory inventory;
 
-		public Human(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile) {
+		public Human(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes, float startingHealth) : base(spawnTile,startingHealth) {
 			moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
 
 			inventory = new ResourceManager.Inventory(this,null,50);
@@ -197,6 +211,7 @@ public class ColonistManager : MonoBehaviour {
 		public new void Update() {
 			base.Update();
 			nameCanvas.transform.Find("NameBackground-Image").localScale = Vector2.one * Mathf.Clamp(cameraM.cameraComponent.orthographicSize,2,10) * 0.0025f;
+			nameCanvas.transform.Find("NameBackground-Image").GetComponent<Image>().color = Color.Lerp(uiM.GetColour(UIManager.Colours.LightRed), uiM.GetColour(UIManager.Colours.LightGreen), health);
 		}
 	}
 
@@ -371,12 +386,12 @@ public class ColonistManager : MonoBehaviour {
 				needIncreaseAmount *= need.prefab.traitsAffectingThisNeed[trait.prefab.type];
 			}
 		}
-		need.value += (needIncreaseAmount + (needsValueSpecialIncreases.ContainsKey(need.prefab.type) ? needsValueSpecialIncreases[need.prefab.type](need) : 0)) * timeM.deltaTime * (tileM.debugMode ? 25f : 1f);
+		need.value += (needIncreaseAmount + (needsValueSpecialIncreases.ContainsKey(need.prefab.type) ? needsValueSpecialIncreases[need.prefab.type](need) : 0)) * timeM.deltaTime * (debugM.debugMode ? 25f : 1f);
 		need.value = Mathf.Clamp(need.value,0,need.prefab.clampValue);
 	}
 
-	KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>> FindClosestFood(Colonist colonist, float minimumNutritionRequired,bool takeFromOtherColonists,bool eatAnything) {
-		List<KeyValuePair<KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>,int>> resourcesPerContainer = new List<KeyValuePair<KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>,int>>();
+	KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>> FindClosestFood(Colonist colonist, float minimumNutritionRequired,bool takeFromOtherColonists,bool eatAnything) {
+		List<KeyValuePair<KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>>,int>> resourcesPerInventory = new List<KeyValuePair<KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>>,int>>();
 		foreach (ResourceManager.Container container in resourceM.containers.Where(c => c.parentObject.tile.region == colonist.overTile.region).OrderBy(c => pathM.RegionBlockDistance(colonist.overTile.regionBlock,c.parentObject.tile.regionBlock,true,true,false))) {
 			if (container.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) != null) {
 				List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
@@ -396,28 +411,37 @@ public class ColonistManager : MonoBehaviour {
 					}
 				}
 				if (totalNutrition >= minimumNutritionRequired) {
-					resourcesPerContainer.Add(new KeyValuePair<KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>,int>(new KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>(container,resourcesToReserve),totalNutrition));
+					resourcesPerInventory.Add(new KeyValuePair<KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>>,int>(new KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>>(container.inventory,resourcesToReserve),totalNutrition));
 					break;
 				}
 			}
 		}
-		if (resourcesPerContainer.Count > 0) {
-			return resourcesPerContainer[0].Key;
+		if (takeFromOtherColonists) {
+			print("Take from other colonists.");
+		}
+		if (resourcesPerInventory.Count > 0) {
+			return resourcesPerInventory[0].Key;
 		} else {
-			return new KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>>(null,null);
+			return new KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>>(null,null);
 		}
 	}
 
 	void GetFood(NeedInstance need, bool takeFromOtherColonists,bool eatAnything) {
 		if (need.colonist.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) == null) {
-			KeyValuePair<ResourceManager.Container,List<ResourceManager.ResourceAmount>> closestFood = FindClosestFood(need.colonist,need.value,takeFromOtherColonists,eatAnything);
-			ResourceManager.Container container = closestFood.Key;
+			KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>> closestFood = FindClosestFood(need.colonist,need.value,takeFromOtherColonists,eatAnything);
+			
 			List<ResourceManager.ResourceAmount> resourcesToReserve = closestFood.Value;
-			if (container != null) {
-				container.inventory.ReserveResources(resourcesToReserve,need.colonist);
-				JobManager.Job job = new JobManager.Job(container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.CollectFood),0);
-				need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,job,null,null,jobM,pathM));
-				return;
+			if (closestFood.Key != null) {
+				if (closestFood.Key.container != null) {
+					ResourceManager.Container container = closestFood.Key.container;
+					container.inventory.ReserveResources(resourcesToReserve, need.colonist);
+					JobManager.Job job = new JobManager.Job(container.parentObject.tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.CollectFood), 0);
+					need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, job, null, null, jobM, pathM));
+					return;
+				} else if (closestFood.Key.human != null) {
+					Human human = closestFood.Key.human;
+					print("Take food from other human.");
+				}
 			}
 		} else {
 			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist,new JobManager.Job(need.colonist.overTile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat),0),null,null,jobM,pathM));
@@ -471,6 +495,7 @@ public class ColonistManager : MonoBehaviour {
 		needsValueFunctions.Add(NeedsEnum.Food,delegate (NeedInstance need) {
 			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.CollectFood || need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Eat)) {
 				if (need.prefab.criticalValueAction && need.value >= need.prefab.criticalValue) {
+					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * Time.deltaTime);
 					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,true,true) > 0) {
 						if (need.colonist.job != null) {
 							need.colonist.ReturnJob();
@@ -722,7 +747,7 @@ public class ColonistManager : MonoBehaviour {
 		public int effectiveHappiness;
 		public List<HappinessModifierInstance> happinessModifiers = new List<HappinessModifierInstance>();
 
-		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes, Profession profession) : base(spawnTile,colonistLookIndexes) {
+		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes, Profession profession, float startingHealth) : base(spawnTile,colonistLookIndexes,startingHealth) {
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
 
 			this.profession = profession;
@@ -963,8 +988,8 @@ public class ColonistManager : MonoBehaviour {
 	public List<Trader> traders = new List<Trader>();
 
 	public class Trader : Human {
-		public Trader(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes) : base(spawnTile,colonistLookIndexes) {
-			
+		public Trader(TileManager.Tile spawnTile, Dictionary<ColonistLook, int> colonistLookIndexes, float startingHealth) : base(spawnTile, colonistLookIndexes, startingHealth) {
+
 		}
 	}
 
@@ -997,7 +1022,7 @@ public class ColonistManager : MonoBehaviour {
 			}
 			TileManager.Tile colonistSpawnTile = walkableTilesByDistanceToCentre[Random.Range(0,(walkableTilesByDistanceToCentre.Count > 30 ? 30 : walkableTilesByDistanceToCentre.Count))];
 
-			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes,professions[Random.Range(0,professions.Count)]);
+			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes,professions[Random.Range(0,professions.Count)],1);
 			colonists.Add(colonist);
 		}
 

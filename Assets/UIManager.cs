@@ -17,14 +17,32 @@ public class UIManager : MonoBehaviour {
 		return r.Replace(combinedString, " ");
 	}
 
+	public enum Colours { DarkRed, DarkGreen, LightRed, LightGreen, LightGrey220, LightGrey200, Grey150, DarkGrey50, LightBlue, LightOrange, White };
+
+	private Dictionary<Colours, Color> colourMap = new Dictionary<Colours, Color>() {
+		{Colours.DarkRed,new Color(192f, 57f, 43f, 255f) / 255f },
+		{Colours.DarkGreen,new Color(39f, 174f, 96f, 255f) / 255f },
+		{Colours.LightRed,new Color(231f, 76f, 60f, 255f) / 255f },
+		{Colours.LightGreen,new Color(46f, 204f, 113f, 255f) / 255f },
+		{Colours.LightGrey220,new Color(220f, 220f, 220f, 255f) / 255f },
+		{Colours.LightGrey200,new Color(200f, 200f, 200f, 255f) / 255f },
+		{Colours.Grey150,new Color(150f, 150f, 150f, 255f) / 255f },
+		{Colours.DarkGrey50,new Color(50f, 50f, 50f, 255f) / 255f },
+		{Colours.LightBlue,new Color(52f, 152f, 219f, 255f) / 255f },
+		{Colours.LightOrange,new Color(230f, 126f, 34f, 255f) / 255f },
+		{Colours.White,new Color(255f, 255f, 255f, 255f) / 255f }
+	};
+
+	public Color GetColour(Colours colourKey) {
+		return colourMap[colourKey];
+	}
+
 	private TileManager tileM;
 	private JobManager jobM;
 	private ResourceManager resourceM;
 	private CameraManager cameraM;
 	private ColonistManager colonistM;
 	private TimeManager timeM;
-
-	private GameObject debugIndicator;
 
 	public int mapSize = 0;
 	Text mapSizeText;
@@ -78,9 +96,6 @@ public class UIManager : MonoBehaviour {
 		cameraM = GetComponent<CameraManager>();
 		colonistM = GetComponent<ColonistManager>();
 		timeM = GetComponent<TimeManager>();
-
-		debugIndicator = GameObject.Find("DebugIndicator-Image");
-		debugIndicator.SetActive(false);
 
 		SetMenuBackground();
 
@@ -207,10 +222,6 @@ public class UIManager : MonoBehaviour {
 				SetSelectedPlanetTileInfo();
 			}
 		}
-	}
-
-	public void ToggleDebugIndicator() {
-		debugIndicator.SetActive(tileM.debugMode);
 	}
 
 	public PlanetTile selectedPlanetTile;
@@ -653,11 +664,15 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public class SkillElement {
+		private UIManager uiM;
+
 		public ColonistManager.Colonist colonist;
 		public ColonistManager.SkillInstance skill;
 		public GameObject obj;
 
-		public SkillElement(ColonistManager.Colonist colonist, ColonistManager.SkillInstance skill, Transform parent) {
+		public SkillElement(ColonistManager.Colonist colonist, ColonistManager.SkillInstance skill, Transform parent,UIManager uiM) {
+			this.uiM = uiM;
+
 			this.colonist = colonist;
 			this.skill = skill;
 
@@ -673,8 +688,8 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("Level").GetComponent<Text>().text = "Level " + skill.level + " (+" + Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f) + "%)";
 			obj.transform.Find("Experience-Slider").GetComponent<Slider>().value = Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f);
 			if (skill.level >= 10) {
-				obj.transform.Find("Experience-Slider/Fill Area/Fill").GetComponent<Image>().color = new Color(192f, 57f, 43f, 255f) / 255f;
-				obj.transform.Find("Experience-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = new Color(231f, 76f, 60f, 255f) / 255f;
+				obj.transform.Find("Experience-Slider/Fill Area/Fill").GetComponent<Image>().color = uiM.colourMap[Colours.DarkRed];
+				obj.transform.Find("Experience-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = uiM.colourMap[Colours.LightRed];
 			}
 		}
 	}
@@ -746,16 +761,14 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public class NeedElement {
+		private UIManager uiM;
+
 		public ColonistManager.NeedInstance needInstance;
 		public GameObject obj;
 
-		private Color darkRed = new Color(192f, 57f, 43f, 255f) / 255f;
-		private Color darkGreen = new Color(39f, 174f, 96f, 255f) / 255f;
+		public NeedElement(ColonistManager.NeedInstance needInstance, Transform parent, UIManager uiM) {
+			this.uiM = uiM;
 
-		private Color lightRed = new Color(231f, 76f, 60f, 255f) / 255f;
-		private Color lightGreen = new Color(46f, 204f, 113f, 255f) / 255f;
-
-		public NeedElement(ColonistManager.NeedInstance needInstance, Transform parent) {
 			this.needInstance = needInstance;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/NeedElement-Panel"), parent, false);
@@ -769,16 +782,20 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("NeedValue-Text").GetComponent<Text>().text = (Mathf.RoundToInt((needInstance.value / needInstance.prefab.clampValue) * 100)) + "%";
 
 			obj.transform.Find("Need-Slider").GetComponent<Slider>().value = needInstance.value;
-			obj.transform.Find("Need-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(darkGreen, darkRed, (needInstance.value / needInstance.prefab.clampValue));
-			obj.transform.Find("Need-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = Color.Lerp(lightGreen, lightRed, (needInstance.value / needInstance.prefab.clampValue));
+			obj.transform.Find("Need-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(uiM.colourMap[Colours.DarkGreen], uiM.colourMap[Colours.DarkRed], (needInstance.value / needInstance.prefab.clampValue));
+			obj.transform.Find("Need-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = Color.Lerp(uiM.colourMap[Colours.LightGreen], uiM.colourMap[Colours.LightRed], (needInstance.value / needInstance.prefab.clampValue));
 		}
 	}
 
 	public class HappinessModifierElement {
+		private UIManager uiM;
+
 		public ColonistManager.HappinessModifierInstance happinessModifierInstance;
 		public GameObject obj;
 
-		public HappinessModifierElement(ColonistManager.HappinessModifierInstance happinessModifierInstance, Transform parent) {
+		public HappinessModifierElement(ColonistManager.HappinessModifierInstance happinessModifierInstance, Transform parent, UIManager uiM) {
+			this.uiM = uiM;
+
 			this.happinessModifierInstance = happinessModifierInstance;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/HappinessModifierElement-Panel"), parent, false);
@@ -792,13 +809,13 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("HappinessModifierTime-Text").GetComponent<Text>().text = happinessModifierInstance.timer + "s (" + happinessModifierInstance.prefab.effectLengthSeconds + "s)";
 			if (happinessModifierInstance.prefab.effectAmount > 0) {
 				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = "+" + happinessModifierInstance.prefab.effectAmount;
-				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().color = new Color(46f, 204f, 113f, 255f) / 255f;
+				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().color = uiM.colourMap[Colours.LightGreen];
 			} else if (happinessModifierInstance.prefab.effectAmount < 0) {
 				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = "-" + happinessModifierInstance.prefab.effectAmount;
-				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().color = new Color(231f, 76f, 60f, 255f) / 255f;
+				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().color = uiM.colourMap[Colours.LightRed];
 			} else {
 				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = happinessModifierInstance.prefab.effectAmount.ToString();
-				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().color = new Color(50f, 50f, 50f, 255f) / 255f;
+				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().color = uiM.colourMap[Colours.DarkGrey50];
 			}
 		}
 	}
@@ -845,10 +862,10 @@ public class UIManager : MonoBehaviour {
 			inventoryElements.Clear();
 
 			foreach (ColonistManager.SkillInstance skill in colonistM.selectedColonist.skills) {
-				skillElements.Add(new SkillElement(colonistM.selectedColonist, skill, selectedColonistInformationPanel.transform.Find("SkillsList-Panel")));
+				skillElements.Add(new SkillElement(colonistM.selectedColonist, skill, selectedColonistInformationPanel.transform.Find("SkillsList-Panel"),this));
 			}
 			foreach (ColonistManager.NeedInstance need in colonistM.selectedColonist.needs) {
-				needElements.Add(new NeedElement(need, selectedColonistInformationPanel.transform.Find("Needs-Panel/Needs-ScrollPanel/NeedsList-Panel")));
+				needElements.Add(new NeedElement(need, selectedColonistInformationPanel.transform.Find("Needs-Panel/Needs-ScrollPanel/NeedsList-Panel"),this));
 			}
 			foreach (ResourceManager.ReservedResources rr in colonistM.selectedColonist.inventory.reservedResources) {
 				reservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.colonist, rr, selectedColonistInformationPanel.transform.Find("Inventory-Panel/Inventory-ScrollPanel/InventoryList-Panel")));
@@ -903,6 +920,12 @@ public class UIManager : MonoBehaviour {
 
 	public void UpdateSelectedColonistInformation() {
 		if (colonistM.selectedColonist != null) {
+
+			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealth-Slider").GetComponent<Slider>().value = Mathf.RoundToInt(colonistM.selectedColonist.health * 100);
+			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealth-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(colourMap[Colours.DarkRed], colourMap[Colours.DarkGreen], colonistM.selectedColonist.health);
+			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealth-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = Color.Lerp(colourMap[Colours.LightRed], colourMap[Colours.LightGreen], colonistM.selectedColonist.health);
+			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealthValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(colonistM.selectedColonist.health * 100) + "%";
+
 			selectedColonistInventoryPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().minValue = 0;
 			selectedColonistInventoryPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().maxValue = colonistM.selectedColonist.inventory.maxAmount;
 			selectedColonistInventoryPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().value = colonistM.selectedColonist.inventory.CountResources();
@@ -1012,9 +1035,9 @@ public class UIManager : MonoBehaviour {
 				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().minValue = 0;
 				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().maxValue = job.colonistBuildTime;
 				if (colonist.job.started) {
-					obj.GetComponent<Image>().color = new Color(52f, 152f, 219f, 255f) / 255f;
+					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightBlue];
 				} else {
-					obj.GetComponent<Image>().color = new Color(230f, 126f, 34f, 255f) / 255f;
+					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightOrange];
 				}
 
 				colonistObj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ColonistInfoElement-Panel"), obj.transform, false);
@@ -1022,7 +1045,7 @@ public class UIManager : MonoBehaviour {
 				colonistObj.transform.Find("BodySprite").GetComponent<Image>().sprite = colonist.moveSprites[0];
 				colonistObj.transform.Find("Name").GetComponent<Text>().text = colonist.name;
 				colonistObj.GetComponent<Button>().onClick.AddListener(delegate { colonist.colonistM.SetSelectedColonist(colonist); });
-				colonistObj.GetComponent<Image>().color = new Color(52f, 152f, 219f, 255f) / 255f;
+				colonistObj.GetComponent<Image>().color = uiM.colourMap[Colours.LightBlue];
 				colonistObj.GetComponent<RectTransform>().sizeDelta = new Vector2(175, colonistObj.GetComponent<RectTransform>().sizeDelta.y);
 				colonistObj.GetComponent<Outline>().enabled = false;
 			}
@@ -1311,18 +1334,18 @@ public class UIManager : MonoBehaviour {
 							} else {
 								colonist.ChangeProfession(colonist.oldProfession);
 							}
-							obj.GetComponent<Image>().color = new Color(231f, 76f, 60f, 255f) / 255f;
+							obj.GetComponent<Image>().color = colourMap[Colours.LightRed];
 						} else {
 							colonist.oldProfession = colonist.profession;
 							colonist.ChangeProfession(professionElement.profession);
-							obj.GetComponent<Image>().color = new Color(52f, 152f, 219f, 255f) / 255f;
+							obj.GetComponent<Image>().color = colourMap[Colours.LightBlue];
 						}
 						obj.transform.Find("ColonistCurrentProfession-Text").GetComponent<Text>().text = colonist.profession.name;
 					});
 					obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
 					obj.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonist.name;
 					obj.transform.Find("ColonistCurrentProfession-Text").GetComponent<Text>().text = colonist.profession.name;
-					obj.GetComponent<Image>().color = new Color(52f, 152f, 219f, 255f) / 255f;
+					obj.GetComponent<Image>().color = colourMap[Colours.LightBlue];
 					professionElement.editColonistsInProfessionElements.Add(obj);
 				}
 			}
@@ -1333,11 +1356,11 @@ public class UIManager : MonoBehaviour {
 					obj.GetComponent<Button>().onClick.AddListener(delegate {
 						if (colonist.profession == professionElement.profession) {
 							colonist.ChangeProfession(colonist.oldProfession);
-							obj.GetComponent<Image>().color = new Color(200f, 200f, 200f, 255f) / 255f;
+							obj.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
 						} else {
 							colonist.oldProfession = colonist.profession;
 							colonist.ChangeProfession(professionElement.profession);
-							obj.GetComponent<Image>().color = new Color(52f, 152f, 219f, 255f) / 255f;
+							obj.GetComponent<Image>().color = colourMap[Colours.LightBlue];
 						}
 						obj.transform.Find("ColonistCurrentProfession-Text").GetComponent<Text>().text = colonist.profession.name;
 					});
@@ -1535,6 +1558,8 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public class ResourceInstanceElement {
+		private UIManager uiM;
+
 		public ResourceManager.Resource resource;
 		public GameObject obj;
 
@@ -1542,6 +1567,8 @@ public class UIManager : MonoBehaviour {
 		public Text desiredAmountText;
 
 		public ResourceInstanceElement(ResourceManager.Resource resource, Transform parent, UIManager uiM) {
+			this.uiM = uiM;
+
 			this.resource = resource;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ResourceListResourceElement-Panel"), parent, false);
@@ -1554,9 +1581,15 @@ public class UIManager : MonoBehaviour {
 			desiredAmountText = desiredAmountInput.transform.Find("Text").GetComponent<Text>();
 			desiredAmountInput.onValueChanged.AddListener(delegate {
 				int newDesiredAmount = 0;
-				int.TryParse(desiredAmountInput.text,out newDesiredAmount);
-				if (newDesiredAmount >= 0) {
-					resource.desiredAmount = newDesiredAmount;
+				if (int.TryParse(desiredAmountInput.text, out newDesiredAmount)) {
+					if (newDesiredAmount >= 0) {
+						resource.desiredAmount = newDesiredAmount;
+						if (newDesiredAmount == 0) {
+							desiredAmountInput.text = String.Empty;
+						}
+					}
+				} else {
+					resource.desiredAmount = 0;
 				}
 			});
 
@@ -1568,9 +1601,9 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("Amount").GetComponent<Text>().text = resource.worldTotalAmount.ToString();
 			if (resource.desiredAmount > 0) {
 				if (resource.desiredAmount > resource.worldTotalAmount) {
-					desiredAmountText.color = new Color(231f, 76f, 60f, 255f) / 255f;
+					desiredAmountText.color = uiM.colourMap[Colours.LightRed];
 				} else if (resource.desiredAmount <= resource.worldTotalAmount) {
-					desiredAmountText.color = new Color(46f, 204f, 113f, 255f) / 255f;
+					desiredAmountText.color = uiM.colourMap[Colours.LightGreen];
 				}
 			}
 
@@ -1578,11 +1611,11 @@ public class UIManager : MonoBehaviour {
 
 			if (worldTotalAmountPrev != resource.worldTotalAmount) {
 				if (resource.worldTotalAmount > 0) {
-					obj.GetComponent<Image>().color = new Color(220f, 220f, 220f, 220f) / 255f;
-					obj.transform.Find("DesiredAmount-Input").GetComponent<Image>().color = new Color(220f, 220f, 220f, 220f) / 255f;
+					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGrey220];
+					obj.transform.Find("DesiredAmount-Input").GetComponent<Image>().color = uiM.colourMap[Colours.LightGrey220];
 				} else {
-					obj.GetComponent<Image>().color = new Color(150f, 150f, 150f, 255f) / 255f;
-					obj.transform.Find("DesiredAmount-Input").GetComponent<Image>().color = new Color(150f, 150f, 150f, 255f) / 255f;
+					obj.GetComponent<Image>().color = uiM.colourMap[Colours.Grey150];
+					obj.transform.Find("DesiredAmount-Input").GetComponent<Image>().color = uiM.colourMap[Colours.Grey150];
 				}
 			}
 		}

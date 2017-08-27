@@ -4,10 +4,16 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour {
 
+	private TileManager tileM;
+	private DebugManager debugM;
+
+	private void GetScriptReferences() {
+		tileM = GetComponent<TileManager>();
+		debugM = GetComponent<DebugManager>();
+	}
+
 	public GameObject cameraGO;
 	public Camera cameraComponent;
-
-	private TileManager tileM;
 
 	private int minOrthoSize = 1;
 	private int maxOrthoSize = 20;
@@ -21,11 +27,10 @@ public class CameraManager : MonoBehaviour {
 	}
 
 	void Awake() {
+		GetScriptReferences();
+
 		cameraGO = GameObject.Find("Camera");
 		cameraComponent = cameraGO.GetComponent<Camera>();
-
-		GameObject GM = GameObject.Find("GM");
-		tileM = GM.GetComponent<TileManager>();
 	}
 
 	/* Called by GM.TileManager after it gets the mapSize */
@@ -46,7 +51,7 @@ public class CameraManager : MonoBehaviour {
 
 		if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
 			cameraComponent.orthographicSize -= Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") + (Input.GetAxis("KeyboardZoom") / 10f),-1f,1f) * cameraComponent.orthographicSize * Time.deltaTime * 100;
-			if (tileM.debugMode) {
+			if (debugM.debugMode) {
 				cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize,minOrthoSize,maxOrthoSize*25);
 			} else {
 				cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize,minOrthoSize,maxOrthoSize);

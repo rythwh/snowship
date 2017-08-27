@@ -30,62 +30,64 @@ public class TimeManager : MonoBehaviour {
 	public bool minuteChanged;
 
 	void Update() {
-		if (Input.GetKeyDown(KeyCode.Alpha1)) {
-			if (timeModifier > 0) {
-				timeModifier -= 1;
-				if (timeModifier <= 0) {
-					timeModifier = 1;
+		if (tileM.generated) {
+			if (Input.GetKeyDown(KeyCode.Alpha1)) {
+				if (timeModifier > 0) {
+					timeModifier -= 1;
+					if (timeModifier <= 0) {
+						timeModifier = 1;
+					}
 				}
 			}
-		}
-		if (Input.GetKeyDown(KeyCode.Alpha2)) {
-			timeModifier += 1;
-		}
-		timeModifier = Mathf.Clamp(timeModifier,0,5);
-		pauseTimeModifier = Mathf.Clamp(pauseTimeModifier,0,5);
-		if (Input.GetKeyDown(KeyCode.Space)) {
-			if (timeModifier != 0) {
-				pauseTimeModifier = timeModifier;
-				timeModifier = 0;
-			} else {
-				if (pauseTimeModifier == 0) {
-					timeModifier = 1;
+			if (Input.GetKeyDown(KeyCode.Alpha2)) {
+				timeModifier += 1;
+			}
+			timeModifier = Mathf.Clamp(timeModifier, 0, 5);
+			pauseTimeModifier = Mathf.Clamp(pauseTimeModifier, 0, 5);
+			if (Input.GetKeyDown(KeyCode.Space)) {
+				if (timeModifier != 0) {
+					pauseTimeModifier = timeModifier;
+					timeModifier = 0;
 				} else {
-					timeModifier = pauseTimeModifier;
+					if (pauseTimeModifier == 0) {
+						timeModifier = 1;
+					} else {
+						timeModifier = pauseTimeModifier;
+					}
 				}
 			}
-		}
-		deltaTime = Time.deltaTime * timeModifier;
+			deltaTime = Time.deltaTime * timeModifier;
 
-		timer += 1f * deltaTime;
-		minuteChanged = false;
-		if (timer >= 1) {
-			minute += 1;
-			timer = 0;
-			if (minute % 10 == 0) {
-				tileM.map.SetTileBrightness(GetTileBrightnessTime());
-			}
-			minuteChanged = true;
-			if (minute >= 60) {
-				minute = 1;
-				hour += 1;
-				if (hour >= 24) {
-					day += 1;
-					hour = 0;
-					if (day > 30) {
-						month += 1;
-						day = 1;
-						if (month > 12) {
-							year += 1;
-							month = 1;
+			timer += 1f * deltaTime;
+			minuteChanged = false;
+			if (timer >= 1) {
+				minute += 1;
+				timer = 0;
+				if (minute % 10 == 0) {
+					tileM.map.SetTileBrightness(GetTileBrightnessTime());
+				}
+				minuteChanged = true;
+				if (minute >= 60) {
+					minute = 1;
+					hour += 1;
+					if (hour >= 24) {
+						day += 1;
+						hour = 0;
+						if (day > 30) {
+							month += 1;
+							day = 1;
+							if (month > 12) {
+								year += 1;
+								month = 1;
+							}
 						}
 					}
 				}
 			}
-		}
-		isDay = (hour >= 6 && hour <= 18);
+			isDay = (hour >= 6 && hour <= 18);
 
-		uiM.UpdateDateTimeInformation(minute,hour,day,month,year,isDay);
+			uiM.UpdateDateTimeInformation(minute, hour, day, month, year, isDay);
+		}
 	}
 
 	public int Get12HourTime() {
