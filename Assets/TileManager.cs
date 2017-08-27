@@ -9,6 +9,7 @@ public class TileManager:MonoBehaviour {
 	private CameraManager cameraM;
 	private ResourceManager resourceM;
 	private ColonistManager colonistM;
+	private DebugManager debugM;
 
 	void Awake() {
 		uiM = GetComponent<UIManager>();
@@ -765,20 +766,17 @@ public class TileManager:MonoBehaviour {
 
 	public bool generated;
 
-	public bool debugMode;
 	private int viewRiverAtIndex = 0;
 
 	void Update() {
 		if (generated) {
-			if (debugMode) {
+			/*
+			if (debugM.debugMode) {
 				DebugFunctions();
 			} else {
 				map.DetermineVisibleRegionBlocks();
 			}
-		}
-		if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.BackQuote)) {
-			debugMode = !debugMode;
-			uiM.ToggleDebugIndicator();
+			*/
 		}
 	}
 
