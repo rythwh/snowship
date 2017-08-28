@@ -417,7 +417,7 @@ public class ColonistManager : MonoBehaviour {
 			}
 		}
 		if (takeFromOtherColonists) {
-			print("Take from other colonists.");
+			//print("Take from other colonists.");
 		}
 		if (resourcesPerInventory.Count > 0) {
 			return resourcesPerInventory[0].Key;
@@ -440,7 +440,7 @@ public class ColonistManager : MonoBehaviour {
 					return;
 				} else if (closestFood.Key.human != null) {
 					Human human = closestFood.Key.human;
-					print("Take food from other human.");
+					//print("Take food from other human.");
 				}
 			}
 		} else {
@@ -495,7 +495,7 @@ public class ColonistManager : MonoBehaviour {
 		needsValueFunctions.Add(NeedsEnum.Food,delegate (NeedInstance need) {
 			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.CollectFood || need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Eat)) {
 				if (need.prefab.criticalValueAction && need.value >= need.prefab.criticalValue) {
-					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * Time.deltaTime);
+					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * timeM.deltaTime);
 					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,true,true) > 0) {
 						if (need.colonist.job != null) {
 							need.colonist.ReturnJob();
@@ -742,9 +742,9 @@ public class ColonistManager : MonoBehaviour {
 		public List<NeedInstance> needs = new List<NeedInstance>();
 
 		// Happiness
-		public int baseHappiness;
-		public int happinessModifiersSum;
-		public int effectiveHappiness;
+		public float baseHappiness = 100;
+		public float happinessModifiersSum = 100;
+		public float effectiveHappiness = 100;
 		public List<HappinessModifierInstance> happinessModifiers = new List<HappinessModifierInstance>();
 
 		public Colonist(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes, Profession profession, float startingHealth) : base(spawnTile,colonistLookIndexes,startingHealth) {
@@ -810,9 +810,26 @@ public class ColonistManager : MonoBehaviour {
 					i -= 1;
 				}
 			}
-			baseHappiness = Mathf.Clamp(Mathf.RoundToInt(needs.Sum(need => need.value * need.prefab.priority)),0,100);
+			//baseHappiness = Mathf.Clamp(Mathf.RoundToInt(needs.Sum(need => (need.prefab.clampValue-need.value) / (need.prefab.priority + 1))),0,100);
+			/*
+			float allNeedsAverage = needs.Average(need => need.value);
+
+			int numNeeds = needs.Count;
+			int numNeedsMin = needs.Count(need => need.value >= need.prefab.minimumValue && need.value < need.prefab.maximumValue);
+			int numNeedsMax = needs.Count(need => need.value >= need.prefab.maximumValue && need.value < need.prefab.criticalValue);
+			int numNeedsCritical = needs.Count(need => need.value >= need.prefab.criticalValue);
+			*/
+
+			baseHappiness = Mathf.Clamp(Mathf.RoundToInt(100 - (needs.Sum(need => (need.value / (need.prefab.priority + 1))))), 0, 100);
+
+			//baseHappiness = Mathf.Clamp(Mathf.RoundToInt(needs.Average(need => (need.prefab.clampValue - (need.value / (need.prefab.priority + 1))))), 0, 100);
+
 			happinessModifiersSum = happinessModifiers.Sum(hM => hM.prefab.effectAmount);
-			effectiveHappiness = baseHappiness + happinessModifiersSum;
+
+			float targetHappiness = Mathf.Clamp(baseHappiness + happinessModifiersSum, 0, 100);
+			float happinessChangeAmount = ((targetHappiness - effectiveHappiness) / effectiveHappiness);
+			effectiveHappiness += happinessChangeAmount * timeM.deltaTime;
+			effectiveHappiness = Mathf.Clamp(effectiveHappiness, 0, 100);
 		}
 
 		private float wanderTimer = Random.Range(10f,20f);

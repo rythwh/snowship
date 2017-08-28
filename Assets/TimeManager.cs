@@ -6,10 +6,12 @@ public class TimeManager : MonoBehaviour {
 
 	private UIManager uiM;
 	private TileManager tileM;
+	private DebugManager debugM;
 
 	void Awake() {
 		uiM = GetComponent<UIManager>();
 		tileM = GetComponent<TileManager>();
+		debugM = GetComponent<DebugManager>();
 	}
 
 	public int pauseTimeModifier = 0;
@@ -58,7 +60,7 @@ public class TimeManager : MonoBehaviour {
 			}
 			deltaTime = Time.deltaTime * timeModifier;
 
-			timer += 1f * deltaTime;
+			timer += deltaTime;
 			minuteChanged = false;
 			if (timer >= 1) {
 				minute += 1;
@@ -100,5 +102,10 @@ public class TimeManager : MonoBehaviour {
 
 	public float GetTileBrightnessTime() {
 		return (float)System.Math.Round(hour + (minute / 60f),2);
+	}
+
+	public void SetTime(float time) {
+		hour = Mathf.FloorToInt(time);
+		minute = Mathf.RoundToInt((time - hour) * 60);
 	}
 }

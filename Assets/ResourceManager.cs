@@ -344,6 +344,9 @@ public class ResourceManager : MonoBehaviour {
 
 	public void RemoveTileObjectInstance(TileObjectInstance tileObjectInstance) {
 		if (tileObjectInstances.ContainsKey(tileObjectInstance.prefab)) {
+			if (ContainerTileObjectTypes.Contains(tileObjectInstance.prefab.type)) {
+				containers.Remove(containers.Find(container => container.parentObject == tileObjectInstance));
+			}
 			tileObjectInstances[tileObjectInstance.prefab].Remove(tileObjectInstance);
 			uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Update,tileObjectInstance.prefab);
 		} else {
