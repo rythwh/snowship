@@ -55,7 +55,7 @@ public class UIManager : MonoBehaviour {
 	private GameObject mainMenu;
 
 	private Vector2 mousePosition;
-	private TileManager.Tile mouseOverTile;
+	public TileManager.Tile mouseOverTile;
 
 	private GameObject tileInformation;
 
@@ -197,16 +197,14 @@ public class UIManager : MonoBehaviour {
 			}
 			if (selectedContainer != null) {
 				if (Input.GetMouseButtonDown(1)) {
-					selectedContainer = null;
-					SetSelectedContainerInfo();
+					SetSelectedContainer(null);
 				}
 				UpdateSelectedContainerInfo();
 			}
 			if (Input.GetMouseButtonDown(0)) {
 				ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == newMouseOverTile);
 				if (container != null) {
-					selectedContainer = container;
-					SetSelectedContainerInfo();
+					SetSelectedContainer(container);
 				}
 			}
 			if (professionsList.activeSelf) {
@@ -222,6 +220,11 @@ public class UIManager : MonoBehaviour {
 				SetSelectedPlanetTileInfo();
 			}
 		}
+	}
+
+	public void SetSelectedContainer(ResourceManager.Container container) {
+		selectedContainer = container;
+		SetSelectedContainerInfo();
 	}
 
 	public PlanetTile selectedPlanetTile;
@@ -935,17 +938,21 @@ public class UIManager : MonoBehaviour {
 
 			selectedColonistInformationPanel.transform.Find("SkillsList-Panel/SkillsListTitle-Panel/Profession-Text").GetComponent<Text>().text = colonistM.selectedColonist.profession.name;
 
-			int happinessLength = Mathf.Abs(colonistM.selectedColonist.happinessModifiersSum).ToString().Length;
+			int happinessModifiersSum = Mathf.RoundToInt(colonistM.selectedColonist.happinessModifiersSum);
+
+			int happinessLength = Mathf.Abs(happinessModifiersSum).ToString().Length;
 			Text happinessModifierAmountText = selectedColonistHappinessModifiersButton.transform.Find("HappinessModifiersAmount-Text").GetComponent<Text>();
-			if (colonistM.selectedColonist.happinessModifiersSum > 0) {
-				happinessModifierAmountText.text = "+" + colonistM.selectedColonist.happinessModifiersSum + "%";
-			} else if (colonistM.selectedColonist.happinessModifiersSum < 0) {
-				happinessModifierAmountText.text = "-" + colonistM.selectedColonist.happinessModifiersSum + "%";
+			if (happinessModifiersSum > 0) {
+				happinessModifierAmountText.text = "+" + happinessModifiersSum + "%";
+			} else if (happinessModifiersSum < 0) {
+				happinessModifierAmountText.text = "-" + happinessModifiersSum + "%";
 			} else {
-				happinessModifierAmountText.text = colonistM.selectedColonist.happinessModifiersSum + "%";
+				happinessModifierAmountText.text = happinessModifiersSum + "%";
 			}
 			selectedColonistHappinessModifiersButton.GetComponent<RectTransform>().sizeDelta = new Vector2(happinessModifierButtonSizeMap[happinessLength], 20);
 			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<RectTransform>().offsetMax = new Vector2(happinessModifierValueHorizontalPositionMap[happinessLength], 0);
+			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(colonistM.selectedColonist.effectiveHappiness) + "%";
+			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<Text>().color = Color.Lerp(colourMap[Colours.LightRed], colourMap[Colours.LightGreen], colonistM.selectedColonist.effectiveHappiness / 100f);
 
 			foreach (SkillElement skillElement in skillElements) {
 				skillElement.Update();
