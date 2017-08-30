@@ -23,14 +23,19 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	public enum ResourceGroupsEnum {
-		Natural, Materials,
-		Seeds, RawFoods, Foods
+		Natural,
+		Materials,
+		Seeds,
+		RawFoods,
+		Foods
 	};
 
 	public enum ResourcesEnum {
-		Wood, Stone, Cloth, Dirt, Granite, Limestone, Marble, Sandstone, Slate, Clay, Firewood,
+		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Wood, Snow, Sand,
+		Brick, Firewood, Cloth,
 		WheatSeeds, PotatoSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
-		Wheat, Potatoes, Berries, Apples
+		Wheat,
+		Potatoes, Berries, Apples
 	};
 
 	public List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
@@ -147,7 +152,7 @@ public class ResourceManager : MonoBehaviour {
 		Basket, WoodenChest,
 		WoodenBed,
 		RemoveLayer1, RemoveLayer2, RemoveAll,
-		ChopPlant, PlantPlant, Mine,
+		ChopPlant, PlantPlant, Mine, Dig,
 		WheatFarm, PotatoFarm, HarvestFarm,
 		PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep,
 		PlantTree, PlantShrub, PlantCactus
@@ -222,7 +227,26 @@ public class ResourceManager : MonoBehaviour {
 		}
 	}
 
-	
+	/*
+
+		Tile Object Prefab Format
+
+	0	Name/
+	1	10/			timeToBuild		Seconds it takes to create the object (int or float)
+	2	5,2/						Amount of each resource to create the object
+	3	Wood,Cloth/					Name of each resource to create the object
+	4	true/						Whether there are any modifiers to the selection
+	5	Outline,Walkable/			List of selection modifiers
+	6	Build/						Job type
+	7	1.0/						Flammability
+	8	true/						Walkable
+	9	0.5/						Walk speed
+	10	2/							Layer
+	11	true/						Whether the object should be placed into the world when created or discarded
+	12	0.35,0.6/					(x,y) amount of light blocked in the x and y directions by this object
+	13	250							(applies only to containers) how many resources this container can store
+
+	*/
 
 	public class TileObjectPrefab {
 

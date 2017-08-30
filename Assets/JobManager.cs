@@ -123,7 +123,7 @@ public class JobManager:MonoBehaviour {
 
 	public enum JobTypesEnum {
 		Build, Remove,
-		ChopPlant, PlantPlant, Mine, PlantFarm, HarvestFarm,
+		ChopPlant, PlantPlant, Mine, Dig, PlantFarm, HarvestFarm,
 		PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep
 	};
 
@@ -184,6 +184,49 @@ public class JobManager:MonoBehaviour {
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),job.tile.tileType.type.ToString())),Random.Range(4,7));
 			job.tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Dirt),true,true,true,false);
 			tileM.map.RemoveTileBrightnessEffect(job.tile);
+		});
+		finishJobFunctions.Add(JobTypesEnum.Dig, delegate (ColonistManager.Colonist colonist, Job job) {
+			job.tile.dugPreviously = true;
+			if (tileM.GetResourceTileTypes().Contains(job.tile.tileType.type)) {
+				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), job.tile.tileType.type.ToString())), Random.Range(4, 7));
+			} else {
+				colonist.inventory.ChangeResourceAmount(job.tile.biome.groundResource, Random.Range(4, 7));
+			}
+			bool setToWater = false;
+			if (!tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) {
+				foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
+					if (nTile != null && tileM.GetWaterEquivalentTileTypes().Contains(nTile.tileType.type)) {
+						job.tile.SetTileType(nTile.tileType, true, true, true, true);
+						setToWater = true;
+						break;
+					}
+				}
+				if (setToWater) {
+					foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
+						if (nTile != null && tileM.GetHoleTileTypes().Contains(nTile.tileType.type)) {
+							print("A");
+							List<TileManager.Tile> frontier = new List<TileManager.Tile>() { nTile };
+							List<TileManager.Tile> checkedTiles = new List<TileManager.Tile>() { };
+							TileManager.Tile currentTile = nTile;
+
+							while (frontier.Count > 0) {
+								currentTile = frontier[0];
+								frontier.RemoveAt(0);
+								checkedTiles.Add(currentTile);
+								currentTile.SetTileType(job.tile.tileType, true, true, true, true);
+								foreach (TileManager.Tile nTile2 in currentTile.horizontalSurroundingTiles) {
+									if (nTile2 != null && tileM.GetHoleTileTypes().Contains(nTile2.tileType.type) && !checkedTiles.Contains(nTile2)) {
+										frontier.Add(nTile2);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			if (!setToWater) {
+				job.tile.SetTileType(job.tile.biome.holeType, true, true, true, false);
+			}
 		});
 		finishJobFunctions.Add(JobTypesEnum.PickupResources,delegate (ColonistManager.Colonist colonist,Job job) {
 			ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == colonist.overTile);
@@ -334,7 +377,7 @@ public class JobManager:MonoBehaviour {
 	}
 
 	public enum SelectionModifiersEnum { Outline, Walkable, OmitWalkable, Buildable, OmitBuildable, StoneTypes, OmitStoneTypes, AllWaterTypes, OmitAllWaterTypes, LiquidWaterTypes, OmitLiquidWaterTypes, OmitNonStoneAndWaterTypes,
-		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances, Farms, OmitFarms, ObjectsAtSameLayer
+		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances, Farms, OmitFarms, ObjectsAtSameLayer, OmitNonCoastWater, OmitHoles, OmitPreviousDig
 	};
 	Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>> selectionModifierFunctions = new Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>>();
 
@@ -410,6 +453,23 @@ public class JobManager:MonoBehaviour {
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitObjects,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
 			if (tile.GetAllObjectInstances().Count > 0) { removeTiles.Add(tile); }
 		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonCoastWater, delegate (TileManager.Tile tile, List<TileManager.Tile> removeTiles) {
+			if (tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
+				if (!(tile.surroundingTiles.Find(t => t != null && !tileM.GetWaterEquivalentTileTypes().Contains(t.tileType.type)) != null)) {
+					removeTiles.Add(tile);
+				}
+			}
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitHoles, delegate (TileManager.Tile tile, List<TileManager.Tile> removeTiles) {
+			if (tileM.GetHoleTileTypes().Contains(tile.tileType.type)) {
+					removeTiles.Add(tile);
+			}
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitPreviousDig, delegate (TileManager.Tile tile, List<TileManager.Tile> removeTiles) {
+			if (tile.dugPreviously) {
+				removeTiles.Add(tile);
+			}
+		});
 	}
 
 	private List<GameObject> selectionIndicators = new List<GameObject>();
@@ -476,7 +536,7 @@ public class JobManager:MonoBehaviour {
 							continue;
 						} else {
 							foreach (TileManager.Tile tile in selectionArea) {
-								selectionModifierFunctions[selectionModifier].Invoke(tile,removeTiles);
+								selectionModifierFunctions[selectionModifier](tile,removeTiles);
 							}
 						}
 						RemoveTilesFromList(selectionArea,removeTiles);

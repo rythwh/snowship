@@ -16,11 +16,19 @@ Natural:
 	Clay/
 		5`
 	Wood/
+		2`
+	Snow/
+		1`
+	Sand/
 		2
 ~
 Materials:
+	Brick/
+		10`
 	Firewood/
-		2
+		2`
+	Cloth/
+		15
 ~
 Seeds:
 	WheatSeeds/

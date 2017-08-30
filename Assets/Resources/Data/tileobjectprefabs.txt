@@ -222,6 +222,20 @@
 			0/
 			false/
 			0.0,0.0
+		<Object>
+			Dig/
+			15/
+			0/
+			/
+			true/
+			OmitNonCoastWater,OmitHoles,OmitPreviousDig,OmitStoneTypes,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			Dig/
+			0.0/
+			true/
+			1.0/
+			0/
+			false/
+			0.0,0.0
 	<SubGroup>
 		Remove
 		<Object>

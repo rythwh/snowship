@@ -6,6 +6,8 @@ Mining/
 Farming/
 	PlantFarm,0.1;
 	HarvestFarm,0.1`
+Digging/
+	Dig,0.1`
 Forestry/
 	ChopPlant,0.1;
 	PlantPlant,0.1

@@ -13,6 +13,7 @@ public class DebugManager : MonoBehaviour {
 	private TileManager tileM;
 	private CameraManager cameraM;
 	private TimeManager timeM;
+	private JobManager jobM;
 
 	private void GetScriptReferences() {
 		colonistM = GetComponent<ColonistManager>();
@@ -21,6 +22,7 @@ public class DebugManager : MonoBehaviour {
 		tileM = GetComponent<TileManager>();
 		cameraM = GetComponent<CameraManager>();
 		timeM = GetComponent<TimeManager>();
+		jobM = GetComponent<JobManager>();
 	}
 
 	private GameObject debugIndicator;
@@ -68,6 +70,14 @@ public class DebugManager : MonoBehaviour {
 			if (Input.GetMouseButtonDown(0)) {
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
+
+				/*
+				commandFunctions[Commands.selecttiles](Commands.selecttiles, new List<string>() { tile.position.x.ToString(), tile.position.y.ToString() });
+				commandFunctions[Commands.changetiletype](Commands.changetiletype,new List<string>() { "Grass" });
+				commandFunctions[Commands.deselecttiles](Commands.deselecttiles, new List<string>());
+				*/
+
+				jobM.finishJobFunctions[JobManager.JobTypesEnum.Dig](colonistM.colonists[0], new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Dig), 0));
 			}
 		}
 	}
@@ -105,6 +115,7 @@ public class DebugManager : MonoBehaviour {
 		camzoom,                // camzoom <zoom>							-- sets the camera orthographic size to <zoom>
 		togglesuncycle,         // togglesuncycle							-- toggle the day/night (sun) cycle (i.e. the changing of tile brightnesses every N in-game minutes)
 		settime,                // settime <time>							-- sets the in-game time to <time> (time = float between 0 and 23, decimals represent minutes (0.5 = 30 minutes))
+		viewselectedtiles,      // viewselectedtiles						-- sets the map overlay to highlight all selected tiles
 		viewnormal,             // viewnormal								-- sets the map overlay to normal gameplay settings
 		viewregions,            // viewregions								-- sets the map overlay to colour individual regions (region colour is random)
 		viewheightmap,          // viewheightmap							-- sets the map overlay to colour each tile depending on its height between 0 and 1 (black = 0, white = 1)
@@ -116,10 +127,10 @@ public class DebugManager : MonoBehaviour {
 		viewwalkspeed,          // viewwalkspeed							-- sets the map overlay to colour each tile depending on its walk speed (black = 0, white = 1)
 		viewregionblocks,       // viewregionblocks							-- sets the map overlay to colour individual region blocks (region block colour is random)
 		viewsquareregionblocks, // viewsquareregionblocks					-- sets the map overlay to colour invididual square region blocks (square region block colour is random)
-		viewtabott,             // viewtabott								-- highlights all tiles that affect the brightness of the selected tile through the day (green = earlier, pink = later)
-		viewtttabo,             // viewtttabo								-- highlights all tiles that the selected tile affects the brightness of through the day (green = earlier, pink = later)
-		viewtttbsf,             // viewtttbsf								-- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)
-		viewselectedtiles,		// viewselectedtiles						-- sets the map overlay to highlight all selected tiles
+		viewshadowsfrom,        // viewshadowsfrom							-- highlights all tiles that affect the brightness of the selected tile through the day (green = earlier, pink = later)
+		viewshadowsto,          // viewshadowsto							-- highlights all tiles that the selected tile affects the brightness of through the day (green = earlier, pink = later)
+		viewblockingtiles,      // viewblockingtiles						-- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)
+		viewroofs,				// viewroofs								-- higlights all tiles with a roof above it
 		save,                   // save (filename)							-- without (filename): saves the name normally. with (filename): saves the game to the specified file name. will overwrite
 		load                    // load (filename)							-- without (filename): loads the most recent save. with (filename): loads the file named (filename). will not save first
 	};
@@ -151,6 +162,7 @@ public class DebugManager : MonoBehaviour {
 		{Commands.camzoom,"camzoom <zoom> -- sets the camera orthographic size to <zoom>" },
 		{Commands.togglesuncycle,"togglesuncycle -- toggle the day/night (sun) cycle (i.e. the changing of tile brightnesses every N in-game minutes)" },
 		{Commands.settime,"settime <time> -- sets the in-game time to <time> (time = float between 0 and 23, decimals represent minutes (0.5 = 30 minutes))" },
+		{Commands.viewselectedtiles,"viewselectedtiles -- sets the map overlay to highlight all selected tiles" },
 		{Commands.viewnormal,"viewnormal -- sets the map overlay to normal gameplay settings" },
 		{Commands.viewregions,"viewregions -- sets the map overlay to colour individual regions (region colour is random)" },
 		{Commands.viewheightmap,"viewheightmap -- sets the map overlay to colour each tile depending on its height between 0 and 1 (black = 0, white = 1)" },
@@ -162,10 +174,10 @@ public class DebugManager : MonoBehaviour {
 		{Commands.viewwalkspeed,"viewwalkspeed -- sets the map overlay to colour each tile depending on its walk speed (black = 0, white = 1)" },
 		{Commands.viewregionblocks,"viewregionblocks -- sets the map overlay to colour individual region blocks (region block colour is random)" },
 		{Commands.viewsquareregionblocks,"viewsquareregionblocks -- sets the map overlay to colour invididual square region blocks (square region block colour is random)" },
-		{Commands.viewtabott,"viewtabott -- highlights all tiles that affect the brightness of the selected tile through the day (green = earlier, pink = later)" },
-		{Commands.viewtttabo,"viewtttabo -- highlights all tiles that the selected tile affects the brightness of through the day (green = earlier, pink = later)" },
-		{Commands.viewtttbsf,"viewtttbsf -- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)" },
-		{Commands.viewselectedtiles,"viewselectedtiles -- sets the map overlay to highlight all selected tiles" },
+		{Commands.viewshadowsfrom,"viewshadowsfrom -- highlights all tiles that affect the brightness of the selected tile through the day (green = earlier, pink = later)" },
+		{Commands.viewshadowsto,"viewshadowsto -- highlights all tiles that the selected tile affects the brightness of through the day (green = earlier, pink = later)" },
+		{Commands.viewblockingtiles,"viewblockingtiles -- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)" },
+		{Commands.viewroofs,"viewroofs -- higlights all tiles with a roof above it" },
 		{Commands.save,"save (filename) -- without (filename): saves the name normally. with (filename): saves the game to the specified file name. will overwrite" },
 		{Commands.load,"load (filename) -- without (filename): loads the most recent save. with (filename): loads the file named (filename). will not save first" }
 	};
@@ -864,6 +876,20 @@ public class DebugManager : MonoBehaviour {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
+		commandFunctions.Add(Commands.viewselectedtiles, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 0) {
+				if (selectedTiles.Count <= 0) {
+					OutputToConsole("No tiles are currently selected.");
+				} else {
+					foreach (TileManager.Tile tile in selectedTiles) {
+						tile.sr.sprite = whiteSquare;
+						tile.sr.color = Color.blue;
+					}
+				}
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
 		commandFunctions.Add(Commands.viewnormal, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				foreach (TileManager.Tile tile in tileM.map.tiles) {
@@ -997,7 +1023,7 @@ public class DebugManager : MonoBehaviour {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
-		commandFunctions.Add(Commands.viewtabott, delegate (Commands selectedCommand, List<string> parameters) {
+		commandFunctions.Add(Commands.viewshadowsfrom, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				tileM.map.SetTileBrightness(12);
 				if (selectedTiles.Count > 0) {
@@ -1015,7 +1041,7 @@ public class DebugManager : MonoBehaviour {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
-		commandFunctions.Add(Commands.viewtttabo, delegate (Commands selectedCommand, List<string> parameters) {
+		commandFunctions.Add(Commands.viewshadowsto, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				tileM.map.SetTileBrightness(12);
 				if (selectedTiles.Count > 0) {
@@ -1033,7 +1059,7 @@ public class DebugManager : MonoBehaviour {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
-		commandFunctions.Add(Commands.viewtttbsf, delegate (Commands selectedCommand, List<string> parameters) {
+		commandFunctions.Add(Commands.viewblockingtiles, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				tileM.map.SetTileBrightness(12);
 				if (selectedTiles.Count > 0) {
@@ -1051,14 +1077,12 @@ public class DebugManager : MonoBehaviour {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
-		commandFunctions.Add(Commands.viewselectedtiles, delegate (Commands selectedCommand, List<string> parameters) {
+		commandFunctions.Add(Commands.viewroofs, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				if (selectedTiles.Count <= 0) {
-					OutputToConsole("No tiles are currently selected.");
-				} else {
-					foreach (TileManager.Tile tile in selectedTiles) {
+				foreach (TileManager.Tile tile in tileM.map.tiles) {
+					if (tile.roof) {
 						tile.sr.sprite = whiteSquare;
-						tile.sr.color = Color.blue;
+						tile.sr.color = Color.red;
 					}
 				}
 			} else {

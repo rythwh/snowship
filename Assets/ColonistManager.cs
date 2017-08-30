@@ -215,7 +215,7 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	public enum SkillTypeEnum { Building, Mining, Farming, Forestry };
+	public enum SkillTypeEnum { Building, Mining, Digging, Farming, Forestry };
 
 	public class SkillPrefab {
 
