@@ -77,7 +77,9 @@ public class DebugManager : MonoBehaviour {
 				commandFunctions[Commands.deselecttiles](Commands.deselecttiles, new List<string>());
 				*/
 
+				/*
 				jobM.finishJobFunctions[JobManager.JobTypesEnum.Dig](colonistM.colonists[0], new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Dig), 0));
+				*/
 			}
 		}
 	}
@@ -594,7 +596,7 @@ public class DebugManager : MonoBehaviour {
 			if (parameters.Count == 0) {
 				List<TileManager.Tile> deselectedTiles = new List<TileManager.Tile>();
 				foreach (TileManager.Tile tile in selectedTiles) {
-					if (tile.walkable) {
+					if (!tile.tileType.buildable) {
 						deselectedTiles.Add(tile);
 					}
 				}
@@ -612,7 +614,7 @@ public class DebugManager : MonoBehaviour {
 			if (parameters.Count == 0) {
 				List<TileManager.Tile> deselectedTiles = new List<TileManager.Tile>();
 				foreach (TileManager.Tile tile in selectedTiles) {
-					if (tile.walkable) {
+					if (tile.tileType.buildable) {
 						deselectedTiles.Add(tile);
 					}
 				}
@@ -862,7 +864,7 @@ public class DebugManager : MonoBehaviour {
 			if (parameters.Count == 1) {
 				float time = 0;
 				if (float.TryParse(parameters[0], out time)) {
-					if (time >= 0 && time <= 23) {
+					if (time >= 0 && time < 24) {
 						holdHour = time;
 						timeM.SetTime(time);
 						tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());

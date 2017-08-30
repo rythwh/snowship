@@ -127,6 +127,24 @@
 			true/
 			1.0,0.3
 <Group>
+	Industrial
+	<SubGroup>
+		Furnaces
+		<Object>
+			StoneFurnace/
+			15/
+			5/
+			Stone/
+			true/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
+			Build/
+			0.0/
+			false/
+			0.2/
+			2/
+			true/
+			0.5,0.5
+<Group>
 	Farm
 	<SubGroup>
 		PlantFarm
@@ -284,6 +302,20 @@
 	None
 	<SubGroup>
 		None
+		<Object>
+			CreateResource/
+			15/
+			0/
+			/
+			false/
+			/
+			CreateResource/
+			0.0/
+			true/
+			1.0/
+			0/
+			false/
+			0.0,0.0
 		<Object>
 			PickupResources/
 			5/

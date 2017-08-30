@@ -133,4 +133,8 @@ Slate/
 Clay/
 	0.9/
 	true/
-	true
+	true`
+ClayWater/
+	0.2/
+	true/
+	false

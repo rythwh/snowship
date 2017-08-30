@@ -33,7 +33,7 @@ public class PersistenceManager : MonoBehaviour {
 		timeM = GetComponent<TimeManager>();
 		uiM = GetComponent<UIManager>();
 
-		print(Application.persistentDataPath + "Saves/snowship-save.snowship");
+		print(Application.persistentDataPath + "/Saves/snowship-save.snowship");
 	}
 
 	/* https://stackoverflow.com/questions/13266496/easily-write-a-whole-class-instance-to-xml-file-and-read-back-in */

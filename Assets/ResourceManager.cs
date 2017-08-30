@@ -32,11 +32,25 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourcesEnum {
 		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Wood, Snow, Sand,
-		Brick, Firewood, Cloth,
+		Brick, Cloth,
 		WheatSeeds, PotatoSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
 		Wheat,
 		Potatoes, Berries, Apples
 	};
+
+	List<ResourcesEnum> ManufacturableResources = new List<ResourcesEnum>() {
+		ResourcesEnum.Brick
+	};
+	public List<ResourcesEnum> GetManufacturableResources() {
+		return ManufacturableResources;
+	}
+
+	List<ResourcesEnum> FuelResources = new List<ResourcesEnum>() {
+		ResourcesEnum.Wood
+	};
+	public List<ResourcesEnum> GetFuelResources() {
+		return FuelResources;
+	}
 
 	public List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
 
@@ -48,16 +62,16 @@ public class ResourceManager : MonoBehaviour {
 		public List<ResourcesEnum> resourceTypes = new List<ResourcesEnum>();
 		public List<Resource> resources = new List<Resource>();
 
-		public ResourceGroup(List<string> resourceGroupData, ResourceManager rm) {
+		public ResourceGroup(List<string> resourceGroupData, ResourceManager resourceM, TileManager tileM) {
 			type = (ResourceGroupsEnum)System.Enum.Parse(typeof(ResourceGroupsEnum),resourceGroupData[0]);
 			name = type.ToString();
 
 			List<string> resourceData = resourceGroupData[1].Split('`').ToList();
 			foreach (string resourceString in resourceData) {
-				Resource resource = new Resource(resourceString.Split('/').ToList(),this,rm);
+				Resource resource = new Resource(resourceString.Split('/').ToList(),this,resourceM,tileM);
 				resourceTypes.Add(resource.type);
 				resources.Add(resource);
-				rm.resources.Add(resource);
+				resourceM.resources.Add(resource);
 			}
 		}
 	}
@@ -65,6 +79,8 @@ public class ResourceManager : MonoBehaviour {
 	public List<Resource> resources = new List<Resource>();
 
 	public class Resource {
+		public List<string> resourceData;
+
 		public ResourcesEnum type;
 		public string name;
 		
@@ -83,7 +99,13 @@ public class ResourceManager : MonoBehaviour {
 		public int containerTotalAmount;
 		public int unreservedContainerTotalAmount;
 
-		public Resource(List<string> resourceData,ResourceGroup resourceGroup, ResourceManager rm) {
+		public List<TileObjectPrefabSubGroup> manufacturingTileObjectSubGroups = new List<TileObjectPrefabSubGroup>();
+		public int requiredTemperature = 0;
+		public List<ResourceAmount> requiredResources = new List<ResourceAmount>();
+
+		public Resource(List<string> resourceData,ResourceGroup resourceGroup, ResourceManager resourceM, TileManager tileM) {
+			this.resourceData = resourceData;
+
 			type = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceData[0]);
 			name = type.ToString();
 
@@ -94,6 +116,8 @@ public class ResourceManager : MonoBehaviour {
 			if (resourceGroup.type == ResourceGroupsEnum.Foods) {
 				nutrition = int.Parse(resourceData[2]);
 			}
+
+			
 		}
 	}
 
@@ -101,10 +125,28 @@ public class ResourceManager : MonoBehaviour {
 		List<string> resourceGroupsDataString = UnityEngine.Resources.Load<TextAsset>(@"Data/resources").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('~').ToList();
 		foreach (string resourceGroupDataString in resourceGroupsDataString) {
 			List<string> resourceGroupData = resourceGroupDataString.Split(':').ToList();
-			ResourceGroup resourceGroup = new ResourceGroup(resourceGroupData,this);
+			ResourceGroup resourceGroup = new ResourceGroup(resourceGroupData,this,tileM);
 			resourceGroups.Add(resourceGroup);
 		}
 		tileM.SetPlantResources();
+	}
+
+	public void SetManufacturableResourcesData() {
+		foreach (Resource resource in resources) {
+			if (ManufacturableResources.Contains(resource.type)) {
+				foreach (string subGroupString in resource.resourceData[3].Split(',')) {
+					resource.manufacturingTileObjectSubGroups.Add(GetTileObjectPrefabSubGroupByEnum((TileObjectPrefabSubGroupsEnum)System.Enum.Parse(typeof(TileObjectPrefabSubGroupsEnum),subGroupString)));
+					print(GetTileObjectPrefabSubGroupByEnum(TileObjectPrefabSubGroupsEnum.Furnaces));
+				}
+				resource.requiredTemperature = int.Parse(resource.resourceData[4]);
+				int index = 0;
+				foreach (string resourceNameString in resource.resourceData[5].Split(',')) {
+					Resource requiredResource = GetResourceByEnum((ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceNameString));
+					resource.requiredResources.Add(new ResourceAmount(requiredResource,int.Parse(resource.resourceData[6].Split(',')[index])));
+					index += 1;
+				}
+			}
+		}
 	}
 
 	public Resource GetResourceByEnum(ResourcesEnum resourceEnum) {
@@ -134,13 +176,14 @@ public class ResourceManager : MonoBehaviour {
 	 * <Type> -> <SubType> -> <Object>
 	*/
 	public enum TileObjectPrefabGroupsEnum {
-		Structure, Furniture,
+		Structure, Furniture, Industrial,
 		Command,
 		Farm,
 		None,
 	};
 	public enum TileObjectPrefabSubGroupsEnum {
 		Walls, Doors, Floors, Containers, Beds,
+		Furnaces,
 		Plants, Terrain, Remove,
 		PlantFarm, HarvestFarm,
 		None
@@ -151,6 +194,7 @@ public class ResourceManager : MonoBehaviour {
 		StoneFloor, WoodenFloor,
 		Basket, WoodenChest,
 		WoodenBed,
+		StoneFurnace,
 		RemoveLayer1, RemoveLayer2, RemoveAll,
 		ChopPlant, PlantPlant, Mine, Dig,
 		WheatFarm, PotatoFarm, HarvestFarm,
@@ -173,6 +217,10 @@ public class ResourceManager : MonoBehaviour {
 		TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall
 	};
 
+	Dictionary<TileObjectPrefabSubGroupsEnum,List<TileObjectPrefabsEnum>> ManufacturingTileObjects = new Dictionary<TileObjectPrefabSubGroupsEnum,List<TileObjectPrefabsEnum>>() {
+		{TileObjectPrefabSubGroupsEnum.Furnaces,new List<TileObjectPrefabsEnum>() { TileObjectPrefabsEnum.StoneFurnace } }
+	};
+
 	public List<TileObjectPrefabGroup> tileObjectPrefabGroups = new List<TileObjectPrefabGroup>();
 	public List<TileObjectPrefab> tileObjectPrefabs = new List<TileObjectPrefab>();
 
@@ -186,6 +234,17 @@ public class ResourceManager : MonoBehaviour {
 
 	public TileObjectPrefab GetTileObjectPrefabByEnum(TileObjectPrefabsEnum topEnum) {
 		return tileObjectPrefabs.Find(top => top.type == topEnum);
+	}
+
+	public TileObjectPrefabSubGroup GetTileObjectPrefabSubGroupByEnum(TileObjectPrefabSubGroupsEnum topsgEnum) {
+		foreach (TileObjectPrefabGroup topg in tileObjectPrefabGroups) {
+			foreach (TileObjectPrefabSubGroup topsg in topg.tileObjectPrefabSubGroups) {
+				if (topsg.type == topsgEnum) {
+					return topsg;
+				}
+			}
+		}
+		return null;
 	}
 
 	public class TileObjectPrefabGroup {
@@ -268,6 +327,7 @@ public class ResourceManager : MonoBehaviour {
 
 		public Sprite baseSprite;
 		public List<Sprite> bitmaskSprites = new List<Sprite>();
+		public List<Sprite> activeSprites = new List<Sprite>();
 
 		public int timeToBuild;
 		public List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
@@ -327,6 +387,8 @@ public class ResourceManager : MonoBehaviour {
 
 			baseSprite = Resources.Load<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-base");
 			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-bitmask").ToList();
+			activeSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ','-') + "-active").ToList();
+
 			if (baseSprite == null && bitmaskSprites.Count > 0) {
 				baseSprite = bitmaskSprites[0];
 			}

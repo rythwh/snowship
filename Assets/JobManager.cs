@@ -24,6 +24,7 @@ public class JobManager:MonoBehaviour {
 
 		InitializeSelectionModifierFunctions();
 		InitializeFinishJobFunctions();
+		InitializeJobDescriptionFunctions();
 
 		selectedPrefabPreview = GameObject.Find("SelectedPrefabPreview");
 		selectedPrefabPreview.GetComponent<SpriteRenderer>().sortingOrder = 50;
@@ -59,12 +60,16 @@ public class JobManager:MonoBehaviour {
 		public float jobProgress;
 		public float colonistBuildTime;
 
+		public List<ResourceManager.ResourceAmount> resourcesToBuild;
+
 		public List<ResourceManager.ResourceAmount> colonistResources;
 		public List<ContainerPickup> containerPickups;
 
 		public UIManager.JobElement jobUIElement;
 
 		public TileManager.Plant plant;
+
+		public ResourceManager.Resource createResource;
 
 		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab,int rotationIndex) {
 
@@ -73,10 +78,13 @@ public class JobManager:MonoBehaviour {
 			this.tile = tile;
 			this.prefab = prefab;
 
+			resourcesToBuild = prefab.resourcesToBuild;
+
 			if (prefab.jobType == JobTypesEnum.PlantPlant) {
 				plant = new TileManager.Plant(tileM.GetPlantGroupByBiome(tile.biome,true),tile,false,true);
 				plant.obj.SetActive(false);
-				this.prefab = resourceM.GetTileObjectPrefabByEnum(tileM.GetPlantPlantObjectPrefabs()[plant.group.type]);
+				//this.prefab = resourceM.GetTileObjectPrefabByEnum(tileM.GetPlantPlantObjectPrefabs()[plant.group.type]);
+				resourcesToBuild = tileM.GetPlantResources()[plant.group.type];
 			}
 
 			this.rotationIndex = rotationIndex;
@@ -103,8 +111,11 @@ public class JobManager:MonoBehaviour {
 					break;
 				}
 			}
+		}
 
-			
+		public void SetCreateResourceData(ResourceManager.Resource createResource) {
+			this.createResource = createResource;
+			resourcesToBuild = createResource.requiredResources;
 		}
 
 		public void SetColonist(ColonistManager.Colonist colonist, ResourceManager resourceM, ColonistManager colonistM, JobManager jobM, PathManager pathM) {
@@ -124,14 +135,85 @@ public class JobManager:MonoBehaviour {
 	public enum JobTypesEnum {
 		Build, Remove,
 		ChopPlant, PlantPlant, Mine, Dig, PlantFarm, HarvestFarm,
-		PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep
+		CreateResource, PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep
 	};
+
+	public Dictionary<JobTypesEnum,System.Func<Job,string>> jobDescriptionFunctions = new Dictionary<JobTypesEnum,System.Func<Job,string>>();
+
+	void InitializeJobDescriptionFunctions() {
+		jobDescriptionFunctions.Add(JobTypesEnum.Build,delegate (Job job) {
+			return "Building a " + job.prefab.name + ".";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.Remove,delegate (Job job) {
+			return "Removing a " + job.tile.GetObjectInstanceAtLayer(job.prefab.layer) + ".";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.ChopPlant,delegate (Job job) {
+			return "Chopping down a " + job.tile.plant.group.name + ".";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.PlantPlant,delegate (Job job) {
+			return "Planting a " + job.plant.group.name + ".";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.Mine,delegate (Job job) {
+			return "Mining " + job.tile.tileType.name + ".";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.Dig,delegate (Job job) {
+			if (tileM.GetResourceTileTypes().Contains(job.tile.tileType.type)) {
+				if (tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) {
+					if (tileM.GetGroundToWaterResourceMap().ContainsValue(job.tile.tileType.type)) {
+						return "Digging " + tileM.GetTileTypeByEnum(tileM.GetGroundToWaterResourceMap().First(t => t.Value == job.tile.tileType.type).Key).name + ".";
+					} else {
+						return "Digging something.";
+					}
+				} else {
+					return "Digging " + tileM.GetTileTypeByEnum(job.tile.tileType.type).name + ".";
+				}
+			} else {
+				return "Digging " + job.tile.biome.groundResource.name + ".";
+			}
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.PlantFarm,delegate (Job job) {
+			return "Planting a farm of " + job.prefab.name + ".";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.HarvestFarm,delegate (Job job) {
+			return "Harvesting a farm of " + job.tile.farm.name + ".";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.CreateResource,delegate (Job job) {
+			return "Creating " + job.createResource.name + ".";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.PickupResources,delegate (Job job) {
+			return "Picking up some resources.";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.PickupResources,delegate (Job job) {
+			return "Emptying their inventory.";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.PickupResources,delegate (Job job) {
+			return "Finding some food to eat.";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.PickupResources,delegate (Job job) {
+			return "Eating.";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.PickupResources,delegate (Job job) {
+			return "Sleeping.";
+		});
+	}
+
+	public string GetJobDescription(Job job) {
+		if (job != null) {
+			if (jobDescriptionFunctions.ContainsKey(job.prefab.jobType)) {
+				return jobDescriptionFunctions[job.prefab.jobType](job);
+			} else {
+				return "Doing something.";
+			}
+		} else {
+			return "Wandering around.";
+		}
+	}
 
 	public Dictionary<JobTypesEnum,System.Action<ColonistManager.Colonist,Job>> finishJobFunctions = new Dictionary<JobTypesEnum,System.Action<ColonistManager.Colonist,Job>>();
 
 	void InitializeFinishJobFunctions() {
 		finishJobFunctions.Add(JobTypesEnum.Build,delegate (ColonistManager.Colonist colonist, Job job) {
-			foreach (ResourceManager.ResourceAmount resourceAmount in job.prefab.resourcesToBuild) {
+			foreach (ResourceManager.ResourceAmount resourceAmount in job.resourcesToBuild) {
 				colonist.inventory.ChangeResourceAmount(resourceAmount.resource,-resourceAmount.amount);
 			}
 		});
@@ -188,12 +270,18 @@ public class JobManager:MonoBehaviour {
 		finishJobFunctions.Add(JobTypesEnum.Dig, delegate (ColonistManager.Colonist colonist, Job job) {
 			job.tile.dugPreviously = true;
 			if (tileM.GetResourceTileTypes().Contains(job.tile.tileType.type)) {
-				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), job.tile.tileType.type.ToString())), Random.Range(4, 7));
+				if (tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) {
+					if (tileM.GetGroundToWaterResourceMap().ContainsValue(job.tile.tileType.type)) {
+						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),tileM.GetTileTypeByEnum(tileM.GetGroundToWaterResourceMap().First(t => t.Value == job.tile.tileType.type).Key).type.ToString())),Random.Range(4,7));
+					}
+				} else {
+					colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),job.tile.tileType.type.ToString())),Random.Range(4,7));
+				}
 			} else {
 				colonist.inventory.ChangeResourceAmount(job.tile.biome.groundResource, Random.Range(4, 7));
 			}
 			bool setToWater = false;
-			if (!tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) {
+			if ((!tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) || (tileM.GetResourceTileTypes().Contains(job.tile.tileType.type))) {
 				foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
 					if (nTile != null && tileM.GetWaterEquivalentTileTypes().Contains(nTile.tileType.type)) {
 						job.tile.SetTileType(nTile.tileType, true, true, true, true);
@@ -204,7 +292,6 @@ public class JobManager:MonoBehaviour {
 				if (setToWater) {
 					foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
 						if (nTile != null && tileM.GetHoleTileTypes().Contains(nTile.tileType.type)) {
-							print("A");
 							List<TileManager.Tile> frontier = new List<TileManager.Tile>() { nTile };
 							List<TileManager.Tile> checkedTiles = new List<TileManager.Tile>() { };
 							TileManager.Tile currentTile = nTile;
@@ -249,6 +336,12 @@ public class JobManager:MonoBehaviour {
 				print("Setting stored job on " + name);
 				colonist.SetJob(new ColonistJob(colonist,colonist.storedJob,colonist.storedJob.colonistResources,null,colonist.jobM,pathM));
 			}
+		});
+		finishJobFunctions.Add(JobTypesEnum.CreateResource,delegate (ColonistManager.Colonist colonist,Job job) {
+			foreach (ResourceManager.ResourceAmount resourceAmount in job.resourcesToBuild) {
+				colonist.inventory.ChangeResourceAmount(resourceAmount.resource,-resourceAmount.amount);
+			}
+			colonist.inventory.ChangeResourceAmount(job.createResource,1);
 		});
 		finishJobFunctions.Add(JobTypesEnum.EmptyInventory,delegate (ColonistManager.Colonist colonist,Job job) {
 			ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == colonist.overTile);
@@ -798,7 +891,7 @@ public class JobManager:MonoBehaviour {
 		}
 
 		public void RecalculatePickupResources(JobManager jobM) {
-			KeyValuePair<bool,List<List<ResourceManager.ResourceAmount>>> returnKVP = jobM.CalculateColonistResourcesToPickup(colonist,job.prefab.resourcesToBuild);
+			KeyValuePair<bool,List<List<ResourceManager.ResourceAmount>>> returnKVP = jobM.CalculateColonistResourcesToPickup(colonist,job.resourcesToBuild);
 			List<ResourceManager.ResourceAmount> resourcesToPickup = returnKVP.Value[0];
 			colonistResources = returnKVP.Value[1];
 			if (resourcesToPickup != null) { // If there are resources the colonist doesn't have
@@ -827,8 +920,8 @@ public class JobManager:MonoBehaviour {
 		List<Job> sortedJobs = jobs.Where(job => (job.tile.region == colonist.overTile.region) || (job.prefab.jobType == JobTypesEnum.Mine && job.tile.horizontalSurroundingTiles.Find(nTile => nTile != null && nTile.region == colonist.overTile.region) != null)).OrderBy(job => CalculateJobCost(colonist,job,null)).ToList();
 		List<ColonistJob> validJobs = new List<ColonistJob>();
 		foreach (Job job in sortedJobs) {
-			if (job.prefab.resourcesToBuild.Count > 0) {
-				KeyValuePair<bool,List<List<ResourceManager.ResourceAmount>>> returnKVP = CalculateColonistResourcesToPickup(colonist,job.prefab.resourcesToBuild);
+			if (job.resourcesToBuild.Count > 0) {
+				KeyValuePair<bool,List<List<ResourceManager.ResourceAmount>>> returnKVP = CalculateColonistResourcesToPickup(colonist,job.resourcesToBuild);
 				bool colonistHasAllResources = returnKVP.Key;
 				List<ResourceManager.ResourceAmount> resourcesToPickup = returnKVP.Value[0];
 				List<ResourceManager.ResourceAmount> resourcesColonistHas = returnKVP.Value[1];
