@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 5ac56557ff1f0824a9aedb3d9dee0036
-timeCreated: 1495498840
+guid: ccc83b057cad1b549b6b876ef4ede4b1
+timeCreated: 1504104374
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -401,6 +401,53 @@ TextureImporter:
     21300788: coldgrasswater-bitmask_44
     21300790: coldgrasswater-bitmask_45
     21300792: coldgrasswater-bitmask_46
+    21300794: claywater-bitmask_0
+    21300796: claywater-bitmask_1
+    21300798: claywater-bitmask_2
+    21300800: claywater-bitmask_3
+    21300802: claywater-bitmask_4
+    21300804: claywater-bitmask_5
+    21300806: claywater-bitmask_6
+    21300808: claywater-bitmask_7
+    21300810: claywater-bitmask_8
+    21300812: claywater-bitmask_9
+    21300814: claywater-bitmask_10
+    21300816: claywater-bitmask_11
+    21300818: claywater-bitmask_12
+    21300820: claywater-bitmask_13
+    21300822: claywater-bitmask_14
+    21300824: claywater-bitmask_15
+    21300826: claywater-bitmask_16
+    21300828: claywater-bitmask_17
+    21300830: claywater-bitmask_18
+    21300832: claywater-bitmask_19
+    21300834: claywater-bitmask_20
+    21300836: claywater-bitmask_21
+    21300838: claywater-bitmask_22
+    21300840: claywater-bitmask_23
+    21300842: claywater-bitmask_24
+    21300844: claywater-bitmask_25
+    21300846: claywater-bitmask_26
+    21300848: claywater-bitmask_27
+    21300850: claywater-bitmask_28
+    21300852: claywater-bitmask_29
+    21300854: claywater-bitmask_30
+    21300856: claywater-bitmask_31
+    21300858: claywater-bitmask_32
+    21300860: claywater-bitmask_33
+    21300862: claywater-bitmask_34
+    21300864: claywater-bitmask_35
+    21300866: claywater-bitmask_36
+    21300868: claywater-bitmask_37
+    21300870: claywater-bitmask_38
+    21300872: claywater-bitmask_39
+    21300874: claywater-bitmask_40
+    21300876: claywater-bitmask_41
+    21300878: claywater-bitmask_42
+    21300880: claywater-bitmask_43
+    21300882: claywater-bitmask_44
+    21300884: claywater-bitmask_45
+    21300886: claywater-bitmask_46
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -409,6 +456,8 @@ TextureImporter:
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
@@ -424,10 +473,13 @@ TextureImporter:
   textureFormat: 1
   maxTextureSize: 2048
   textureSettings:
+    serializedVersion: 2
     filterMode: 0
     aniso: -1
     mipBias: -1
-    wrapMode: 1
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -467,7 +519,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_0
+      name: claywater-bitmask_0
       rect:
         serializedVersion: 2
         x: 2
@@ -478,9 +530,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_1
+      name: claywater-bitmask_1
       rect:
         serializedVersion: 2
         x: 37
@@ -491,9 +544,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_2
+      name: claywater-bitmask_2
       rect:
         serializedVersion: 2
         x: 72
@@ -504,9 +558,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_3
+      name: claywater-bitmask_3
       rect:
         serializedVersion: 2
         x: 107
@@ -517,9 +572,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_4
+      name: claywater-bitmask_4
       rect:
         serializedVersion: 2
         x: 142
@@ -530,9 +586,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_5
+      name: claywater-bitmask_5
       rect:
         serializedVersion: 2
         x: 177
@@ -543,9 +600,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_6
+      name: claywater-bitmask_6
       rect:
         serializedVersion: 2
         x: 212
@@ -556,9 +614,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_7
+      name: claywater-bitmask_7
       rect:
         serializedVersion: 2
         x: 2
@@ -569,9 +628,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_8
+      name: claywater-bitmask_8
       rect:
         serializedVersion: 2
         x: 37
@@ -582,9 +642,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_9
+      name: claywater-bitmask_9
       rect:
         serializedVersion: 2
         x: 72
@@ -595,9 +656,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_10
+      name: claywater-bitmask_10
       rect:
         serializedVersion: 2
         x: 107
@@ -608,9 +670,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_11
+      name: claywater-bitmask_11
       rect:
         serializedVersion: 2
         x: 142
@@ -621,9 +684,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_12
+      name: claywater-bitmask_12
       rect:
         serializedVersion: 2
         x: 177
@@ -634,9 +698,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_13
+      name: claywater-bitmask_13
       rect:
         serializedVersion: 2
         x: 212
@@ -647,9 +712,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_14
+      name: claywater-bitmask_14
       rect:
         serializedVersion: 2
         x: 2
@@ -660,9 +726,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_15
+      name: claywater-bitmask_15
       rect:
         serializedVersion: 2
         x: 37
@@ -673,9 +740,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_16
+      name: claywater-bitmask_16
       rect:
         serializedVersion: 2
         x: 72
@@ -686,9 +754,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_17
+      name: claywater-bitmask_17
       rect:
         serializedVersion: 2
         x: 107
@@ -699,9 +768,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_18
+      name: claywater-bitmask_18
       rect:
         serializedVersion: 2
         x: 142
@@ -712,9 +782,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_19
+      name: claywater-bitmask_19
       rect:
         serializedVersion: 2
         x: 177
@@ -725,9 +796,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_20
+      name: claywater-bitmask_20
       rect:
         serializedVersion: 2
         x: 212
@@ -738,9 +810,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_21
+      name: claywater-bitmask_21
       rect:
         serializedVersion: 2
         x: 2
@@ -751,9 +824,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_22
+      name: claywater-bitmask_22
       rect:
         serializedVersion: 2
         x: 37
@@ -764,9 +838,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_23
+      name: claywater-bitmask_23
       rect:
         serializedVersion: 2
         x: 72
@@ -777,9 +852,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_24
+      name: claywater-bitmask_24
       rect:
         serializedVersion: 2
         x: 107
@@ -790,9 +866,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_25
+      name: claywater-bitmask_25
       rect:
         serializedVersion: 2
         x: 142
@@ -803,9 +880,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_26
+      name: claywater-bitmask_26
       rect:
         serializedVersion: 2
         x: 177
@@ -816,9 +894,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_27
+      name: claywater-bitmask_27
       rect:
         serializedVersion: 2
         x: 212
@@ -829,9 +908,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_28
+      name: claywater-bitmask_28
       rect:
         serializedVersion: 2
         x: 2
@@ -842,9 +922,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_29
+      name: claywater-bitmask_29
       rect:
         serializedVersion: 2
         x: 37
@@ -855,9 +936,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_30
+      name: claywater-bitmask_30
       rect:
         serializedVersion: 2
         x: 72
@@ -868,9 +950,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_31
+      name: claywater-bitmask_31
       rect:
         serializedVersion: 2
         x: 107
@@ -881,9 +964,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_32
+      name: claywater-bitmask_32
       rect:
         serializedVersion: 2
         x: 142
@@ -894,9 +978,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_33
+      name: claywater-bitmask_33
       rect:
         serializedVersion: 2
         x: 177
@@ -907,9 +992,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_34
+      name: claywater-bitmask_34
       rect:
         serializedVersion: 2
         x: 212
@@ -920,9 +1006,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_35
+      name: claywater-bitmask_35
       rect:
         serializedVersion: 2
         x: 2
@@ -933,9 +1020,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_36
+      name: claywater-bitmask_36
       rect:
         serializedVersion: 2
         x: 37
@@ -946,9 +1034,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_37
+      name: claywater-bitmask_37
       rect:
         serializedVersion: 2
         x: 72
@@ -959,9 +1048,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_38
+      name: claywater-bitmask_38
       rect:
         serializedVersion: 2
         x: 107
@@ -972,9 +1062,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_39
+      name: claywater-bitmask_39
       rect:
         serializedVersion: 2
         x: 142
@@ -985,9 +1076,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_40
+      name: claywater-bitmask_40
       rect:
         serializedVersion: 2
         x: 177
@@ -998,9 +1090,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_41
+      name: claywater-bitmask_41
       rect:
         serializedVersion: 2
         x: 212
@@ -1011,9 +1104,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_42
+      name: claywater-bitmask_42
       rect:
         serializedVersion: 2
         x: 2
@@ -1024,9 +1118,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_43
+      name: claywater-bitmask_43
       rect:
         serializedVersion: 2
         x: 37
@@ -1037,9 +1132,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_44
+      name: claywater-bitmask_44
       rect:
         serializedVersion: 2
         x: 72
@@ -1050,9 +1146,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_45
+      name: claywater-bitmask_45
       rect:
         serializedVersion: 2
         x: 107
@@ -1063,9 +1160,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-bitmask_46
+      name: claywater-bitmask_46
       rect:
         serializedVersion: 2
         x: 142
@@ -1076,8 +1174,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     outline: []
+    physicsShape: []
   spritePackingTag: 
   userData: 
   assetBundleName: 

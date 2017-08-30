@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 9d59f5214f4e62c47a1813a1eec803ef
-timeCreated: 1495676267
+guid: 922c8bc573f984f418cb74b822f3af0d
+timeCreated: 1504104383
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -448,6 +448,53 @@ TextureImporter:
     21300882: coldgrasswater-river_44
     21300884: coldgrasswater-river_45
     21300886: coldgrasswater-river_46
+    21300888: claywater-river_0
+    21300890: claywater-river_1
+    21300892: claywater-river_2
+    21300894: claywater-river_3
+    21300896: claywater-river_4
+    21300898: claywater-river_5
+    21300900: claywater-river_6
+    21300902: claywater-river_7
+    21300904: claywater-river_8
+    21300906: claywater-river_9
+    21300908: claywater-river_10
+    21300910: claywater-river_11
+    21300912: claywater-river_12
+    21300914: claywater-river_13
+    21300916: claywater-river_14
+    21300918: claywater-river_15
+    21300920: claywater-river_16
+    21300922: claywater-river_17
+    21300924: claywater-river_18
+    21300926: claywater-river_19
+    21300928: claywater-river_20
+    21300930: claywater-river_21
+    21300932: claywater-river_22
+    21300934: claywater-river_23
+    21300936: claywater-river_24
+    21300938: claywater-river_25
+    21300940: claywater-river_26
+    21300942: claywater-river_27
+    21300944: claywater-river_28
+    21300946: claywater-river_29
+    21300948: claywater-river_30
+    21300950: claywater-river_31
+    21300952: claywater-river_32
+    21300954: claywater-river_33
+    21300956: claywater-river_34
+    21300958: claywater-river_35
+    21300960: claywater-river_36
+    21300962: claywater-river_37
+    21300964: claywater-river_38
+    21300966: claywater-river_39
+    21300968: claywater-river_40
+    21300970: claywater-river_41
+    21300972: claywater-river_42
+    21300974: claywater-river_43
+    21300976: claywater-river_44
+    21300978: claywater-river_45
+    21300980: claywater-river_46
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -456,6 +503,8 @@ TextureImporter:
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
@@ -471,10 +520,13 @@ TextureImporter:
   textureFormat: 1
   maxTextureSize: 2048
   textureSettings:
+    serializedVersion: 2
     filterMode: 0
     aniso: -1
     mipBias: -1
-    wrapMode: 1
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -514,7 +566,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: coldgrasswater-river_0
+      name: claywater-river_0
       rect:
         serializedVersion: 2
         x: 2
@@ -525,9 +577,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_1
+      name: claywater-river_1
       rect:
         serializedVersion: 2
         x: 37
@@ -538,9 +591,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_2
+      name: claywater-river_2
       rect:
         serializedVersion: 2
         x: 72
@@ -551,9 +605,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_3
+      name: claywater-river_3
       rect:
         serializedVersion: 2
         x: 107
@@ -564,9 +619,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_4
+      name: claywater-river_4
       rect:
         serializedVersion: 2
         x: 142
@@ -577,9 +633,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_5
+      name: claywater-river_5
       rect:
         serializedVersion: 2
         x: 177
@@ -590,9 +647,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_6
+      name: claywater-river_6
       rect:
         serializedVersion: 2
         x: 212
@@ -603,9 +661,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_7
+      name: claywater-river_7
       rect:
         serializedVersion: 2
         x: 2
@@ -616,9 +675,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_8
+      name: claywater-river_8
       rect:
         serializedVersion: 2
         x: 37
@@ -629,9 +689,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_9
+      name: claywater-river_9
       rect:
         serializedVersion: 2
         x: 72
@@ -642,9 +703,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_10
+      name: claywater-river_10
       rect:
         serializedVersion: 2
         x: 107
@@ -655,9 +717,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_11
+      name: claywater-river_11
       rect:
         serializedVersion: 2
         x: 142
@@ -668,9 +731,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_12
+      name: claywater-river_12
       rect:
         serializedVersion: 2
         x: 177
@@ -681,9 +745,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_13
+      name: claywater-river_13
       rect:
         serializedVersion: 2
         x: 212
@@ -694,9 +759,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_14
+      name: claywater-river_14
       rect:
         serializedVersion: 2
         x: 2
@@ -707,9 +773,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_15
+      name: claywater-river_15
       rect:
         serializedVersion: 2
         x: 37
@@ -720,9 +787,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_16
+      name: claywater-river_16
       rect:
         serializedVersion: 2
         x: 72
@@ -733,9 +801,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_17
+      name: claywater-river_17
       rect:
         serializedVersion: 2
         x: 107
@@ -746,9 +815,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_18
+      name: claywater-river_18
       rect:
         serializedVersion: 2
         x: 142
@@ -759,9 +829,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_19
+      name: claywater-river_19
       rect:
         serializedVersion: 2
         x: 177
@@ -772,9 +843,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_20
+      name: claywater-river_20
       rect:
         serializedVersion: 2
         x: 212
@@ -785,9 +857,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_21
+      name: claywater-river_21
       rect:
         serializedVersion: 2
         x: 2
@@ -798,9 +871,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_22
+      name: claywater-river_22
       rect:
         serializedVersion: 2
         x: 37
@@ -811,9 +885,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_23
+      name: claywater-river_23
       rect:
         serializedVersion: 2
         x: 72
@@ -824,9 +899,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_24
+      name: claywater-river_24
       rect:
         serializedVersion: 2
         x: 107
@@ -837,9 +913,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_25
+      name: claywater-river_25
       rect:
         serializedVersion: 2
         x: 142
@@ -850,9 +927,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_26
+      name: claywater-river_26
       rect:
         serializedVersion: 2
         x: 177
@@ -863,9 +941,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_27
+      name: claywater-river_27
       rect:
         serializedVersion: 2
         x: 212
@@ -876,9 +955,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_28
+      name: claywater-river_28
       rect:
         serializedVersion: 2
         x: 2
@@ -889,9 +969,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_29
+      name: claywater-river_29
       rect:
         serializedVersion: 2
         x: 37
@@ -902,9 +983,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_30
+      name: claywater-river_30
       rect:
         serializedVersion: 2
         x: 72
@@ -915,9 +997,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_31
+      name: claywater-river_31
       rect:
         serializedVersion: 2
         x: 107
@@ -928,9 +1011,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_32
+      name: claywater-river_32
       rect:
         serializedVersion: 2
         x: 142
@@ -941,9 +1025,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_33
+      name: claywater-river_33
       rect:
         serializedVersion: 2
         x: 177
@@ -954,9 +1039,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_34
+      name: claywater-river_34
       rect:
         serializedVersion: 2
         x: 212
@@ -967,9 +1053,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_35
+      name: claywater-river_35
       rect:
         serializedVersion: 2
         x: 2
@@ -980,9 +1067,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_36
+      name: claywater-river_36
       rect:
         serializedVersion: 2
         x: 37
@@ -993,9 +1081,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_37
+      name: claywater-river_37
       rect:
         serializedVersion: 2
         x: 72
@@ -1006,9 +1095,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_38
+      name: claywater-river_38
       rect:
         serializedVersion: 2
         x: 107
@@ -1019,9 +1109,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_39
+      name: claywater-river_39
       rect:
         serializedVersion: 2
         x: 142
@@ -1032,9 +1123,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_40
+      name: claywater-river_40
       rect:
         serializedVersion: 2
         x: 177
@@ -1045,9 +1137,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_41
+      name: claywater-river_41
       rect:
         serializedVersion: 2
         x: 212
@@ -1058,9 +1151,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_42
+      name: claywater-river_42
       rect:
         serializedVersion: 2
         x: 2
@@ -1071,9 +1165,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_43
+      name: claywater-river_43
       rect:
         serializedVersion: 2
         x: 37
@@ -1084,9 +1179,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_44
+      name: claywater-river_44
       rect:
         serializedVersion: 2
         x: 72
@@ -1097,9 +1193,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_45
+      name: claywater-river_45
       rect:
         serializedVersion: 2
         x: 107
@@ -1110,9 +1207,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: coldgrasswater-river_46
+      name: claywater-river_46
       rect:
         serializedVersion: 2
         x: 142
@@ -1123,8 +1221,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     outline: []
+    physicsShape: []
   spritePackingTag: 
   userData: 
   assetBundleName: 

@@ -16,7 +16,8 @@ Natural:
 	Clay/
 		5`
 	Wood/
-		2`
+		2/
+		10`
 	Snow/
 		1`
 	Sand/
@@ -24,8 +25,11 @@ Natural:
 ~
 Materials:
 	Brick/
-		10`
-	Firewood/
+		10/
+		0/
+		Furnaces/
+		30/
+		Clay/
 		2`
 	Cloth/
 		15

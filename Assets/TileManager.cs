@@ -83,6 +83,9 @@ public class TileManager:MonoBehaviour {
 			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.Cactus]),3)
 		});
 	}
+	public Dictionary<PlantGroupsEnum,List<ResourceManager.ResourceAmount>> GetPlantResources() {
+		return plantResources;
+	}
 
 	public List<PlantGroup> plantGroups = new List<PlantGroup>();
 
@@ -171,13 +174,13 @@ public class TileManager:MonoBehaviour {
 	}
 
 	public enum TileTypes { Dirt, DirtWater, Mud, DirtGrass, DirtThinGrass, DirtDryGrass, DirtHole, Grass, GrassWater, ThickGrass, ColdGrass, ColdGrassWater, DryGrass, DryGrassWater, Sand, SandWater,
-		SandHole, Snow, SnowIce, SnowStone, SnowHole, Stone, StoneIce, StoneWater, StoneThinGrass, StoneSand, StoneSnow, StoneHole, Granite, Limestone, Marble, Sandstone, Slate, Clay
+		SandHole, Snow, SnowIce, SnowStone, SnowHole, Stone, StoneIce, StoneWater, StoneThinGrass, StoneSand, StoneSnow, StoneHole, Granite, Limestone, Marble, Sandstone, Slate, Clay, ClayWater
 	};
 	List<TileTypes> WaterEquivalentTileTypes = new List<TileTypes>() {
-		TileTypes.GrassWater, TileTypes.SnowIce, TileTypes.StoneIce, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater
+		TileTypes.GrassWater, TileTypes.SnowIce, TileTypes.StoneIce, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.ClayWater
 	};
 	List<TileTypes> LiquidWaterEquivalentTileTypes = new List<TileTypes>() {
-		TileTypes.GrassWater, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater
+		TileTypes.GrassWater, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.ClayWater
 	};
 	List<TileTypes> StoneEquivalentTileTypes = new List<TileTypes>() {
 		TileTypes.Stone, TileTypes.Granite, TileTypes.Limestone, TileTypes.Marble, TileTypes.Sandstone, TileTypes.Slate
@@ -188,13 +191,16 @@ public class TileManager:MonoBehaviour {
 	};
 	List<TileTypes> BitmaskingTileTypes = new List<TileTypes>() {
 		TileTypes.GrassWater, TileTypes.SnowIce, TileTypes.StoneIce, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.Stone,
-		TileTypes.DirtHole, TileTypes.StoneHole, TileTypes.SnowHole, TileTypes.SandHole, TileTypes.Clay
+		TileTypes.DirtHole, TileTypes.StoneHole, TileTypes.SnowHole, TileTypes.SandHole, TileTypes.ClayWater
 	};
 	List<TileTypes> HoleTileTypes = new List<TileTypes>() {
 		TileTypes.DirtHole, TileTypes.StoneHole, TileTypes.SandHole, TileTypes.SnowHole
 	};
 	List<TileTypes> ResourceTileTypes = new List<TileTypes>() {
-		TileTypes.Clay
+		TileTypes.Clay, TileTypes.ClayWater
+	};
+	Dictionary<TileTypes,TileTypes> GroundToWaterResourceMap = new Dictionary<TileTypes,TileTypes>() {
+		{ TileTypes.Clay, TileTypes.ClayWater }
 	};
 
 	public List<TileTypes> GetWaterEquivalentTileTypes() {
@@ -217,6 +223,9 @@ public class TileManager:MonoBehaviour {
 	}
 	public List<TileTypes> GetResourceTileTypes() {
 		return ResourceTileTypes;
+	}
+	public Dictionary<TileTypes,TileTypes> GetGroundToWaterResourceMap() {
+		return GroundToWaterResourceMap;
 	}
 
 	public List<TileType> tileTypes = new List<TileType>();
@@ -1085,6 +1094,7 @@ public class TileManager:MonoBehaviour {
 	public void PreInitialize() {
 		resourceM.CreateResources();
 		resourceM.CreateTileObjectPrefabs();
+		resourceM.SetManufacturableResourcesData();
 
 		CreatePlantGroups();
 		CreateTileTypes();
@@ -2062,7 +2072,7 @@ public class TileManager:MonoBehaviour {
 				}
 			}
 			if (coastTiles.Count > 0) {
-				for (int i = 0; i < 5; i++) {
+				for (int i = 0; i < Mathf.RoundToInt(mapData.mapSize / 10f); i++) {
 					foreach (KeyValuePair<TileTypes, int> coastVeinResourceKVP in coastVeinResources) {
 						List<Tile> validVeinStartTiles = coastTiles.Where(tile => !tileM.ResourceTileTypes.Contains(tile.tileType.type)).ToList();
 						if (validVeinStartTiles.Count > 0) {
@@ -2079,7 +2089,11 @@ public class TileManager:MonoBehaviour {
 								frontier.RemoveAt(0);
 								checkedTiles.Add(currentTile);
 
-								currentTile.SetTileType(tileM.GetTileTypeByEnum(coastVeinResourceKVP.Key), true, false, false, false);
+								if (tileM.WaterEquivalentTileTypes.Contains(currentTile.tileType.type)) {
+									currentTile.SetTileType(tileM.GetTileTypeByEnum(tileM.GroundToWaterResourceMap[coastVeinResourceKVP.Key]),true,false,false,false);
+								} else {
+									currentTile.SetTileType(tileM.GetTileTypeByEnum(coastVeinResourceKVP.Key),true,false,false,false);
+								}
 
 								foreach (Tile nTile in currentTile.surroundingTiles) {
 									if (nTile != null && !checkedTiles.Contains(nTile) && !tileM.ResourceTileTypes.Contains(nTile.tileType.type)) {
@@ -2161,6 +2175,8 @@ public class TileManager:MonoBehaviour {
 					sum = BitSum(tileM.WaterEquivalentTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
 				} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
 					sum = BitSum(tileM.StoneEquivalentTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
+				} else if (tileM.HoleTileTypes.Contains(tile.tileType.type)) {
+					sum = BitSum(tileM.HoleTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),false);
 				} else {
 					sum = BitSum(new List<TileTypes>() { tile.tileType.type },(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
 				}

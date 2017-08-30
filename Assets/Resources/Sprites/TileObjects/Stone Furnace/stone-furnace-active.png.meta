@@ -1,33 +1,25 @@
 fileFormatVersion: 2
-guid: 0f93b1ef75b2d4542a0e9be19b3e9ff3
-timeCreated: 1504104343
+guid: b5b993c0f27d0b04e894e981bb914424
+timeCreated: 1504109441
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: water-tiles_0
-    21300002: water-tiles_1
-    21300004: water-tiles_2
-    21300006: water-tiles_3
-    21300008: grasswater-base_0
-    21300010: grasswater-base_1
-    21300012: grasswater-base_2
-    21300014: grasswater-base_3
-    21300016: drygrasswater-base_0
-    21300018: drygrasswater-base_1
-    21300020: drygrasswater-base_2
-    21300022: drygrasswater-base_3
-    21300024: coldgrasswater-base_0
-    21300026: coldgrasswater-base_1
-    21300028: coldgrasswater-base_2
-    21300030: coldgrasswater-base_3
-    21300032: clay-base_0
-    21300034: clay-base_1
-    21300036: clay-base_2
-    21300038: clay-base_3
+    21300000: bed-comfy_0
+    21300002: bed-comfy_1
+    21300004: bed-comfy_2
+    21300006: bed-comfy_3
+    21300008: wooden-bed-bitmask_0
+    21300010: wooden-bed-bitmask_1
+    21300012: wooden-bed-bitmask_2
+    21300014: wooden-bed-bitmask_3
+    21300016: stone-furnace-active_0
+    21300018: stone-furnace-active_1
+    21300020: stone-furnace-active_2
+    21300022: stone-furnace-active_3
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 0
+    enableMipMap: 1
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -46,12 +38,12 @@ TextureImporter:
   generateCubemap: 6
   cubemapConvolution: 0
   seamlessCubemap: 0
-  textureFormat: 1
+  textureFormat: -3
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
     filterMode: 0
-    aniso: -1
+    aniso: 16
     mipBias: -1
     wrapU: 1
     wrapV: 1
@@ -76,15 +68,7 @@ TextureImporter:
   textureFormatSet: 0
   platformSettings:
   - buildTarget: DefaultTexturePlatform
-    maxTextureSize: 8192
-    textureFormat: -1
-    textureCompression: 0
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-  - buildTarget: Standalone
-    maxTextureSize: 8192
+    maxTextureSize: 2048
     textureFormat: -1
     textureCompression: 0
     compressionQuality: 50
@@ -95,11 +79,11 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: clay-base_0
+      name: stone-furnace-active_0
       rect:
         serializedVersion: 2
-        x: 1
-        y: 106
+        x: 0
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -109,11 +93,11 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: clay-base_1
+      name: stone-furnace-active_1
       rect:
         serializedVersion: 2
-        x: 1
-        y: 71
+        x: 33
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -123,11 +107,11 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: clay-base_2
+      name: stone-furnace-active_2
       rect:
         serializedVersion: 2
-        x: 1
-        y: 36
+        x: 66
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -137,11 +121,11 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: clay-base_3
+      name: stone-furnace-active_3
       rect:
         serializedVersion: 2
-        x: 1
-        y: 1
+        x: 99
+        y: 0
         width: 32
         height: 32
       alignment: 0

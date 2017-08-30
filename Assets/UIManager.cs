@@ -934,7 +934,7 @@ public class UIManager : MonoBehaviour {
 			selectedColonistInventoryPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().value = colonistM.selectedColonist.inventory.CountResources();
 			selectedColonistInventoryPanel.transform.Find("ColonistInventoryValue-Text").GetComponent<Text>().text = colonistM.selectedColonist.inventory.CountResources() + "/ " + colonistM.selectedColonist.inventory.maxAmount;
 
-			selectedColonistInformationPanel.transform.Find("ColonistAction-Text").GetComponent<Text>().text = "NO ACTION TEXT";
+			selectedColonistInformationPanel.transform.Find("ColonistAction-Text").GetComponent<Text>().text = jobM.GetJobDescription(colonistM.selectedColonist.job);
 
 			selectedColonistInformationPanel.transform.Find("SkillsList-Panel/SkillsListTitle-Panel/Profession-Text").GetComponent<Text>().text = colonistM.selectedColonist.profession.name;
 
