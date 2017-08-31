@@ -22,7 +22,7 @@ public class TimeManager : MonoBehaviour {
 	private float timer = 0;
 
 	private int minute = 0;
-	private int hour = 7;
+	private int hour = 8;
 	private int day = 1;
 	private int month = 1;
 	private int year = 1;

@@ -17,6 +17,7 @@ Natural:
 		5`
 	Wood/
 		2/
+		0/
 		10`
 	Snow/
 		1`
@@ -26,6 +27,7 @@ Natural:
 Materials:
 	Brick/
 		10/
+		0/
 		0/
 		Furnaces/
 		30/

@@ -896,10 +896,17 @@ public class ColonistManager : MonoBehaviour {
 				}
 			}
 
+			if (job.activeTileObject != null) {
+				job.activeTileObject.SetActiveSprite(true);
+			}
+
 			job.jobProgress -= 1 * timeM.deltaTime;
 
 			if (job.jobProgress <= 0 || Mathf.Approximately(job.jobProgress,0)) {
 				job.jobProgress = 0;
+				if (job.activeTileObject != null) {
+					job.activeTileObject.SetActiveSprite(false);
+				}
 				FinishJob();
 				return;
 			}

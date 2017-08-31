@@ -70,6 +70,7 @@ public class JobManager:MonoBehaviour {
 		public TileManager.Plant plant;
 
 		public ResourceManager.Resource createResource;
+		public ResourceManager.TileObjectInstance activeTileObject;
 
 		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab,int rotationIndex) {
 
@@ -113,9 +114,10 @@ public class JobManager:MonoBehaviour {
 			}
 		}
 
-		public void SetCreateResourceData(ResourceManager.Resource createResource) {
+		public void SetCreateResourceData(ResourceManager.Resource createResource, ResourceManager.TileObjectInstance manufacturingTileObject) {
 			this.createResource = createResource;
 			resourcesToBuild = createResource.requiredResources;
+			activeTileObject = manufacturingTileObject;
 		}
 
 		public void SetColonist(ColonistManager.Colonist colonist, ResourceManager resourceM, ColonistManager colonistM, JobManager jobM, PathManager pathM) {
@@ -159,8 +161,8 @@ public class JobManager:MonoBehaviour {
 		jobDescriptionFunctions.Add(JobTypesEnum.Dig,delegate (Job job) {
 			if (tileM.GetResourceTileTypes().Contains(job.tile.tileType.type)) {
 				if (tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) {
-					if (tileM.GetGroundToWaterResourceMap().ContainsValue(job.tile.tileType.type)) {
-						return "Digging " + tileM.GetTileTypeByEnum(tileM.GetGroundToWaterResourceMap().First(t => t.Value == job.tile.tileType.type).Key).name + ".";
+					if (tileM.GetWaterToGroundResourceMap().ContainsKey(job.tile.tileType.type)) {
+						return "Digging " + tileM.GetTileTypeByEnum(tileM.GetWaterToGroundResourceMap()[job.tile.tileType.type]).name + ".";
 					} else {
 						return "Digging something.";
 					}
@@ -183,16 +185,16 @@ public class JobManager:MonoBehaviour {
 		jobDescriptionFunctions.Add(JobTypesEnum.PickupResources,delegate (Job job) {
 			return "Picking up some resources.";
 		});
-		jobDescriptionFunctions.Add(JobTypesEnum.PickupResources,delegate (Job job) {
+		jobDescriptionFunctions.Add(JobTypesEnum.EmptyInventory,delegate (Job job) {
 			return "Emptying their inventory.";
 		});
-		jobDescriptionFunctions.Add(JobTypesEnum.PickupResources,delegate (Job job) {
+		jobDescriptionFunctions.Add(JobTypesEnum.CollectFood,delegate (Job job) {
 			return "Finding some food to eat.";
 		});
-		jobDescriptionFunctions.Add(JobTypesEnum.PickupResources,delegate (Job job) {
+		jobDescriptionFunctions.Add(JobTypesEnum.Eat,delegate (Job job) {
 			return "Eating.";
 		});
-		jobDescriptionFunctions.Add(JobTypesEnum.PickupResources,delegate (Job job) {
+		jobDescriptionFunctions.Add(JobTypesEnum.Sleep,delegate (Job job) {
 			return "Sleeping.";
 		});
 	}
@@ -271,8 +273,8 @@ public class JobManager:MonoBehaviour {
 			job.tile.dugPreviously = true;
 			if (tileM.GetResourceTileTypes().Contains(job.tile.tileType.type)) {
 				if (tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) {
-					if (tileM.GetGroundToWaterResourceMap().ContainsValue(job.tile.tileType.type)) {
-						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),tileM.GetTileTypeByEnum(tileM.GetGroundToWaterResourceMap().First(t => t.Value == job.tile.tileType.type).Key).type.ToString())),Random.Range(4,7));
+					if (tileM.GetWaterToGroundResourceMap().ContainsKey(job.tile.tileType.type)) {
+						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),tileM.GetTileTypeByEnum(tileM.GetWaterToGroundResourceMap()[job.tile.tileType.type]).type.ToString())),Random.Range(4,7));
 					}
 				} else {
 					colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),job.tile.tileType.type.ToString())),Random.Range(4,7));

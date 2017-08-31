@@ -139,8 +139,8 @@
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
 			0.0/
-			false/
-			0.2/
+			true/
+			0.5/
 			2/
 			true/
 			0.5,0.5
