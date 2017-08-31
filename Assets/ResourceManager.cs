@@ -8,17 +8,24 @@ public class ResourceManager : MonoBehaviour {
 	private UIManager uiM;
 	private TileManager tileM;
 	private ColonistManager colonistM;
+	private JobManager jobM;
+	private TimeManager timeM;
 
 	void Awake() {
 		uiM = GetComponent<UIManager>();
 		tileM = GetComponent<TileManager>();
 		colonistM = GetComponent<ColonistManager>();
+		jobM = GetComponent<JobManager>();
+		timeM = GetComponent<TimeManager>();
 	}
 
 	void Update() {
 		CalculateResourceTotals();
 		foreach (Farm farm in farms) {
 			farm.Update();
+		}
+		foreach (ManufacturingTileObject mto in manufacturingTileObjectInstances) {
+			mto.Update();
 		}
 	}
 
@@ -92,16 +99,17 @@ public class ResourceManager : MonoBehaviour {
 
 		public Sprite image;
 
-		public int desiredAmount;
+		public int desiredAmount = 0;
 
 		public int worldTotalAmount;
 		public int colonistsTotalAmount;
 		public int containerTotalAmount;
 		public int unreservedContainerTotalAmount;
 
-		public List<TileObjectPrefabSubGroup> manufacturingTileObjectSubGroups = new List<TileObjectPrefabSubGroup>();
-		public int requiredTemperature = 0;
+		public TileObjectPrefabSubGroup manufacturingTileObjectSubGroup;
+		public int requiredEnergy = 0;
 		public List<ResourceAmount> requiredResources = new List<ResourceAmount>();
+		public int fuelEnergy = 0;
 
 		public Resource(List<string> resourceData,ResourceGroup resourceGroup, ResourceManager resourceM, TileManager tileM) {
 			this.resourceData = resourceData;
@@ -116,8 +124,9 @@ public class ResourceManager : MonoBehaviour {
 			if (resourceGroup.type == ResourceGroupsEnum.Foods) {
 				nutrition = int.Parse(resourceData[2]);
 			}
-
-			
+			if (resourceM.FuelResources.Contains(type)) {
+				fuelEnergy = int.Parse(resourceData[3]);
+			}
 		}
 	}
 
@@ -134,15 +143,12 @@ public class ResourceManager : MonoBehaviour {
 	public void SetManufacturableResourcesData() {
 		foreach (Resource resource in resources) {
 			if (ManufacturableResources.Contains(resource.type)) {
-				foreach (string subGroupString in resource.resourceData[3].Split(',')) {
-					resource.manufacturingTileObjectSubGroups.Add(GetTileObjectPrefabSubGroupByEnum((TileObjectPrefabSubGroupsEnum)System.Enum.Parse(typeof(TileObjectPrefabSubGroupsEnum),subGroupString)));
-					print(GetTileObjectPrefabSubGroupByEnum(TileObjectPrefabSubGroupsEnum.Furnaces));
-				}
-				resource.requiredTemperature = int.Parse(resource.resourceData[4]);
+				resource.manufacturingTileObjectSubGroup = GetTileObjectPrefabSubGroupByEnum((TileObjectPrefabSubGroupsEnum)System.Enum.Parse(typeof(TileObjectPrefabSubGroupsEnum), resource.resourceData[4]));
+				resource.requiredEnergy = int.Parse(resource.resourceData[5]);
 				int index = 0;
-				foreach (string resourceNameString in resource.resourceData[5].Split(',')) {
+				foreach (string resourceNameString in resource.resourceData[6].Split(',')) {
 					Resource requiredResource = GetResourceByEnum((ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceNameString));
-					resource.requiredResources.Add(new ResourceAmount(requiredResource,int.Parse(resource.resourceData[6].Split(',')[index])));
+					resource.requiredResources.Add(new ResourceAmount(requiredResource,int.Parse(resource.resourceData[7].Split(',')[index])));
 					index += 1;
 				}
 			}
@@ -172,6 +178,49 @@ public class ResourceManager : MonoBehaviour {
 		}
 	}
 
+	public List<ManufacturingTileObject> manufacturingTileObjectInstances = new List<ManufacturingTileObject>();
+	public class ManufacturingTileObject {
+		public TileObjectInstance parentObject;
+		public Resource createResource;
+		public bool hasEnoughRequiredResources;
+		public Resource fuelResource;
+		public bool hasEnoughFuel;
+		public bool canActivate;
+		public bool active;
+		List<JobManager.Job> jobBacklog = new List<JobManager.Job>();
+
+		public ManufacturingTileObject(TileObjectInstance parentObject) {
+			this.parentObject = parentObject;
+		}
+
+		public void Update() {
+			hasEnoughRequiredResources = createResource != null;
+			if (createResource != null) {
+				foreach (ResourceAmount resourceAmount in createResource.requiredResources) {
+					if (resourceAmount.resource.worldTotalAmount < resourceAmount.amount) {
+						hasEnoughRequiredResources = false;
+					}
+				}
+			}
+			hasEnoughFuel = fuelResource != null;
+			if (fuelResource != null && createResource != null) {
+				int fuelResourcesRequired = Mathf.CeilToInt((createResource.requiredEnergy) / ((float)fuelResource.fuelEnergy));
+				if (fuelResource.worldTotalAmount < fuelResourcesRequired) {
+					hasEnoughFuel = false;
+				}
+			}
+			canActivate = hasEnoughRequiredResources && hasEnoughFuel;
+		}
+	}
+
+	public void CreateResource(Resource resource, int amount, TileObjectInstance manufacturingTileObject) {
+		for (int i = 0; i < amount; i++) {
+			JobManager.Job job = new JobManager.Job(manufacturingTileObject.tile, GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.CreateResource), 0);
+			job.SetCreateResourceData(resource, manufacturingTileObject);
+			jobM.CreateJob(job);
+		}
+	}
+
 	/*
 	 * <Type> -> <SubType> -> <Object>
 	*/
@@ -198,7 +247,7 @@ public class ResourceManager : MonoBehaviour {
 		RemoveLayer1, RemoveLayer2, RemoveAll,
 		ChopPlant, PlantPlant, Mine, Dig,
 		WheatFarm, PotatoFarm, HarvestFarm,
-		PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep,
+		CreateResource, PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep,
 		PlantTree, PlantShrub, PlantCactus
 	};
 
@@ -220,6 +269,9 @@ public class ResourceManager : MonoBehaviour {
 	Dictionary<TileObjectPrefabSubGroupsEnum,List<TileObjectPrefabsEnum>> ManufacturingTileObjects = new Dictionary<TileObjectPrefabSubGroupsEnum,List<TileObjectPrefabsEnum>>() {
 		{TileObjectPrefabSubGroupsEnum.Furnaces,new List<TileObjectPrefabsEnum>() { TileObjectPrefabsEnum.StoneFurnace } }
 	};
+	public Dictionary<TileObjectPrefabSubGroupsEnum, List<TileObjectPrefabsEnum>> GetManufacturingTileObjects() {
+		return ManufacturingTileObjects;
+	}
 
 	public List<TileObjectPrefabGroup> tileObjectPrefabGroups = new List<TileObjectPrefabGroup>();
 	public List<TileObjectPrefab> tileObjectPrefabs = new List<TileObjectPrefab>();
@@ -462,6 +514,8 @@ public class ResourceManager : MonoBehaviour {
 
 		public int rotationIndex;
 
+		public bool active;
+
 		public TileObjectInstance(TileObjectPrefab prefab, TileManager.Tile tile,int rotationIndex) {
 
 			GetScriptReferences();
@@ -478,6 +532,9 @@ public class ResourceManager : MonoBehaviour {
 			if (resourceM.ContainerTileObjectTypes.Contains(prefab.type)) {
 				resourceM.containers.Add(new Container(this,prefab.maxInventoryAmount));
 			}
+			if (resourceM.ManufacturingTileObjects.ContainsKey(prefab.tileObjectPrefabSubGroup.type)) {
+				resourceM.manufacturingTileObjectInstances.Add(new ManufacturingTileObject(this));
+			}
 
 			SetColour(tile.sr.color);
 		}
@@ -491,6 +548,21 @@ public class ResourceManager : MonoBehaviour {
 
 		public void SetColour(Color newColour) {
 			obj.GetComponent<SpriteRenderer>().color = new Color(newColour.r,newColour.g,newColour.b,1f);
+		}
+
+		public void SetActiveSprite(bool newActiveValue) {
+			active = newActiveValue;
+			if (active) {
+				if (prefab.activeSprites.Count > 0) {
+					obj.GetComponent<SpriteRenderer>().sprite = prefab.activeSprites[rotationIndex];
+				}
+			} else {
+				if (prefab.bitmaskSprites.Count > 0) {
+					obj.GetComponent<SpriteRenderer>().sprite = prefab.bitmaskSprites[rotationIndex];
+				} else {
+					obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
+				}
+			}
 		}
 	}
 

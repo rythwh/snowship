@@ -72,6 +72,14 @@ public class DebugManager : MonoBehaviour {
 				TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
 
 				/*
+				resourceM.CreateResource(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Brick), 4, tile.GetAllObjectInstances().Find(toi => toi.prefab.activeSprites.Count > 0));
+				*/
+
+				/*
+				tile.GetAllObjectInstances().Find(toi => toi.prefab.activeSprites.Count > 0).SetActiveSprite(!tile.GetAllObjectInstances().Find(toi => toi.prefab.activeSprites.Count > 0).active);
+				*/
+
+				/*
 				commandFunctions[Commands.selecttiles](Commands.selecttiles, new List<string>() { tile.position.x.ToString(), tile.position.y.ToString() });
 				commandFunctions[Commands.changetiletype](Commands.changetiletype,new List<string>() { "Grass" });
 				commandFunctions[Commands.deselecttiles](Commands.deselecttiles, new List<string>());

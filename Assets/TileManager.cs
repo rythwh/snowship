@@ -202,6 +202,9 @@ public class TileManager:MonoBehaviour {
 	Dictionary<TileTypes,TileTypes> GroundToWaterResourceMap = new Dictionary<TileTypes,TileTypes>() {
 		{ TileTypes.Clay, TileTypes.ClayWater }
 	};
+	Dictionary<TileTypes, TileTypes> WaterToGroundResourceMap = new Dictionary<TileTypes, TileTypes>() {
+		{ TileTypes.ClayWater, TileTypes.Clay }
+	};
 
 	public List<TileTypes> GetWaterEquivalentTileTypes() {
 		return WaterEquivalentTileTypes;
@@ -226,6 +229,9 @@ public class TileManager:MonoBehaviour {
 	}
 	public Dictionary<TileTypes,TileTypes> GetGroundToWaterResourceMap() {
 		return GroundToWaterResourceMap;
+	}
+	public Dictionary<TileTypes, TileTypes> GetWaterToGroundResourceMap() {
+		return WaterToGroundResourceMap;
 	}
 
 	public List<TileType> tileTypes = new List<TileType>();
