@@ -117,6 +117,7 @@ public class JobManager:MonoBehaviour {
 		public void SetCreateResourceData(ResourceManager.Resource createResource, ResourceManager.TileObjectInstance manufacturingTileObject) {
 			this.createResource = createResource;
 			resourcesToBuild = createResource.requiredResources;
+			resourcesToBuild.Add(new ResourceManager.ResourceAmount(manufacturingTileObject.mto.fuelResource, manufacturingTileObject.mto.fuelResourcesRequired));
 			activeTileObject = manufacturingTileObject;
 		}
 
@@ -344,6 +345,7 @@ public class JobManager:MonoBehaviour {
 				colonist.inventory.ChangeResourceAmount(resourceAmount.resource,-resourceAmount.amount);
 			}
 			colonist.inventory.ChangeResourceAmount(job.createResource,1);
+			job.activeTileObject.mto.jobBacklog.Remove(job);
 		});
 		finishJobFunctions.Add(JobTypesEnum.EmptyInventory,delegate (ColonistManager.Colonist colonist,Job job) {
 			ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == colonist.overTile);
@@ -689,6 +691,9 @@ public class JobManager:MonoBehaviour {
 		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
 			if (colonist.storedJob == null) {
 				if (colonist.job != null && selectionArea.Contains(colonist.job.tile)) {
+					if (colonist.job.prefab.jobType == JobTypesEnum.CreateResource) {
+						colonist.job.activeTileObject.mto.jobBacklog.Remove(colonist.job);
+					}
 					colonist.job.jobUIElement.Remove(uiM);
 					colonist.job.Remove();
 					colonist.job = null;
@@ -697,9 +702,15 @@ public class JobManager:MonoBehaviour {
 				}
 			} else {
 				if ((selectionArea.Contains(colonist.storedJob.tile)) || (!selectionArea.Contains(colonist.storedJob.tile) && colonist.job != null && selectionArea.Contains(colonist.job.tile))) {
+					if (colonist.storedJob.prefab.jobType == JobTypesEnum.CreateResource) {
+						colonist.storedJob.activeTileObject.mto.jobBacklog.Remove(colonist.storedJob);
+					}
 					colonist.storedJob.jobUIElement.Remove(uiM);
 					colonist.storedJob.Remove();
 					colonist.storedJob = null;
+					if (colonist.job.prefab.jobType == JobTypesEnum.CreateResource) {
+						colonist.job.activeTileObject.mto.jobBacklog.Remove(colonist.job);
+					}
 					colonist.job.jobUIElement.Remove(uiM);
 					colonist.job.Remove();
 					colonist.job = null;

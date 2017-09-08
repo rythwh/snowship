@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.UI;
 
 public class ResourceManager : MonoBehaviour {
 
@@ -63,19 +64,31 @@ public class ResourceManager : MonoBehaviour {
 
 	public class ResourceGroup {
 
+		private ResourceManager resourceM;
+		private TileManager tileM;
+
+		private void GetScriptReferences() {
+			GameObject GM = GameObject.Find("GM");
+
+			resourceM = GM.GetComponent<ResourceManager>();
+			tileM = GM.GetComponent<TileManager>();
+		}
+
 		public ResourceGroupsEnum type;
 		public string name;
 
 		public List<ResourcesEnum> resourceTypes = new List<ResourcesEnum>();
 		public List<Resource> resources = new List<Resource>();
 
-		public ResourceGroup(List<string> resourceGroupData, ResourceManager resourceM, TileManager tileM) {
+		public ResourceGroup(List<string> resourceGroupData) {
+			GetScriptReferences();
+
 			type = (ResourceGroupsEnum)System.Enum.Parse(typeof(ResourceGroupsEnum),resourceGroupData[0]);
 			name = type.ToString();
 
 			List<string> resourceData = resourceGroupData[1].Split('`').ToList();
 			foreach (string resourceString in resourceData) {
-				Resource resource = new Resource(resourceString.Split('/').ToList(),this,resourceM,tileM);
+				Resource resource = new Resource(resourceString.Split('/').ToList(),this);
 				resourceTypes.Add(resource.type);
 				resources.Add(resource);
 				resourceM.resources.Add(resource);
@@ -86,6 +99,18 @@ public class ResourceManager : MonoBehaviour {
 	public List<Resource> resources = new List<Resource>();
 
 	public class Resource {
+		private ResourceManager resourceM;
+		private TileManager tileM;
+		private UIManager uiM;
+
+		private void GetScriptReferences() {
+			GameObject GM = GameObject.Find("GM");
+
+			resourceM = GM.GetComponent<ResourceManager>();
+			tileM = GM.GetComponent<TileManager>();
+			uiM = GM.GetComponent<UIManager>();
+		}
+
 		public List<string> resourceData;
 
 		public ResourcesEnum type;
@@ -111,7 +136,11 @@ public class ResourceManager : MonoBehaviour {
 		public List<ResourceAmount> requiredResources = new List<ResourceAmount>();
 		public int fuelEnergy = 0;
 
-		public Resource(List<string> resourceData,ResourceGroup resourceGroup, ResourceManager resourceM, TileManager tileM) {
+		public UIManager.ResourceInstanceElement resourceListElement;
+
+		public Resource(List<string> resourceData,ResourceGroup resourceGroup) {
+			GetScriptReferences();
+
 			this.resourceData = resourceData;
 
 			type = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceData[0]);
@@ -128,13 +157,27 @@ public class ResourceManager : MonoBehaviour {
 				fuelEnergy = int.Parse(resourceData[3]);
 			}
 		}
+
+		public void ChangeDesiredAmount(int newDesiredAmount/*,Text textObject*/) {
+			desiredAmount = newDesiredAmount;
+			/*
+			if (uiM.selectedMTO != null && uiM.selectedMTO.createResource == this) {
+				//uiM.selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().text = desiredAmount.ToString();
+			}
+			*/
+			/*
+			if (textObject != null) {
+
+			}
+			*/
+		}
 	}
 
 	public void CreateResources() {
 		List<string> resourceGroupsDataString = UnityEngine.Resources.Load<TextAsset>(@"Data/resources").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('~').ToList();
 		foreach (string resourceGroupDataString in resourceGroupsDataString) {
 			List<string> resourceGroupData = resourceGroupDataString.Split(':').ToList();
-			ResourceGroup resourceGroup = new ResourceGroup(resourceGroupData,this,tileM);
+			ResourceGroup resourceGroup = new ResourceGroup(resourceGroupData);
 			resourceGroups.Add(resourceGroup);
 		}
 		tileM.SetPlantResources();
@@ -180,17 +223,33 @@ public class ResourceManager : MonoBehaviour {
 
 	public List<ManufacturingTileObject> manufacturingTileObjectInstances = new List<ManufacturingTileObject>();
 	public class ManufacturingTileObject {
+		private ResourceManager resourceM;
+
+		private void GetScriptReferences() {
+			GameObject GM = GameObject.Find("GM");
+
+			resourceM = GM.GetComponent<ResourceManager>();
+		}
+
 		public TileObjectInstance parentObject;
+
 		public Resource createResource;
 		public bool hasEnoughRequiredResources;
+
 		public Resource fuelResource;
 		public bool hasEnoughFuel;
+		public int fuelResourcesRequired = 0;
+
 		public bool canActivate;
 		public bool active;
-		List<JobManager.Job> jobBacklog = new List<JobManager.Job>();
+
+		public List<JobManager.Job> jobBacklog = new List<JobManager.Job>();
 
 		public ManufacturingTileObject(TileObjectInstance parentObject) {
+			GetScriptReferences();
+
 			this.parentObject = parentObject;
+			this.parentObject.mto = this;
 		}
 
 		public void Update() {
@@ -204,12 +263,18 @@ public class ResourceManager : MonoBehaviour {
 			}
 			hasEnoughFuel = fuelResource != null;
 			if (fuelResource != null && createResource != null) {
-				int fuelResourcesRequired = Mathf.CeilToInt((createResource.requiredEnergy) / ((float)fuelResource.fuelEnergy));
+				fuelResourcesRequired = Mathf.CeilToInt((createResource.requiredEnergy) / ((float)fuelResource.fuelEnergy));
 				if (fuelResource.worldTotalAmount < fuelResourcesRequired) {
 					hasEnoughFuel = false;
 				}
 			}
 			canActivate = hasEnoughRequiredResources && hasEnoughFuel;
+			if (active) {
+				if (canActivate && createResource.desiredAmount > createResource.worldTotalAmount && jobBacklog.Count < 1) {
+					resourceM.CreateResource(createResource, 1, parentObject);
+				}
+			}
+			parentObject.active = active;
 		}
 	}
 
@@ -218,6 +283,7 @@ public class ResourceManager : MonoBehaviour {
 			JobManager.Job job = new JobManager.Job(manufacturingTileObject.tile, GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.CreateResource), 0);
 			job.SetCreateResourceData(resource, manufacturingTileObject);
 			jobM.CreateJob(job);
+			manufacturingTileObject.mto.jobBacklog.Add(job);
 		}
 	}
 
@@ -515,6 +581,8 @@ public class ResourceManager : MonoBehaviour {
 		public int rotationIndex;
 
 		public bool active;
+
+		public ManufacturingTileObject mto;
 
 		public TileObjectInstance(TileObjectPrefab prefab, TileManager.Tile tile,int rotationIndex) {
 

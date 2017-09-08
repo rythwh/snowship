@@ -14,6 +14,7 @@ public class DebugManager : MonoBehaviour {
 	private CameraManager cameraM;
 	private TimeManager timeM;
 	private JobManager jobM;
+	private PathManager pathM;
 
 	private void GetScriptReferences() {
 		colonistM = GetComponent<ColonistManager>();
@@ -23,6 +24,7 @@ public class DebugManager : MonoBehaviour {
 		cameraM = GetComponent<CameraManager>();
 		timeM = GetComponent<TimeManager>();
 		jobM = GetComponent<JobManager>();
+		pathM = GetComponent<PathManager>();
 	}
 
 	private GameObject debugIndicator;
@@ -70,6 +72,13 @@ public class DebugManager : MonoBehaviour {
 			if (Input.GetMouseButtonDown(0)) {
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
+
+				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Stone","10","true","true"});
+				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Clay", "20", "true", "true" });
+				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Wood", "50", "true", "true" });
+				JobManager.Job newJob = new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.StoneFurnace), 0);
+				newJob.jobProgress = 0.1f;
+				jobM.CreateJob(newJob);
 
 				/*
 				resourceM.CreateResource(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Brick), 4, tile.GetAllObjectInstances().Find(toi => toi.prefab.activeSprites.Count > 0));

@@ -1749,9 +1749,9 @@ public class TileManager:MonoBehaviour {
 				tiles[t].precipitation = 0;
 				for (int i = 0; i < 4; i++) {
 					if (i == oppositeDirection) {
-						tiles[t].precipitation += precipitations[i][t] * 0.1f; // 0.25f
+						tiles[t].precipitation += precipitations[i][t] * 0.25f; // 0.25f
 					} else if (i != primaryDirection) {
-						tiles[t].precipitation += precipitations[i][t] * 0.25f; // 0.5f
+						tiles[t].precipitation += precipitations[i][t] * 0.5f; // 0.5f
 					} else {
 						tiles[t].precipitation += precipitations[i][t];
 					}
@@ -2057,8 +2057,8 @@ public class TileManager:MonoBehaviour {
 			Dictionary<TileTypes, int> stoneVeinResources = new Dictionary<TileTypes, int>() {
 
 			};
-			Dictionary<TileTypes,int> coastVeinResources = new Dictionary<TileTypes, int>() {
-				{ TileTypes.Clay, 10 }
+			Dictionary<TileTypes, KeyValuePair<int, int>> coastVeinResources = new Dictionary<TileTypes, KeyValuePair<int, int>>() {
+				{ TileTypes.Clay, new KeyValuePair<int,int>(10,5) }
 			};
 
 			List<Tile> stoneTiles = new List<Tile>();
@@ -2079,9 +2079,12 @@ public class TileManager:MonoBehaviour {
 			}
 			if (coastTiles.Count > 0) {
 				for (int i = 0; i < Mathf.RoundToInt(mapData.mapSize / 10f); i++) {
-					foreach (KeyValuePair<TileTypes, int> coastVeinResourceKVP in coastVeinResources) {
+					foreach (KeyValuePair<TileTypes, KeyValuePair<int, int>> coastVeinResourceKVP in coastVeinResources) {
 						List<Tile> validVeinStartTiles = coastTiles.Where(tile => !tileM.ResourceTileTypes.Contains(tile.tileType.type)).ToList();
 						if (validVeinStartTiles.Count > 0) {
+
+							int veinSizeMax = coastVeinResourceKVP.Value.Key + Random.Range(-coastVeinResourceKVP.Value.Value, coastVeinResourceKVP.Value.Value);
+
 							Tile veinStartTile = validVeinStartTiles[Random.Range(0, validVeinStartTiles.Count)];
 
 							List<Tile> frontier = new List<Tile>() { veinStartTile };
@@ -2091,7 +2094,7 @@ public class TileManager:MonoBehaviour {
 							int veinSize = 0;
 
 							while (frontier.Count > 0) {
-								currentTile = frontier[0];
+								currentTile = frontier[Random.Range(0, frontier.Count)];
 								frontier.RemoveAt(0);
 								checkedTiles.Add(currentTile);
 
@@ -2101,9 +2104,9 @@ public class TileManager:MonoBehaviour {
 									currentTile.SetTileType(tileM.GetTileTypeByEnum(coastVeinResourceKVP.Key),true,false,false,false);
 								}
 
-								foreach (Tile nTile in currentTile.surroundingTiles) {
+								foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
 									if (nTile != null && !checkedTiles.Contains(nTile) && !tileM.ResourceTileTypes.Contains(nTile.tileType.type)) {
-										if (((tileM.WaterEquivalentTileTypes.Contains(nTile.tileType.type) && nTile.surroundingTiles.Find(t => t != null && !tileM.WaterEquivalentTileTypes.Contains(t.tileType.type)) != null) || (!tileM.WaterEquivalentTileTypes.Contains(nTile.tileType.type))) && (!tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type))) {
+										if (((tileM.WaterEquivalentTileTypes.Contains(nTile.tileType.type) && nTile.horizontalSurroundingTiles.Find(t => t != null && !tileM.WaterEquivalentTileTypes.Contains(t.tileType.type)) != null) || (!tileM.WaterEquivalentTileTypes.Contains(nTile.tileType.type))) && (!tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type))) {
 											frontier.Add(nTile);
 										}
 									}
@@ -2111,7 +2114,7 @@ public class TileManager:MonoBehaviour {
 
 								veinSize += 1;
 
-								if (veinSize >= coastVeinResourceKVP.Value) {
+								if (veinSize >= veinSizeMax) {
 									break;
 								}
 							}
