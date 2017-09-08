@@ -160,16 +160,14 @@ public class ResourceManager : MonoBehaviour {
 
 		public void ChangeDesiredAmount(int newDesiredAmount/*,Text textObject*/) {
 			desiredAmount = newDesiredAmount;
-			/*
-			if (uiM.selectedMTO != null && uiM.selectedMTO.createResource == this) {
-				//uiM.selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().text = desiredAmount.ToString();
-			}
-			*/
-			/*
-			if (textObject != null) {
+			UpdateDesiredAmountText();
+		}
 
+		public void UpdateDesiredAmountText() {
+			if (uiM.selectedMTO != null && uiM.selectedMTO.createResource == this) {
+				uiM.selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().text = desiredAmount.ToString();
 			}
-			*/
+			resourceListElement.desiredAmountInput.text = desiredAmount.ToString();
 		}
 	}
 

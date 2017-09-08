@@ -682,6 +682,9 @@ public class JobManager:MonoBehaviour {
 			}
 		}
 		foreach (Job job in removeJobs) {
+			if (job.prefab.jobType == JobTypesEnum.CreateResource) {
+				job.activeTileObject.mto.jobBacklog.Remove(job);
+			}
 			job.jobUIElement.Remove(uiM);
 			job.Remove();
 			jobs.Remove(job);
