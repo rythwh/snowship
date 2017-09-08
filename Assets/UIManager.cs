@@ -89,7 +89,7 @@ public class UIManager : MonoBehaviour {
 	private GameObject cancelButton;
 
 	private GameObject selectedMTOIndicator;
-	private GameObject selectedMTOPanel;
+	public GameObject selectedMTOPanel;
 
 	void Awake() {
 
@@ -1617,11 +1617,13 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("Image").GetComponent<Image>().sprite = resource.image;
 
 			desiredAmountInput = obj.transform.Find("DesiredAmount-Input").GetComponent<InputField>();
+			/*
 			if (resource.desiredAmount > 0) {
 				desiredAmountInput.text = resource.desiredAmount.ToString();
 			}
+			*/
 			desiredAmountText = desiredAmountInput.transform.Find("Text").GetComponent<Text>();
-			desiredAmountInput.onValueChanged.AddListener(delegate {
+			desiredAmountInput.onEndEdit.AddListener(delegate {
 				int newDesiredAmount = 0;
 				if (int.TryParse(desiredAmountInput.text, out newDesiredAmount)) {
 					if (newDesiredAmount >= 0) {
@@ -1678,14 +1680,14 @@ public class UIManager : MonoBehaviour {
 		resourcesList.SetActive(!resourcesList.activeSelf);
 		if (resourceInstanceElements.Count <= 0) {
 			resourcesList.SetActive(false);
-		} else {
+		}/* else {
 			foreach (ResourceInstanceElement rie in resourceInstanceElements) {
 				rie.desiredAmountInput.text = rie.resource.desiredAmount.ToString();
 				if (rie.resource.desiredAmount > 0) {
 					print(rie.resource.name);
 				}
 			}
-		}
+		}*/
 	}
 
 	public void UpdateResourcesList() {
@@ -1720,7 +1722,7 @@ public class UIManager : MonoBehaviour {
 				selectFuelResourceButtonKVP.Key.GetComponent<Button>().onClick.RemoveAllListeners();
 			}
 			activeValueButton.GetComponent<Button>().onClick.RemoveAllListeners();
-			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().onValueChanged.RemoveAllListeners();
+			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().onEndEdit.RemoveAllListeners();
 		}
 		this.selectedMTO = selectedMTO;
 		SetSelectedManufacturingTileObjectPanel();
@@ -1790,13 +1792,13 @@ public class UIManager : MonoBehaviour {
 
 			foreach (KeyValuePair<GameObject,ResourceManager.Resource> selectResourceButtonKVP in selectResourceListElements) {
 				selectResourceButtonKVP.Key.GetComponent<Button>().onClick.AddListener(delegate {
-					SetSelectedMTOCreateResource(selectResourceButtonKVP);
+					SetSelectedMTOCreateResource(selectResourceButtonKVP.Value);
 				});
 			}
 
 			foreach (KeyValuePair<GameObject, ResourceManager.Resource> selectFuelResourceButtonKVP in selectFuelResourceListElements) {
 				selectFuelResourceButtonKVP.Key.GetComponent<Button>().onClick.AddListener(delegate {
-					SetSelectedMTOFuelResource(selectFuelResourceButtonKVP);
+					SetSelectedMTOFuelResource(selectFuelResourceButtonKVP.Value);
 				});
 			}
 
@@ -1806,6 +1808,14 @@ public class UIManager : MonoBehaviour {
 			activeValueButton.GetComponent<Button>().onClick.AddListener(delegate {
 				selectedMTO.active = !selectedMTO.active;
 			});
+
+			if (selectedMTO.createResource != null) {
+				SetSelectedMTOCreateResource(selectedMTO.createResource);
+				selectedMTO.createResource.UpdateDesiredAmountText();
+			}
+			if (selectedMTO.fuelResource != null) {
+				SetSelectedMTOFuelResource(selectedMTO.fuelResource);
+			}
 		} else {
 			selectResourcePanel.SetActive(false);
 			selectFuelResourcePanel.SetActive(false);
@@ -1814,56 +1824,58 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
-	public void SetSelectedMTOCreateResource(KeyValuePair<GameObject, ResourceManager.Resource> selectResourceButtonKVP) {
-		selectedMTO.createResource = selectResourceButtonKVP.Value;
+	public void SetSelectedMTOCreateResource(ResourceManager.Resource newCreateResource) {
+		selectedMTO.createResource = newCreateResource;
 		selectedMTOPanel.transform.Find("SelectResource-Button/SelectedResourceImage-Image").GetComponent<Image>().sprite = selectedMTO.createResource.image;
 		SetSelectedMTOResourceRequiredResources();
 		selectResourcePanel.SetActive(false);
+		selectedMTO.createResource.UpdateDesiredAmountText();
 	}
 
 	public Dictionary<GameObject, ResourceManager.ResourceAmount> selectedMTOResourceRequiredResources = new Dictionary<GameObject, ResourceManager.ResourceAmount>();
-	bool selectedMTOUpdateDesiredAmountText;
+	//bool selectedMTOUpdateDesiredAmountText;
 	public void SetSelectedMTOResourceRequiredResources() {
 		foreach (KeyValuePair<GameObject, ResourceManager.ResourceAmount> selectedMTOResourceRequiredResourceKVP in selectedMTOResourceRequiredResources) {
 			Destroy(selectedMTOResourceRequiredResourceKVP.Key);
 		}
 		selectedMTOResourceRequiredResources.Clear();
-		if (selectedMTO.createResource != null) {
-			Transform requiredResourcesList = selectedMTOPanel.transform.Find("RequiredResources-Panel/RequiredResources-ScrollPanel/RequiredResourcesList-Panel");
-			foreach (ResourceManager.ResourceAmount requiredResource in selectedMTO.createResource.requiredResources) {
-				GameObject requiredResourcePanel = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/RequiredResource-Panel"), requiredResourcesList, false);
 
-				requiredResourcePanel.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = requiredResource.resource.image;
-				requiredResourcePanel.transform.Find("ResourceName-Text").GetComponent<Text>().text = requiredResource.resource.name;
-				requiredResourcePanel.transform.Find("RequiredAmount-Text").GetComponent<Text>().text = "Need: " + requiredResource.amount.ToString();
+		Transform requiredResourcesList = selectedMTOPanel.transform.Find("RequiredResources-Panel/RequiredResources-ScrollPanel/RequiredResourcesList-Panel");
+		foreach (ResourceManager.ResourceAmount requiredResource in selectedMTO.createResource.requiredResources) {
+			GameObject requiredResourcePanel = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/RequiredResource-Panel"), requiredResourcesList, false);
 
-				selectedMTOResourceRequiredResources.Add(requiredResourcePanel, requiredResource);
-			}
+			requiredResourcePanel.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = requiredResource.resource.image;
+			requiredResourcePanel.transform.Find("ResourceName-Text").GetComponent<Text>().text = requiredResource.resource.name;
+			requiredResourcePanel.transform.Find("RequiredAmount-Text").GetComponent<Text>().text = "Need: " + requiredResource.amount.ToString();
 
-			InputField desiredAmountInput = selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>();
-			if (selectedMTO.createResource.desiredAmount > 0) {
-				desiredAmountInput.text = selectedMTO.createResource.desiredAmount.ToString();
-			}
-			Text desiredAmountText = desiredAmountInput.transform.Find("Text").GetComponent<Text>();
-			desiredAmountInput.onValueChanged.AddListener(delegate {
-				int newDesiredAmount = 0;
-				if (int.TryParse(desiredAmountInput.text, out newDesiredAmount)) {
-					if (newDesiredAmount >= 0) {
-						selectedMTO.createResource.ChangeDesiredAmount(newDesiredAmount);
-						if (newDesiredAmount == 0) {
-							desiredAmountInput.text = String.Empty;
-						}
-					}
-				} else {
-					selectedMTO.createResource.ChangeDesiredAmount(0);
-				}
-				selectedMTOUpdateDesiredAmountText = true;
-			});
+			selectedMTOResourceRequiredResources.Add(requiredResourcePanel, requiredResource);
 		}
+
+		InputField desiredAmountInput = selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>();
+		/*
+		if (selectedMTO.createResource.desiredAmount > 0) {
+			desiredAmountInput.text = selectedMTO.createResource.desiredAmount.ToString();
+		}
+		*/
+		Text desiredAmountText = desiredAmountInput.transform.Find("Text").GetComponent<Text>();
+		desiredAmountInput.onEndEdit.AddListener(delegate {
+			int newDesiredAmount = 0;
+			if (int.TryParse(desiredAmountInput.text, out newDesiredAmount)) {
+				if (newDesiredAmount >= 0) {
+					selectedMTO.createResource.ChangeDesiredAmount(newDesiredAmount);
+					if (newDesiredAmount == 0) {
+						desiredAmountInput.text = String.Empty;
+					}
+				}
+			} else {
+				selectedMTO.createResource.ChangeDesiredAmount(0);
+			}
+			//selectedMTOUpdateDesiredAmountText = true;
+		});
 	}
 
-	public void SetSelectedMTOFuelResource(KeyValuePair<GameObject, ResourceManager.Resource> selectFuelResourceButtonKVP) {
-		selectedMTO.fuelResource = selectFuelResourceButtonKVP.Value;
+	public void SetSelectedMTOFuelResource(ResourceManager.Resource newFuelResource) {
+		selectedMTO.fuelResource = newFuelResource;
 		selectedMTOPanel.transform.Find("SelectFuelResource-Button/SelectedFuelResourceImage-Image").GetComponent<Image>().sprite = selectedMTO.fuelResource.image;
 		selectFuelResourcePanel.SetActive(false);
 	}
@@ -1882,8 +1894,16 @@ public class UIManager : MonoBehaviour {
 			}
 
 			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/CurrentAmountValue-Text").GetComponent<Text>().text = selectedMTO.createResource.worldTotalAmount.ToString();
-			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().text = selectedMTO.createResource.desiredAmount.ToString();
-			selectedMTO.createResource.resourceListElement.desiredAmountInput.text = selectedMTO.createResource.desiredAmount.ToString();
+			//selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().text = selectedMTO.createResource.desiredAmount.ToString();
+			//selectedMTO.createResource.resourceListElement.desiredAmountInput.text = selectedMTO.createResource.desiredAmount.ToString();
+
+			/*
+			if (selectedMTOUpdateDesiredAmountText) {
+				selectedMTOUpdateDesiredAmountText = false;
+				selectedMTO.createResource.UpdateDesiredAmountText();
+			}
+			*/
+
 		} else {
 			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/CurrentAmountValue-Text").GetComponent<Text>().text = "0";
 			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().text = "0";
