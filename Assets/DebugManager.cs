@@ -73,12 +73,15 @@ public class DebugManager : MonoBehaviour {
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
 
-				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Stone","10","true","true"});
-				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Clay", "20", "true", "true" });
-				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Wood", "50", "true", "true" });
-				JobManager.Job newJob = new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.StoneFurnace), 0);
+				/*
+				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Stone","10","true","true"});
+				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Clay", "20", "true", "true" });
+				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Wood", "3", "true", "true" });
+				//JobManager.Job newJob = new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.StoneFurnace), 0);
+				JobManager.Job newJob = new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.WoodenFence), 0);
 				newJob.jobProgress = 0.1f;
 				jobM.CreateJob(newJob);
+				*/
 
 				/*
 				resourceM.CreateResource(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Brick), 4, tile.GetAllObjectInstances().Find(toi => toi.prefab.activeSprites.Count > 0));
@@ -367,7 +370,7 @@ public class DebugManager : MonoBehaviour {
 						if (uiM.selectedContainer != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								colonistM.selectedColonist.inventory.ChangeResourceAmount(resource, amount);
+								uiM.selectedContainer.inventory.ChangeResourceAmount(resource, amount);
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
 							}
