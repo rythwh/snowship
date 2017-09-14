@@ -31,6 +31,20 @@
 			true/
 			1.0,1.0
 		<Object>
+			BrickWall/
+			20/
+			5/
+			Brick/
+			true/
+			Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
+			Build/
+			0.0/
+			false/
+			1.0/
+			2/
+			true/
+			1.0,1.0
+		<Object>
 			WoodenFence/
 			15/
 			3/
@@ -67,6 +81,20 @@
 			15/
 			2/
 			Wood/
+			true/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
+			Build/
+			1.0/
+			true/
+			1.0/
+			1/
+			true/
+			0.0,0.0
+		<Object>
+			BrickFloor/
+			15/
+			2/
+			Brick/
 			true/
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/

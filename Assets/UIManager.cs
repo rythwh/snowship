@@ -151,7 +151,7 @@ public class UIManager : MonoBehaviour {
 		objectsMenuButton = GameObject.Find("ObjectsMenu-Button");
 		objectPrefabsList = objectsMenuButton.transform.Find("ObjectPrefabsList-ScrollPanel").gameObject;
 		objectsMenuButton.GetComponent<Button>().onClick.AddListener(delegate {
-			ToggleObjectPrefabsList();
+			ToggleObjectPrefabsList(true);
 		});
 		objectPrefabsList.SetActive(false);
 
@@ -1239,13 +1239,16 @@ public class UIManager : MonoBehaviour {
 
 	public void DisableAdminPanels(GameObject parentObj) {
 		if (professionsList.activeSelf && parentObj != professionsList) {
-			SetProfessionsList();
+			//SetProfessionsList();
+			DisableProfessionsList();
 		}
 		if (objectPrefabsList.activeSelf && parentObj != objectPrefabsList) {
-			ToggleObjectPrefabsList();
+			//ToggleObjectPrefabsList();
+			DisableObjectPrefabsList();
 		}
 		if (resourcesList.activeSelf && parentObj != resourcesList) {
-			SetResourcesList();
+			//SetResourcesList();
+			DisableResourcesList();
 		}
 	}
 
@@ -1430,6 +1433,21 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
+	public void DisableProfessionsList() {
+		professionsList.SetActive(false);
+		foreach (ProfessionElement professionElement in professionElements) {
+			foreach (GameObject obj in professionElement.colonistsInProfessionElements) {
+				Destroy(obj);
+			}
+			foreach (GameObject obj in professionElement.editColonistsInProfessionElements) {
+				Destroy(obj);
+			}
+			professionElement.colonistsInProfessionListObj.SetActive(false);
+			professionElement.editColonistsInProfessionListObj.SetActive(false);
+			professionElement.obj.SetActive(false);
+		}
+	}
+
 	public void UpdateProfessionsList() {
 		foreach (ProfessionElement professionElement in professionElements) {
 			professionElement.Update();
@@ -1537,9 +1555,11 @@ public class UIManager : MonoBehaviour {
 
 	public List<ObjectPrefabElement> objectPrefabElements = new List<ObjectPrefabElement>();
 
-	public void ToggleObjectPrefabsList() {
-		DisableAdminPanels(objectPrefabsList);
-		objectPrefabsList.SetActive(!objectPrefabsList.activeSelf);
+	public void ToggleObjectPrefabsList(bool changeActiveState) {
+		if (changeActiveState) {
+			DisableAdminPanels(objectPrefabsList);
+			objectPrefabsList.SetActive(!objectPrefabsList.activeSelf);
+		}
 		foreach (ObjectPrefabElement objectPrefabElement in objectPrefabElements) {
 			objectPrefabElement.objectInstancesList.transform.SetParent(objectPrefabElement.obj.transform);
 			objectPrefabElement.objectInstancesList.SetActive(false);
@@ -1547,6 +1567,11 @@ public class UIManager : MonoBehaviour {
 		if (objectPrefabElements.Count <= 0) {
 			objectPrefabsList.SetActive(false);
 		}
+	}
+
+	public void DisableObjectPrefabsList() {
+		objectPrefabsList.SetActive(!objectPrefabsList.activeSelf);
+		ToggleObjectPrefabsList(false);
 	}
 
 	public enum ChangeTypesEnum { Add, Update, Remove };
@@ -1592,7 +1617,7 @@ public class UIManager : MonoBehaviour {
 		}
 		if (objectPrefabElements.Count <= 0) {
 			objectPrefabsList.SetActive(true);
-			ToggleObjectPrefabsList();
+			ToggleObjectPrefabsList(false);
 		}
 	}
 
@@ -1688,6 +1713,10 @@ public class UIManager : MonoBehaviour {
 				}
 			}
 		}*/
+	}
+
+	public void DisableResourcesList() {
+		resourcesList.SetActive(false);
 	}
 
 	public void UpdateResourcesList() {
@@ -1905,8 +1934,8 @@ public class UIManager : MonoBehaviour {
 			*/
 
 		} else {
-			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/CurrentAmountValue-Text").GetComponent<Text>().text = "0";
-			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().text = "0";
+			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/CurrentAmountValue-Text").GetComponent<Text>().text = String.Empty;
+			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().text = String.Empty;
 		}
 		if (selectedMTO.fuelResource != null) {
 			selectedMTOPanel.transform.Find("SelectFuelResource-Button/SelectedFuelResourceName-Text").GetComponent<Text>().text = selectedMTO.fuelResource.name;

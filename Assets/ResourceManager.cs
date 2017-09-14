@@ -282,6 +282,11 @@ public class ResourceManager : MonoBehaviour {
 			job.SetCreateResourceData(resource, manufacturingTileObject);
 			jobM.CreateJob(job);
 			manufacturingTileObject.mto.jobBacklog.Add(job);
+			string output = "";
+			foreach (ResourceAmount ra in job.resourcesToBuild) {
+				output += ra.resource.name + " " + ra.amount + " - ";
+			}
+			print(output);
 		}
 	}
 
@@ -302,9 +307,9 @@ public class ResourceManager : MonoBehaviour {
 		None
 	};
 	public enum TileObjectPrefabsEnum {
-		StoneWall, WoodenWall, WoodenFence,
+		StoneWall, WoodenWall, WoodenFence, BrickWall,
 		WoodenDoor,
-		StoneFloor, WoodenFloor,
+		StoneFloor, WoodenFloor, BrickFloor,
 		Basket, WoodenChest,
 		WoodenBed,
 		StoneFurnace,
@@ -316,7 +321,8 @@ public class ResourceManager : MonoBehaviour {
 	};
 
 	List<TileObjectPrefabsEnum> BitmaskingTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall, TileObjectPrefabsEnum.StoneFloor, TileObjectPrefabsEnum.WoodenFloor
+		TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall, TileObjectPrefabsEnum.StoneFloor, TileObjectPrefabsEnum.WoodenFloor, TileObjectPrefabsEnum.WoodenFence,
+		TileObjectPrefabsEnum.BrickWall, TileObjectPrefabsEnum.BrickFloor
 	};
 
 	public List<TileObjectPrefabsEnum> GetBitmaskingTileObjects() {
@@ -324,10 +330,10 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	List<TileObjectPrefabsEnum> FloorEquivalentTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.StoneFloor, TileObjectPrefabsEnum.WoodenFloor
+		TileObjectPrefabsEnum.StoneFloor, TileObjectPrefabsEnum.WoodenFloor, TileObjectPrefabsEnum.BrickFloor
 	};
 	List<TileObjectPrefabsEnum> WallEquivalentTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall
+		TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall, TileObjectPrefabsEnum.WoodenFence, TileObjectPrefabsEnum.BrickWall
 	};
 
 	Dictionary<TileObjectPrefabSubGroupsEnum,List<TileObjectPrefabsEnum>> ManufacturingTileObjects = new Dictionary<TileObjectPrefabSubGroupsEnum,List<TileObjectPrefabsEnum>>() {
@@ -547,7 +553,20 @@ public class ResourceManager : MonoBehaviour {
 	public void RemoveTileObjectInstance(TileObjectInstance tileObjectInstance) {
 		if (tileObjectInstances.ContainsKey(tileObjectInstance.prefab)) {
 			if (ContainerTileObjectTypes.Contains(tileObjectInstance.prefab.type)) {
-				containers.Remove(containers.Find(container => container.parentObject == tileObjectInstance));
+				Container targetContainer = containers.Find(container => container.parentObject == tileObjectInstance);
+				if (uiM.selectedContainer == targetContainer) {
+					uiM.SetSelectedContainer(null);
+				}
+				containers.Remove(targetContainer);
+			}
+			if (ManufacturingTileObjects.ContainsKey(tileObjectInstance.prefab.tileObjectPrefabSubGroup.type)) {
+				if (ManufacturingTileObjects[tileObjectInstance.prefab.tileObjectPrefabSubGroup.type].Contains(tileObjectInstance.prefab.type)) {
+					ManufacturingTileObject targetMTO = manufacturingTileObjectInstances.Find(mto => mto.parentObject == tileObjectInstance);
+					if (uiM.selectedMTO == targetMTO) {
+						uiM.SetSelectedManufacturingTileObject(null);
+					}
+					manufacturingTileObjectInstances.Remove(targetMTO);
+				}
 			}
 			tileObjectInstances[tileObjectInstance.prefab].Remove(tileObjectInstance);
 			uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Update,tileObjectInstance.prefab);

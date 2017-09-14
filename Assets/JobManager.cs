@@ -60,7 +60,7 @@ public class JobManager:MonoBehaviour {
 		public float jobProgress;
 		public float colonistBuildTime;
 
-		public List<ResourceManager.ResourceAmount> resourcesToBuild;
+		public List<ResourceManager.ResourceAmount> resourcesToBuild = new List<ResourceManager.ResourceAmount>();
 
 		public List<ResourceManager.ResourceAmount> colonistResources;
 		public List<ContainerPickup> containerPickups;
@@ -79,13 +79,13 @@ public class JobManager:MonoBehaviour {
 			this.tile = tile;
 			this.prefab = prefab;
 
-			resourcesToBuild = prefab.resourcesToBuild;
+			resourcesToBuild.AddRange(prefab.resourcesToBuild);
 
 			if (prefab.jobType == JobTypesEnum.PlantPlant) {
 				plant = new TileManager.Plant(tileM.GetPlantGroupByBiome(tile.biome,true),tile,false,true);
 				plant.obj.SetActive(false);
 				//this.prefab = resourceM.GetTileObjectPrefabByEnum(tileM.GetPlantPlantObjectPrefabs()[plant.group.type]);
-				resourcesToBuild = tileM.GetPlantResources()[plant.group.type];
+				resourcesToBuild.AddRange(tileM.GetPlantResources()[plant.group.type]);
 			}
 
 			this.rotationIndex = rotationIndex;
@@ -116,7 +116,12 @@ public class JobManager:MonoBehaviour {
 
 		public void SetCreateResourceData(ResourceManager.Resource createResource, ResourceManager.TileObjectInstance manufacturingTileObject) {
 			this.createResource = createResource;
-			resourcesToBuild = createResource.requiredResources;
+			/*
+			foreach (ResourceManager.ResourceAmount resourceAmount in createResource.requiredResources) {
+				resourcesToBuild.Add(new ResourceManager.ResourceAmount(resourceAmount.resource, resourceAmount.amount));
+			}
+			*/
+			resourcesToBuild.AddRange(createResource.requiredResources);
 			resourcesToBuild.Add(new ResourceManager.ResourceAmount(manufacturingTileObject.mto.fuelResource, manufacturingTileObject.mto.fuelResourcesRequired));
 			activeTileObject = manufacturingTileObject;
 		}
@@ -232,6 +237,30 @@ public class JobManager:MonoBehaviour {
 				}
 				instance.tile.SetFarm(null);
 			}
+			if (instance.prefab.tileObjectPrefabSubGroup.type == ResourceManager.TileObjectPrefabSubGroupsEnum.Containers) {
+				ResourceManager.Container targetContainer = resourceM.containers.Find(container => container.parentObject == instance);
+				if (targetContainer != null) {
+					foreach (ResourceManager.ResourceAmount resourceAmount in targetContainer.inventory.resources) {
+						targetContainer.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+						colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+					}
+					List<ResourceManager.ReservedResources> reservedResourcesToRemove = new List<ResourceManager.ReservedResources>();
+					foreach (ResourceManager.ReservedResources reservedResources in targetContainer.inventory.reservedResources) {
+						foreach (ResourceManager.ResourceAmount resourceAmount in reservedResources.resources) {
+							colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+						}
+						reservedResourcesToRemove.Add(reservedResources);
+						reservedResources.colonist.ReturnJob();
+					}
+					foreach (ResourceManager.ReservedResources reservedResourceToRemove in reservedResourcesToRemove) {
+						targetContainer.inventory.reservedResources.Remove(reservedResourceToRemove);
+					}
+					uiM.SetSelectedColonistInformation();
+					uiM.SetSelectedContainerInfo();
+				} else {
+					print("Target container is null but it shouldn't be...");
+				}
+			}
 			colonist.resourceM.RemoveTileObjectInstance(instance);
 			job.tile.RemoveTileObjectAtLayer(instance.prefab.layer);
 			resourceM.Bitmask(new List<TileManager.Tile>() { job.tile }.Concat(job.tile.surroundingTiles).ToList());
@@ -335,9 +364,14 @@ public class JobManager:MonoBehaviour {
 					colonist.storedJob.containerPickups.RemoveAt(0);
 				}
 			}
-			if (colonist.storedJob != null && colonist.storedJob.containerPickups.Count <= 0) {
-				print("Setting stored job on " + name);
-				colonist.SetJob(new ColonistJob(colonist,colonist.storedJob,colonist.storedJob.colonistResources,null,colonist.jobM,pathM));
+			if (colonist.storedJob != null) {
+				if (colonist.storedJob.containerPickups.Count <= 0) {
+					print("Setting stored job on " + name);
+					colonist.SetJob(new ColonistJob(colonist, colonist.storedJob, colonist.storedJob.colonistResources, null, colonist.jobM, pathM));
+				} else {
+					print("Setting next pickup resources job on " + name + " -- " + colonist.storedJob.containerPickups.Count + " more left");
+					colonist.SetJob(new ColonistJob(colonist, new Job(colonist.storedJob.containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),0), colonist.storedJob.colonistResources, colonist.storedJob.containerPickups, colonist.jobM, pathM));
+				}
 			}
 		});
 		finishJobFunctions.Add(JobTypesEnum.CreateResource,delegate (ColonistManager.Colonist colonist,Job job) {
@@ -682,6 +716,7 @@ public class JobManager:MonoBehaviour {
 			}
 		}
 		foreach (Job job in removeJobs) {
+			//print(job.prefab.jobType + " " + job.tile.obj.transform.position);
 			if (job.prefab.jobType == JobTypesEnum.CreateResource) {
 				job.activeTileObject.mto.jobBacklog.Remove(job);
 			}
@@ -692,6 +727,38 @@ public class JobManager:MonoBehaviour {
 		removeJobs.Clear();
 
 		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+
+			bool removeStoredJob = false;
+
+			if (colonist.job != null) {
+				if (colonist.job.prefab.jobType == JobTypesEnum.CreateResource) {
+					colonist.job.activeTileObject.mto.jobBacklog.Remove(colonist.job);
+				}
+				colonist.job.jobUIElement.Remove(uiM);
+				colonist.job.Remove();
+				colonist.job = null;
+				colonist.path.Clear();
+				colonist.MoveToClosestWalkableTile(false);
+
+				if (colonist.storedJob != null && !selectionArea.Contains(colonist.storedJob.tile)) {
+					removeStoredJob = true;
+				}
+			}
+
+			if (removeStoredJob || (colonist.storedJob != null && selectionArea.Contains(colonist.storedJob.tile))) {
+				if (colonist.storedJob.prefab.jobType == JobTypesEnum.CreateResource) {
+					colonist.storedJob.activeTileObject.mto.jobBacklog.Remove(colonist.storedJob);
+				}
+				if (colonist.storedJob.jobUIElement != null) {
+					colonist.storedJob.jobUIElement.Remove(uiM);
+				} else {
+					Debug.LogWarning("storedJob on Colonist " + colonist.name + " jobUIElement is null for job " + colonist.storedJob.prefab.type);
+				}
+				colonist.storedJob.Remove();
+				colonist.storedJob = null;
+			}
+
+			/*
 			if (colonist.storedJob == null) {
 				if (colonist.job != null && selectionArea.Contains(colonist.job.tile)) {
 					if (colonist.job.prefab.jobType == JobTypesEnum.CreateResource) {
@@ -705,12 +772,18 @@ public class JobManager:MonoBehaviour {
 				}
 			} else {
 				if ((selectionArea.Contains(colonist.storedJob.tile)) || (!selectionArea.Contains(colonist.storedJob.tile) && colonist.job != null && selectionArea.Contains(colonist.job.tile))) {
+					//print(colonist.storedJob.prefab.jobType + " " + colonist.storedJob.tile.obj.transform.position);
 					if (colonist.storedJob.prefab.jobType == JobTypesEnum.CreateResource) {
 						colonist.storedJob.activeTileObject.mto.jobBacklog.Remove(colonist.storedJob);
 					}
-					colonist.storedJob.jobUIElement.Remove(uiM);
+					if (colonist.storedJob.jobUIElement != null) {
+						colonist.storedJob.jobUIElement.Remove(uiM);
+					} else {
+						Debug.LogWarning("storedJob on Colonist " + colonist.name + " jobUIElement is null for job " + colonist.storedJob.prefab.type);
+					}
 					colonist.storedJob.Remove();
 					colonist.storedJob = null;
+					//print(colonist.job.prefab.jobType + " " + colonist.job.tile.obj.transform.position);
 					if (colonist.job.prefab.jobType == JobTypesEnum.CreateResource) {
 						colonist.job.activeTileObject.mto.jobBacklog.Remove(colonist.job);
 					}
@@ -721,6 +794,7 @@ public class JobManager:MonoBehaviour {
 					colonist.MoveToClosestWalkableTile(false);
 				}
 			}
+			*/
 		}
 
 		UpdateColonistJobs();
