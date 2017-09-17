@@ -349,16 +349,16 @@ public class JobManager:MonoBehaviour {
 		});
 		finishJobFunctions.Add(JobTypesEnum.PickupResources,delegate (ColonistManager.Colonist colonist,Job job) {
 			ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == colonist.overTile);
-			print(containerOnTile + " " + colonist.storedJob.prefab.type.ToString() + " " + colonist.storedJob.containerPickups + " " + colonist.storedJob.containerPickups.Count);
+			//print(containerOnTile + " " + colonist.storedJob.prefab.type.ToString() + " " + colonist.storedJob.containerPickups + " " + colonist.storedJob.containerPickups.Count);
 			if (containerOnTile != null && colonist.storedJob != null) {
 				ContainerPickup containerPickup = colonist.storedJob.containerPickups.Find(pickup => pickup.container == containerOnTile);
-				print(containerPickup);
+				//print(containerPickup);
 				if (containerPickup != null) {
 					foreach (ResourceManager.ReservedResources rr in containerPickup.container.inventory.TakeReservedResources(colonist)) {
-						print(name + " " + rr.colonist.name + " " + rr.resources.Count);
+						//print(name + " " + rr.colonist.name + " " + rr.resources.Count);
 						foreach (ResourceManager.ResourceAmount ra in rr.resources) {
 							colonist.inventory.ChangeResourceAmount(ra.resource,ra.amount);
-							print(name + " " + ra.resource.name + " " + ra.amount);
+							//print(name + " " + ra.resource.name + " " + ra.amount);
 						}
 					}
 					colonist.storedJob.containerPickups.RemoveAt(0);
@@ -366,11 +366,11 @@ public class JobManager:MonoBehaviour {
 			}
 			if (colonist.storedJob != null) {
 				if (colonist.storedJob.containerPickups.Count <= 0) {
-					print("Setting stored job on " + name);
+					//print("Setting stored job on " + name);
 					colonist.SetJob(new ColonistJob(colonist, colonist.storedJob, colonist.storedJob.colonistResources, null, colonist.jobM, pathM));
 				} else {
-					print("Setting next pickup resources job on " + name + " -- " + colonist.storedJob.containerPickups.Count + " more left");
-					colonist.SetJob(new ColonistJob(colonist, new Job(colonist.storedJob.containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),0), colonist.storedJob.colonistResources, colonist.storedJob.containerPickups, colonist.jobM, pathM));
+					//print("Setting next pickup resources job on " + name + " -- " + colonist.storedJob.containerPickups.Count + " more left");
+					colonist.SetJob(new ColonistJob(colonist, new Job(colonist.storedJob.containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),0), colonist.storedJob.colonistResources, colonist.storedJob.containerPickups, colonist.jobM, pathM),false);
 				}
 			}
 		});

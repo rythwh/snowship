@@ -845,14 +845,14 @@ public class ColonistManager : MonoBehaviour {
 			}
 		}
 
-		public void SetJob(JobManager.ColonistJob colonistJob) {
+		public void SetJob(JobManager.ColonistJob colonistJob, bool reserveResourcesInContainerPickups = true) {
 			job = colonistJob.job;
 			job.colonistResources = colonistJob.colonistResources;
 			if (colonistJob.containerPickups != null) {
 				print("CONTAINER PICKUPS: " + colonistJob.containerPickups.Count);
 			}
 			job.containerPickups = colonistJob.containerPickups;
-			if (job.containerPickups != null && job.containerPickups.Count > 0) {
+			if (reserveResourcesInContainerPickups && (job.containerPickups != null && job.containerPickups.Count > 0)) {
 				foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
 					containerPickup.container.inventory.ReserveResources(containerPickup.resourcesToPickup,this);
 				}
