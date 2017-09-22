@@ -153,7 +153,25 @@
 			0.5/
 			2/
 			true/
-			1.0,0.3
+			1.0,0.8
+	<SubGroup>
+		Lights
+		<Object>
+			WoodenLamp/
+			20/
+			1,1/
+			Wood,Glass/
+			true/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
+			Build/
+			1.0/
+			true/
+			0.5/
+			2/
+			true/
+			0.8,0.1/
+			20/
+			#E67E22
 <Group>
 	Industrial
 	<SubGroup>

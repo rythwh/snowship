@@ -305,7 +305,7 @@ public class TileManager:MonoBehaviour {
 
 		public ResourceManager.Resource groundResource;
 
-		public Biome(List<string> biomeData, TileManager tileM, ResourceManager resourceM) {
+		public Biome(List<string> biomeData, TileManager tileM, ResourceManager resourceM, UIManager uiM) {
 			type = (BiomeTypes)System.Enum.Parse(typeof(BiomeTypes),biomeData[0]);
 			name = type.ToString();
 
@@ -324,11 +324,13 @@ public class TileManager:MonoBehaviour {
 				}
 			}
 
+			/*
 			int r = int.Parse("" + biomeData[5][2] + biomeData[5][3],System.Globalization.NumberStyles.HexNumber);
 			int g = int.Parse("" + biomeData[5][4] + biomeData[5][5],System.Globalization.NumberStyles.HexNumber);
 			int b = int.Parse("" + biomeData[5][6] + biomeData[5][7],System.Globalization.NumberStyles.HexNumber);
 			colour = new Color(r,g,b,255f) / 255f;
-
+			*/
+			colour = uiM.HexToColor(biomeData[5]);
 		}
 	}
 
@@ -336,7 +338,7 @@ public class TileManager:MonoBehaviour {
 		List<string> stringBiomeTypes = Resources.Load<TextAsset>(@"Data/biomes").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('`').ToList();
 		foreach (string stringBiomeType in stringBiomeTypes) {
 			List<string> stringBiomeData = stringBiomeType.Split('/').ToList();
-			biomes.Add(new Biome(stringBiomeData,this,resourceM));
+			biomes.Add(new Biome(stringBiomeData,this,resourceM,uiM));
 		}
 		foreach (Biome biome in biomes) {
 			biome.name = uiM.SplitByCapitals(biome.name);
@@ -459,6 +461,10 @@ public class TileManager:MonoBehaviour {
 		public Dictionary<int,Dictionary<Tile,float>> shadowsFrom = new Dictionary<int,Dictionary<Tile,float>>(); // Tiles that affect the shadow on this tile
 		public Dictionary<int,List<Tile>> shadowsTo = new Dictionary<int,List<Tile>>(); // Tiles that have shadows due to this tile
 		public Dictionary<int,List<Tile>> blockingShadowsFrom = new Dictionary<int,List<Tile>>(); // Tiles that have shadows that were cut short because this tile was in the way
+
+		public Dictionary<ResourceManager.LightSource, float> lightSourceBrightnesses = new Dictionary<ResourceManager.LightSource, float>();
+		public ResourceManager.LightSource primaryLightSource;
+		public float lightSourceBrightness;
 
 		public Dictionary<int,ResourceManager.TileObjectInstance> objectInstances = new Dictionary<int,ResourceManager.TileObjectInstance>();
 
@@ -777,15 +783,24 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 
-		public void SetColour(Color newColour, int hour) {
-			//sr.color = newColour * (brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f);
-			
-			float currentHourBrightness = (brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f);
+		public void SetColour(Color newColour, int hour, bool printInfo = false) {
+			float currentHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f), lightSourceBrightness);
 			int nextHour = (hour == 23 ? 0 : hour + 1);
-			float nextHourBrightness = (brightnessAtHour.ContainsKey(nextHour) ? brightnessAtHour[nextHour] : 1f);
-			sr.color = newColour * Mathf.Lerp(currentHourBrightness,nextHourBrightness,(timeM.GetTileBrightnessTime() - hour));
+			float nextHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(nextHour) ? brightnessAtHour[nextHour] : 1f), lightSourceBrightness);
+
+			if (primaryLightSource != null) {
+				sr.color = Color.Lerp(newColour, primaryLightSource.parentObject.prefab.lightColour, lightSourceBrightness / primaryLightSource.parentObject.prefab.maxBrightness);
+			} else {
+				sr.color = newColour;
+			}
+			sr.color *= Mathf.Lerp(currentHourBrightness, nextHourBrightness, (timeM.GetTileBrightnessTime() - hour));
+
+			if (printInfo) {
+				print(lightSourceBrightness / primaryLightSource.parentObject.prefab.maxBrightness);
+			}
+
 			if (plant != null) {
-				plant.obj.GetComponent<SpriteRenderer>().color = new Color(sr.color.r,sr.color.g,sr.color.b,1f); ;
+				plant.obj.GetComponent<SpriteRenderer>().color = new Color(sr.color.r,sr.color.g,sr.color.b,1f);
 			}
 			foreach (ResourceManager.TileObjectInstance instance in GetAllObjectInstances()) {
 				instance.SetColour(sr.color);
@@ -795,6 +810,12 @@ public class TileManager:MonoBehaviour {
 		public void SetBrightness(float newBrightness, int hour) {
 			brightness = newBrightness;
 			SetColour(sr.color, hour);
+		}
+
+		public void AddLightSourceBrightness(ResourceManager.LightSource lightSource, float brightness) {
+			lightSourceBrightnesses.Add(lightSource, brightness);
+			lightSourceBrightness = lightSourceBrightnesses.Max(kvp => kvp.Value);
+			primaryLightSource = lightSourceBrightnesses.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
 		}
 	}
 

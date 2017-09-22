@@ -40,7 +40,7 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourcesEnum {
 		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Wood, Snow, Sand,
-		Brick, Cloth,
+		Brick, Glass, Cloth,
 		WheatSeeds, PotatoSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
 		Wheat,
 		Potatoes, Berries, Apples
@@ -300,7 +300,7 @@ public class ResourceManager : MonoBehaviour {
 		None,
 	};
 	public enum TileObjectPrefabSubGroupsEnum {
-		Walls, Doors, Floors, Containers, Beds,
+		Walls, Doors, Floors, Containers, Beds, Lights,
 		Furnaces,
 		Plants, Terrain, Remove,
 		PlantFarm, HarvestFarm,
@@ -312,6 +312,7 @@ public class ResourceManager : MonoBehaviour {
 		StoneFloor, WoodenFloor, BrickFloor,
 		Basket, WoodenChest,
 		WoodenBed,
+		WoodenLamp,
 		StoneFurnace,
 		RemoveLayer1, RemoveLayer2, RemoveAll,
 		ChopPlant, PlantPlant, Mine, Dig,
@@ -342,6 +343,10 @@ public class ResourceManager : MonoBehaviour {
 	public Dictionary<TileObjectPrefabSubGroupsEnum, List<TileObjectPrefabsEnum>> GetManufacturingTileObjects() {
 		return ManufacturingTileObjects;
 	}
+
+	List<TileObjectPrefabsEnum> LightSourceTileObjects = new List<TileObjectPrefabsEnum>() {
+		TileObjectPrefabsEnum.WoodenLamp
+	};
 
 	public List<TileObjectPrefabGroup> tileObjectPrefabGroups = new List<TileObjectPrefabGroup>();
 	public List<TileObjectPrefab> tileObjectPrefabs = new List<TileObjectPrefab>();
@@ -469,6 +474,9 @@ public class ResourceManager : MonoBehaviour {
 
 		public int maxInventoryAmount;
 
+		public int maxBrightness;
+		public Color lightColour;
+
 		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup) {
 
 			GetScriptReferences();
@@ -524,6 +532,10 @@ public class ResourceManager : MonoBehaviour {
 			if (resourceM.ContainerTileObjectTypes.Contains(type)) {
 				maxInventoryAmount = int.Parse(properties[13]);
 			}
+			if (resourceM.LightSourceTileObjects.Contains(type)) {
+				maxBrightness = int.Parse(properties[13]);
+				lightColour = uiM.HexToColor(properties[14]);
+			}
 
 			resourceM.tileObjectPrefabs.Add(this);
 		}
@@ -567,6 +579,11 @@ public class ResourceManager : MonoBehaviour {
 					}
 					manufacturingTileObjectInstances.Remove(targetMTO);
 				}
+			}
+			if (LightSourceTileObjects.Contains(tileObjectInstance.prefab.type)) {
+				LightSource targetLightSource = lightSources.Find(lightSource => lightSource.parentObject == tileObjectInstance);
+				targetLightSource.RemoveTileBrightnesses();
+				lightSources.Remove(targetLightSource);
 			}
 			tileObjectInstances[tileObjectInstance.prefab].Remove(tileObjectInstance);
 			uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Update,tileObjectInstance.prefab);
@@ -620,6 +637,9 @@ public class ResourceManager : MonoBehaviour {
 			if (resourceM.ManufacturingTileObjects.ContainsKey(prefab.tileObjectPrefabSubGroup.type)) {
 				resourceM.manufacturingTileObjectInstances.Add(new ManufacturingTileObject(this));
 			}
+			if (resourceM.LightSourceTileObjects.Contains(prefab.type)) {
+				resourceM.lightSources.Add(new LightSource(tile, this));
+			}
 
 			SetColour(tile.sr.color);
 		}
@@ -666,6 +686,62 @@ public class ResourceManager : MonoBehaviour {
 			this.parentObject = parentObject;
 			this.maxAmount = maxAmount;
 			inventory = new Inventory(null,this,maxAmount);
+		}
+	}
+
+	public List<LightSource> lightSources = new List<LightSource>();
+	public class LightSource {
+
+		private TileManager tileM;
+
+		private void GetScriptReferences() {
+			GameObject GM = GameObject.Find("GM");
+
+			tileM = GM.GetComponent<TileManager>();
+		}
+
+		public TileManager.Tile parentTile;
+		public TileObjectInstance parentObject;
+
+		public List<TileManager.Tile> litTiles = new List<TileManager.Tile>();
+
+		public LightSource(TileManager.Tile parentTile, TileObjectInstance parentObject) {
+			GetScriptReferences();
+
+			this.parentTile = parentTile;
+			this.parentObject = parentObject;
+
+			SetTileBrightnesses();
+		}
+
+		public void SetTileBrightnesses() {
+			foreach (TileManager.Tile tile in tileM.map.tiles) {
+				float distance = Vector2.Distance(tile.obj.transform.position, parentTile.obj.transform.position);
+				if (distance <= parentObject.prefab.maxBrightness) {
+					float intensityAtTile = Mathf.Clamp(parentObject.prefab.maxBrightness * (1f / Mathf.Pow(distance, 2f)), 0f, 1f);
+
+					Vector3 lightVector = tile.obj.transform.position - parentObject.obj.transform.position;
+					lightVector = lightVector.normalized + parentObject.obj.transform.position;
+
+					while (lightVector.magnitude < distance && tileM.map.GetTileFromPosition(lightVector) != parentTile) {
+						if (tileM.map.GetTileFromPosition(lightVector).walkable) {
+							lightVector += lightVector.normalized;
+						} else {
+							break;
+						}
+					}
+
+					tile.AddLightSourceBrightness(this, intensityAtTile);
+					litTiles.Add(tile);
+				}
+			}
+		}
+
+		public void RemoveTileBrightnesses() {
+			foreach (TileManager.Tile tile in litTiles) {
+				tile.lightSourceBrightnesses.Remove(this);
+			}
+			litTiles.Clear();
 		}
 	}
 

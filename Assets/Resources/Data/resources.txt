@@ -33,6 +33,14 @@ Materials:
 		30/
 		Clay/
 		2`
+	Glass/
+		10/
+		0/
+		0/
+		Furnaces/
+		30/
+		Sand/
+		2`
 	Cloth/
 		15
 ~

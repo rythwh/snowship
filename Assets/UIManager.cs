@@ -17,6 +17,13 @@ public class UIManager : MonoBehaviour {
 		return r.Replace(combinedString, " ");
 	}
 
+	public Color HexToColor(string hexString) {
+		int r = int.Parse("" + hexString[2] + hexString[3], System.Globalization.NumberStyles.HexNumber);
+		int g = int.Parse("" + hexString[4] + hexString[5], System.Globalization.NumberStyles.HexNumber);
+		int b = int.Parse("" + hexString[6] + hexString[7], System.Globalization.NumberStyles.HexNumber);
+		return new Color(r, g, b, 255f) / 255f;
+	}
+
 	public enum Colours { DarkRed, DarkGreen, LightRed, LightGreen, LightGrey220, LightGrey200, Grey150, DarkGrey50, LightBlue, LightOrange, White };
 
 	private Dictionary<Colours, Color> colourMap = new Dictionary<Colours, Color>() {
