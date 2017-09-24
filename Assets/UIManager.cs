@@ -51,15 +51,26 @@ public class UIManager : MonoBehaviour {
 	private ColonistManager colonistM;
 	private TimeManager timeM;
 
-	public int mapSize = 0;
-	Text mapSizeText;
-	Text mapSeedInput;
+	private GameObject mainMenu;
+
+	public int planetTileSize = 0;
+	private Slider planetSizeSlider;
+	private Text planetSizeText;
 
 	public float planetDistance = 0;
-	Text planetDistanceText;
+	private Slider planetDistanceSlider;
+	private Text planetDistanceText;
+
+	public int temperatureRange = 0;
+	private Slider temperatureRangeSlider;
+	private Text temperatureRangeText;
+
+	public int mapSize = 0;
+	private Slider mapSizeSlider;
+	private Text mapSizeText;
+	private Text mapSeedInput;
 
 	private GameObject playButton;
-	private GameObject mainMenu;
 
 	private Vector2 mousePosition;
 	public TileManager.Tile mouseOverTile;
@@ -109,22 +120,43 @@ public class UIManager : MonoBehaviour {
 
 		SetMenuBackground();
 
-		playButton = GameObject.Find("Play-Button");
-		playButton.GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
+		mainMenu = GameObject.Find("MainMenu");
 
-		mapSizeText = GameObject.Find("MapSizeValue-Text").GetComponent<Text>();
-		GameObject.Find("MapSize-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdateMapSizeText(); });
-		GameObject.Find("MapSize-Slider").GetComponent<Slider>().value = 2;
+		planetSizeSlider = GameObject.Find("PlanetSize-Slider").GetComponent<Slider>();
+		planetSizeText = GameObject.Find("PlanetSizeValue-Text").GetComponent<Text>();
+		planetSizeSlider.maxValue = planetTileSizes.Count - 1;
+		planetSizeSlider.minValue = 0;
 
-		mapSeedInput = GameObject.Find("MapSeedInput-Text").GetComponent<Text>();
-
+		planetDistanceSlider = GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>();
 		planetDistanceText = GameObject.Find("PlanetDistanceValue-Text").GetComponent<Text>();
-		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
-		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value = 4;
+		planetDistanceSlider.maxValue = 7;
+		planetDistanceSlider.minValue = 1;
+
+		temperatureRangeSlider = GameObject.Find("TemperatureRange-Slider").GetComponent<Slider>();
+		temperatureRangeText = GameObject.Find("TemperatureRangeValue-Text").GetComponent<Text>();
+		temperatureRangeSlider.maxValue = 10;
+		temperatureRangeSlider.minValue = 0;
+
+		planetSizeSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
+		planetSizeSlider.value = Mathf.FloorToInt((planetTileSizes.Count - 1) / 2f);
+
+		planetDistanceSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
+		planetDistanceSlider.value = 4;
+
+		temperatureRangeSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
+		temperatureRangeSlider.value = 5;
 
 		GameObject.Find("ReloadPlanet-Button").GetComponent<Button>().onClick.AddListener(delegate { GeneratePlanet(); });
 
-		mainMenu = GameObject.Find("MainMenu");
+		mapSizeText = GameObject.Find("MapSizeValue-Text").GetComponent<Text>();
+		mapSizeSlider = GameObject.Find("MapSize-Slider").GetComponent<Slider>();
+		mapSizeSlider.onValueChanged.AddListener(delegate { UpdateMapSizeText(); });
+		mapSizeSlider.value = 2;
+
+		mapSeedInput = GameObject.Find("MapSeedInput-Text").GetComponent<Text>();
+
+		playButton = GameObject.Find("Play-Button");
+		playButton.GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
 
 		tileInformation = GameObject.Find("TileInformation-Panel");
 
@@ -389,6 +421,7 @@ public class UIManager : MonoBehaviour {
 	}
 
 	private TileManager.Map planet;
+	private List<int> planetTileSizes = new List<int>() { 5, 6, 8, 10, 12, 15, 20 }; // Some divisors of 600
 
 	public void GeneratePlanet() {
 
@@ -398,8 +431,6 @@ public class UIManager : MonoBehaviour {
 		planetTiles.Clear();
 
 		GameObject planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
-
-		int planetTileSize = 10; // 10; // 8; (60 for debug)
 
 		Text planetSeedInput = GameObject.Find("PlanetSeedInput-Text").GetComponent<Text>();
 		string planetSeedString = planetSeedInput.text;
@@ -415,7 +446,7 @@ public class UIManager : MonoBehaviour {
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().cellSize = new Vector2(planetTileSize, planetTileSize);
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
 
-		TileManager.MapData mapData = new TileManager.MapData(planetSeed, planetSize, false, -1, true, planetTemperature, -1, -1, new Dictionary<TileManager.TileTypes, float>() { { TileManager.TileTypes.GrassWater, 0.40f }, { TileManager.TileTypes.Stone, 0.75f } }, false, true);
+		TileManager.MapData mapData = new TileManager.MapData(planetSeed, planetSize, false, -1, true, temperatureRange, planetTemperature, -1, -1, new Dictionary<TileManager.TileTypes, float>() { { TileManager.TileTypes.GrassWater, 0.40f }, { TileManager.TileTypes.Stone, 0.75f } }, false, true);
 		planet = new TileManager.Map(mapData);
 		foreach (TileManager.Tile tile in planet.tiles) {
 			planetTiles.Add(new PlanetTile(tile, planetPreviewPanel.transform, tile.position, planetSize, planetTemperature));
@@ -423,9 +454,14 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void UpdatePlanetInfo() {
-		//planetDistance = (float)Math.Round(GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value / 2f, 1);
-		planetDistance = (float)Math.Round(0.1f * (GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value + 6), 1);
+		planetTileSize = planetTileSizes[Mathf.RoundToInt(planetSizeSlider.value)];
+		planetSizeText.text = Mathf.FloorToInt(Mathf.FloorToInt(GameObject.Find("PlanetPreview-Panel").GetComponent<RectTransform>().sizeDelta.x) / planetTileSize).ToString();
+
+		planetDistance = (float)Math.Round(0.1f * (planetDistanceSlider.value + 6), 1);
 		planetDistanceText.text = planetDistance + " AU";
+
+		temperatureRange = Mathf.RoundToInt(temperatureRangeSlider.value * 10);
+		temperatureRangeText.text = temperatureRange + "°C";
 	}
 
 	public int SeedParser(string seedString, InputField inputObject) {
@@ -447,12 +483,12 @@ public class UIManager : MonoBehaviour {
 		string mapSeedString = mapSeedInput.text;
 		int mapSeed = SeedParser(mapSeedString, GameObject.Find("MapSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
 
-		tileM.Initialize(new TileManager.MapData(mapSeed, mapSize, true, selectedPlanetTile.equatorOffset, false, 0, selectedPlanetTile.averageTemperature, selectedPlanetTile.averagePrecipitation, selectedPlanetTile.terrainTypeHeights, selectedPlanetTile.coast, false));
+		tileM.Initialize(new TileManager.MapData(mapSeed, mapSize, true, selectedPlanetTile.equatorOffset, false, 0, 0, selectedPlanetTile.averageTemperature, selectedPlanetTile.averagePrecipitation, selectedPlanetTile.terrainTypeHeights, selectedPlanetTile.coast, false));
 		mainMenu.SetActive(false);
 	}
 
 	public void UpdateMapSizeText() {
-		mapSize = Mathf.RoundToInt(GameObject.Find("MapSize-Slider").GetComponent<Slider>().value * 50);
+		mapSize = Mathf.RoundToInt(mapSizeSlider.value * 50);
 		mapSizeText.text = mapSize.ToString();
 	}
 
@@ -635,14 +671,15 @@ public class UIManager : MonoBehaviour {
 		plantObjectElements.Add(Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"), tileInformation.transform, false));
 	}
 
-	private List<GameObject> tileObjectElements = new List<GameObject>();
+	private Dictionary<int, List<GameObject>> tileObjectElements = new Dictionary<int, List<GameObject>>();
 	private List<GameObject> plantObjectElements = new List<GameObject>();
 	public void UpdateTileInformation() {
 		if (mouseOverTile != null) {
-			foreach (GameObject tileObjectElement in tileObjectElements) {
-				Destroy(tileObjectElement);
+			foreach (KeyValuePair<int, List<GameObject>> tileObjectElementKVP in tileObjectElements) {
+				foreach (GameObject tileObjectDataElement in tileObjectElementKVP.Value) {
+					tileObjectDataElement.SetActive(false);
+				}
 			}
-			tileObjectElements.Clear();
 
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage").GetComponent<Image>().sprite = mouseOverTile.obj.GetComponent<SpriteRenderer>().sprite;
 
@@ -660,14 +697,21 @@ public class UIManager : MonoBehaviour {
 			}
 			if (mouseOverTile.GetAllObjectInstances().Count > 0) {
 				foreach (ResourceManager.TileObjectInstance tileObject in mouseOverTile.GetAllObjectInstances().OrderBy(o => o.prefab.layer).ToList()) {
-					GameObject tileLayerSpriteObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage"), tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"), false);
-					tileLayerSpriteObject.GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
-					tileObjectElements.Add(tileLayerSpriteObject);
+					if (!tileObjectElements.ContainsKey(tileObject.prefab.layer)) {
+						tileObjectElements.Add(tileObject.prefab.layer, new List<GameObject>() {
+							Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage"), tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"), false),
+							Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"), tileInformation.transform, false)
+						});
+					}
 
-					GameObject tileObjectDataObject = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"), tileInformation.transform, false);
+					GameObject tileLayerSpriteObject = tileObjectElements[tileObject.prefab.layer][0];
+					tileLayerSpriteObject.GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
+					tileLayerSpriteObject.SetActive(true);
+
+					GameObject tileObjectDataObject = tileObjectElements[tileObject.prefab.layer][1];
 					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "L" + tileObject.prefab.layer;
 					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
-					tileObjectElements.Add(tileObjectDataObject);
+					tileLayerSpriteObject.SetActive(true);
 				}
 			}
 

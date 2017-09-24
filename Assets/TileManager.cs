@@ -793,14 +793,16 @@ public class TileManager:MonoBehaviour {
 			} else {
 				sr.color = newColour;
 			}
-			sr.color *= Mathf.Lerp(currentHourBrightness, nextHourBrightness, (timeM.GetTileBrightnessTime() - hour));
+			float colourBrightnessMultiplier = Mathf.Lerp(currentHourBrightness, nextHourBrightness, (timeM.GetTileBrightnessTime() - hour));
+			sr.color = new Color(sr.color.r * colourBrightnessMultiplier, sr.color.g * colourBrightnessMultiplier, sr.color.b * colourBrightnessMultiplier, 1f);
 
 			if (plant != null) {
-				plant.obj.GetComponent<SpriteRenderer>().color = new Color(sr.color.r,sr.color.g,sr.color.b,1f);
+				plant.obj.GetComponent<SpriteRenderer>().color = sr.color;
 			}
 			foreach (ResourceManager.TileObjectInstance instance in GetAllObjectInstances()) {
 				instance.SetColour(sr.color);
 			}
+			brightness = colourBrightnessMultiplier;
 		}
 
 		public void SetBrightness(float newBrightness, int hour) {
@@ -833,257 +835,6 @@ public class TileManager:MonoBehaviour {
 	void Update() {
 		if (generated) {
 			map.DetermineVisibleRegionBlocks();
-			/*
-			if (debugM.debugMode) {
-				if (Input.GetMouseButtonDown(0)) {
-					Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
-					Tile tile = map.GetTileFromPosition(mousePosition);
-					string output = "";
-					for (int i = 0; i < 24; i++) {
-						output += i + "h:" + tile.brightnessAtHour[i] + " ";
-					}
-					print(output);
-					tile.SetTileType(GetTileTypeByEnum(TileTypes.Dirt), true, true, true, false);
-					map.RemoveTileBrightnessEffect(tile);
-					output = "";
-					for (int i = 0; i < 24; i++) {
-						output += i + "h:" + tile.brightnessAtHour[i] + " ";
-					}
-					print(output);
-				}
-			}
-			*/
-			/*
-			if (debugM.debugMode) {
-				DebugFunctions();
-			} else {
-				map.DetermineVisibleRegionBlocks();
-			}
-			*/
-		}
-	}
-
-	public void DebugFunctions() {
-		if (Input.GetKeyDown(KeyCode.Z)) {
-			foreach (Tile tile in map.tiles) {
-				tile.sr.color = Color.white;
-			}
-			map.Bitmasking(map.tiles);
-		}
-		if (Input.GetKeyDown(KeyCode.X)) {
-			foreach (Map.Region region in map.regions) {
-				region.ColourRegion();
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.C)) {
-			Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-			foreach (Tile tile in map.tiles) {
-				tile.sr.sprite = whiteSquare;
-				tile.sr.color = new Color(tile.height,tile.height,tile.height,1f);
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.V)) {
-			Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-			foreach (Tile tile in map.tiles) {
-				tile.sr.sprite = whiteSquare;
-				tile.sr.color = new Color(tile.precipitation,tile.precipitation,tile.precipitation,1f);
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.B)) {
-			Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-			foreach (Tile tile in map.tiles) {
-				tile.sr.sprite = whiteSquare;
-				tile.sr.color = new Color((tile.temperature + 50f) / 100f,(tile.temperature + 50f) / 100f,(tile.temperature + 50f) / 100f,1f);
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.N)) {
-			Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-			foreach (Tile tile in map.tiles) {
-				tile.sr.sprite = whiteSquare;
-				if (tile.biome != null) {
-					tile.sr.color = tile.biome.colour;
-				} else {
-					tile.sr.color = Color.black;
-				}
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.M)) {
-			Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-			foreach (KeyValuePair<Map.Region,Tile> kvp in map.drainageBasins) {
-				foreach (Tile tile in kvp.Key.tiles) {
-					tile.sr.sprite = whiteSquare;
-					tile.sr.color = kvp.Key.colour;
-				}
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.Comma)) {
-			Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-			/*
-			foreach (List<Tile> river in rivers) {
-				foreach (Tile tile in river) {
-					tile.sr.sprite = whiteSquare;
-					tile.sr.color = Color.blue;
-				}
-				river[0].sr.color = Color.red;
-				river[river.Count - 1].sr.color = Color.green;
-			}
-			*/
-			foreach (Tile tile in map.tiles) {
-				tile.sr.color = Color.white;
-			}
-			map.Bitmasking(map.tiles);
-			foreach (Tile tile in map.rivers[viewRiverAtIndex].tiles) {
-				tile.sr.sprite = whiteSquare;
-				tile.sr.color = Color.blue;
-			}
-			map.rivers[viewRiverAtIndex].tiles[0].sr.color = Color.red;
-			map.rivers[viewRiverAtIndex].tiles[map.rivers[viewRiverAtIndex].tiles.Count - 1].sr.color = Color.green;
-			viewRiverAtIndex += 1;
-			if (viewRiverAtIndex == map.rivers.Count) {
-				viewRiverAtIndex = 0;
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.Period)) {
-			Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-			foreach (Tile tile in map.tiles) {
-				tile.sr.sprite = whiteSquare;
-				tile.sr.color = new Color(tile.walkSpeed,tile.walkSpeed,tile.walkSpeed,1f);
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.Slash)) {
-			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Potatoes),10);
-			}
-			/*
-			foreach (ResourceManager.Container container in resourceM.containers) {
-				container.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),10);
-			}
-			*/
-		}
-		if (Input.GetKeyDown(KeyCode.L)) {
-			foreach (Map.Region region in map.regionBlocks) {
-				region.ColourRegion();
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.K)) {
-			foreach (Map.Region region in map.squareRegionBlocks) {
-				region.ColourRegion();
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.J)) {
-			colonistM.colonists[0].inventory.ReserveResources(new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),5) },colonistM.colonists[1]);
-			/*
-			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-				colonist.inventory.ReserveResources(new List<ResourceManager.ResourceAmount>() { new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood),5) },colonist );
-			}
-			*/
-		}
-		Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
-		if (Input.GetKeyDown(KeyCode.H)) {
-			print("shadowsFrom");
-			map.SetTileBrightness(12);
-			Tile tile = map.GetTileFromPosition(mousePosition);
-			foreach (KeyValuePair<int,Dictionary<Tile,float>> shadowsFromKVP in tile.shadowsFrom) {
-				foreach (KeyValuePair<Tile,float> sTile in shadowsFromKVP.Value) {
-					sTile.Key.SetColour(new Color(shadowsFromKVP.Key / 24f,1 - (shadowsFromKVP.Key / 24f),shadowsFromKVP.Key / 24f,1f),12);
-				}
-			}
-		}
-		if (Input.GetKeyDown(KeyCode.G)) {
-			print("shadowsTo");
-			map.SetTileBrightness(12);
-			Tile tile = map.GetTileFromPosition(mousePosition);
-			foreach (KeyValuePair<int,List<Tile>> shadowsToKVP in tile.shadowsTo) {
-				foreach (Tile shadowsToTile in shadowsToKVP.Value) {
-					shadowsToTile.SetColour(new Color(shadowsToKVP.Key / 24f,1 - (shadowsToKVP.Key / 24f),shadowsToKVP.Key / 24f,1f),12);
-				}
-			}
-			foreach (KeyValuePair<int,List<Tile>> blockingShadowsFromKVP in tile.blockingShadowsFrom) {
-				foreach (Tile blockingShadowsFromTile in blockingShadowsFromKVP.Value) {
-					blockingShadowsFromTile.SetColour(Color.red,12);
-				}
-			}
-		}
-		/*
-		if (Input.GetKeyDown(KeyCode.G)) {
-			print("tilesBrightnessBeingAffectedByThisTile");
-			map.SetTileBrightness(12);
-			Tile tile = map.GetTileFromPosition(mousePosition);
-			foreach (KeyValuePair<int,Dictionary<Tile,float>> hourKVP in tile.tilesBrightnessBeingAffectedByThisTile) {
-				foreach (KeyValuePair<Tile,float> sTile in hourKVP.Value) {
-					sTile.Key.SetColour(new Color(hourKVP.Key / 24f,1 - (hourKVP.Key / 24f),hourKVP.Key / 24f,1f),12);
-				}
-			}
-		}
-		*/
-		/*
-		if (Input.GetKeyDown(KeyCode.G)) {
-			print("shadowTiles");
-			map.SetTileBrightness(12);
-			Tile tile = map.GetTileFromPosition(mousePosition);
-			
-		}
-		*/
-		if (Input.GetKeyDown(KeyCode.F)) {
-			map.SetTileBrightness(12);
-		}
-		if (Input.GetMouseButtonDown(0)) {
-			Tile tile = map.GetTileFromPosition(mousePosition);
-			tile.SetTileType(GetTileTypeByEnum(TileTypes.Dirt),true,true,true,false);
-			map.RemoveTileBrightnessEffect(tile);
-			/*
-			foreach (Tile mapTile in map.tiles) {
-				if (mapTile.brightnessAtHour.Count > 0) {
-					for (int h = 0; h < 24; h++) {
-						mapTile.SetColour(new Color(h / 24f,1 - (h / 24f),h / 24f,1f),12);
-					}
-				}
-			}
-			*/
-
-			//print(tile.height);
-			//print(tile.walkSpeed);
-			/*
-			ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == tile);
-			if (container != null) {
-				print("Found container");
-			}
-			*/
-			/*pathM.RegionBlockDistance(GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,tile.regionBlock,true,true);*/
-			/*
-			Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
-			foreach (Tile rTile in tile.squareRegionBlock.tiles) {
-				rTile.sr.sprite = whiteSquare;
-				rTile.sr.color = Color.black;
-			}
-			GetTileFromPosition(tile.squareRegionBlock.averagePosition).sr.sprite = whiteSquare;
-			GetTileFromPosition(tile.squareRegionBlock.averagePosition).sr.color = Color.white;
-			print(tile.squareRegionBlock.surroundingRegionBlocks.Count + " " + tile.squareRegionBlock.horizontalSurroundingRegionBlocks.Count);
-			foreach (RegionBlock nRegionBlock in tile.squareRegionBlock.surroundingRegionBlocks) {
-				Color colour = nRegionBlock.tileType.walkable ? Color.blue : Color.red;
-				foreach (Tile rTile in nRegionBlock.tiles) {
-					rTile.sr.sprite = whiteSquare;
-					rTile.sr.color = colour;
-				}
-				GetTileFromPosition(nRegionBlock.averagePosition).sr.sprite = whiteSquare;
-				GetTileFromPosition(nRegionBlock.averagePosition).sr.color = Color.white;
-			}
-			*/
-			/*
-			tile.SetTileType(GetTileTypeByEnum(TileTypes.Stone),true,true,true,true);
-			RecalculateRegionsAtTile(tile);
-			*/
-			//SetTileRegions(false);
-			//print(tile.region.tileType.walkable);
-		}
-		if (Input.GetMouseButtonDown(1)) {
-			/*
-			Tile tile = GetTileFromPosition(mousePosition);
-			tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true,true,true,true);
-			RecalculateRegionsAtTile(tile);
-			*/
-			//tile.SetTileType(GetTileTypeByEnum(TileTypes.Grass),true);
-			//print(tile.tileType.name);
 		}
 	}
 
@@ -1094,6 +845,7 @@ public class TileManager:MonoBehaviour {
 
 		public float equatorOffset;
 		public bool planetTemperature;
+		public int temperatureRange;
 		public float temperatureOffset;
 		public float averageTemperature;
 		public float averagePrecipitation;
@@ -1102,7 +854,7 @@ public class TileManager:MonoBehaviour {
 
 		public bool preventEdgeTouching;
 
-		public MapData(int mapSeed, int mapSize, bool actualMap, float equatorOffset, bool planetTemperature, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, bool coast, bool preventEdgeTouching) {
+		public MapData(int mapSeed, int mapSize, bool actualMap, float equatorOffset, bool planetTemperature, int temperatureRange, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, bool coast, bool preventEdgeTouching) {
 
 			if (mapSeed < 0) {
 				mapSeed = Random.Range(0,int.MaxValue);
@@ -1116,6 +868,7 @@ public class TileManager:MonoBehaviour {
 
 			this.equatorOffset = equatorOffset;
 			this.planetTemperature = planetTemperature;
+			this.temperatureRange = temperatureRange;
 			this.temperatureOffset = temperatureOffset;
 			this.averageTemperature = averageTemperature;
 			this.averagePrecipitation = averagePrecipitation;
@@ -1817,17 +1570,14 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 
-		public float TemperatureFromMapLatitude(float yPos,float temperatureSteepness,float temperatureOffset,int mapSize) {
-			return ((-2 * Mathf.Abs((yPos - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureSteepness / 50f)))) + temperatureSteepness) + temperatureOffset;
+		public float TemperatureFromMapLatitude(float yPos,float temperatureRange, float temperatureOffset,int mapSize) {
+			return ((-2 * Mathf.Abs((yPos - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureRange / 50f)))) + temperatureRange) + temperatureOffset;
 		}
 
 		void CalculateTemperature() {
-
-			float temperatureSteepness = 40; // 50
-
 			foreach (Tile tile in tiles) {
 				if (mapData.planetTemperature) {
-					tile.temperature = TemperatureFromMapLatitude(tile.position.y,temperatureSteepness,mapData.temperatureOffset,mapData.mapSize);
+					tile.temperature = TemperatureFromMapLatitude(tile.position.y,mapData.temperatureRange,mapData.temperatureOffset,mapData.mapSize);
 				} else {
 					tile.temperature = mapData.averageTemperature;
 				}
@@ -2307,6 +2057,7 @@ public class TileManager:MonoBehaviour {
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
 				colonist.SetColour(colonist.overTile.sr.color);
 			}
+			cameraM.cameraComponent.backgroundColor = newColour * 0.5f;
 		}
 
 		public float CalculateBrightnessLevelAtHour(float time) {

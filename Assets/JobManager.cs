@@ -272,13 +272,15 @@ public class JobManager:MonoBehaviour {
 			finishJobFunctions[JobTypesEnum.Build](colonist,job);
 		});
 		finishJobFunctions.Add(JobTypesEnum.HarvestFarm,delegate (ColonistManager.Colonist colonist,Job job) {
-			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(job.tile.farm.seedType),Random.Range(1,3));
-			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(resourceM.GetFarmSeedReturnResource()[job.tile.farm.seedType]),Random.Range(1,6));
+			if (job.tile.farm != null) {
+				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(job.tile.farm.seedType), Random.Range(1, 3));
+				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(resourceM.GetFarmSeedReturnResource()[job.tile.farm.seedType]), Random.Range(1, 6));
 
-			CreateJob(new Job(job.tile,resourceM.GetTileObjectPrefabByEnum(resourceM.GetFarmSeedsTileObject()[job.tile.farm.seedType]),0));
+				CreateJob(new Job(job.tile, resourceM.GetTileObjectPrefabByEnum(resourceM.GetFarmSeedsTileObject()[job.tile.farm.seedType]), 0));
 
-			colonist.resourceM.RemoveTileObjectInstance(job.tile.farm);
-			job.tile.RemoveTileObjectAtLayer(job.tile.farm.prefab.layer);
+				colonist.resourceM.RemoveTileObjectInstance(job.tile.farm);
+				job.tile.RemoveTileObjectAtLayer(job.tile.farm.prefab.layer);
+			}
 			job.tile.SetFarm(null);
 			resourceM.Bitmask(new List<TileManager.Tile>() { job.tile }.Concat(job.tile.surroundingTiles).ToList());
 		});
