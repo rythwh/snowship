@@ -474,7 +474,7 @@ public class ResourceManager : MonoBehaviour {
 
 		public int maxInventoryAmount;
 
-		public int maxBrightness;
+		public int maxLightDistance;
 		public Color lightColour;
 
 		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup) {
@@ -533,7 +533,7 @@ public class ResourceManager : MonoBehaviour {
 				maxInventoryAmount = int.Parse(properties[13]);
 			}
 			if (resourceM.LightSourceTileObjects.Contains(type)) {
-				maxBrightness = int.Parse(properties[13]);
+				maxLightDistance = int.Parse(properties[13]);
 				lightColour = uiM.HexToColor(properties[14]);
 			}
 
@@ -693,11 +693,13 @@ public class ResourceManager : MonoBehaviour {
 	public class LightSource {
 
 		private TileManager tileM;
+		private TimeManager timeM;
 
 		private void GetScriptReferences() {
 			GameObject GM = GameObject.Find("GM");
 
 			tileM = GM.GetComponent<TileManager>();
+			timeM = GM.GetComponent<TimeManager>();
 		}
 
 		public TileManager.Tile parentTile;
@@ -717,31 +719,37 @@ public class ResourceManager : MonoBehaviour {
 		public void SetTileBrightnesses() {
 			foreach (TileManager.Tile tile in tileM.map.tiles) {
 				float distance = Vector2.Distance(tile.obj.transform.position, parentTile.obj.transform.position);
-				if (distance <= parentObject.prefab.maxBrightness) {
-					float intensityAtTile = Mathf.Clamp(parentObject.prefab.maxBrightness * (1f / Mathf.Pow(distance, 2f)), 0f, 1f);
-
-					Vector3 lightVector = tile.obj.transform.position - parentObject.obj.transform.position;
-					lightVector = lightVector.normalized + parentObject.obj.transform.position;
-
-					while (lightVector.magnitude < distance && tileM.map.GetTileFromPosition(lightVector) != parentTile) {
-						if (tileM.map.GetTileFromPosition(lightVector).walkable) {
-							lightVector += lightVector.normalized;
-						} else {
-							break;
+				if (distance <= parentObject.prefab.maxLightDistance) {
+					float intensityAtTile = Mathf.Clamp(parentObject.prefab.maxLightDistance * (1f / Mathf.Pow(distance, 2f)), 0f, 1f);
+					if (tile != parentTile) {
+						bool lightTile = true;
+						Vector3 lightVector = parentObject.obj.transform.position;
+						while ((parentObject.obj.transform.position - lightVector).magnitude <= distance) {
+							if (tileM.map.GetTileFromPosition(lightVector) != parentTile) {
+								if (!tileM.map.GetTileFromPosition(lightVector).walkable) {
+									lightTile = false;
+									break;
+								}
+							}
+							lightVector += (tile.obj.transform.position - parentObject.obj.transform.position).normalized * 0.5f;
 						}
+						if (lightTile) {
+							tile.AddLightSourceBrightness(this, intensityAtTile);
+							litTiles.Add(tile);
+						}
+					} else {
+						parentTile.AddLightSourceBrightness(this, intensityAtTile);
 					}
-
-					tile.AddLightSourceBrightness(this, intensityAtTile);
-					litTiles.Add(tile);
 				}
 			}
 		}
 
 		public void RemoveTileBrightnesses() {
 			foreach (TileManager.Tile tile in litTiles) {
-				tile.lightSourceBrightnesses.Remove(this);
+				tile.RemoveLightSourceBrightness(this);
 			}
 			litTiles.Clear();
+			tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 		}
 	}
 

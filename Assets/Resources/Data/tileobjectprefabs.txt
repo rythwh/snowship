@@ -170,7 +170,7 @@
 			2/
 			true/
 			0.8,0.1/
-			20/
+			5/
 			#E67E22
 <Group>
 	Industrial

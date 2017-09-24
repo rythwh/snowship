@@ -120,7 +120,7 @@ public class UIManager : MonoBehaviour {
 
 		planetDistanceText = GameObject.Find("PlanetDistanceValue-Text").GetComponent<Text>();
 		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
-		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value = 2;
+		GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value = 4;
 
 		GameObject.Find("ReloadPlanet-Button").GetComponent<Button>().onClick.AddListener(delegate { GeneratePlanet(); });
 
@@ -423,7 +423,8 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void UpdatePlanetInfo() {
-		planetDistance = (float)Math.Round(GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value / 2f, 1);
+		//planetDistance = (float)Math.Round(GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value / 2f, 1);
+		planetDistance = (float)Math.Round(0.1f * (GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>().value + 6), 1);
 		planetDistanceText.text = planetDistance + " AU";
 	}
 

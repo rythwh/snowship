@@ -789,15 +789,11 @@ public class TileManager:MonoBehaviour {
 			float nextHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(nextHour) ? brightnessAtHour[nextHour] : 1f), lightSourceBrightness);
 
 			if (primaryLightSource != null) {
-				sr.color = Color.Lerp(newColour, primaryLightSource.parentObject.prefab.lightColour, lightSourceBrightness / primaryLightSource.parentObject.prefab.maxBrightness);
+				sr.color = Color.Lerp(newColour, primaryLightSource.parentObject.prefab.lightColour + (newColour * (brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f) * 0.8f), lightSourceBrightness);
 			} else {
 				sr.color = newColour;
 			}
 			sr.color *= Mathf.Lerp(currentHourBrightness, nextHourBrightness, (timeM.GetTileBrightnessTime() - hour));
-
-			if (printInfo) {
-				print(lightSourceBrightness / primaryLightSource.parentObject.prefab.maxBrightness);
-			}
 
 			if (plant != null) {
 				plant.obj.GetComponent<SpriteRenderer>().color = new Color(sr.color.r,sr.color.g,sr.color.b,1f);
@@ -816,6 +812,17 @@ public class TileManager:MonoBehaviour {
 			lightSourceBrightnesses.Add(lightSource, brightness);
 			lightSourceBrightness = lightSourceBrightnesses.Max(kvp => kvp.Value);
 			primaryLightSource = lightSourceBrightnesses.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
+		}
+
+		public void RemoveLightSourceBrightness(ResourceManager.LightSource lightSource) {
+			lightSourceBrightnesses.Remove(lightSource);
+			if (lightSourceBrightnesses.Count > 0) {
+				lightSourceBrightness = lightSourceBrightnesses.Max(kvp => kvp.Value);
+				primaryLightSource = lightSourceBrightnesses.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
+			} else {
+				lightSourceBrightness = 0;
+				primaryLightSource = null;
+			}
 		}
 	}
 
@@ -1816,7 +1823,7 @@ public class TileManager:MonoBehaviour {
 
 		void CalculateTemperature() {
 
-			float temperatureSteepness = 70; // 50
+			float temperatureSteepness = 40; // 50
 
 			foreach (Tile tile in tiles) {
 				if (mapData.planetTemperature) {
