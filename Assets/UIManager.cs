@@ -144,7 +144,7 @@ public class UIManager : MonoBehaviour {
 		planetDistanceSlider.value = 4;
 
 		temperatureRangeSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
-		temperatureRangeSlider.value = 5;
+		temperatureRangeSlider.value = 8;
 
 		GameObject.Find("ReloadPlanet-Button").GetComponent<Button>().onClick.AddListener(delegate { GeneratePlanet(); });
 

@@ -1983,7 +1983,7 @@ public class TileManager:MonoBehaviour {
 					}
 				}
 			} else {
-				if (!tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
+				if (tile.tileType.baseSprites.Count > 0 && !tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
 					tile.sr.sprite = tile.tileType.baseSprites[Random.Range(0,tile.tileType.baseSprites.Count)];
 				}
 			}

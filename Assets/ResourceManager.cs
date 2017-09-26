@@ -47,7 +47,7 @@ public class ResourceManager : MonoBehaviour {
 	};
 
 	List<ResourcesEnum> ManufacturableResources = new List<ResourcesEnum>() {
-		ResourcesEnum.Brick
+		ResourcesEnum.Brick, ResourcesEnum.Glass
 	};
 	public List<ResourcesEnum> GetManufacturableResources() {
 		return ManufacturableResources;
@@ -312,7 +312,7 @@ public class ResourceManager : MonoBehaviour {
 		StoneFloor, WoodenFloor, BrickFloor,
 		Basket, WoodenChest,
 		WoodenBed,
-		WoodenLamp,
+		Torch, WoodenLamp,
 		StoneFurnace,
 		RemoveLayer1, RemoveLayer2, RemoveAll,
 		ChopPlant, PlantPlant, Mine, Dig,
@@ -345,7 +345,7 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	List<TileObjectPrefabsEnum> LightSourceTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.WoodenLamp
+		TileObjectPrefabsEnum.WoodenLamp, TileObjectPrefabsEnum.Torch
 	};
 
 	public List<TileObjectPrefabGroup> tileObjectPrefabGroups = new List<TileObjectPrefabGroup>();
