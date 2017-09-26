@@ -318,7 +318,7 @@ public class UIManager : MonoBehaviour {
 		public float averageTemperature;
 		public float averagePrecipitation;
 		public Dictionary<TileManager.TileTypes, float> terrainTypeHeights;
-		public bool coast;
+		public List<int> surroundingPlanetTileHeightDirections = new List<int>();
 
 		public PlanetTile(TileManager.Tile tile, Transform parent, Vector2 position, int planetSize, int planetTemperature) {
 
@@ -351,28 +351,21 @@ public class UIManager : MonoBehaviour {
 			averageTemperature = tile.temperature + planetTemperature;
 			averagePrecipitation = tile.precipitation;
 
-			coast = false;
 			if (!tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
 				foreach (TileManager.Tile nTile in tile.horizontalSurroundingTiles) {
-					if (nTile != null && tileM.GetWaterEquivalentTileTypes().Contains(nTile.tileType.type)) {
-						coast = true;
+					if (nTile != null) {
+						if (tileM.GetWaterEquivalentTileTypes().Contains(nTile.tileType.type)) {
+							surroundingPlanetTileHeightDirections.Add(-1);
+						} else if (tileM.GetStoneEquivalentTileTypes().Contains(nTile.tileType.type)) {
+							surroundingPlanetTileHeightDirections.Add(1);
+						} else {
+							surroundingPlanetTileHeightDirections.Add(0);
+						}
 					}
 				}
 			} else {
 				obj.GetComponent<Button>().interactable = false;
 			}
-
-			/*
-			float waterThreshold = 0.45f;
-			if (coast || tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
-				waterThreshold = tile.height;
-			}
-
-			float stoneThreshold = waterThreshold + ((1 - waterThreshold) / 2f);
-			if (tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) {
-				stoneThreshold = (1.25f - tile.height) / 2f;
-			}
-			*/
 
 			float waterThreshold = 0.40f;
 			float stoneThreshold = 0.75f;
@@ -421,7 +414,7 @@ public class UIManager : MonoBehaviour {
 	}
 
 	private TileManager.Map planet;
-	private List<int> planetTileSizes = new List<int>() { 5, 6, 8, 10, 12, 15, 20 }; // Some divisors of 600
+	private List<int> planetTileSizes = new List<int>() { 20, 15, 12, 10, 8, 6, 5 }; // Some divisors of 600
 
 	public void GeneratePlanet() {
 
@@ -446,7 +439,7 @@ public class UIManager : MonoBehaviour {
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().cellSize = new Vector2(planetTileSize, planetTileSize);
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
 
-		TileManager.MapData mapData = new TileManager.MapData(planetSeed, planetSize, false, -1, true, temperatureRange, planetTemperature, -1, -1, new Dictionary<TileManager.TileTypes, float>() { { TileManager.TileTypes.GrassWater, 0.40f }, { TileManager.TileTypes.Stone, 0.75f } }, false, true);
+		TileManager.MapData mapData = new TileManager.MapData(planetSeed, planetSize, false, -1, true, temperatureRange, planetTemperature, -1, -1, new Dictionary<TileManager.TileTypes, float>() { { TileManager.TileTypes.GrassWater, 0.40f }, { TileManager.TileTypes.Stone, 0.75f } }, null, true);
 		planet = new TileManager.Map(mapData);
 		foreach (TileManager.Tile tile in planet.tiles) {
 			planetTiles.Add(new PlanetTile(tile, planetPreviewPanel.transform, tile.position, planetSize, planetTemperature));
@@ -483,7 +476,7 @@ public class UIManager : MonoBehaviour {
 		string mapSeedString = mapSeedInput.text;
 		int mapSeed = SeedParser(mapSeedString, GameObject.Find("MapSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
 
-		tileM.Initialize(new TileManager.MapData(mapSeed, mapSize, true, selectedPlanetTile.equatorOffset, false, 0, 0, selectedPlanetTile.averageTemperature, selectedPlanetTile.averagePrecipitation, selectedPlanetTile.terrainTypeHeights, selectedPlanetTile.coast, false));
+		tileM.Initialize(new TileManager.MapData(mapSeed, mapSize, true, selectedPlanetTile.equatorOffset, false, 0, 0, selectedPlanetTile.averageTemperature, selectedPlanetTile.averagePrecipitation, selectedPlanetTile.terrainTypeHeights, selectedPlanetTile.surroundingPlanetTileHeightDirections, false));
 		mainMenu.SetActive(false);
 	}
 

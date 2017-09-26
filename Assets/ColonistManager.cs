@@ -1031,9 +1031,11 @@ public class ColonistManager : MonoBehaviour {
 		int mapSize = tileM.map.mapData.mapSize;
 		for (int i = 0;i < amount;i++) {
 
-			Dictionary<ColonistLook,int> colonistLookIndexes = new Dictionary<ColonistLook,int>() {
-				{ColonistLook.Skin, Random.Range(0,3) },{ColonistLook.Hair, Random.Range(0,0) },
-				{ColonistLook.Shirt, Random.Range(0,0) },{ColonistLook.Pants, Random.Range(0,0) }
+			Dictionary<ColonistLook, int> colonistLookIndexes = new Dictionary<ColonistLook, int>() {
+				{ColonistLook.Skin, Random.Range(0,3) },
+				{ColonistLook.Hair, Random.Range(0,0) },
+				{ColonistLook.Shirt, Random.Range(0,0) },
+				{ColonistLook.Pants, Random.Range(0,0) }
 			};
 
 			List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
@@ -1044,7 +1046,37 @@ public class ColonistManager : MonoBehaviour {
 				tileM.map.Bitmasking(tileM.map.tiles);
 				walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 			}
-			TileManager.Tile colonistSpawnTile = walkableTilesByDistanceToCentre[Random.Range(0,(walkableTilesByDistanceToCentre.Count > 30 ? 30 : walkableTilesByDistanceToCentre.Count))];
+
+			List<TileManager.Tile> validSpawnTiles = new List<TileManager.Tile>();
+			TileManager.Tile currentTile = walkableTilesByDistanceToCentre[0];
+			float minimumDistance = Vector2.Distance(currentTile.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f));
+			foreach (TileManager.Tile tile in walkableTilesByDistanceToCentre) {
+				float distance = Vector2.Distance(currentTile.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f));
+				if (distance < minimumDistance) {
+					currentTile = tile;
+					minimumDistance = distance;
+				}
+			}
+			List<TileManager.Tile> frontier = new List<TileManager.Tile>() { currentTile };
+			List<TileManager.Tile> checkedTiles = new List<TileManager.Tile>();
+			while (frontier.Count > 0) {
+				currentTile = frontier[0];
+				frontier.RemoveAt(0);
+				checkedTiles.Add(currentTile);
+				validSpawnTiles.Add(currentTile);
+				currentTile.sr.sprite = null;
+				if (validSpawnTiles.Count > 100) {
+					break;
+				}
+				foreach (TileManager.Tile nTile in currentTile.horizontalSurroundingTiles) {
+					if (walkableTilesByDistanceToCentre.Contains(nTile) && !checkedTiles.Contains(nTile)) {
+						frontier.Add(nTile);
+					}
+				}
+			}
+
+			//TileManager.Tile colonistSpawnTile = walkableTilesByDistanceToCentre[Random.Range(0,(walkableTilesByDistanceToCentre.Count > 30 ? 30 : walkableTilesByDistanceToCentre.Count))];
+			TileManager.Tile colonistSpawnTile = validSpawnTiles.Count >= 10 ? validSpawnTiles[Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
 
 			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes,professions[Random.Range(0,professions.Count)],1);
 			colonists.Add(colonist);

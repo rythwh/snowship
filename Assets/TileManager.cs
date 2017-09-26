@@ -850,11 +850,11 @@ public class TileManager:MonoBehaviour {
 		public float averageTemperature;
 		public float averagePrecipitation;
 		public Dictionary<TileTypes,float> terrainTypeHeights;
-		public bool coast;
+		public List<int> surroundingPlanetTileHeightDirections;
 
 		public bool preventEdgeTouching;
 
-		public MapData(int mapSeed, int mapSize, bool actualMap, float equatorOffset, bool planetTemperature, int temperatureRange, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, bool coast, bool preventEdgeTouching) {
+		public MapData(int mapSeed, int mapSize, bool actualMap, float equatorOffset, bool planetTemperature, int temperatureRange, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, List<int> surroundingPlanetTileHeightDirections, bool preventEdgeTouching) {
 
 			if (mapSeed < 0) {
 				mapSeed = Random.Range(0,int.MaxValue);
@@ -873,7 +873,7 @@ public class TileManager:MonoBehaviour {
 			this.averageTemperature = averageTemperature;
 			this.averagePrecipitation = averagePrecipitation;
 			this.terrainTypeHeights = terrainTypeHeights;
-			this.coast = coast;
+			this.surroundingPlanetTileHeightDirections = surroundingPlanetTileHeightDirections;
 			this.preventEdgeTouching = preventEdgeTouching;
 		}
 	}
@@ -941,6 +941,7 @@ public class TileManager:MonoBehaviour {
 		public List<Tile> tiles = new List<Tile>();
 		public List<List<Tile>> sortedTiles = new List<List<Tile>>();
 		public List<Tile> edgeTiles = new List<Tile>();
+		public Dictionary<int, List<Tile>> sortedEdgeTiles = new Dictionary<int, List<Tile>>();
 
 		public void CreateMap() {
 
@@ -949,6 +950,10 @@ public class TileManager:MonoBehaviour {
 				PreventEdgeTouching();
 			}
 
+			if (mapData.actualMap) {
+				SetSortedMapEdgeTiles();
+				SmoothHeightWithSurroundingPlanetTiles();
+			}
 			SetTileRegions(true);
 
 			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f),new List<TileTypes>() { TileTypes.GrassWater,TileTypes.Stone,TileTypes.Grass });
@@ -1155,6 +1160,17 @@ public class TileManager:MonoBehaviour {
 				foreach (Tile tile in this.tiles) {
 					tile.sr.sprite = whiteSquare;
 					tile.sr.color = colour;
+				}
+			}
+		}
+
+		void SmoothHeightWithSurroundingPlanetTiles() {
+			for (int i = 0; i < mapData.surroundingPlanetTileHeightDirections.Count; i++) {
+				if (mapData.surroundingPlanetTileHeightDirections[i] != 0) {
+					foreach (Tile tile in tiles) {
+						float closestEdgeDistance = sortedEdgeTiles[i].Min(edgeTile => Vector2.Distance(edgeTile.obj.transform.position, tile.obj.transform.position)) / (mapData.mapSize);
+						tile.SetTileHeight(tile.height * Mathf.Clamp(mapData.surroundingPlanetTileHeightDirections[i] * Mathf.Pow(closestEdgeDistance - 1f, 10) + 1, 0f, 1f));
+					}
 				}
 			}
 		}
@@ -1642,6 +1658,30 @@ public class TileManager:MonoBehaviour {
 			edgeTiles.Add(sortedTiles[0][mapData.mapSize - 1]);
 			edgeTiles.Add(sortedTiles[mapData.mapSize - 1][0]);
 			edgeTiles.Add(sortedTiles[mapData.mapSize - 1][mapData.mapSize - 1]);
+		}
+
+		void SetSortedMapEdgeTiles() {
+			int sideNum = -1;
+			List<Tile> tilesOnThisEdge = null;
+			for (int i = 0; i <= mapData.mapSize; i++) {
+				i %= 100;
+				if (i == 0) {
+					sideNum += 1;
+					sortedEdgeTiles.Add(sideNum, new List<Tile>());
+					tilesOnThisEdge = sortedEdgeTiles[sideNum];
+				}
+				if (sideNum == 0) {
+					tilesOnThisEdge.Add(sortedTiles[mapData.mapSize - 1][i]);
+				} else if (sideNum == 1) {
+					tilesOnThisEdge.Add(sortedTiles[i][mapData.mapSize - 1]);
+				} else if (sideNum == 2) {
+					tilesOnThisEdge.Add(sortedTiles[0][i]);
+				} else if (sideNum == 3) {
+					tilesOnThisEdge.Add(sortedTiles[i][0]);
+				} else {
+					break;
+				}
+			}
 		}
 
 		public List<River> rivers = new List<River>();
