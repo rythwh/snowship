@@ -33,15 +33,20 @@ public class PersistenceManager : MonoBehaviour {
 		timeM = GetComponent<TimeManager>();
 		uiM = GetComponent<UIManager>();
 
-		print(Application.persistentDataPath + "/Saves/snowship-save.snowship");
+		//print(Application.persistentDataPath + "/Saves/snowship-save.snowship");
+		Save();
 	}
 
 	/* https://stackoverflow.com/questions/13266496/easily-write-a-whole-class-instance-to-xml-file-and-read-back-in */
 
 	public void Save() {
 
-		//FileStream file = new FileStream(Application.persistentDataPath + "snowship-save.snowship",FileMode.Create);
-		
+		System.DateTime now = System.DateTime.Now;
+		string dateTime = now.Year + "" + now.Month + "" + now.Day + "" + now.Hour + "" + now.Minute + "" + now.Second + "" + now.Millisecond;
+		string fileName = Application.persistentDataPath + "/Saves/snowship-save-" + dateTime + ".snowship";
+		print(fileName);
+
+		//FileStream file = new FileStream(Application.persistentDataPath + "/Saves/snowship-save" + System.DateTime.Now.ToUniversalTime() + ".snowship",FileMode.Create);
 
 		// 1: Save the map data
 
