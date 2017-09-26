@@ -73,8 +73,8 @@ public class DebugManager : MonoBehaviour {
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
 
-				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Wood", "10", "true", "true" });
-				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Glass", "10", "true", "true" });
+				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Wood", "10", "true", "true" });
+				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Glass", "10", "true", "true" });
 
 				//tile.SetColour(tileM.map.GetTileColourAtHour(timeM.GetTileBrightnessTime()), Mathf.RoundToInt(timeM.GetTileBrightnessTime()), true);
 
