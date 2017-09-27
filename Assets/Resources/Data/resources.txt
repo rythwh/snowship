@@ -41,6 +41,8 @@ Materials:
 		30/
 		Sand/
 		2`
+	Cotton/
+		10`
 	Cloth/
 		15
 ~
@@ -48,6 +50,8 @@ Seeds:
 	WheatSeeds/
 		10`
 	PotatoSeeds/
+		5`
+	CottonSeeds/
 		5`
 	TreeSeeds/
 		5`

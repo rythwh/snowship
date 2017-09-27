@@ -40,10 +40,10 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourcesEnum {
 		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Wood, Snow, Sand,
-		Brick, Glass, Cloth,
-		WheatSeeds, PotatoSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
+		Brick, Glass, Cotton, Cloth, 
+		WheatSeeds, PotatoSeeds, CottonSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
 		Wheat,
-		Potatoes, Berries, Apples
+		Potatoes, Berries, Apples,
 	};
 
 	List<ResourcesEnum> ManufacturableResources = new List<ResourcesEnum>() {
@@ -115,14 +115,14 @@ public class ResourceManager : MonoBehaviour {
 
 		public ResourcesEnum type;
 		public string name;
-		
+
+		public Sprite image;
+
 		public ResourceGroup resourceGroup;
 
 		public int value;
 
 		public int nutrition = 0;
-
-		public Sprite image;
 
 		public int desiredAmount = 0;
 
@@ -145,6 +145,8 @@ public class ResourceManager : MonoBehaviour {
 
 			type = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceData[0]);
 			name = type.ToString();
+
+			image = Resources.Load<Sprite>(@"Sprites/Resources/" + uiM.SplitByCapitals(name) + "/" + uiM.SplitByCapitals(name).Replace(' ', '-') + "-base");
 
 			this.resourceGroup = resourceGroup;
 
@@ -316,7 +318,7 @@ public class ResourceManager : MonoBehaviour {
 		StoneFurnace,
 		RemoveLayer1, RemoveLayer2, RemoveAll,
 		ChopPlant, PlantPlant, Mine, Dig,
-		WheatFarm, PotatoFarm, HarvestFarm,
+		WheatFarm, PotatoFarm, CottonFarm, HarvestFarm,
 		CreateResource, PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep,
 		PlantTree, PlantShrub, PlantCactus
 	};
@@ -753,20 +755,26 @@ public class ResourceManager : MonoBehaviour {
 		}
 	}
 
-	Dictionary<ResourcesEnum,int> FarmGrowTimes = new Dictionary<ResourcesEnum,int>() {
-		{ResourcesEnum.WheatSeeds,5760 },{ResourcesEnum.PotatoSeeds,2880 }
+	Dictionary<ResourcesEnum, int> FarmGrowTimes = new Dictionary<ResourcesEnum, int>() {
+		{ ResourcesEnum.WheatSeeds,		5760 },
+		{ ResourcesEnum.PotatoSeeds,	2880 },
+		{ ResourcesEnum.CottonSeeds,	480/*5760*/}
 	};
 	public Dictionary<ResourcesEnum,int> GetFarmGrowTimes() {
 		return FarmGrowTimes;
 	}
 	Dictionary<ResourcesEnum,ResourcesEnum> FarmSeedReturnResource = new Dictionary<ResourcesEnum,ResourcesEnum>() {
-		{ResourcesEnum.WheatSeeds,ResourcesEnum.Wheat },{ResourcesEnum.PotatoSeeds,ResourcesEnum.Potatoes }
+		{ ResourcesEnum.WheatSeeds,		ResourcesEnum.Wheat },
+		{ ResourcesEnum.PotatoSeeds,	ResourcesEnum.Potatoes },
+		{ ResourcesEnum.CottonSeeds,	ResourcesEnum.Cotton }
 	};
 	public Dictionary<ResourcesEnum,ResourcesEnum> GetFarmSeedReturnResource() {
 		return FarmSeedReturnResource;
 	}
-	Dictionary<ResourcesEnum,TileObjectPrefabsEnum> FarmSeedsTileObject = new Dictionary<ResourcesEnum,TileObjectPrefabsEnum>() {
-		{ResourcesEnum.WheatSeeds,TileObjectPrefabsEnum.WheatFarm },{ResourcesEnum.PotatoSeeds,TileObjectPrefabsEnum.PotatoFarm }
+	Dictionary<ResourcesEnum, TileObjectPrefabsEnum> FarmSeedsTileObject = new Dictionary<ResourcesEnum, TileObjectPrefabsEnum>() {
+		{ ResourcesEnum.WheatSeeds,		TileObjectPrefabsEnum.WheatFarm },
+		{ ResourcesEnum.PotatoSeeds,	TileObjectPrefabsEnum.PotatoFarm },
+		{ ResourcesEnum.CottonSeeds,	TileObjectPrefabsEnum.CottonFarm }
 	};
 	public Dictionary<ResourcesEnum,TileObjectPrefabsEnum> GetFarmSeedsTileObject() {
 		return FarmSeedsTileObject;

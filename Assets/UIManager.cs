@@ -704,7 +704,7 @@ public class UIManager : MonoBehaviour {
 					GameObject tileObjectDataObject = tileObjectElements[tileObject.prefab.layer][1];
 					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "L" + tileObject.prefab.layer;
 					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
-					tileLayerSpriteObject.SetActive(true);
+					tileObjectDataObject.SetActive(true);
 				}
 			}
 
