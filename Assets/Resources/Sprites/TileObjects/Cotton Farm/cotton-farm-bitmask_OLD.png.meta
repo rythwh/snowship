@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: fe606403d4b5fa44785db38eacb4663e
-timeCreated: 1506482290
+guid: 6238b0dab9ef9c440ad4e19825e39303
+timeCreated: 1497932553
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -12,16 +12,6 @@ TextureImporter:
     21300010: cotton_5
     21300012: cotton_6
     21300014: cotton_7
-    21300016: cotton-farm-bitmask_0
-    21300018: cotton-farm-bitmask_1
-    21300020: cotton-farm-bitmask_2
-    21300022: cotton-farm-bitmask_3
-    21300024: cotton-farm-bitmask_4
-    21300026: cotton-farm-bitmask_5
-    21300028: cotton-farm-bitmask_6
-    21300030: cotton-farm-bitmask_7
-    21300032: cotton-farm-bitmask_8
-    21300034: cotton-farm-bitmask_9
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -30,8 +20,6 @@ TextureImporter:
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
-    mipMapsPreserveCoverage: 0
-    alphaTestReferenceValue: 0.5
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
@@ -47,13 +35,10 @@ TextureImporter:
   textureFormat: 1
   maxTextureSize: 2048
   textureSettings:
-    serializedVersion: 2
     filterMode: 0
     aniso: -1
     mipBias: -1
-    wrapU: 1
-    wrapV: 1
-    wrapW: 1
+    wrapMode: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -93,35 +78,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cotton-farm-bitmask_0
-      rect:
-        serializedVersion: 2
-        x: 1
-        y: 316
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: cotton-farm-bitmask_1
-      rect:
-        serializedVersion: 2
-        x: 1
-        y: 281
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: cotton-farm-bitmask_2
+      name: cotton_0
       rect:
         serializedVersion: 2
         x: 1
@@ -132,10 +89,9 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_3
+      name: cotton_1
       rect:
         serializedVersion: 2
         x: 1
@@ -146,10 +102,9 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_4
+      name: cotton_2
       rect:
         serializedVersion: 2
         x: 1
@@ -160,10 +115,9 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_5
+      name: cotton_3
       rect:
         serializedVersion: 2
         x: 1
@@ -174,10 +128,9 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_6
+      name: cotton_4
       rect:
         serializedVersion: 2
         x: 1
@@ -188,10 +141,9 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_7
+      name: cotton_5
       rect:
         serializedVersion: 2
         x: 1
@@ -202,10 +154,9 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_8
+      name: cotton_6
       rect:
         serializedVersion: 2
         x: 1
@@ -216,10 +167,9 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_9
+      name: cotton_7
       rect:
         serializedVersion: 2
         x: 1
@@ -230,10 +180,8 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-      physicsShape: []
       tessellationDetail: 0
     outline: []
-    physicsShape: []
   spritePackingTag: 
   userData: 
   assetBundleName: 

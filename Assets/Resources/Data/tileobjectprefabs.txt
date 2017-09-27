@@ -238,6 +238,20 @@
 			2/
 			true/
 			0.0,0.0
+		<Object>
+			CottonFarm/
+			15/
+			1/
+			CottonSeeds/
+			true/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			PlantFarm/
+			1.0/
+			true/
+			0.3/
+			2/
+			true/
+			0.0,0.0
 	<SubGroup>
 		HarvestFarm
 		<Object>

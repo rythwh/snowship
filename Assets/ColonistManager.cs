@@ -1064,7 +1064,6 @@ public class ColonistManager : MonoBehaviour {
 				frontier.RemoveAt(0);
 				checkedTiles.Add(currentTile);
 				validSpawnTiles.Add(currentTile);
-				currentTile.sr.sprite = null;
 				if (validSpawnTiles.Count > 100) {
 					break;
 				}
@@ -1084,6 +1083,7 @@ public class ColonistManager : MonoBehaviour {
 
 		colonists[Random.Range(0,colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.WheatSeeds),Random.Range(5,11));
 		colonists[Random.Range(0,colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.PotatoSeeds),Random.Range(5,11));
+		colonists[Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.CottonSeeds), Random.Range(5, 11));
 
 		uiM.SetColonistElements();
 	}
