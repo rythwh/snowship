@@ -830,8 +830,6 @@ public class TileManager:MonoBehaviour {
 
 	public bool generated;
 
-	private int viewRiverAtIndex = 0;
-
 	void Update() {
 		if (generated) {
 			map.DetermineVisibleRegionBlocks();
@@ -891,11 +889,21 @@ public class TileManager:MonoBehaviour {
 
 	public Map map;
 
-	public void Initialize(MapData mapData) {
+	public IEnumerator Initialize(MapData mapData) {
 		map = new Map(mapData);
 
-		cameraM.SetCameraPosition(new Vector2(mapData.mapSize / 2f,mapData.mapSize / 2f));
+		cameraM.SetCameraPosition(new Vector2(mapData.mapSize / 2f, mapData.mapSize / 2f));
 		cameraM.SetCameraZoom(20);
+
+		yield return null;
+	}
+
+	public IEnumerator PostInitializeMap() {
+		while (!map.createdMap) {
+			yield return null;
+		}
+
+		uiM.ToggleGameUI(true);
 
 		colonistM.SpawnColonists(3);
 
@@ -906,6 +914,8 @@ public class TileManager:MonoBehaviour {
 		uiM.SetJobElements();
 		uiM.InitializeProfessionsList();
 		uiM.InitializeResourcesList();
+
+		uiM.ToggleLoadingScreen(false);
 	}
 
 	public class Map {
@@ -916,6 +926,9 @@ public class TileManager:MonoBehaviour {
 		private CameraManager cameraM;
 		private ColonistManager colonistM;
 		private ResourceManager resourceM;
+		private UIManager uiM;
+
+		public bool createdMap;
 
 		private void GetScriptReferences() {
 			GameObject GM = GameObject.Find("GM");
@@ -926,6 +939,7 @@ public class TileManager:MonoBehaviour {
 			cameraM = GM.GetComponent<CameraManager>();
 			colonistM = GM.GetComponent<ColonistManager>();
 			resourceM = GM.GetComponent<ResourceManager>();
+			uiM = GM.GetComponent<UIManager>();
 		}
 
 		public MapData mapData;
@@ -935,7 +949,8 @@ public class TileManager:MonoBehaviour {
 
 			this.mapData = mapData;
 
-			CreateMap();
+			createdMap = false;
+			uiM.StartCoroutine(CreateMap());
 		}
 
 		public List<Tile> tiles = new List<Tile>();
@@ -943,23 +958,34 @@ public class TileManager:MonoBehaviour {
 		public List<Tile> edgeTiles = new List<Tile>();
 		public Dictionary<int, List<Tile>> sortedEdgeTiles = new Dictionary<int, List<Tile>>();
 
-		public void CreateMap() {
-
+		public IEnumerator CreateMap() {
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Tiles"); yield return null; }
 			CreateTiles();
+			Bitmasking(tiles);
+
 			if (mapData.preventEdgeTouching) {
 				PreventEdgeTouching();
 			}
 
 			if (mapData.actualMap) {
+				uiM.UpdateLoadingStateText("Merging Terrain with Planet"); yield return null;
 				SetSortedMapEdgeTiles();
 				SmoothHeightWithSurroundingPlanetTiles();
+				Bitmasking(tiles);
 			}
+
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Regions"); yield return null; }
 			SetTileRegions(true);
 
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Reducing Terrain Noise"); yield return null; }
 			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f),new List<TileTypes>() { TileTypes.GrassWater,TileTypes.Stone,TileTypes.Grass });
 			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f),new List<TileTypes>() { TileTypes.GrassWater });
+			Bitmasking(tiles);
 
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Calculating Precipitation"); yield return null; }
 			CalculatePrecipitation();
+
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Calculating Temperature"); yield return null; }
 			CalculateTemperature();
 
 			/*
@@ -970,27 +996,41 @@ public class TileManager:MonoBehaviour {
 			}
 			*/
 
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Biomes"); yield return null; }
 			SetTileRegions(false);
 			SetBiomes();
-
-			if (mapData.actualMap) {
-				SetMapEdgeTiles();
-				DetermineDrainageBasins();
-				CreateRivers();
-			}
-
-			CreateRegionBlocks();
-
 			Bitmasking(tiles);
 
 			if (mapData.actualMap) {
-				SetRoofs();
-				SetResourceVeins();
+				uiM.UpdateLoadingStateText("Creating Rivers"); yield return null;
+				SetMapEdgeTiles();
+				DetermineDrainageBasins();
+				CreateRivers();
+				Bitmasking(tiles);
+			}
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Region Blocks"); yield return null; }
+			CreateRegionBlocks();
 
+			if (mapData.actualMap) {
+				uiM.UpdateLoadingStateText("Creating Roofs"); yield return null;
+				SetRoofs();
+				Bitmasking(tiles);
+
+				uiM.UpdateLoadingStateText("Creating Resource Veins"); yield return null;
+				SetResourceVeins();
+				Bitmasking(tiles);
+
+				uiM.UpdateLoadingStateText("Calculating Lighting"); yield return null;
 				DetermineShadowDirectionsAtHour();
 				DetermineShadowTiles(tiles,false);
 				SetTileBrightness(timeM.GetTileBrightnessTime());
+				DetermineVisibleRegionBlocks();
 			}
+
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Bitmasking"); yield return null; }
+			Bitmasking(tiles);
+
+			createdMap = true;
 		}
 
 		void CreateTiles() {
