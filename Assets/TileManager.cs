@@ -887,9 +887,14 @@ public class TileManager:MonoBehaviour {
 		CreateBiomeRanges();
 	}
 
+	public void Initialize(MapData mapData) {
+		StartCoroutine(InitializeMap(mapData));
+		StartCoroutine(PostInitializeMap());
+	}
+
 	public Map map;
 
-	public IEnumerator Initialize(MapData mapData) {
+	public IEnumerator InitializeMap(MapData mapData) {
 		map = new Map(mapData);
 
 		cameraM.SetCameraPosition(new Vector2(mapData.mapSize / 2f, mapData.mapSize / 2f));

@@ -496,8 +496,7 @@ public class UIManager : MonoBehaviour {
 		ToggleLoadingScreen(true);
 		ToggleGameUI(false);
 
-		StartCoroutine(tileM.Initialize(new TileManager.MapData(mapSeed, mapSize, true, selectedPlanetTile.equatorOffset, false, 0, 0, selectedPlanetTile.averageTemperature, selectedPlanetTile.averagePrecipitation, selectedPlanetTile.terrainTypeHeights, selectedPlanetTile.surroundingPlanetTileHeightDirections, false)));
-		StartCoroutine(tileM.PostInitializeMap());
+		tileM.Initialize(new TileManager.MapData(mapSeed, mapSize, true, selectedPlanetTile.equatorOffset, false, 0, 0, selectedPlanetTile.averageTemperature, selectedPlanetTile.averagePrecipitation, selectedPlanetTile.terrainTypeHeights, selectedPlanetTile.surroundingPlanetTileHeightDirections, false));
 	}
 
 	public void UpdateMapSizeText() {
