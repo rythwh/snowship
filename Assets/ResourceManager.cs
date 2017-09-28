@@ -758,7 +758,7 @@ public class ResourceManager : MonoBehaviour {
 	Dictionary<ResourcesEnum, int> FarmGrowTimes = new Dictionary<ResourcesEnum, int>() {
 		{ ResourcesEnum.WheatSeeds,		5760 },
 		{ ResourcesEnum.PotatoSeeds,	2880 },
-		{ ResourcesEnum.CottonSeeds,	480/*5760*/}
+		{ ResourcesEnum.CottonSeeds,	100/*5760*/}
 	};
 	public Dictionary<ResourcesEnum,int> GetFarmGrowTimes() {
 		return FarmGrowTimes;
