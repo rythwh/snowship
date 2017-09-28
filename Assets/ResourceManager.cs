@@ -758,7 +758,7 @@ public class ResourceManager : MonoBehaviour {
 	Dictionary<ResourcesEnum, int> FarmGrowTimes = new Dictionary<ResourcesEnum, int>() {
 		{ ResourcesEnum.WheatSeeds,		5760 },
 		{ ResourcesEnum.PotatoSeeds,	2880 },
-		{ ResourcesEnum.CottonSeeds,	100/*5760*/}
+		{ ResourcesEnum.CottonSeeds,	5760 }
 	};
 	public Dictionary<ResourcesEnum,int> GetFarmGrowTimes() {
 		return FarmGrowTimes;
@@ -782,6 +782,7 @@ public class ResourceManager : MonoBehaviour {
 
 	public class Farm : TileObjectInstance {
 
+		private TileManager tileM;
 		private TimeManager timeM;
 		private JobManager jobM;
 		private ResourceManager resourceM;
@@ -790,6 +791,7 @@ public class ResourceManager : MonoBehaviour {
 		void GetScriptReferencecs() {
 			GameObject GM = GameObject.Find("GM");
 
+			tileM = GM.GetComponent<TileManager>();
 			timeM = GM.GetComponent<TimeManager>();
 			jobM = GM.GetComponent<JobManager>();
 			resourceM = GM.GetComponent<ResourceManager>();
@@ -812,7 +814,7 @@ public class ResourceManager : MonoBehaviour {
 
 			seedType = prefab.resourcesToBuild[0].resource.type;
 			name = (uiM.SplitByCapitals(seedType.ToString()).Split(' ')[0]).Replace(" ","") + " Farm";
-			maxGrowthTime = resourceM.GetFarmGrowTimes()[seedType];
+			maxGrowthTime = resourceM.GetFarmGrowTimes()[seedType] * Random.Range(-0.9f, 1.1f);
 
 			growProgressSprites = prefab.bitmaskSprites;
 			maxSpriteIndex = growProgressSprites.Count - 1;
@@ -824,13 +826,23 @@ public class ResourceManager : MonoBehaviour {
 					jobM.CreateJob(new JobManager.Job(tile,resourceM.GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.HarvestFarm),0));
 				}
 			} else {
-				growTimer += 1 * timeM.deltaTime;
+				growTimer += CalculateGrowthRate();
 				int newGrowProgressSpriteIndex = Mathf.FloorToInt((growTimer / (maxGrowthTime + 10)) * growProgressSprites.Count);
 				if (newGrowProgressSpriteIndex != growProgressSpriteIndex) {
 					growProgressSpriteIndex = newGrowProgressSpriteIndex;
 					obj.GetComponent<SpriteRenderer>().sprite = growProgressSprites[Mathf.Clamp(growProgressSpriteIndex,0,maxSpriteIndex)];
 				}
 			}
+		}
+
+		public float CalculateGrowthRate() {
+			float growthRate = timeM.deltaTime;
+			growthRate *= Mathf.Max(tileM.map.CalculateBrightnessLevelAtHour(timeM.GetTileBrightnessTime()), tile.lightSourceBrightness);
+			growthRate *= Mathf.Min((-2 * Mathf.Pow(tile.precipitation - 0.7f,2) + 1),(-30 * Mathf.Pow(tile.precipitation - 0.7f,3) + 1));
+			growthRate *= Mathf.Clamp(Mathf.Min(((tile.temperature - 10) / 15f + 1), (-((tile.temperature - 50) / 20f))), 0, 1);
+			growthRate = Mathf.Clamp(growthRate, 0, 1);
+			print(growthRate);
+			return growthRate;
 		}
 	}
 
