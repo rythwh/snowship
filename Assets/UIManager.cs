@@ -65,12 +65,18 @@ public class UIManager : MonoBehaviour {
 	private Slider temperatureRangeSlider;
 	private Text temperatureRangeText;
 
+	public string colonyName;
+
 	public int mapSize = 0;
 	private Slider mapSizeSlider;
 	private Text mapSizeText;
 	private Text mapSeedInput;
 
 	private GameObject playButton;
+
+	private Text loadingStateText;
+
+	private GameObject gameUI;
 
 	private Vector2 mousePosition;
 	public TileManager.Tile mouseOverTile;
@@ -157,6 +163,11 @@ public class UIManager : MonoBehaviour {
 
 		playButton = GameObject.Find("Play-Button");
 		playButton.GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
+
+		loadingStateText = GameObject.Find("LoadingState-Text").GetComponent<Text>();
+		ToggleLoadingScreen(false);
+
+		gameUI = GameObject.Find("Game-BackgroundPanel");
 
 		tileInformation = GameObject.Find("TileInformation-Panel");
 
@@ -472,12 +483,21 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void PlayButton() {
+		colonyName = GameObject.Find("ColonyName-Panel").transform.Find("InputField").GetComponent<InputField>().text;
+		if (string.IsNullOrEmpty(colonyName) || new Regex(@"\W+", RegexOptions.IgnorePatternWhitespace).Replace(colonyName, string.Empty).Length <= 0) {
+			colonyName = "Colony";
+		}
+		print(colonyName);
 
 		string mapSeedString = mapSeedInput.text;
 		int mapSeed = SeedParser(mapSeedString, GameObject.Find("MapSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
 
-		tileM.Initialize(new TileManager.MapData(mapSeed, mapSize, true, selectedPlanetTile.equatorOffset, false, 0, 0, selectedPlanetTile.averageTemperature, selectedPlanetTile.averagePrecipitation, selectedPlanetTile.terrainTypeHeights, selectedPlanetTile.surroundingPlanetTileHeightDirections, false));
 		mainMenu.SetActive(false);
+		ToggleLoadingScreen(true);
+		ToggleGameUI(false);
+
+		StartCoroutine(tileM.Initialize(new TileManager.MapData(mapSeed, mapSize, true, selectedPlanetTile.equatorOffset, false, 0, 0, selectedPlanetTile.averageTemperature, selectedPlanetTile.averagePrecipitation, selectedPlanetTile.terrainTypeHeights, selectedPlanetTile.surroundingPlanetTileHeightDirections, false)));
+		StartCoroutine(tileM.PostInitializeMap());
 	}
 
 	public void UpdateMapSizeText() {
@@ -503,6 +523,20 @@ public class UIManager : MonoBehaviour {
 
 		Vector2 newMenuBackgroundSize = menuBackgroundSize / ratio;
 		menuBackground.GetComponent<RectTransform>().sizeDelta = newMenuBackgroundSize;
+	}
+
+	public void UpdateLoadingStateText(string text) {
+		if (loadingStateText.gameObject.activeSelf) {
+			loadingStateText.text = text.ToUpper();
+		}
+	}
+
+	public void ToggleLoadingScreen(bool state) {
+		loadingStateText.transform.parent.gameObject.SetActive(state);
+	}
+
+	public void ToggleGameUI(bool state) {
+		gameUI.SetActive(state);
 	}
 
 	/*	Menu Structure:
@@ -913,6 +947,8 @@ public class UIManager : MonoBehaviour {
 
 			selectedColonistInformationPanel.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonistM.selectedColonist.name;
 			selectedColonistInformationPanel.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = colonistM.selectedColonist.moveSprites[0];
+
+			selectedColonistInformationPanel.transform.Find("AffiliationName-Text").GetComponent<Text>().text = "Colonist of " + colonyName;
 
 			foreach (SkillElement skillElement in skillElements) {
 				Destroy(skillElement.obj);
