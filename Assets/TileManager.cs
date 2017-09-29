@@ -10,6 +10,7 @@ public class TileManager:MonoBehaviour {
 	private ResourceManager resourceM;
 	private ColonistManager colonistM;
 	private DebugManager debugM;
+	private PersistenceManager persistenceM;
 
 	void Awake() {
 		uiM = GetComponent<UIManager>();
@@ -17,6 +18,7 @@ public class TileManager:MonoBehaviour {
 		resourceM = GetComponent<ResourceManager>();
 		colonistM = GetComponent<ColonistManager>();
 		debugM = GetComponent<DebugManager>();
+		persistenceM = GetComponent<PersistenceManager>();
 	}
 
 	public enum PlantGroupsEnum { Cactus, ColourfulShrub, ColourfulTree, DeadTree, Shrub, SnowTree, ThinTree, WideTree };
@@ -921,6 +923,8 @@ public class TileManager:MonoBehaviour {
 		uiM.InitializeResourcesList();
 
 		uiM.ToggleLoadingScreen(false);
+
+		persistenceM.SaveGame();
 	}
 
 	public class Map {
@@ -1709,7 +1713,7 @@ public class TileManager:MonoBehaviour {
 			int sideNum = -1;
 			List<Tile> tilesOnThisEdge = null;
 			for (int i = 0; i <= mapData.mapSize; i++) {
-				i %= 100;
+				i %= mapData.mapSize;
 				if (i == 0) {
 					sideNum += 1;
 					sortedEdgeTiles.Add(sideNum, new List<Tile>());

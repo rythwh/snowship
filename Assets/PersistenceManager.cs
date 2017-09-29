@@ -32,18 +32,25 @@ public class PersistenceManager : MonoBehaviour {
 		tileM = GetComponent<TileManager>();
 		timeM = GetComponent<TimeManager>();
 		uiM = GetComponent<UIManager>();
+	}
 
-		//print(Application.persistentDataPath + "/Saves/snowship-save.snowship");
-		Save();
+	public void SaveSettings() {
+		string settingsFilePath = Application.persistentDataPath + "/Settings/settings.txt";
+		FileStream settingsFile = new FileStream(settingsFilePath, FileMode.OpenOrCreate);
+		File.WriteAllText(@settingsFilePath, string.Empty);
+	}
+
+	public void LoadSettings() {
+
 	}
 
 	/* https://stackoverflow.com/questions/13266496/easily-write-a-whole-class-instance-to-xml-file-and-read-back-in */
 
-	public void Save() {
+	public void SaveGame() {
 
 		System.DateTime now = System.DateTime.Now;
 		string dateTime = now.Year + "" + now.Month + "" + now.Day + "" + now.Hour + "" + now.Minute + "" + now.Second + "" + now.Millisecond;
-		string fileName = Application.persistentDataPath + "/Saves/snowship-save-" + dateTime + ".snowship";
+		string fileName = Application.persistentDataPath + "/Saves/snowship-save-" + uiM.colonyName + "-" + dateTime + ".snowship";
 		print(fileName);
 
 		//FileStream file = new FileStream(Application.persistentDataPath + "/Saves/snowship-save" + System.DateTime.Now.ToUniversalTime() + ".snowship",FileMode.Create);
@@ -61,7 +68,7 @@ public class PersistenceManager : MonoBehaviour {
 		// 6: Save the planet data
 	}
 
-	public void Load() {
+	public void LoadGame() {
 		// 1: Load the map data
 
 		// 2: Load the colonist data
