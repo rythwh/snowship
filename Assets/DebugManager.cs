@@ -205,7 +205,7 @@ public class DebugManager : MonoBehaviour {
 		{Commands.viewshadowsto,"viewshadowsto -- highlights all tiles that the selected tile affects the brightness of through the day (green = earlier, pink = later)" },
 		{Commands.viewblockingtiles,"viewblockingtiles -- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)" },
 		{Commands.viewroofs,"viewroofs -- higlights all tiles with a roof above it" },
-		{Commands.save,"save (filename) -- without (filename): saves the name normally. with (filename): saves the game to the specified file name. will overwrite" },
+		{Commands.save,"save (filename) -- without (filename): saves the game normally. with (filename): saves the game to the specified file name. will overwrite" },
 		{Commands.load,"load (filename) -- without (filename): loads the most recent save. with (filename): loads the file named (filename). will not save first" }
 	};
 
