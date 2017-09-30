@@ -27,7 +27,7 @@ public class DebugManager : MonoBehaviour {
 		pathM = GetComponent<PathManager>();
 	}
 
-	private GameObject debugIndicator;
+	private GameObject debugPanel;
 	private GameObject debugInputObj;
 	private InputField debugInput;
 
@@ -39,16 +39,16 @@ public class DebugManager : MonoBehaviour {
 	void Awake() {
 		GetScriptReferences();
 
-		debugIndicator = GameObject.Find("DebugIndicator-Image");
+		debugPanel = GameObject.Find("Debug-Panel");
 
-		debugInputObj = debugIndicator.transform.Find("DebugCommand-Input").gameObject;
+		debugInputObj = debugPanel.transform.Find("DebugCommand-Input").gameObject;
 		debugInput = debugInputObj.GetComponent<InputField>();
 		debugInput.onEndEdit.AddListener(delegate { ParseCommandInput(); });
 
-		debugConsole = debugIndicator.transform.Find("DebugCommandsList-ScrollPanel").gameObject;
+		debugConsole = debugPanel.transform.Find("DebugCommandsList-ScrollPanel").gameObject;
 		debugConsoleList = debugConsole.transform.Find("DebugCommandsList-Panel").gameObject;
 
-		debugIndicator.SetActive(false);
+		debugPanel.SetActive(false);
 
 		whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
 
@@ -110,7 +110,7 @@ public class DebugManager : MonoBehaviour {
 	}
 
 	private void ToggleDebugUI() {
-		debugIndicator.SetActive(debugMode);
+		debugPanel.SetActive(debugMode);
 	}
 
 	private enum Commands {

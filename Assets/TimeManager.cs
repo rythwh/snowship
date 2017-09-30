@@ -47,16 +47,7 @@ public class TimeManager : MonoBehaviour {
 			timeModifier = Mathf.Clamp(timeModifier, 0, 5);
 			pauseTimeModifier = Mathf.Clamp(pauseTimeModifier, 0, 5);
 			if (Input.GetKeyDown(KeyCode.Space)) {
-				if (timeModifier != 0) {
-					pauseTimeModifier = timeModifier;
-					timeModifier = 0;
-				} else {
-					if (pauseTimeModifier == 0) {
-						timeModifier = 1;
-					} else {
-						timeModifier = pauseTimeModifier;
-					}
-				}
+				TogglePause();
 			}
 			deltaTime = Time.deltaTime * timeModifier;
 
@@ -89,6 +80,19 @@ public class TimeManager : MonoBehaviour {
 			isDay = (hour >= 6 && hour <= 18);
 
 			uiM.UpdateDateTimeInformation(minute, hour, day, month, year, isDay);
+		}
+	}
+
+	public void TogglePause() {
+		if (timeModifier != 0) {
+			pauseTimeModifier = timeModifier;
+			timeModifier = 0;
+		} else {
+			if (pauseTimeModifier == 0) {
+				timeModifier = 1;
+			} else {
+				timeModifier = pauseTimeModifier;
+			}
 		}
 	}
 

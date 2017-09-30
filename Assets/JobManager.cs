@@ -444,7 +444,7 @@ public class JobManager:MonoBehaviour {
 		});
 	}
 
-	ResourceManager.TileObjectPrefab selectedPrefab;
+	private ResourceManager.TileObjectPrefab selectedPrefab;
 
 	public void SetSelectedPrefab(ResourceManager.TileObjectPrefab newSelectedPrefab) {
 		if (newSelectedPrefab != selectedPrefab) {
@@ -457,6 +457,10 @@ public class JobManager:MonoBehaviour {
 				selectedPrefab = null;
 			}
 		}
+	}
+
+	public ResourceManager.TileObjectPrefab GetSelectedPrefab() {
+		return selectedPrefab;
 	}
 
 	private GameObject selectedPrefabPreview;

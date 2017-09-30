@@ -923,8 +923,6 @@ public class TileManager:MonoBehaviour {
 		uiM.InitializeResourcesList();
 
 		uiM.ToggleLoadingScreen(false);
-
-		persistenceM.SaveGame();
 	}
 
 	public class Map {

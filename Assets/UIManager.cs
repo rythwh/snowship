@@ -115,6 +115,11 @@ public class UIManager : MonoBehaviour {
 	private GameObject selectedMTOIndicator;
 	public GameObject selectedMTOPanel;
 
+	private GameObject pauseMenu;
+	private GameObject pauseMenuButtons;
+
+	private GameObject pauseSavePanel;
+
 	void Awake() {
 
 		tileM = GetComponent<TileManager>();
@@ -215,6 +220,23 @@ public class UIManager : MonoBehaviour {
 
 		selectedMTOPanel = GameObject.Find("SelectedManufacturingTileObject-Panel");
 
+		pauseMenu = GameObject.Find("PauseMenu-BackgroundPanel");
+		pauseMenuButtons = pauseMenu.transform.Find("ButtonsList-Panel").gameObject;
+
+		pauseMenuButtons.transform.Find("PauseContinue-Button").GetComponent<Button>().onClick.AddListener(delegate { TogglePauseMenu(); });
+
+		pauseSavePanel = pauseMenu.transform.Find("PauseSave-Panel").gameObject;
+		pauseMenuButtons.transform.Find("PauseSave-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleSaveMenu(); });
+		pauseSavePanel.transform.Find("PauseSavePanelClose-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleSaveMenu(); });
+		ToggleSaveMenu();
+
+		//pauseLoadButton = pauseMenuButtons.transform.Find("PauseLoad-Button").gameObject;
+		//pauseSettingsButton = pauseMenuButtons.transform.Find("PauseSettings-Button").gameObject;
+		//pauseExitToMainMenuButton = pauseMenuButtons.transform.Find("PauseExitToMainMenu-Button").gameObject;
+		//pauseExitToDesktopButton = pauseMenuButtons.transform.Find("PauseExitToDesktop-Button").gameObject;
+
+		TogglePauseMenu();
+
 		InitializeTileInformation();
 		InitializeSelectedContainerIndicator();
 		InitializeSelectedManufacturingTileObjectIndicator();
@@ -241,7 +263,11 @@ public class UIManager : MonoBehaviour {
 				if (jobM.firstTile != null) {
 					jobM.StopSelection();
 				} else {
-					jobM.SetSelectedPrefab(null);
+					if (jobM.GetSelectedPrefab() != null) {
+						jobM.SetSelectedPrefab(null);
+					} else if (!Input.GetMouseButtonDown(1)) {
+						TogglePauseMenu();
+					}
 				}
 			}
 			if (colonistM.selectedColonist != null) {
@@ -1771,8 +1797,9 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void InitializeResourcesList() {
+		Transform resourcesListParent = resourcesList.transform.Find("ResourcesList-Panel");
 		foreach (ResourceManager.Resource resource in resourceM.resources) {
-			ResourceInstanceElement newRIE = new ResourceInstanceElement(resource, resourcesList.transform.Find("ResourcesList-Panel"), this);
+			ResourceInstanceElement newRIE = new ResourceInstanceElement(resource, resourcesListParent, this);
 			newRIE.resource.resourceListElement = newRIE;
 			resourceInstanceElements.Add(newRIE);
 		}
@@ -1800,7 +1827,6 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void UpdateResourcesList() {
-		Transform resourcesListParent = resourcesList.transform.Find("ResourcesList-Panel");
 		foreach (ResourceInstanceElement resourceInstanceElement in resourceInstanceElements) {
 			resourceInstanceElement.Update();
 		}
@@ -2066,5 +2092,38 @@ public class UIManager : MonoBehaviour {
 
 		selectedMTOPanel.transform.Find("SelectResource-Button").GetComponent<Image>().color = selectedMTO.hasEnoughRequiredResources ? colourMap[Colours.LightGreen] : colourMap[Colours.LightRed];
 		selectedMTOPanel.transform.Find("SelectFuelResource-Button").GetComponent<Image>().color = selectedMTO.hasEnoughFuel ? colourMap[Colours.LightGreen] : colourMap[Colours.LightRed];
+	}
+
+	public void TogglePauseMenu() {
+		pauseMenu.SetActive(!pauseMenu.activeSelf);
+		if (pauseMenu.activeSelf && timeM.timeModifier != 0) {
+			timeM.TogglePause();
+		} else if (timeM.timeModifier == 0) {
+			timeM.TogglePause();
+		}
+	}
+
+	public void TogglePauseMenuButtons() {
+		pauseMenuButtons.SetActive(!pauseMenuButtons.activeSelf);
+	}
+
+	public void ToggleSaveMenu() {
+		pauseSavePanel.SetActive(!pauseSavePanel.activeSelf);
+	}
+
+	public void ToggleLoadMenu() {
+
+	}
+
+	public void ToggleSettingsMenu() {
+
+	}
+
+	public void ExitToMenu() {
+
+	}
+
+	public void ExitToDesktop() {
+
 	}
 }

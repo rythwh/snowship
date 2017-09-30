@@ -1086,6 +1086,7 @@ public class ColonistManager : MonoBehaviour {
 		colonists[Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.CottonSeeds), Random.Range(5, 11));
 
 		uiM.SetColonistElements();
+		tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 	}
 
 	public Colonist selectedColonist;
