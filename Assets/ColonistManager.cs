@@ -767,6 +767,9 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public new void Update() {
+			if (playerMoved && path.Count <= 0) {
+				playerMoved = false;
+			}
 			base.Update();
 			UpdateNeeds();
 			if (overTileChanged) {
@@ -977,6 +980,7 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void PlayerMoveToTile(TileManager.Tile tile) {
+			playerMoved = true;
 			if (job != null) {
 				jobM.AddExistingJob(job);
 				job = null;
