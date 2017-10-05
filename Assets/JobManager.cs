@@ -54,8 +54,6 @@ public class JobManager:MonoBehaviour {
 
 		public GameObject jobPreview;
 
-		public bool accessible;
-
 		public bool started;
 		public float jobProgress;
 		public float colonistBuildTime;
@@ -104,14 +102,6 @@ public class JobManager:MonoBehaviour {
 
 			jobProgress = prefab.timeToBuild;
 			colonistBuildTime = prefab.timeToBuild;
-
-			accessible = false;
-			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-				if (colonist.overTile.region == tile.region) {
-					accessible = true;
-					break;
-				}
-			}
 		}
 
 		public void SetCreateResourceData(ResourceManager.Resource createResource, ResourceManager.TileObjectInstance manufacturingTileObject) {
@@ -1062,7 +1052,7 @@ public class JobManager:MonoBehaviour {
 		foreach (KeyValuePair<ColonistManager.Colonist,List<ColonistJob>> colonistKVP in colonistJobs) {
 			ColonistManager.Colonist colonist = colonistKVP.Key;
 			List<ColonistJob> colonistJobsList = colonistKVP.Value;
-			if (colonist.job == null) {
+			if (colonist.job == null && !colonist.playerMoved) {
 				for (int i = 0; i < colonistJobsList.Count; i++) {
 					ColonistJob colonistJob = colonistJobsList[i];
 					bool bestColonistForJob = true;

@@ -21,9 +21,10 @@ public class PersistenceManager : MonoBehaviour {
 	private CameraManager cameraM; // Save the camera zoom and position
 	private ColonistManager colonistM; // Save all instances of colonists, humans, life, etc.
 	private JobManager jobM; // Save all non-taken jobs
-	private TileManager tileM; // Save the map data
+	private TileManager tileM; // Save the tile data
 	private TimeManager timeM; // Save the date/time
 	private UIManager uiM; // Save the planet data
+	private ResourceManager resourceM; // Save the object data
 
 	void Awake() {
 		cameraM = GetComponent<CameraManager>();
@@ -49,39 +50,180 @@ public class PersistenceManager : MonoBehaviour {
 	public string GenerateSaveFileName() {
 		System.DateTime now = System.DateTime.Now;
 		string dateTime = now.Year + "y" + now.Month + "m" + now.Day + "d" + now.Hour + "h" + now.Minute + "m" + now.Second + "s" + now.Millisecond + "m";
-		string fileName = Application.persistentDataPath + "/Saves/snowship-save-" + uiM.colonyName + "-" + dateTime + ".snowship";
+		string fileName = "snowship-save-" + uiM.colonyName + "-" + dateTime + ".snowship";
 		return fileName;
 	}
 
-	public void SaveGame(string fileName) {
+	public string GenerateSavePath(string fileName) {
+		return Application.persistentDataPath + "/Saves/" + fileName;
+	}
 
-		FileStream file = new FileStream(fileName, FileMode.Create);
+	public void SaveGame(string fileName) {
+		fileName = GenerateSavePath(fileName);
+
+		StreamWriter file = new StreamWriter(fileName);
 		//FileStream file = new FileStream(Application.persistentDataPath + "/Saves/snowship-save" + System.DateTime.Now.ToUniversalTime() + ".snowship",FileMode.Create);
 
-		// 1: Save the map data
+		// Save the planet data
 
-		// 2: Save the colonist data
+		// Save the tile data
+		foreach (TileManager.Tile tile in tileM.map.tiles) {
+			file.WriteLine(GetTileDataString(tile));
+		}
 
-		// 3: Save the job data
+		// Save the object data
+		foreach (KeyValuePair<ResourceManager.TileObjectPrefab,List<ResourceManager.TileObjectInstance>> objectInstanceKVP in resourceM.tileObjectInstances) {
+			foreach (ResourceManager.TileObjectInstance objectInstance in objectInstanceKVP.Value) {
+				file.WriteLine(GetObjectInstanceDataString(objectInstance));
+			}
+		}
 
-		// 4: Save the time data
+		// Save manufacturing tile object data
+		foreach (ResourceManager.ManufacturingTileObject mto in resourceM.manufacturingTileObjectInstances) {
+			file.WriteLine(GetManufacturingTileObjectDataString(mto));
+		}
 
-		// 5: Save the camera data
+		// Save the colonist data
+		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+			file.WriteLine(GetColonistDataString(colonist));
+		}
 
-		// 6: Save the planet data
+		// Save the job data
+
+		// Save the time data
+
+		// Save the camera data
+
+	}
+
+	public string GetTileDataString(TileManager.Tile tile) {
+		string tileData = string.Empty;
+		tileData += tile.obj.transform.position.x + "/" + tile.obj.transform.position.y;
+		tileData += "/" + tile.height;
+		tileData += "/" + tile.temperature;
+		tileData += "/" + tile.precipitation;
+		tileData += "/" + tile.dugPreviously;
+		return tileData;
+	}
+
+	public string GetObjectInstanceDataString(ResourceManager.TileObjectInstance objectInstance) {
+		string objectInstanceData = string.Empty;
+		objectInstanceData += objectInstance.prefab.type;
+		objectInstanceData += "/" + objectInstance.obj.transform.position.x + "/" + objectInstance.obj.transform.position.y;
+		objectInstanceData += "/" + objectInstance.rotationIndex;
+		return objectInstanceData;
+	}
+
+	public string GetManufacturingTileObjectDataString(ResourceManager.ManufacturingTileObject mto) {
+		string mtoInstanceData = string.Empty;
+		mtoInstanceData += mto.parentObject.obj.transform.position.x + "/" + mto.parentObject.obj.transform.position.y;
+		mtoInstanceData += "/" + mto.createResource.type;
+		mtoInstanceData += "/" + mto.fuelResource.type;
+		return mtoInstanceData;
+	}
+
+	public string GetColonistDataString(ColonistManager.Colonist colonist) {
+		string colonistData = "Colonist";
+		colonistData += "/" + colonist.playerMoved;
+		colonistData += "/" + colonist.profession.type;
+		colonistData += "/" + colonist.oldProfession.type;
+		if (colonist.job != null) {
+			colonistData += "/Job," + GetJobDataString(colonist.job,false);
+		}
+		if (colonist.storedJob != null) {
+			colonistData += "/StoredJob," + GetJobDataString(colonist.storedJob,false);
+		}
+		foreach (ColonistManager.SkillInstance skill in colonist.skills) {
+			colonistData += "/Skill";
+			colonistData += "," + skill.prefab.type;
+			colonistData += "," + skill.level;
+			colonistData += "," + skill.nextLevelExperience;
+			colonistData += "," + skill.currentExperience;
+		}
+		foreach (ColonistManager.TraitInstance trait in colonist.traits) {
+			colonistData += "/Trait";
+			colonistData += "," + trait.prefab.type;
+		}
+		foreach (ColonistManager.NeedInstance need in colonist.needs) {
+			colonistData += "/Need";
+			colonistData += "," + need.prefab.type;
+			colonistData += "," + need.value;
+		}
+		colonistData += "/" + GetHumanDataString(colonist);
+		colonistData += "/" + GetLifeDataString(colonist);
+		return colonistData;
+	}
+
+	public string GetHumanDataString(ColonistManager.Human human) {
+		string humanData = "Human";
+		return humanData;
+	}
+
+	public string GetLifeDataString(ColonistManager.Life life) {
+		string lifeData = "Life";
+		return lifeData;
+	}
+
+	public string GetJobDataString(JobManager.Job job, bool includePosition) {
+		string jobData = string.Empty;
+		if (includePosition) {
+			jobData += job.tile.obj.transform.position.x + "/" + job.tile.obj.transform.position.y;
+		}
+		jobData += "/" + job.prefab.type;
+		jobData += "/" + job.rotationIndex;
+		jobData += "/" + job.started;
+		jobData += "/" + job.jobProgress;
+		jobData += "/" + job.colonistBuildTime;
+		foreach (ResourceManager.ResourceAmount resourceToBuild in job.resourcesToBuild) {
+			jobData += "/ResourceToBuild," + GetResourceAmountDataString(resourceToBuild);
+		}
+		foreach (ResourceManager.ResourceAmount colonistResource in job.colonistResources) {
+			jobData += "/ColonistResource," + GetResourceAmountDataString(colonistResource);
+		}
+		foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
+			jobData += "/ContainerPickup," + GetContainerPickupDataString(containerPickup);
+		}
+		return jobData;
+	}
+
+	public string GetResourceAmountDataString(ResourceManager.ResourceAmount resourceAmount) {
+		string resourceAmountData = string.Empty;
+		resourceAmountData += resourceAmount.resource.type;
+		resourceAmountData += "," + resourceAmount.amount;
+		return resourceAmountData;
+	}
+
+	public string GetContainerPickupDataString(JobManager.ContainerPickup containerPickup) {
+		string containerPickupData = string.Empty;
+		containerPickupData += GetContainerDataString(containerPickup.container);
+		foreach (ResourceManager.ResourceAmount resourceToPickup in containerPickup.resourcesToPickup) {
+			containerPickupData += "`ResourceToPickup,";
+			containerPickupData += "," + GetResourceAmountDataString(resourceToPickup);
+		}
+		return containerPickupData;
+	}
+
+	public string GetContainerDataString(ResourceManager.Container container) {
+		string containerData = string.Empty;
+		return containerData;
+	}
+
+	public string GetFarmDataString(ResourceManager.Farm farm) {
+		string farmData = string.Empty;
+		return farmData;
 	}
 
 	public void LoadGame() {
-		// 1: Load the map data
+		// Load the tile data
 
-		// 2: Load the colonist data
+		// Load the colonist data
 
-		// 3: Load the job data
+		// Load the job data
 
-		// 4: Load the time data
+		// Load the time data
 
-		// 5: Load the camera data
+		// Load the camera data
 
-		// 6: Load the planet data
+		// Load the planet data
 	}
 }
