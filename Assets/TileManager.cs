@@ -1640,7 +1640,7 @@ public class TileManager:MonoBehaviour {
 		void CalculateTemperature() {
 			foreach (Tile tile in tiles) {
 				if (mapData.planetTemperature) {
-					tile.temperature = TemperatureFromMapLatitude(tile.position.y,mapData.temperatureRange,mapData.temperatureOffset,mapData.mapSize);
+					tile.temperature = TemperatureFromMapLatitude(tile.position.y, mapData.temperatureRange, mapData.temperatureOffset, mapData.mapSize);
 				} else {
 					tile.temperature = mapData.averageTemperature;
 				}

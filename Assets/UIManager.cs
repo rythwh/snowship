@@ -50,6 +50,7 @@ public class UIManager : MonoBehaviour {
 	private CameraManager cameraM;
 	private ColonistManager colonistM;
 	private TimeManager timeM;
+	private PersistenceManager persistenceM;
 
 	private GameObject mainMenu;
 
@@ -128,6 +129,7 @@ public class UIManager : MonoBehaviour {
 		cameraM = GetComponent<CameraManager>();
 		colonistM = GetComponent<ColonistManager>();
 		timeM = GetComponent<TimeManager>();
+		persistenceM = GetComponent<PersistenceManager>();
 
 		SetMenuBackground();
 
@@ -2107,8 +2109,20 @@ public class UIManager : MonoBehaviour {
 		pauseMenuButtons.SetActive(!pauseMenuButtons.activeSelf);
 	}
 
+	private string saveFileName;
 	public void ToggleSaveMenu() {
 		pauseSavePanel.SetActive(!pauseSavePanel.activeSelf);
+		if (pauseSavePanel.activeSelf) {
+			saveFileName = persistenceM.GenerateSaveFileName();
+			pauseSavePanel.transform.Find("SaveFileName-Text").GetComponent<Text>().text = saveFileName;
+			pauseSavePanel.transform.Find("PauseSavePanelSave-Button").GetComponent<Button>().onClick.RemoveAllListeners();
+			pauseSavePanel.transform.Find("PauseSavePanelSave-Button").GetComponent<Button>().onClick.AddListener(delegate {
+				persistenceM.SaveGame(saveFileName);
+				ToggleSaveMenu();
+			});
+		} else {
+			saveFileName = string.Empty;
+		}
 	}
 
 	public void ToggleLoadMenu() {

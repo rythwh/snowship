@@ -46,13 +46,16 @@ public class PersistenceManager : MonoBehaviour {
 
 	/* https://stackoverflow.com/questions/13266496/easily-write-a-whole-class-instance-to-xml-file-and-read-back-in */
 
-	public void SaveGame() {
-
+	public string GenerateSaveFileName() {
 		System.DateTime now = System.DateTime.Now;
-		string dateTime = now.Year + "" + now.Month + "" + now.Day + "" + now.Hour + "" + now.Minute + "" + now.Second + "" + now.Millisecond;
+		string dateTime = now.Year + "y" + now.Month + "m" + now.Day + "d" + now.Hour + "h" + now.Minute + "m" + now.Second + "s" + now.Millisecond + "m";
 		string fileName = Application.persistentDataPath + "/Saves/snowship-save-" + uiM.colonyName + "-" + dateTime + ".snowship";
-		print(fileName);
+		return fileName;
+	}
 
+	public void SaveGame(string fileName) {
+
+		FileStream file = new FileStream(fileName, FileMode.Create);
 		//FileStream file = new FileStream(Application.persistentDataPath + "/Saves/snowship-save" + System.DateTime.Now.ToUniversalTime() + ".snowship",FileMode.Create);
 
 		// 1: Save the map data
