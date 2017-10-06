@@ -149,11 +149,16 @@ public class PersistenceManager : MonoBehaviour {
 		colonistData += "/" + colonist.profession.type;
 		colonistData += "/" + colonist.oldProfession.type;
 		if (colonist.job != null) {
-			colonistData += "/Job," + GetJobDataString(colonist.job,false);
+			colonistData += "/Job," + GetJobDataString(colonist.job, false);
+		} else {
+			colonistData += "/Job,None";
 		}
 		if (colonist.storedJob != null) {
-			colonistData += "/StoredJob," + GetJobDataString(colonist.storedJob,false);
+			colonistData += "/StoredJob," + GetJobDataString(colonist.storedJob, false);
+		} else {
+			colonistData += "/StoredJob,None";
 		}
+		colonistData += "Skills`";
 		foreach (ColonistManager.SkillInstance skill in colonist.skills) {
 			colonistData += "/Skill";
 			colonistData += "," + skill.prefab.type;
@@ -244,7 +249,9 @@ public class PersistenceManager : MonoBehaviour {
 	}
 
 	public string GetReservedResourceDataString(ResourceManager.ReservedResources reservedResource) {
-		
+		string reservedResourceData = string.Empty;
+
+		return reservedResourceData;
 	}
 
 	public void LoadGame() {
