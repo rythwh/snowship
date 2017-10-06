@@ -32,7 +32,7 @@
 
 ### Release ###
 
-* [Itch.io](flizzehh.itch.io/snowship)
+* [itch.io](https://flizzehh.itch.io/snowship)
 
 ### README Formatting ###
 
