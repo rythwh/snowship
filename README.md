@@ -2,8 +2,9 @@
 
 ### What is this repository for? ###
 
-* Snowship is a colony survival management simulation game developed by Esteae/Ryan White.
-* Snowship Alpha R1
+* Snowship is a colony survival management simulation game developed by Ryan White.
+* Current Development Version: Snowship Alpha R1 (Late 2017)
+* Current Release Version: Snowship B51 (March 5, 2016)
 
 ### How do I get set up? ###
 
@@ -11,33 +12,28 @@
 * No configuration necessary.
 * No dependencies.
 * No database.
-* Unit tests will be implemented in the Tests.cs file within the game's scripts.
-  These tests can be run anywhere in the game by referencing Tests.cs and running the appropriate test function
-  once it is created.
-* To deploy/build the game, build it using Unity's build tool, place it in a ZIP folder and upload it to itch.io.
-  itch.io Refinery will be utilized in the future.
+* To build the game, build it using Unity's build tool.
+* To deploy the game, place it in a .zip folder and upload it to itch.io.
 
 ### Contribution guidelines ###
 
-* The contents of a test should reflect the nature of the function that is being tested.
-  The output of the tests can either be to the Unity console or to an external log file.
 * Code follows personal coding conventions/structure which is subject to change however I will try to maintain the following:
-  - Variable names are camelCase.
-  - Function/method names are UppercaseByWord.
-  - Methods in a script are usually called in order by a master-method located somewhere in the script which is itself called by a master-method for the game itself.
-* No other guidelines.
+  - Variable names are in lower camel case ( variableName ).
+  - Method names are in upper camel case ( MethodName ).
+  - Class names are in upper camel case ( ClassName ).
+  - Subclasses almost always have all variables defined at the top of the class.
 
 ### Who do I talk to? ###
 
 + Ryan White
-    * ryan.thomas.white@outlook.com)
-    * flizzehh.itch.io/snowship
+    * ryan.thomas.white@outlook.com
     * [@Flizzehh](https://twitter.com/flizzehh) on Twitter
     * @Flizzehh on BitBucket
-- Esteae
-    * esteae.ca
-    * ryan@esteae.ca
-    * support@esteae.ca
+
+### Release ###
+
+* [Itch.io](flizzehh.itch.io/snowship)
 
 ### README Formatting ###
+
 * [Markdown](https://bitbucket.org/tutorials/markdowndemo)
