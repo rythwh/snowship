@@ -96,6 +96,11 @@ public class PersistenceManager : MonoBehaviour {
 
 	}
 
+	/*
+		"xPos,yPos/height/temperature/precipitation/dugPreviously"
+
+		Example: "35,45/0.25/23/0.4/false"
+	*/
 	public string GetTileDataString(TileManager.Tile tile) {
 		string tileData = string.Empty;
 		tileData += tile.obj.transform.position.x + "/" + tile.obj.transform.position.y;
@@ -106,24 +111,40 @@ public class PersistenceManager : MonoBehaviour {
 		return tileData;
 	}
 
+	/*
+		"xPos,yPos/prefabType/rotationIndex"
+
+		Example: "35,45/WoodenChest/0"
+	*/
 	public string GetObjectInstanceDataString(ResourceManager.TileObjectInstance objectInstance) {
 		string objectInstanceData = string.Empty;
-		objectInstanceData += objectInstance.prefab.type;
-		objectInstanceData += "/" + objectInstance.obj.transform.position.x + "/" + objectInstance.obj.transform.position.y;
+		objectInstanceData += objectInstance.obj.transform.position.x + "," + objectInstance.obj.transform.position.y;
+		objectInstanceData += "/" + objectInstance.prefab.type;
 		objectInstanceData += "/" + objectInstance.rotationIndex;
 		return objectInstanceData;
 	}
 
+	/*
+		"xPos,yPos/createResourceType/fuelResourceType"
+
+		Example: "35,45/Brick/Wood"
+	*/
 	public string GetManufacturingTileObjectDataString(ResourceManager.ManufacturingTileObject mto) {
-		string mtoInstanceData = string.Empty;
-		mtoInstanceData += mto.parentObject.obj.transform.position.x + "/" + mto.parentObject.obj.transform.position.y;
+		string mtoInstanceData = "MTO";
+		mtoInstanceData += "/" + mto.parentObject.obj.transform.position.x + "," + mto.parentObject.obj.transform.position.y;
 		mtoInstanceData += "/" + mto.createResource.type;
 		mtoInstanceData += "/" + mto.fuelResource.type;
 		return mtoInstanceData;
 	}
 
+	/*
+		"Colonist/xPos,yPos/playerMoved/professionType/oldProfessionType/Job,jobData/StoredJob,storedJobData/Skill,skillData/Trait,traitData/Need,needData/Human,humanData/Life,lifeData"
+
+		Example: "35,45/Brick/Wood"
+	*/
 	public string GetColonistDataString(ColonistManager.Colonist colonist) {
 		string colonistData = "Colonist";
+		colonistData += "/" + colonist.obj.transform.position.x + "," + colonist.obj.transform.position.y;
 		colonistData += "/" + colonist.playerMoved;
 		colonistData += "/" + colonist.profession.type;
 		colonistData += "/" + colonist.oldProfession.type;
@@ -211,6 +232,19 @@ public class PersistenceManager : MonoBehaviour {
 	public string GetFarmDataString(ResourceManager.Farm farm) {
 		string farmData = string.Empty;
 		return farmData;
+	}
+
+	// "maxAmount/ReservedResources|Colonist:N,ResourceName:Amount,ResourceName:Amount/Resources,
+
+	public string GetInventoryDataString(ResourceManager.Inventory inventory) {
+		string inventoryData = string.Empty;
+		inventoryData += inventory.maxAmount;
+
+		return inventoryData;
+	}
+
+	public string GetReservedResourceDataString(ResourceManager.ReservedResources reservedResource) {
+		
 	}
 
 	public void LoadGame() {
