@@ -923,8 +923,6 @@ public class TileManager:MonoBehaviour {
 		uiM.InitializeResourcesList();
 
 		uiM.ToggleLoadingScreen(false);
-
-		print(persistenceM.GetColonistDataString(colonistM.colonists[0]));
 	}
 
 	public class Map {
