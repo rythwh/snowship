@@ -112,4 +112,8 @@ public class TimeManager : MonoBehaviour {
 		hour = Mathf.FloorToInt(time);
 		minute = Mathf.RoundToInt((time - hour) * 60);
 	}
+
+	public string GetDateString() {
+		return (day + "," + month + "," + year);
+	}
 }
