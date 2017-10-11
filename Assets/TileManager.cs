@@ -897,7 +897,7 @@ public class TileManager:MonoBehaviour {
 	public Map map;
 
 	public IEnumerator InitializeMap(MapData mapData) {
-		map = new Map(mapData);
+		map = new Map(mapData,false);
 
 		cameraM.SetCameraPosition(new Vector2(mapData.mapSize / 2f, mapData.mapSize / 2f));
 		cameraM.SetCameraZoom(20);
@@ -950,14 +950,18 @@ public class TileManager:MonoBehaviour {
 		}
 
 		public MapData mapData;
-		public Map(MapData mapData) {
+		public Map(MapData mapData, bool loadMap) {
 
 			GetScriptReferences();
 
 			this.mapData = mapData;
 
 			createdMap = false;
-			uiM.StartCoroutine(CreateMap());
+			if (loadMap) {
+				
+			} else {
+				uiM.StartCoroutine(CreateMap());
+			}
 		}
 
 		public List<Tile> tiles = new List<Tile>();
