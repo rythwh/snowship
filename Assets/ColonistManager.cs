@@ -167,10 +167,7 @@ public class ColonistManager : MonoBehaviour {
 		public string name;
 		public GameObject nameCanvas;
 
-		public int skinIndex;
-		public int hairIndex;
-		public int shirtIndex;
-		public int pantsIndex;
+		public Dictionary<ColonistLook, int> colonistLookIndexes;
 
 		// Carrying Item
 
@@ -179,6 +176,7 @@ public class ColonistManager : MonoBehaviour {
 
 		public Human(TileManager.Tile spawnTile,Dictionary<ColonistLook,int> colonistLookIndexes, float startingHealth) : base(spawnTile,startingHealth) {
 			moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
+			this.colonistLookIndexes = colonistLookIndexes;
 
 			inventory = new ResourceManager.Inventory(this,null,50);
 

@@ -70,9 +70,15 @@ public class PersistenceManager : MonoBehaviour {
 		//FileStream file = new FileStream(Application.persistentDataPath + "/Saves/snowship-save" + System.DateTime.Now.ToUniversalTime() + ".snowship",FileMode.Create);
 
 		// Save the planet data
-		file.WriteLine("PlanetTiles/" + uiM.planetTiles.Count);
+		string planetData = "PlanetTiles";
+		planetData += "/PlanetTileCount," + uiM.planetTiles.Count;
+		planetData += "/PlanetSeed," + uiM.planet.mapData.mapSeed;
+		planetData += "/PlanetSize," + uiM.planet.mapData.mapSize;
+		planetData += "/PlanetDistance," + uiM.planetDistance;
+		planetData += "/PlanetTempRange," + uiM.temperatureRange;
+		file.WriteLine(planetData);
 		foreach (UIManager.PlanetTile planetTile in uiM.planetTiles) {
-
+			file.WriteLine(GetPlanetTileDataString(planetTile));
 		}
 
 		// Save the tile data
@@ -140,6 +146,26 @@ public class PersistenceManager : MonoBehaviour {
 		file.WriteLine(cameraData);
 
 		file.Close();
+	}
+
+	public string GetPlanetTileDataString(UIManager.PlanetTile planetTile) {
+		string planetTileData = string.Empty;
+		planetTileData += planetTile.equatorOffset;
+		planetTileData += "/" + planetTile.averageTemperature;
+		planetTileData += "/" + planetTile.averagePrecipitation;
+		planetTileData += "/";
+		int terrainTypeHeightIndex = 0;
+		foreach (KeyValuePair<TileManager.TileTypes, float> terrainTypeHeightKVP in planetTile.terrainTypeHeights) {
+			planetTileData += terrainTypeHeightKVP.Key + ":" + terrainTypeHeightKVP.Value + (terrainTypeHeightIndex + 1 == planetTile.terrainTypeHeights.Count ? "" : ",");
+			terrainTypeHeightIndex += 1;
+		}
+		planetTileData += "/";
+		int surroundingPlanetTileHeightDirectionIndex = 0;
+		foreach (int surroundingPlanetTileHeightDirection in planetTile.surroundingPlanetTileHeightDirections) {
+			planetTileData += surroundingPlanetTileHeightDirection + (surroundingPlanetTileHeightDirectionIndex + 1 == planetTile.surroundingPlanetTileHeightDirections.Count ? "" : ",");
+			surroundingPlanetTileHeightDirectionIndex += 1;
+		}
+		return planetTileData;
 	}
 
 	/*
@@ -238,10 +264,10 @@ public class PersistenceManager : MonoBehaviour {
 		string colonistData = "Colonist";
 		colonistData += "/Position," + colonist.obj.transform.position.x + "," + colonist.obj.transform.position.y;
 		colonistData += "/Name," + colonist.name;
-		colonistData += "/SkinIndex," + colonist.skinIndex;
-		colonistData += "/HairIndex," + colonist.hairIndex;
-		colonistData += "/ShirtIndex," + colonist.shirtIndex;
-		colonistData += "/PantsIndex," + colonist.pantsIndex;
+		colonistData += "/SkinIndex," + colonist.colonistLookIndexes[ColonistManager.ColonistLook.Skin];
+		colonistData += "/HairIndex," + colonist.colonistLookIndexes[ColonistManager.ColonistLook.Hair];
+		colonistData += "/ShirtIndex," + colonist.colonistLookIndexes[ColonistManager.ColonistLook.Shirt];
+		colonistData += "/PantsIndex," + colonist.colonistLookIndexes[ColonistManager.ColonistLook.Pants];
 		colonistData += "/Health," + colonist.health;
 		colonistData += "/PlayerMoved," + colonist.playerMoved;
 		colonistData += "/Profession," + colonist.profession.type;
@@ -292,61 +318,6 @@ public class PersistenceManager : MonoBehaviour {
 		return colonistData;
 	}
 
-	/*
-		"Colonist/xPos,yPos/playerMoved/professionType/oldProfessionType/Job,jobData/StoredJob,storedJobData/Skill,skillData/Trait,traitData/Need,needData/Human,humanData/Life,lifeData"
-
-		Example: "35,45/Brick/Wood"
-	*/
-	/*
-	public string GetColonistDataString(ColonistManager.Colonist colonist) {
-		string colonistData = "Colonist";
-		colonistData += "/" + colonist.obj.transform.position.x + "," + colonist.obj.transform.position.y;
-		colonistData += "/" + colonist.playerMoved;
-		colonistData += "/" + colonist.profession.type;
-		colonistData += "/" + colonist.oldProfession.type;
-		if (colonist.job != null) {
-			colonistData += "/Job," + GetJobDataString(colonist.job, false);
-		} else {
-			colonistData += "/Job,None";
-		}
-		if (colonist.storedJob != null) {
-			colonistData += "/StoredJob," + GetJobDataString(colonist.storedJob, false);
-		} else {
-			colonistData += "/StoredJob,None";
-		}
-		colonistData += "Skills`";
-		foreach (ColonistManager.SkillInstance skill in colonist.skills) {
-			colonistData += "/Skill";
-			colonistData += "," + skill.prefab.type;
-			colonistData += "," + skill.level;
-			colonistData += "," + skill.nextLevelExperience;
-			colonistData += "," + skill.currentExperience;
-		}
-		foreach (ColonistManager.TraitInstance trait in colonist.traits) {
-			colonistData += "/Trait";
-			colonistData += "," + trait.prefab.type;
-		}
-		foreach (ColonistManager.NeedInstance need in colonist.needs) {
-			colonistData += "/Need";
-			colonistData += "," + need.prefab.type;
-			colonistData += "," + need.value;
-		}
-		colonistData += "/" + GetHumanDataString(colonist);
-		colonistData += "/" + GetLifeDataString(colonist);
-		return colonistData;
-	}
-
-	public string GetHumanDataString(ColonistManager.Human human) {
-		string humanData = "Human";
-		return humanData;
-	}
-
-	public string GetLifeDataString(ColonistManager.Life life) {
-		string lifeData = "Life";
-		return lifeData;
-	}
-	*/
-
 	public string GetJobDataString(JobManager.Job job, bool onColonist) {
 		string jobData = "Job";
 		jobData += "/Position," + job.tile.obj.transform.position.x + "," + job.tile.obj.transform.position.y;
@@ -392,74 +363,6 @@ public class PersistenceManager : MonoBehaviour {
 		}
 		return jobData;
 	}
-
-	/*
-	public string GetJobDataString(JobManager.Job job, bool includePosition) {
-		string jobData = string.Empty;
-		if (includePosition) {
-			jobData += job.tile.obj.transform.position.x + "/" + job.tile.obj.transform.position.y;
-		}
-		jobData += "/" + job.prefab.type;
-		jobData += "/" + job.rotationIndex;
-		jobData += "/" + job.started;
-		jobData += "/" + job.jobProgress;
-		jobData += "/" + job.colonistBuildTime;
-		foreach (ResourceManager.ResourceAmount resourceToBuild in job.resourcesToBuild) {
-			jobData += "/ResourceToBuild," + GetResourceAmountDataString(resourceToBuild);
-		}
-		foreach (ResourceManager.ResourceAmount colonistResource in job.colonistResources) {
-			jobData += "/ColonistResource," + GetResourceAmountDataString(colonistResource);
-		}
-		foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
-			jobData += "/ContainerPickup," + GetContainerPickupDataString(containerPickup);
-		}
-		return jobData;
-	}
-	*/
-
-	/*
-	public string GetResourceAmountDataString(ResourceManager.ResourceAmount resourceAmount) {
-		string resourceAmountData = string.Empty;
-		resourceAmountData += resourceAmount.resource.type;
-		resourceAmountData += "," + resourceAmount.amount;
-		return resourceAmountData;
-	}
-
-	public string GetContainerPickupDataString(JobManager.ContainerPickup containerPickup) {
-		string containerPickupData = string.Empty;
-		containerPickupData += GetContainerDataString(containerPickup.container);
-		foreach (ResourceManager.ResourceAmount resourceToPickup in containerPickup.resourcesToPickup) {
-			containerPickupData += "`ResourceToPickup,";
-			containerPickupData += "," + GetResourceAmountDataString(resourceToPickup);
-		}
-		return containerPickupData;
-	}
-
-	public string GetContainerDataString(ResourceManager.Container container) {
-		string containerData = string.Empty;
-		return containerData;
-	}
-
-	public string GetFarmDataString(ResourceManager.Farm farm) {
-		string farmData = string.Empty;
-		return farmData;
-	}
-
-	// "maxAmount/ReservedResources|Colonist:N,ResourceName:Amount,ResourceName:Amount/Resources,
-
-	public string GetInventoryDataString(ResourceManager.Inventory inventory) {
-		string inventoryData = string.Empty;
-		inventoryData += inventory.maxAmount;
-
-		return inventoryData;
-	}
-
-	public string GetReservedResourceDataString(ResourceManager.ReservedResources reservedResource) {
-		string reservedResourceData = string.Empty;
-
-		return reservedResourceData;
-	}
-	*/
 
 	public void LoadGame() {
 		// Load the tile data

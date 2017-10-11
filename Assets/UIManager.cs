@@ -452,7 +452,7 @@ public class UIManager : MonoBehaviour {
 		return celsius;
 	}
 
-	private TileManager.Map planet;
+	public TileManager.Map planet;
 	private List<int> planetTileSizes = new List<int>() { 20, 15, 12, 10, 8, 6, 5 }; // Some divisors of 600
 
 	public void GeneratePlanet() {
@@ -479,7 +479,7 @@ public class UIManager : MonoBehaviour {
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
 
 		TileManager.MapData mapData = new TileManager.MapData(planetSeed, planetSize, false, -1, true, temperatureRange, planetTemperature, -1, -1, new Dictionary<TileManager.TileTypes, float>() { { TileManager.TileTypes.GrassWater, 0.40f }, { TileManager.TileTypes.Stone, 0.75f } }, null, true);
-		planet = new TileManager.Map(mapData);
+		planet = new TileManager.Map(mapData,false);
 		foreach (TileManager.Tile tile in planet.tiles) {
 			planetTiles.Add(new PlanetTile(tile, planetPreviewPanel.transform, tile.position, planetSize, planetTemperature));
 		}
