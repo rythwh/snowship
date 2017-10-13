@@ -53,12 +53,14 @@ public class UIManager : MonoBehaviour {
 	private TimeManager timeM;
 	private PersistenceManager persistenceM;
 
-	private GameObject mainMenu;
+	public GameObject mainMenu;
 	private GameObject mainMenuButtonsPanel;
 	private GameObject snowshipLogo;
 
 	private GameObject mapSelectionPanel;
 	private GameObject mapPanelExitButton;
+
+	public GameObject planetPreviewPanel;
 
 	public int planetTileSize = 0;
 	private Slider planetSizeSlider;
@@ -124,6 +126,7 @@ public class UIManager : MonoBehaviour {
 
 	private GameObject pauseMenu;
 	private GameObject pauseMenuButtons;
+	private GameObject pauseLabel;
 
 	private GameObject pauseSavePanel;
 	private GameObject pauseLoadPanel;
@@ -153,6 +156,8 @@ public class UIManager : MonoBehaviour {
 		mainMenuButtonsPanel.transform.Find("Load-Button").GetComponent<Button>().onClick.AddListener(delegate { });
 		mainMenuButtonsPanel.transform.Find("Options-Button").GetComponent<Button>().onClick.AddListener(delegate { });
 		mainMenuButtonsPanel.transform.Find("Exit-Button").GetComponent<Button>().onClick.AddListener(delegate { });
+
+		planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
 
 		planetSizeSlider = GameObject.Find("PlanetSize-Slider").GetComponent<Slider>();
 		planetSizeText = GameObject.Find("PlanetSizeValue-Text").GetComponent<Text>();
@@ -243,6 +248,7 @@ public class UIManager : MonoBehaviour {
 
 		pauseMenu = GameObject.Find("PauseMenu-BackgroundPanel");
 		pauseMenuButtons = pauseMenu.transform.Find("ButtonsList-Panel").gameObject;
+		pauseLabel = pauseMenu.transform.Find("PausedLabel-Text").gameObject;
 
 		pauseMenuButtons.transform.Find("PauseContinue-Button").GetComponent<Button>().onClick.AddListener(delegate { TogglePauseMenu(); });
 
@@ -277,7 +283,9 @@ public class UIManager : MonoBehaviour {
 			TileManager.Tile newMouseOverTile = tileM.map.GetTileFromPosition(mousePosition);
 			if (newMouseOverTile != mouseOverTile) {
 				mouseOverTile = newMouseOverTile;
-				UpdateTileInformation();
+				if (timeM.timeModifier != 0) {
+					UpdateTileInformation();
+				}
 			}
 			if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape)) {
 				if (jobM.firstTile != null) {
@@ -331,7 +339,7 @@ public class UIManager : MonoBehaviour {
 			}
 		} else {
 			playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null);
-			if (Input.GetMouseButtonDown(1) && selectedPlanetTile != null) {
+			if (Input.GetMouseButtonDown(1) && selectedPlanetTile != null && !tileM.generating) {
 				selectedPlanetTile = null;
 				SetSelectedPlanetTileInfo();
 			}
@@ -378,7 +386,6 @@ public class UIManager : MonoBehaviour {
 	public PlanetTile selectedPlanetTile;
 
 	public List<PlanetTile> planetTiles = new List<PlanetTile>();
-	public List<List<PlanetTile>> sortedPlanetTiles = new List<List<PlanetTile>>();
 
 	public class PlanetTile {
 
@@ -401,7 +408,7 @@ public class UIManager : MonoBehaviour {
 
 		public TileManager.MapData data;
 		private int planetSize;
-		private int planetTemperature;
+		private float planetTemperature;
 
 		public float equatorOffset;
 		public float averageTemperature;
@@ -409,7 +416,7 @@ public class UIManager : MonoBehaviour {
 		public Dictionary<TileManager.TileTypes, float> terrainTypeHeights;
 		public List<int> surroundingPlanetTileHeightDirections = new List<int>();
 
-		public PlanetTile(TileManager.Tile tile, Transform parent, Vector2 position, int planetSize, int planetTemperature) {
+		public PlanetTile(TileManager.Tile tile, Transform parent, Vector2 position, int planetSize, float planetTemperature) {
 
 			GetScriptReferences();
 
@@ -464,8 +471,6 @@ public class UIManager : MonoBehaviour {
 			terrainTypeHeights = new Dictionary<TileManager.TileTypes, float>() {
 				{ TileManager.TileTypes.GrassWater,waterThreshold},{ TileManager.TileTypes.Stone,stoneThreshold }
 			};
-
-
 		}
 	}
 
@@ -505,14 +510,27 @@ public class UIManager : MonoBehaviour {
 	public TileManager.Map planet;
 	private List<int> planetTileSizes = new List<int>() { 20, 15, 12, 10, 8, 6, 5 }; // Some divisors of 600
 
+	public static class StaticPlanetMapDataValues {
+		public static bool actualMap = false;
+		public static float equatorOffset = -1;
+		public static bool planetTemperature = true;
+		public static float averageTemperature = -1;
+		public static float averagePrecipitation = -1;
+		public static readonly Dictionary<TileManager.TileTypes, float> terrainTypeHeights =
+			new Dictionary<TileManager.TileTypes, float> {
+				{ TileManager.TileTypes.GrassWater, 0.40f },
+				{ TileManager.TileTypes.Stone, 0.75f }
+			};
+		public static List<int> surroundingPlanetTileHeightDirections = null;
+		public static bool preventEdgeTouching = true;
+	}
+
 	public void GeneratePlanet() {
 
 		foreach (PlanetTile tile in planetTiles) {
 			Destroy(tile.obj);
 		}
 		planetTiles.Clear();
-
-		GameObject planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
 
 		Text planetSeedInput = GameObject.Find("PlanetSeedInput-Text").GetComponent<Text>();
 		string planetSeedString = planetSeedInput.text;
@@ -528,8 +546,21 @@ public class UIManager : MonoBehaviour {
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().cellSize = new Vector2(planetTileSize, planetTileSize);
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
 
-		TileManager.MapData mapData = new TileManager.MapData(planetSeed, planetSize, false, -1, true, temperatureRange, planetTemperature, -1, -1, new Dictionary<TileManager.TileTypes, float>() { { TileManager.TileTypes.GrassWater, 0.40f }, { TileManager.TileTypes.Stone, 0.75f } }, null, true);
-		planet = new TileManager.Map(mapData,false);
+		TileManager.MapData planetData = new TileManager.MapData(
+			planetSeed,
+			planetSize,
+			StaticPlanetMapDataValues.actualMap,
+			StaticPlanetMapDataValues.equatorOffset,
+			StaticPlanetMapDataValues.planetTemperature,
+			temperatureRange,
+			planetTemperature,
+			StaticPlanetMapDataValues.averageTemperature,
+			StaticPlanetMapDataValues.averagePrecipitation,
+			StaticPlanetMapDataValues.terrainTypeHeights,
+			StaticPlanetMapDataValues.surroundingPlanetTileHeightDirections,
+			StaticPlanetMapDataValues.preventEdgeTouching
+		);
+		planet = new TileManager.Map(planetData, false);
 		foreach (TileManager.Tile tile in planet.tiles) {
 			planetTiles.Add(new PlanetTile(tile, planetPreviewPanel.transform, tile.position, planetSize, planetTemperature));
 		}
@@ -574,7 +605,20 @@ public class UIManager : MonoBehaviour {
 		ToggleLoadingScreen(true);
 		ToggleGameUI(false);
 
-		tileM.Initialize(new TileManager.MapData(mapSeed, mapSize, true, selectedPlanetTile.equatorOffset, false, 0, 0, selectedPlanetTile.averageTemperature, selectedPlanetTile.averagePrecipitation, selectedPlanetTile.terrainTypeHeights, selectedPlanetTile.surroundingPlanetTileHeightDirections, false));
+		tileM.Initialize(new TileManager.MapData(
+			mapSeed,
+			mapSize,
+			true,
+			selectedPlanetTile.equatorOffset,
+			false,
+			0,
+			0,
+			selectedPlanetTile.averageTemperature,
+			selectedPlanetTile.averagePrecipitation,
+			selectedPlanetTile.terrainTypeHeights,
+			selectedPlanetTile.surroundingPlanetTileHeightDirections,
+			false
+		));
 	}
 
 	public void UpdateMapSizeText() {
@@ -2157,12 +2201,14 @@ public class UIManager : MonoBehaviour {
 
 	public void TogglePauseMenuButtons() {
 		pauseMenuButtons.SetActive(!pauseMenuButtons.activeSelf);
+		pauseLabel.SetActive(pauseMenuButtons.activeSelf);
 	}
 
 	private string saveFileName;
 	public void ToggleSaveMenu() {
 		pauseSavePanel.SetActive(!pauseSavePanel.activeSelf);
 		if (pauseSavePanel.activeSelf) {
+			TogglePauseMenuButtons();
 			saveFileName = persistenceM.GenerateSaveFileName();
 			pauseSavePanel.transform.Find("SaveFileName-Text").GetComponent<Text>().text = saveFileName;
 			pauseSavePanel.transform.Find("PauseSavePanelSave-Button").GetComponent<Button>().onClick.RemoveAllListeners();
@@ -2171,39 +2217,77 @@ public class UIManager : MonoBehaviour {
 				ToggleSaveMenu();
 			});
 		} else {
+			TogglePauseMenuButtons();
 			saveFileName = string.Empty;
-		}
-	}
-
-	public class LoadFile {
-		public string fileName;
-
-		public string colonyName;
-		public string saveDT;
-		public string colonyDT;
-
-		public GameObject obj;
-
-		public LoadFile(string fileName, Transform parent) {
-			this.fileName = fileName;
-
-			colonyName = fileName.Split('-')[2];
-
-			string rawSaveDT = fileName.Split('-')[3];
-			List<string> dateInformation
 		}
 	}
 
 	public List<LoadFile> loadFiles = new List<LoadFile>();
 
+	public class LoadFile {
+
+		public string fileName;
+		public GameObject loadFilePanel;
+
+		public LoadFile(string fileName, GameObject loadFilePanel) {
+			this.fileName = fileName;
+			this.loadFilePanel = loadFilePanel;
+		}
+	}
+
+	private LoadFile selectedLoadFile;
+
+	public void SetSelectedLoadFile(LoadFile newSelectedLoadFile) {
+		if (selectedLoadFile != null) {
+			selectedLoadFile.loadFilePanel.GetComponent<Image>().color = colourMap[Colours.LightGrey220];
+		}
+		selectedLoadFile = newSelectedLoadFile;
+		if (selectedLoadFile != null) {
+			selectedLoadFile.loadFilePanel.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
+			pauseLoadPanel.transform.Find("PauseLoadPanelLoad-Button").GetComponent<Button>().onClick.RemoveAllListeners();
+			pauseLoadPanel.transform.Find("PauseLoadPanelLoad-Button").GetComponent<Button>().onClick.AddListener(delegate {
+				persistenceM.LoadGame(selectedLoadFile.fileName);
+			});
+		}
+	}
+
 	public void ToggleLoadMenu() {
 		pauseLoadPanel.SetActive(!pauseLoadPanel.activeSelf);
+		foreach (LoadFile loadFile in loadFiles) {
+			Destroy(loadFile.loadFilePanel);
+		}
+		loadFiles.Clear();
 		if (pauseLoadPanel.activeSelf) {
-			foreach (string fileName in Directory.GetFiles(persistenceM.GenerateSavePath(""))) {
+			TogglePauseMenuButtons();
+			List<string> saveFiles = Directory.GetFiles(persistenceM.GenerateSavePath("")).ToList().OrderBy(fileName => fileName).Reverse().ToList();
+			foreach (string fileName in saveFiles) {
 				if (fileName.Split('.')[1] == "snowship") {
-					loadFiles.Add(new LoadFile(fileName, pauseLoadPanel.transform.Find("LoadFilesList-ScrollPanel/LoadFilesList-Panel")));
+					string colonyName = fileName.Split('-')[2];
+
+					string rawSaveDT = fileName.Split('-')[3];
+					List<string> splitRawSaveDT = new Regex(@"[a-zA-Z]").Split(rawSaveDT).ToList();
+					string saveDate = splitRawSaveDT[0] + "-" + splitRawSaveDT[1] + "-" + splitRawSaveDT[2];
+					string saveTime = splitRawSaveDT[3] + ":" + splitRawSaveDT[4] + ":" + splitRawSaveDT[5];
+
+					GameObject loadFilePanel = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/LoadFile-Panel"), pauseLoadPanel.transform.Find("LoadFilesList-ScrollPanel/LoadFilesList-Panel"), false);
+					loadFilePanel.transform.Find("ColonyName-Text").GetComponent<Text>().text = colonyName;
+					loadFilePanel.transform.Find("SaveDate-Text").GetComponent<Text>().text = saveDate;
+					loadFilePanel.transform.Find("SaveTime-Text").GetComponent<Text>().text = saveTime;
+
+					string imageFile = "file:" + fileName.Split('.')[0] + ".png";
+					WWW www = new WWW(imageFile);
+					Texture2D texture = new Texture2D(35, 63,TextureFormat.RGB24,false);
+					www.LoadImageIntoTexture(texture);
+					loadFilePanel.transform.Find("SavePreview-Image").GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(new Vector2(0, 0), new Vector2(texture.width, texture.height)), new Vector2(0, 0));
+
+					LoadFile loadFile = new LoadFile(fileName, loadFilePanel);
+					loadFiles.Add(loadFile);
+					loadFilePanel.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedLoadFile(loadFile); });
 				}
 			}
+		} else {
+			TogglePauseMenuButtons();
+			SetSelectedLoadFile(null);
 		}
 	}
 

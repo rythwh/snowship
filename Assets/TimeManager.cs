@@ -116,4 +116,10 @@ public class TimeManager : MonoBehaviour {
 	public string GetDateString() {
 		return (day + "," + month + "," + year);
 	}
+
+	public void SetDate(int day, int month, int year) {
+		this.day = day;
+		this.month = month;
+		this.year = year;
+	}
 }
