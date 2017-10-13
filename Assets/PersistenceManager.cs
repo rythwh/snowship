@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.IO;
+using System.Linq;
 
 public class PersistenceManager : MonoBehaviour {
 
@@ -27,6 +28,9 @@ public class PersistenceManager : MonoBehaviour {
 	private ResourceManager resourceM; // Save the object data
 
 	void Awake() {
+		gameVersion = 1;
+		saveVersion = 1;
+
 		cameraM = GetComponent<CameraManager>();
 		colonistM = GetComponent<ColonistManager>();
 		jobM = GetComponent<JobManager>();
@@ -67,11 +71,37 @@ public class PersistenceManager : MonoBehaviour {
 		Directory.CreateDirectory(directory);
 		print(fileName);
 		StreamWriter file = new StreamWriter(fileName);
-		//FileStream file = new FileStream(Application.persistentDataPath + "/Saves/snowship-save" + System.DateTime.Now.ToUniversalTime() + ".snowship",FileMode.Create);
+
+		string saveFileFormatData = "Format";
+		saveFileFormatData += "/SaveVersion," + saveVersion;
+		saveFileFormatData += "/GameVersion," + gameVersion;
+		saveFileFormatData += "/PlanetTiles," + uiM.planetTiles.Count;
+		saveFileFormatData += "/MapTiles," + tileM.map.mapData.mapSize;
+		saveFileFormatData += "/Rivers," + tileM.map.rivers.Count;
+		saveFileFormatData += "/ObjectInstances," + resourceM.tileObjectInstances.Values.Sum(objList => objList.Count);
+		saveFileFormatData += "/MTOs," + resourceM.manufacturingTileObjectInstances.Count;
+		saveFileFormatData += "/Farms," + resourceM.farms.Count;
+		saveFileFormatData += "/Container," + resourceM.containers.Count;
+		saveFileFormatData += "/Colonists," + colonistM.colonists.Count;
+		saveFileFormatData += "/Jobs," + jobM.jobs.Count;
+		saveFileFormatData += "/Time,1";
+		saveFileFormatData += "/Camera,1";
+		file.WriteLine(saveFileFormatData);
+
+		// Save the time data
+		string timeData = "Time";
+		timeData += "/Time," + timeM.GetTileBrightnessTime();
+		timeData += "/Date," + timeM.GetDateString();
+		file.WriteLine(timeData);
+
+		// Save the camera data
+		string cameraData = "Camera";
+		cameraData += "/Position," + cameraM.cameraGO.transform.position.x + "," + cameraM.cameraGO.transform.position.y;
+		cameraData += "/Zoom," + cameraM.cameraComponent.orthographicSize;
+		file.WriteLine(cameraData);
 
 		// Save the planet data
 		string planetData = "PlanetTiles";
-		planetData += "/PlanetTileCount," + uiM.planetTiles.Count;
 		planetData += "/PlanetSeed," + uiM.planet.mapData.mapSeed;
 		planetData += "/PlanetSize," + uiM.planet.mapData.mapSize;
 		planetData += "/PlanetDistance," + uiM.planetDistance;
@@ -83,7 +113,6 @@ public class PersistenceManager : MonoBehaviour {
 
 		// Save the tile data
 		string tileMapData = "Tiles";
-		tileMapData += "/TileCount," + tileM.map.tiles.Count;
 		tileMapData += "/MapSeed," + tileM.map.mapData.mapSeed;
 		tileMapData += "/MapSize," + tileM.map.mapData.mapSize;
 		tileMapData += "/EquatorOffset," + tileM.map.mapData.equatorOffset;
@@ -119,6 +148,7 @@ public class PersistenceManager : MonoBehaviour {
 			file.WriteLine(GetFarmDataString(farm));
 		}
 
+		// Save the container data
 		foreach (ResourceManager.Container container in resourceM.containers) {
 			file.WriteLine(GetContainerDataString(container));
 		}
@@ -133,19 +163,17 @@ public class PersistenceManager : MonoBehaviour {
 			file.WriteLine(GetJobDataString(job, false));
 		}
 
-		// Save the time data
-		string timeData = "Time";
-		timeData += "/Time," + timeM.GetTileBrightnessTime();
-		timeData += "/Date," + timeM.GetDateString();
-		file.WriteLine(timeData);
-
-		// Save the camera data
-		string cameraData = "Camera";
-		cameraData += "/Position," + cameraM.cameraGO.transform.position.x + "," + cameraM.cameraGO.transform.position.y;
-		cameraData += "/Zoom," + cameraM.cameraComponent.orthographicSize;
-		file.WriteLine(cameraData);
-
 		file.Close();
+
+		StartCoroutine(CreateScreenshot(fileName));
+	}
+
+	IEnumerator CreateScreenshot(string fileName) {
+		GameObject canvas = GameObject.Find("Canvas");
+		canvas.SetActive(false);
+		yield return new WaitForEndOfFrame();
+		ScreenCapture.CaptureScreenshot(fileName.Split('.')[0] + ".png");
+		canvas.SetActive(true);
 	}
 
 	public string GetPlanetTileDataString(UIManager.PlanetTile planetTile) {
@@ -191,7 +219,7 @@ public class PersistenceManager : MonoBehaviour {
 		riverData += "/StartTilePos," + river.startTile.obj.transform.position.x + "," + river.startTile.obj.transform.position.y;
 		riverData += "/EndTilePos," + river.endTile.obj.transform.position.x + "," + river.endTile.obj.transform.position.y;
 		foreach (TileManager.Tile riverTile in river.tiles) {
-			riverData += "/RiverTile," + riverTile.obj.transform.position.x + "," + riverTile.obj.transform.position.y;
+			riverData += "/" + riverTile.obj.transform.position.x + "," + riverTile.obj.transform.position.y;
 		}
 		return riverData;
 	}
