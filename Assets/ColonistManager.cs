@@ -1128,7 +1128,7 @@ public class ColonistManager : MonoBehaviour {
 				selectedColonist.PlayerMoveToTile(tileM.map.GetTileFromPosition(mousePosition));
 			}
 		}
-		if (Input.GetMouseButtonDown(1)) {
+		if (Input.GetMouseButtonDown(1) && tileM.generated) {
 			DeselectSelectedColonist();
 		}
 	}

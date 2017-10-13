@@ -129,7 +129,7 @@ public class TileManager:MonoBehaviour {
 		public Tile tile;
 		public GameObject obj;
 
-		bool small;
+		public bool small;
 
 		public Plant(PlantGroup group, Tile tile, bool randomSmall, bool smallValue) {
 			this.group = group;
@@ -439,7 +439,6 @@ public class TileManager:MonoBehaviour {
 		public float height;
 
 		public TileType tileType;
-		public TileResourceTypes tileResource;
 
 		public Map.Region region;
 		public Map.Region drainageBasin;
@@ -830,6 +829,7 @@ public class TileManager:MonoBehaviour {
 		}
 	}
 
+	public bool generating;
 	public bool generated;
 
 	void Update() {
@@ -890,6 +890,7 @@ public class TileManager:MonoBehaviour {
 	}
 
 	public void Initialize(MapData mapData) {
+		generating = true;
 		StartCoroutine(InitializeMap(mapData));
 		StartCoroutine(PostInitializeMap());
 	}
@@ -915,6 +916,7 @@ public class TileManager:MonoBehaviour {
 		colonistM.SpawnColonists(3);
 
 		generated = true;
+		generating = false;
 
 		uiM.SetSelectedColonistInformation();
 		uiM.SetSelectedContainerInfo();
@@ -959,7 +961,28 @@ public class TileManager:MonoBehaviour {
 
 			createdMap = false;
 			if (loadMap) {
-				
+				CreateTiles();
+				SetSortedMapEdgeTiles();
+				SmoothHeightWithSurroundingPlanetTiles();
+				SetTileRegions(true);
+				ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f), new List<TileTypes>() { TileTypes.GrassWater, TileTypes.Stone, TileTypes.Grass });
+				ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypes>() { TileTypes.GrassWater });
+				CalculatePrecipitation();
+				CalculateTemperature();
+				SetTileRegions(false);
+				SetBiomes();
+				SetMapEdgeTiles();
+				DetermineDrainageBasins();
+				CreateRivers();
+				CreateRegionBlocks();
+				SetRoofs();
+				SetResourceVeins();
+				DetermineShadowDirectionsAtHour();
+				DetermineShadowTiles(tiles, false);
+				SetTileBrightness(timeM.GetTileBrightnessTime());
+				DetermineVisibleRegionBlocks();
+				Bitmasking(tiles);
+				createdMap = true;
 			} else {
 				uiM.StartCoroutine(CreateMap());
 			}

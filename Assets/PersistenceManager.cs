@@ -72,11 +72,17 @@ public class PersistenceManager : MonoBehaviour {
 		print(fileName);
 		StreamWriter file = new StreamWriter(fileName);
 
+		string versionData = "Version";
+		versionData += "/SaveVersion," + saveVersion;
+		versionData += "/GameVersion," + gameVersion;
+		file.WriteLine(versionData);
+
 		string saveFileFormatData = "Format";
-		saveFileFormatData += "/SaveVersion," + saveVersion;
-		saveFileFormatData += "/GameVersion," + gameVersion;
-		saveFileFormatData += "/PlanetTiles," + uiM.planetTiles.Count;
-		saveFileFormatData += "/MapTiles," + tileM.map.mapData.mapSize;
+		saveFileFormatData += "/Time,1";
+		saveFileFormatData += "/Camera,1";
+		//saveFileFormatData += "/PlanetTiles," + uiM.planetTiles.Count;
+		saveFileFormatData += "/PlanetTiles,1";
+		saveFileFormatData += "/MapTiles," + tileM.map.tiles.Count;
 		saveFileFormatData += "/Rivers," + tileM.map.rivers.Count;
 		saveFileFormatData += "/ObjectInstances," + resourceM.tileObjectInstances.Values.Sum(objList => objList.Count);
 		saveFileFormatData += "/MTOs," + resourceM.manufacturingTileObjectInstances.Count;
@@ -84,8 +90,6 @@ public class PersistenceManager : MonoBehaviour {
 		saveFileFormatData += "/Container," + resourceM.containers.Count;
 		saveFileFormatData += "/Colonists," + colonistM.colonists.Count;
 		saveFileFormatData += "/Jobs," + jobM.jobs.Count;
-		saveFileFormatData += "/Time,1";
-		saveFileFormatData += "/Camera,1";
 		file.WriteLine(saveFileFormatData);
 
 		// Save the time data
@@ -107,9 +111,11 @@ public class PersistenceManager : MonoBehaviour {
 		planetData += "/PlanetDistance," + uiM.planetDistance;
 		planetData += "/PlanetTempRange," + uiM.temperatureRange;
 		file.WriteLine(planetData);
+		/*
 		foreach (UIManager.PlanetTile planetTile in uiM.planetTiles) {
 			file.WriteLine(GetPlanetTileDataString(planetTile));
 		}
+		*/
 
 		// Save the tile data
 		string tileMapData = "Tiles";
@@ -118,8 +124,13 @@ public class PersistenceManager : MonoBehaviour {
 		tileMapData += "/EquatorOffset," + tileM.map.mapData.equatorOffset;
 		tileMapData += "/AverageTemperature," + tileM.map.mapData.averageTemperature;
 		tileMapData += "/AveragePrecipitation," + tileM.map.mapData.averagePrecipitation;
+		tileMapData += "/TerrainTypeHeights";
 		foreach (KeyValuePair<TileManager.TileTypes, float> terrainTypeHeightsKVP in tileM.map.mapData.terrainTypeHeights) {
-			tileMapData += "/TerrainTypeHeight," + terrainTypeHeightsKVP.Key + "," + terrainTypeHeightsKVP.Value;
+			tileMapData += "," + terrainTypeHeightsKVP.Key + ":" + terrainTypeHeightsKVP.Value;
+		}
+		tileMapData += "/SurroundingPlanetTileHeightDirections";
+		foreach (int surroundingPlanetTileHeightDirection in tileM.map.mapData.surroundingPlanetTileHeightDirections) {
+			tileMapData += "," + surroundingPlanetTileHeightDirection;
 		}
 		file.WriteLine(tileMapData);
 		foreach (TileManager.Tile tile in tileM.map.tiles) {
@@ -138,12 +149,12 @@ public class PersistenceManager : MonoBehaviour {
 			}
 		}
 
-		// Save manufacturing tile object data
+		// Save the manufacturing tile object data
 		foreach (ResourceManager.ManufacturingTileObject mto in resourceM.manufacturingTileObjectInstances) {
 			file.WriteLine(GetManufacturingTileObjectDataString(mto));
 		}
 
-		// Save farm object data
+		// Save the farm object data
 		foreach (ResourceManager.Farm farm in resourceM.farms) {
 			file.WriteLine(GetFarmDataString(farm));
 		}
@@ -203,11 +214,18 @@ public class PersistenceManager : MonoBehaviour {
 	*/
 	public string GetTileDataString(TileManager.Tile tile) {
 		string tileData = string.Empty;
+		/*
 		tileData += tile.obj.transform.position.x + "," + tile.obj.transform.position.y;
 		tileData += "/" + tile.height;
 		tileData += "/" + tile.temperature;
 		tileData += "/" + tile.precipitation;
-		tileData += "/" + tile.dugPreviously;
+		*/
+		tileData += tile.tileType.type;
+		if (tile.plant != null) {
+			tileData += "/" + tile.plant.group.type + "," + tile.plant.small;
+		} else {
+			tileData += "/None/";
+		}
 		return tileData;
 	}
 
@@ -392,17 +410,215 @@ public class PersistenceManager : MonoBehaviour {
 		return jobData;
 	}
 
-	public void LoadGame() {
-		// Load the tile data
+	public void LoadGame(string fileName) {
 
-		// Load the colonist data
+		tileM.generated = false;
 
-		// Load the job data
+		foreach (UIManager.PlanetTile planetTile in uiM.planetTiles) {
+			Destroy(planetTile.obj);
+		}
+
+		foreach (TileManager.Tile tile in tileM.map.tiles) {
+			if (tile.plant != null) {
+				Destroy(tile.plant.obj);
+				tile.plant = null;
+			}
+			Destroy(tile.obj);
+		}
+		tileM.map.tiles.Clear();
+		tileM.map = null;
+
+		foreach (KeyValuePair<ResourceManager.TileObjectPrefab, List<ResourceManager.TileObjectInstance>> objectInstanceKVP in resourceM.tileObjectInstances) {
+			foreach (ResourceManager.TileObjectInstance objectInstance in objectInstanceKVP.Value) {
+				Destroy(objectInstance.obj);
+			}
+			objectInstanceKVP.Value.Clear();
+		}
+		resourceM.tileObjectInstances.Clear();
+
+		resourceM.manufacturingTileObjectInstances.Clear();
+
+		resourceM.farms.Clear();
+
+		resourceM.containers.Clear();
+
+		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+			Destroy(colonist.nameCanvas);
+			Destroy(colonist.obj);
+		}
+		colonistM.colonists.Clear();
+		uiM.RemoveColonistElements();
+		
+
+		foreach (JobManager.Job job in jobM.jobs) {
+			Destroy(job.jobPreview);
+		}
+		jobM.jobs.Clear();
+		uiM.RemoveJobElements();
+
+		List<string> lines = new StreamReader(fileName).ReadToEnd().Split('\n').ToList();
+
+		int sectionIndex = 0;
+		List<int> sectionLengths = new List<int>();
+		foreach (string section in lines[1].Split('/').Skip(1)) {
+			int sectionLength = int.Parse(section.Split(',')[1]);
+			int additionalLine = (sectionIndex == 3 ? 1 : 0);
+			sectionLength += additionalLine;
+			sectionLengths.Add(sectionLength);
+			sectionIndex += 1;
+		}
+
+		// Planet Data
+		TileManager.MapData planetData = null;
+		TileManager.Map planet = null;
+
+		// Map Data
+		TileManager.MapData mapData = null;
+
+		sectionIndex = 0;
+		int lastSectionEnd = 2;
+		foreach (int sectionLength in sectionLengths) {
+			if (sectionLength > 0) {
+				int sectionStart = lastSectionEnd + 1;
+				int sectionEnd = sectionStart + sectionLength;
+				print(sectionStart + " -> " + (sectionEnd - 1));
+				int innerSectionIndex = 0;
+				for (int lineIndex = sectionStart; lineIndex < sectionEnd; lineIndex++) {
+					List<string> lineData = lines[lineIndex - 1].Split('/').ToList();
+					if (sectionIndex == 0) { // Time/Date
+						timeM.SetTime(float.Parse(lineData[1].Split(',')[1]));
+						timeM.SetDate(int.Parse(lineData[2].Split(',')[1]), int.Parse(lineData[2].Split(',')[1]), int.Parse(lineData[2].Split(',')[1]));
+					} else if (sectionIndex == 1) { // Camera
+						print(lineData[1].Split(',')[1]);
+						cameraM.SetCameraPosition(new Vector2(float.Parse(lineData[1].Split(',')[1]), float.Parse(lineData[1].Split(',')[2])));
+						cameraM.SetCameraZoom(float.Parse(lineData[2].Split(',')[1]));
+					} else if (sectionIndex == 2) { // Planet
+						uiM.mainMenu.SetActive(true);
+						int planetSeed = int.Parse(lineData[1].Split(',')[1]);
+						int planetSize = int.Parse(lineData[2].Split(',')[1]);
+						float planetDistance = float.Parse(lineData[3].Split(',')[1]);
+						float planetTemperature = uiM.CalculatePlanetTemperature(planetDistance);
+						int temperatureRange = int.Parse(lineData[4].Split(',')[1]);
+						planetData = new TileManager.MapData(
+							planetSeed,
+							planetSize,
+							UIManager.StaticPlanetMapDataValues.actualMap,
+							UIManager.StaticPlanetMapDataValues.equatorOffset,
+							UIManager.StaticPlanetMapDataValues.planetTemperature,
+							temperatureRange,
+							planetTemperature,
+							UIManager.StaticPlanetMapDataValues.averageTemperature,
+							UIManager.StaticPlanetMapDataValues.averagePrecipitation,
+							UIManager.StaticPlanetMapDataValues.terrainTypeHeights,
+							UIManager.StaticPlanetMapDataValues.surroundingPlanetTileHeightDirections,
+							UIManager.StaticPlanetMapDataValues.preventEdgeTouching
+						);
+						planet = new TileManager.Map(planetData, false);
+						foreach (TileManager.Tile tile in planet.tiles) {
+							uiM.planetTiles.Add(new UIManager.PlanetTile(tile, uiM.planetPreviewPanel.transform, tile.position, planetData.mapSize, planetData.temperatureOffset));
+						}
+						uiM.mainMenu.SetActive(false);
+					} else if (sectionIndex == 3) { // Tile
+						if (innerSectionIndex == 0) {
+							int mapSeed = int.Parse(lineData[1].Split(',')[1]);
+							int mapSize = int.Parse(lineData[2].Split(',')[1]);
+							float equatorOffset = float.Parse(lineData[3].Split(',')[1]);
+							float averageTemperature = float.Parse(lineData[4].Split(',')[1]);
+							float averagePrecipitation = float.Parse(lineData[5].Split(',')[1]);
+							Dictionary<TileManager.TileTypes, float> terrainTypeHeights = new Dictionary<TileManager.TileTypes, float>();
+							foreach (string terrainTypeHeightString in lineData[6].Split(',').Skip(1)) {
+								terrainTypeHeights.Add((TileManager.TileTypes)System.Enum.Parse(typeof(TileManager.TileTypes), terrainTypeHeightString.Split(':')[0]), float.Parse(terrainTypeHeightString.Split(':')[1]));
+							}
+							List<int> surroundingPlanetTileHeightDirections = new List<int>();
+							foreach (string surroundingPlanetTileHeightDirectionString in lineData[7].Split(',').Skip(1)) {
+								surroundingPlanetTileHeightDirections.Add(int.Parse(surroundingPlanetTileHeightDirectionString));
+							}
+							mapData = new TileManager.MapData(
+								mapSeed,
+								mapSize,
+								true,
+								equatorOffset,
+								false,
+								0,
+								0,
+								averageTemperature,
+								averagePrecipitation,
+								terrainTypeHeights,
+								surroundingPlanetTileHeightDirections,
+								false
+							);
+							tileM.map = new TileManager.Map(mapData, true);
+						} else {
+							TileManager.Tile tile = tileM.map.tiles[innerSectionIndex-1];
+
+							TileManager.TileType savedTileType = tileM.GetTileTypeByEnum((TileManager.TileTypes)System.Enum.Parse(typeof(TileManager.TileTypes), lineData[0]));
+							if (savedTileType != tile.tileType) {
+								tile.SetTileType(savedTileType,true,false,false,false);
+								if (tileM.GetHoleTileTypes().Contains(savedTileType.type)) {
+									tile.dugPreviously = true;
+								}
+							}
+
+							if (lineData[1] == "None") {
+								if (tile.plant != null) {
+									tile.SetPlant(true, null);
+								}
+							} else {
+								TileManager.PlantGroup savedPlantGroup = tileM.GetPlantGroupByEnum((TileManager.PlantGroupsEnum)System.Enum.Parse(typeof(TileManager.PlantGroupsEnum), lineData[1].Split(',')[0]));
+								bool savedPlantSmall = bool.Parse(lineData[1].Split(',')[1]);
+								TileManager.Plant savedPlant = new TileManager.Plant(savedPlantGroup, tile, false, savedPlantSmall);
+								tile.SetPlant(false, savedPlant);
+							}
+						}
+					} else if (sectionIndex == 4) { // River
+
+					} else if (sectionIndex == 5) { // Object
+
+					} else if (sectionIndex == 6) { // Manufacturing Tile Object
+
+					} else if (sectionIndex == 7) { // Farm
+
+					} else if (sectionIndex == 8) { // Container
+
+					} else if (sectionIndex == 9) { // Colonist
+
+					} else if (sectionIndex == 10) { // Job
+
+					}
+					innerSectionIndex += 1;
+				}
+				lastSectionEnd = sectionEnd - 1;
+			}
+			sectionIndex += 1;
+		}
+
+		tileM.map.DetermineShadowTiles(tileM.map.tiles, false);
+		tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
+		tileM.map.DetermineVisibleRegionBlocks();
+		tileM.map.Bitmasking(tileM.map.tiles);
+
+		return;
 
 		// Load the time data
 
 		// Load the camera data
 
 		// Load the planet data
+
+		// Load the tile data
+
+		// Load the river data
+
+		// Load the object data
+
+		// Load the manufacturing tile object data
+
+		// Load the farm data
+
+		// Load the container data
+
+		// Load the colonist data
+
+		// Load the job data
 	}
 }
