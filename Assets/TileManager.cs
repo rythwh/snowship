@@ -921,6 +921,7 @@ public class TileManager:MonoBehaviour {
 		uiM.SetJobElements();
 		uiM.InitializeProfessionsList();
 		uiM.InitializeResourcesList();
+		uiM.InitializeSelectedManufacturingTileObjectPanel();
 
 		uiM.ToggleLoadingScreen(false);
 	}

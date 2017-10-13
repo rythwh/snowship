@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System;
 using System.Text.RegularExpressions;
 using System.Linq;
+using System.IO;
 
 public class UIManager : MonoBehaviour {
 
@@ -53,6 +54,11 @@ public class UIManager : MonoBehaviour {
 	private PersistenceManager persistenceM;
 
 	private GameObject mainMenu;
+	private GameObject mainMenuButtonsPanel;
+	private GameObject snowshipLogo;
+
+	private GameObject mapSelectionPanel;
+	private GameObject mapPanelExitButton;
 
 	public int planetTileSize = 0;
 	private Slider planetSizeSlider;
@@ -72,7 +78,7 @@ public class UIManager : MonoBehaviour {
 	private Slider mapSizeSlider;
 	private Text mapSizeText;
 	private Text mapSeedInput;
-
+		
 	private GameObject playButton;
 
 	private Text loadingStateText;
@@ -120,6 +126,7 @@ public class UIManager : MonoBehaviour {
 	private GameObject pauseMenuButtons;
 
 	private GameObject pauseSavePanel;
+	private GameObject pauseLoadPanel;
 
 	void Awake() {
 
@@ -134,6 +141,18 @@ public class UIManager : MonoBehaviour {
 		SetMenuBackground();
 
 		mainMenu = GameObject.Find("MainMenu");
+		mainMenuButtonsPanel = mainMenu.transform.Find("MainMenuButtons-Panel").gameObject;
+		snowshipLogo = mainMenu.transform.Find("SnowshipLogo-Image").gameObject;
+
+		mapSelectionPanel = mainMenu.transform.Find("Map-Panel").gameObject;
+		mapPanelExitButton = mapSelectionPanel.transform.Find("Exit-Button").gameObject;
+		mapPanelExitButton.GetComponent<Button>().onClick.AddListener(delegate { ToggleNewGameMM(); });
+
+		mainMenuButtonsPanel.transform.Find("New-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleNewGameMM(); });
+		mainMenuButtonsPanel.transform.Find("Continue-Button").GetComponent<Button>().onClick.AddListener(delegate { });
+		mainMenuButtonsPanel.transform.Find("Load-Button").GetComponent<Button>().onClick.AddListener(delegate { });
+		mainMenuButtonsPanel.transform.Find("Options-Button").GetComponent<Button>().onClick.AddListener(delegate { });
+		mainMenuButtonsPanel.transform.Find("Exit-Button").GetComponent<Button>().onClick.AddListener(delegate { });
 
 		planetSizeSlider = GameObject.Find("PlanetSize-Slider").GetComponent<Slider>();
 		planetSizeText = GameObject.Find("PlanetSizeValue-Text").GetComponent<Text>();
@@ -232,6 +251,11 @@ public class UIManager : MonoBehaviour {
 		pauseSavePanel.transform.Find("PauseSavePanelClose-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleSaveMenu(); });
 		ToggleSaveMenu();
 
+		pauseLoadPanel = pauseMenu.transform.Find("PauseLoad-Panel").gameObject;
+		pauseMenuButtons.transform.Find("PauseLoad-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(); });
+		pauseLoadPanel.transform.Find("PauseLoadPanelClose-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(); });
+		ToggleLoadMenu();
+
 		//pauseLoadButton = pauseMenuButtons.transform.Find("PauseLoad-Button").gameObject;
 		//pauseSettingsButton = pauseMenuButtons.transform.Find("PauseSettings-Button").gameObject;
 		//pauseExitToMainMenuButton = pauseMenuButtons.transform.Find("PauseExitToMainMenu-Button").gameObject;
@@ -239,17 +263,11 @@ public class UIManager : MonoBehaviour {
 
 		TogglePauseMenu();
 
+		ToggleNewGameMM();
+
 		InitializeTileInformation();
 		InitializeSelectedContainerIndicator();
 		InitializeSelectedManufacturingTileObjectIndicator();
-	}
-
-	void Start() {
-		tileM.PreInitialize();
-		GeneratePlanet();
-		SetSelectedPlanetTileInfo();
-
-		InitializeSelectedManufacturingTileObjectPanel();
 	}
 
 	public ResourceManager.Container selectedContainer;
@@ -312,7 +330,7 @@ public class UIManager : MonoBehaviour {
 				UpdateResourcesList();
 			}
 		} else {
-			playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null/* || !string.IsNullOrEmpty(mapSeedInput.text)*/);
+			playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null);
 			if (Input.GetMouseButtonDown(1) && selectedPlanetTile != null) {
 				selectedPlanetTile = null;
 				SetSelectedPlanetTileInfo();
@@ -324,6 +342,38 @@ public class UIManager : MonoBehaviour {
 		selectedContainer = container;
 		SetSelectedContainerInfo();
 	}
+
+	void ToggleMainMenuButtons(GameObject coverPanel) {
+		if (mainMenuButtonsPanel.activeSelf && coverPanel.activeSelf) {
+			mainMenuButtonsPanel.SetActive(false);
+			snowshipLogo.SetActive(false);
+		} else if (!mainMenuButtonsPanel.activeSelf && !coverPanel.activeSelf) {
+			mainMenuButtonsPanel.SetActive(true);
+			snowshipLogo.SetActive(true);
+		}
+	}
+
+	void ToggleNewGameMM() {
+		mapSelectionPanel.SetActive(!mapSelectionPanel.activeSelf);
+		ToggleMainMenuButtons(mapSelectionPanel);
+		if (mapSelectionPanel.activeSelf && !createdPlanet) {
+			CreateNewGamePlanet();
+		}
+	}
+
+	void ExitToDesktop() {
+
+	}
+
+	private bool createdPlanet = false;
+	void CreateNewGamePlanet() {
+		createdPlanet = true;
+
+		tileM.PreInitialize();
+		GeneratePlanet();
+		SetSelectedPlanetTileInfo();
+	}
+
 
 	public PlanetTile selectedPlanetTile;
 
@@ -2125,8 +2175,36 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
-	public void ToggleLoadMenu() {
+	public class LoadFile {
+		public string fileName;
 
+		public string colonyName;
+		public string saveDT;
+		public string colonyDT;
+
+		public GameObject obj;
+
+		public LoadFile(string fileName, Transform parent) {
+			this.fileName = fileName;
+
+			colonyName = fileName.Split('-')[2];
+
+			string rawSaveDT = fileName.Split('-')[3];
+			List<string> dateInformation
+		}
+	}
+
+	public List<LoadFile> loadFiles = new List<LoadFile>();
+
+	public void ToggleLoadMenu() {
+		pauseLoadPanel.SetActive(!pauseLoadPanel.activeSelf);
+		if (pauseLoadPanel.activeSelf) {
+			foreach (string fileName in Directory.GetFiles(persistenceM.GenerateSavePath(""))) {
+				if (fileName.Split('.')[1] == "snowship") {
+					loadFiles.Add(new LoadFile(fileName, pauseLoadPanel.transform.Find("LoadFilesList-ScrollPanel/LoadFilesList-Panel")));
+				}
+			}
+		}
 	}
 
 	public void ToggleSettingsMenu() {
@@ -2134,10 +2212,6 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void ExitToMenu() {
-
-	}
-
-	public void ExitToDesktop() {
 
 	}
 }
