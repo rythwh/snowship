@@ -6,12 +6,12 @@ public class CameraManager : MonoBehaviour {
 
 	private TileManager tileM;
 	private DebugManager debugM;
-	private TimeManager timeM;
+	private UIManager uiM;
 
 	private void GetScriptReferences() {
 		tileM = GetComponent<TileManager>();
 		debugM = GetComponent<DebugManager>();
-		timeM = GetComponent<TimeManager>();
+		uiM = GetComponent<UIManager>();
 	}
 
 	public GameObject cameraGO;
@@ -45,8 +45,7 @@ public class CameraManager : MonoBehaviour {
 	}
 
 	void Update() {
-
-		if (tileM.generated && timeM.timeModifier != 0) {
+		if (tileM.generated && !uiM.pauseMenu.activeSelf) {
 			cameraGO.transform.Translate(new Vector2(Input.GetAxis("Horizontal"),Input.GetAxis("Vertical")) * cameraComponent.orthographicSize * Time.deltaTime);
 			cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x,0,tileM.map.mapData.mapSize),Mathf.Clamp(cameraGO.transform.position.y,0,tileM.map.mapData.mapSize));
 
