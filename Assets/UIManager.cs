@@ -124,7 +124,7 @@ public class UIManager : MonoBehaviour {
 	private GameObject selectedMTOIndicator;
 	public GameObject selectedMTOPanel;
 
-	private GameObject pauseMenu;
+	public GameObject pauseMenu;
 	private GameObject pauseMenuButtons;
 	private GameObject pauseLabel;
 
@@ -283,7 +283,7 @@ public class UIManager : MonoBehaviour {
 			TileManager.Tile newMouseOverTile = tileM.map.GetTileFromPosition(mousePosition);
 			if (newMouseOverTile != mouseOverTile) {
 				mouseOverTile = newMouseOverTile;
-				if (timeM.timeModifier != 0) {
+				if (!pauseMenu.activeSelf) {
 					UpdateTileInformation();
 				}
 			}
@@ -2259,15 +2259,21 @@ public class UIManager : MonoBehaviour {
 		loadFiles.Clear();
 		if (pauseLoadPanel.activeSelf) {
 			TogglePauseMenuButtons();
-			List<string> saveFiles = Directory.GetFiles(persistenceM.GenerateSavePath("")).ToList().OrderBy(fileName => fileName).Reverse().ToList();
+			List<string> saveFiles = Directory.GetFiles(persistenceM.GenerateSavePath("")).ToList().OrderBy(fileName => SaveFileDateTimeSum(fileName)).Reverse().ToList();
 			foreach (string fileName in saveFiles) {
 				if (fileName.Split('.')[1] == "snowship") {
 					string colonyName = fileName.Split('-')[2];
 
 					string rawSaveDT = fileName.Split('-')[3];
 					List<string> splitRawSaveDT = new Regex(@"[a-zA-Z]").Split(rawSaveDT).ToList();
-					string saveDate = splitRawSaveDT[0] + "-" + splitRawSaveDT[1] + "-" + splitRawSaveDT[2];
-					string saveTime = splitRawSaveDT[3] + ":" + splitRawSaveDT[4] + ":" + splitRawSaveDT[5];
+					string year = splitRawSaveDT[0];
+					string month = (splitRawSaveDT[1].Length == 1 ? "0" : "") + splitRawSaveDT[1];
+					string day = (splitRawSaveDT[2].Length == 1 ? "0" : "") + splitRawSaveDT[2];
+					string saveDate = year + "-" + month + "-" + day;
+					string hour = (splitRawSaveDT[3].Length == 1 ? "0" : "") + splitRawSaveDT[3];
+					string minute = (splitRawSaveDT[4].Length == 1 ? "0" : "") + splitRawSaveDT[4];
+					string second = (splitRawSaveDT[5].Length == 1 ? "0" : "") + splitRawSaveDT[5];
+					string saveTime = hour + ":" + minute + ":" + second;
 
 					GameObject loadFilePanel = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/LoadFile-Panel"), pauseLoadPanel.transform.Find("LoadFilesList-ScrollPanel/LoadFilesList-Panel"), false);
 					loadFilePanel.transform.Find("ColonyName-Text").GetComponent<Text>().text = colonyName;
@@ -2289,6 +2295,18 @@ public class UIManager : MonoBehaviour {
 			TogglePauseMenuButtons();
 			SetSelectedLoadFile(null);
 		}
+	}
+
+	public string SaveFileDateTimeSum(string fileName) {
+		List<string> splitRawSaveDT = new Regex(@"[a-zA-Z]").Split(fileName.Split('-')[3]).ToList();
+		string year = splitRawSaveDT[0];
+		string month = (splitRawSaveDT[1].Length == 1 ? "0" : "") + splitRawSaveDT[1];
+		string day = (splitRawSaveDT[2].Length == 1 ? "0" : "") + splitRawSaveDT[2];
+		string hour = (splitRawSaveDT[3].Length == 1 ? "0" : "") + splitRawSaveDT[3];
+		string minute = (splitRawSaveDT[4].Length == 1 ? "0" : "") + splitRawSaveDT[4];
+		string second = (splitRawSaveDT[5].Length == 1 ? "0" : "") + splitRawSaveDT[5];
+		string saveDT = year + month + day + hour + minute + second;
+		return saveDT;
 	}
 
 	public void ToggleSettingsMenu() {

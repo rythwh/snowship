@@ -33,6 +33,11 @@ public class ColonistManager : MonoBehaviour {
 			humanNames.Add(name);
 		}
 
+		for (int i = 0; i < 3; i++) {
+			List<Sprite> innerHumanMoveSprites = Resources.LoadAll<Sprite>(@"Sprites/Colonists/colonists-body-base-" + i).ToList();
+			humanMoveSprites.Add(innerHumanMoveSprites);
+		}
+
 		CreateColonistSkills();
 		CreateColonistProfessions();
 		CreateColonistNeeds();
@@ -342,6 +347,10 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
+	public TraitPrefab GetTraitPrefabFromString(string traitTypeString) {
+		return traitPrefabs.Find(traitPrefab => traitPrefab.type == (TraitsEnum)System.Enum.Parse(typeof(TraitsEnum), traitTypeString));
+	}
+
 	public class TraitInstance {
 
 		public Colonist colonist;
@@ -646,6 +655,10 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
+	public NeedPrefab GetNeedPrefabFromString(string needTypeString) {
+		return needPrefabs.Find(needPrefab => needPrefab.type == (NeedsEnum)System.Enum.Parse(typeof(NeedsEnum), needTypeString));
+	}
+
 	public class NeedInstance {
 
 		public Colonist colonist;
@@ -687,6 +700,10 @@ public class ColonistManager : MonoBehaviour {
 		public HappinessModifierPrefab() {
 
 		}
+	}
+
+	public HappinessModifierPrefab GetHappinessModifierPrefabFromString(string happinessModifierTypeString) {
+		return happinessModifierPrefabs.Find(happiessModifierPrefab => happiessModifierPrefab.type == (HappinessModifiersEnum)System.Enum.Parse(typeof(HappinessModifiersEnum), happinessModifierTypeString));
 	}
 
 	public class HappinessModifierInstance {
@@ -1009,6 +1026,58 @@ public class ColonistManager : MonoBehaviour {
 				}
 			}
 		}
+
+		public void LoadColonistData(
+			Vector2 position,
+			string name,
+			Dictionary<ColonistLook, int> colonistLookIndexes,
+			float health,
+			Profession profession,
+			Profession oldProfession,
+			ResourceManager.Inventory inventory,
+			JobManager.Job job,
+			JobManager.Job storedJob,
+			List<SkillInstance> skills,
+			List<TraitInstance> traits,
+			List<NeedInstance> needs,
+			float baseHappiness,
+			float effectiveHappiness,
+			List<HappinessModifierInstance> happinessModifiers,
+			bool playerMoved,
+			TileManager.Tile pathEnd) {
+
+				obj.transform.position = position;
+
+				this.name = name;
+
+				moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
+				this.colonistLookIndexes = colonistLookIndexes;
+
+				ChangeHealthValue(-(this.health - health));
+
+				ChangeProfession(oldProfession);
+				ChangeProfession(profession);
+
+				this.inventory = inventory;
+
+				if (storedJob != null) {
+					SetJob(new JobManager.ColonistJob(this, storedJob, storedJob.colonistResources, storedJob.containerPickups, jobM, pathM));
+				} else if (job != null) {
+					SetJob(new JobManager.ColonistJob(this, job, job.colonistResources, job.containerPickups, jobM, pathM));
+				}
+
+				this.skills = skills;
+				this.traits = traits;
+				this.needs = needs;
+
+				this.baseHappiness = baseHappiness;
+				this.effectiveHappiness = effectiveHappiness;
+				this.happinessModifiers = happinessModifiers;
+
+				if (playerMoved) {
+					PlayerMoveToTile(pathEnd);
+				}
+		}
 	}
 
 	public List<Trader> traders = new List<Trader>();
@@ -1025,10 +1094,7 @@ public class ColonistManager : MonoBehaviour {
 	public List<string> humanNames = new List<string>();
 
 	public void SpawnColonists(int amount) {
-		for (int i = 0; i < 3; i++) {
-			List<Sprite> innerHumanMoveSprites = Resources.LoadAll<Sprite>(@"Sprites/Colonists/colonists-body-base-" + i).ToList();
-			humanMoveSprites.Add(innerHumanMoveSprites);
-		}
+
 
 		int mapSize = tileM.map.mapData.mapSize;
 		for (int i = 0;i < amount;i++) {

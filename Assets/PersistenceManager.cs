@@ -224,8 +224,9 @@ public class PersistenceManager : MonoBehaviour {
 		if (tile.plant != null) {
 			tileData += "/" + tile.plant.group.type + "," + tile.plant.small;
 		} else {
-			tileData += "/None/";
+			tileData += "/None";
 		}
+		tileData += "/";
 		return tileData;
 	}
 
@@ -265,10 +266,16 @@ public class PersistenceManager : MonoBehaviour {
 		mtoData += "/Position," + mto.parentObject.obj.transform.position.x + "," + mto.parentObject.obj.transform.position.y;
 		if (mto.createResource != null) {
 			mtoData += "/CreateResource," + mto.createResource.type;
+		} else {
+			mtoData += "/None";
 		}
 		if (mto.fuelResource != null) {
 			mtoData += "/FuelResource," + mto.fuelResource.type;
+		} else {
+			mtoData += "/None";
 		}
+		mtoData += "/Active," + mto.active;
+		mtoData += "/";
 		return mtoData;
 	}
 
@@ -290,15 +297,36 @@ public class PersistenceManager : MonoBehaviour {
 		string containerData = "Container";
 		containerData += "/Position," + container.parentObject.obj.transform.position.x + "," + container.parentObject.obj.transform.position.y;
 		containerData += "/InventoryMaxAmount," + container.inventory.maxAmount;
+		/*
+		 *	/InventoryResources:Count,InventoryResource:ResourceType:Amount,InventoryResource:ResourceType:Amount,...
+		 *	
+		 *	Split(',') -> ["InventoryResources" , "InventoryResource:ResourceType:Amount" , "..."]
+		 *		Split[0](':') -> ["InventoryResources" , "Count"]
+		 *		foreach skip 1 (i = 1 -> n):
+		 *			Split[i](':') -> ["InventoryResource" , "ResourceType" , "Amount"]
+		 */
+		containerData += "/InventoryResources:" + container.inventory.resources.Count;
 		foreach (ResourceManager.ResourceAmount resourceAmount in container.inventory.resources) {
-			containerData += "/InventoryResource";
-			containerData += "," + resourceAmount.resource.type;
-			containerData += "," + resourceAmount.amount;
+			containerData += ",InventoryResource";
+			containerData += ":" + resourceAmount.resource.type;
+			containerData += ":" + resourceAmount.amount;
 		}
+		/*
+		 *	/ReservedResources:Count,ReservedResourcesColonist:ColonistName;ReservedResource:ResourceType:Amount;...,ReservedResourcesColonist:ColonistName;ReservedResource:ResourceType:Amount;...
+		 * 
+		 *	Split(',') -> ["ReservedResources:Count" , "ReservedResourcesColonist:ColonistName;ReservedResource:ResourceType:Amount;...", "..."]
+		 *		Split[0](':') -> ["ReservedResources" , "Count"]
+		 *		foreach skip 1 (i = 1 -> n):
+		 *			Split[i](';') -> ["ReservedResourcesColonist:ColonistName" , "ReservedResources:ResourceType:Amount" , "..."]
+		 *				Split[0](':') -> ["ReservedResourcesColonist" , "ColonistName"]
+		 *				foreach skip 1 (k = 1 -> n):
+		 *					Split[k](':') -> ["ReservedResources" , "ResourceType" , "Amount"]
+		 */
+		containerData += "/ReservedResources:" + container.inventory.reservedResources.Count;
 		foreach (ResourceManager.ReservedResources reservedResources in container.inventory.reservedResources) {
-			containerData += "/ReservedResourcesColonist," + reservedResources.colonist;
+			containerData += ",ReservedResourcesColonist:" + reservedResources.colonist.name;
 			foreach (ResourceManager.ResourceAmount resourceAmount in reservedResources.resources) {
-				containerData += ",ReservedResource";
+				containerData += ";ReservedResource";
 				containerData += ":" + resourceAmount.resource.type;
 				containerData += ":" + resourceAmount.amount;
 			}
@@ -319,48 +347,84 @@ public class PersistenceManager : MonoBehaviour {
 		colonistData += "/Profession," + colonist.profession.type;
 		colonistData += "/OldProfession," + colonist.oldProfession.type;
 		colonistData += "/InventoryMaxAmount," + colonist.inventory.maxAmount;
+		/*
+		 *	/InventoryResources:Count,InventoryResource:ResourceType:Amount,InventoryResource:ResourceType:Amount,...
+		 *	
+		 *	Split(',') -> ["InventoryResources" , "InventoryResource:ResourceType:Amount" , "..."]
+		 *		Split[0](':') -> ["InventoryResources" , "Count"]
+		 *		foreach skip 1 (i = 1 -> n):
+		 *			Split[i](':') -> ["InventoryResource" , "ResourceType" , "Amount"]
+		 */
+		colonistData += "/InventoryResources:" + colonist.inventory.resources.Count;
 		foreach (ResourceManager.ResourceAmount resourceAmount in colonist.inventory.resources) {
-			colonistData += "/InventoryResource";
-			colonistData += "," + resourceAmount.resource.type;
-			colonistData += "," + resourceAmount.amount;
+			colonistData += ",InventoryResource";
+			colonistData += ":" + resourceAmount.resource.type;
+			colonistData += ":" + resourceAmount.amount;
 		}
+		/*
+		 *	/ReservedResources:Count,ReservedResourcesColonist:ColonistName;ReservedResource:ResourceType:Amount;...,ReservedResourcesColonist:ColonistName;ReservedResource:ResourceType:Amount;...
+		 * 
+		 *	Split(',') -> ["ReservedResources:Count" , "ReservedResourcesColonist:ColonistName;ReservedResource:ResourceType:Amount;...", "..."]
+		 *		Split[0](':') -> ["ReservedResources" , "Count"]
+		 *		foreach skip 1 (i = 1 -> n):
+		 *			Split[i](';') -> ["ReservedResourcesColonist:ColonistName" , "ReservedResources:ResourceType:Amount" , "..."]
+		 *				Split[0](':') -> ["ReservedResourcesColonist" , "ColonistName"]
+		 *				foreach skip 1 (k = 1 -> n):
+		 *					Split[k](':') -> ["ReservedResources" , "ResourceType" , "Amount"]
+		 */
+		colonistData += "/ReservedResources:" + colonist.inventory.reservedResources.Count;
 		foreach (ResourceManager.ReservedResources reservedResources in colonist.inventory.reservedResources) {
-			colonistData += "/ReservedResourcesColonist," + reservedResources.colonist;
+			colonistData += ",ReservedResourcesColonist:" + reservedResources.colonist;
 			foreach (ResourceManager.ResourceAmount resourceAmount in reservedResources.resources) {
-				colonistData += ",ReservedResource";
+				colonistData += ";ReservedResource";
 				colonistData += ":" + resourceAmount.resource.type;
 				colonistData += ":" + resourceAmount.amount;
 			}
 		}
 		if (colonist.job != null) {
-			colonistData += "/" + GetJobDataString(colonist.job, true).Replace('/', '`');
+			colonistData += "/" + GetJobDataString(colonist.job, true).Replace('/', '~');
+		} else {
+			colonistData += "/None";
 		}
 		if (colonist.storedJob != null) {
-			colonistData += "/" + GetJobDataString(colonist.storedJob, true).Replace('/', '`');
+			colonistData += "/" + GetJobDataString(colonist.storedJob, true).Replace('/', '~');
+		} else {
+			colonistData += "/None";
 		}
+		colonistData += "/Skills";
 		foreach (ColonistManager.SkillInstance skill in colonist.skills) {
-			colonistData += "/Skill";
-			colonistData += "," + skill.prefab.type;
-			colonistData += "," + skill.level;
-			colonistData += "," + skill.nextLevelExperience;
-			colonistData += "," + skill.currentExperience;
+			colonistData += ",Skill";
+			colonistData += ":" + skill.prefab.type;
+			colonistData += ":" + skill.level;
+			colonistData += ":" + skill.nextLevelExperience;
+			colonistData += ":" + skill.currentExperience;
 		}
+		colonistData += "/Traits";
 		foreach (ColonistManager.TraitInstance trait in colonist.traits) {
-			colonistData += "/Trait";
-			colonistData += "," + trait.prefab.type;
+			colonistData += ",Trait";
+			colonistData += ":" + trait.prefab.type;
 		}
+		colonistData += "/Needs";
 		foreach (ColonistManager.NeedInstance need in colonist.needs) {
-			colonistData += "/Need";
-			colonistData += "," + need.prefab.type;
-			colonistData += "," + need.value;
+			colonistData += ",Need";
+			colonistData += ":" + need.prefab.type;
+			colonistData += ":" + need.value;
 		}
 		colonistData += "/BaseHappiness," + colonist.baseHappiness;
 		colonistData += "/EffectiveHappiness," + colonist.effectiveHappiness;
+		colonistData += "/HappinessModifiers";
 		foreach (ColonistManager.HappinessModifierInstance happinessModifier in colonist.happinessModifiers) {
-			colonistData += "/HappinessModifier";
-			colonistData += "," + happinessModifier.prefab.type;
-			colonistData += "," + happinessModifier.timer;
+			colonistData += ",HappinessModifier";
+			colonistData += ":" + happinessModifier.prefab.type;
+			colonistData += ":" + happinessModifier.timer;
 		}
+		if (colonist.path.Count > 0) {
+			TileManager.Tile pathEndTile = colonist.path[colonist.path.Count - 1];
+			colonistData += "/PathEnd," + pathEndTile.obj.transform.position.x + "," + pathEndTile.obj.transform.position.y;
+		} else {
+			colonistData += "/None";
+		}
+		colonistData += "/";
 		return colonistData;
 	}
 
@@ -371,42 +435,71 @@ public class PersistenceManager : MonoBehaviour {
 		jobData += "/RotationIndex," + job.rotationIndex;
 		jobData += "/Started," + job.started;
 		jobData += "/Progress," + job.jobProgress;
-		jobData += "/ColonistBuildTime" + job.colonistBuildTime;
+		jobData += "/ColonistBuildTime," + job.colonistBuildTime;
 		// "/ResourceToBuild,ResourceType,Amount"
+		jobData += "/ResourcesToBuild";
 		foreach (ResourceManager.ResourceAmount resourceToBuild in job.resourcesToBuild) {
-			jobData += "/ResourceToBuild";
-			jobData += "," + resourceToBuild.resource.type;
-			jobData += "," + resourceToBuild.amount;
+			jobData += ",ResourceToBuild";
+			jobData += ":" + resourceToBuild.resource.type;
+			jobData += ":" + resourceToBuild.amount;
 		}
 		if (onColonist) {
+			/*
+			 *	/OnColonist,ColonistResources;ColonistResource:ResourceType:Amount;...,ContainerPickups;ContainerPickup:x`y:ResourceToPickup`ResourceType`Amount:...;...
+			 * 
+			 *	Split(',') -> ["OnColonist" , "ColonistResources;..." , "ContainerPickups;..."]
+			 *		Split[1](';') -> ["ColonistResources" , "ColonistResource:ResourceType:Amount" , "..."]
+			 *			foreach skip 1 (i = 1 -> n):
+			 *				Split[i](':') = ["ColonistResource" , "ResourceType" , "Amount"]
+			 *		Split[2](';') -> ["ContainerPickups" , "ContainerPickup:x`y:ResourceToPickup`ResourceType`Amount:ResourceToPickup
+			 *			foreach skip 1 (i = 1 -> n):
+			 *				Split[i](':') = ["ContainerPickup" , "x`y" , "ResourceToPickup`ResourceType`Amount" , "..."]
+			 *					Split[1]('`') = ["x" , "y"]
+			 *					foreach skip 2 (k = 2 -> n):
+			 *						Split[k]('`') = ["ResourceToPickup" , "ResourceType" , "Amount"]
+			 */
+			jobData += "/OnColonist";
 			if (job.colonistResources != null) {
-				// "/ColonistResource,ResourceType,Amount"
+				jobData += ",ColonistResources";
 				foreach (ResourceManager.ResourceAmount colonistResource in job.colonistResources) {
-					jobData += "/ColonistResource";
-					jobData += "," + colonistResource.resource.type;
-					jobData += "," + colonistResource.amount;
+					jobData += ";ColonistResource";
+					jobData += ":" + colonistResource.resource.type;
+					jobData += ":" + colonistResource.amount;
 				}
+			} else {
+				jobData += ",None";
 			}
 			if (job.containerPickups != null) {
-				// "/ContainerPickup,xPos,yPos,ResourceToPickup:ResourceType:Amount,ResourceToPickup:ResourceType:Amount,..."
+				jobData += ",ContainerPickups";
 				foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
-					jobData += "/ContainerPickup";
-					jobData += "," + containerPickup.container.parentObject.obj.transform.position.x + "," + containerPickup.container.parentObject.obj.transform.position.y;
+					jobData += ";ContainerPickup";
+					jobData += ":" + containerPickup.container.parentObject.obj.transform.position.x + "`" + containerPickup.container.parentObject.obj.transform.position.y;
 					foreach (ResourceManager.ResourceAmount resourceToPickup in containerPickup.resourcesToPickup) {
-						jobData += ",ResourceToPickup:" + resourceToPickup.resource.type + ":" + resourceToPickup.amount;
+						jobData += ":ResourceToPickup`" + resourceToPickup.resource.type + "`" + resourceToPickup.amount;
 					}
 				}
+			} else {
+				jobData += ",None";
 			}
+		} else {
+			jobData += "/None";
 		}
 		if (job.plant != null) {
 			jobData += "/Plant," + job.plant.group.type;
+		} else {
+			jobData += "/None";
 		}
 		if (job.createResource != null) {
 			jobData += "/CreateResource," + job.createResource.type;
+		} else {
+			jobData += "/None";
 		}
 		if (job.activeTileObject != null) {
 			jobData += "/ActiveTileObject," + job.activeTileObject.obj.transform.position.x + "," + job.activeTileObject.obj.transform.position.y + "," + job.activeTileObject.prefab.type;
+		} else {
+			jobData += "/None";
 		}
+		jobData += "/";
 		return jobData;
 	}
 
@@ -475,6 +568,12 @@ public class PersistenceManager : MonoBehaviour {
 		// Map Data
 		TileManager.MapData mapData = null;
 
+		// Container Data
+		List<string> containerReservedResourcesData = new List<string>();
+
+		// Colonist Data
+		List<string> colonistReservedResourcesData = new List<string>();
+
 		sectionIndex = 0;
 		int lastSectionEnd = 2;
 		foreach (int sectionLength in sectionLengths) {
@@ -487,7 +586,7 @@ public class PersistenceManager : MonoBehaviour {
 					List<string> lineData = lines[lineIndex - 1].Split('/').ToList();
 					if (sectionIndex == 0) { // Time/Date
 						timeM.SetTime(float.Parse(lineData[1].Split(',')[1]));
-						timeM.SetDate(int.Parse(lineData[2].Split(',')[1]), int.Parse(lineData[2].Split(',')[1]), int.Parse(lineData[2].Split(',')[1]));
+						timeM.SetDate(int.Parse(lineData[2].Split(',')[1]), int.Parse(lineData[2].Split(',')[2]), int.Parse(lineData[2].Split(',')[3]));
 					} else if (sectionIndex == 1) { // Camera
 						print(lineData[1].Split(',')[1]);
 						cameraM.SetCameraPosition(new Vector2(float.Parse(lineData[1].Split(',')[1]), float.Parse(lineData[1].Split(',')[2])));
@@ -553,7 +652,7 @@ public class PersistenceManager : MonoBehaviour {
 
 							TileManager.TileType savedTileType = tileM.GetTileTypeByEnum((TileManager.TileTypes)System.Enum.Parse(typeof(TileManager.TileTypes), lineData[0]));
 							if (savedTileType != tile.tileType) {
-								tile.SetTileType(savedTileType,true,false,false,false);
+								tile.SetTileType(savedTileType,false,false,false,false);
 								if (tileM.GetHoleTileTypes().Contains(savedTileType.type)) {
 									tile.dugPreviously = true;
 								}
@@ -571,7 +670,19 @@ public class PersistenceManager : MonoBehaviour {
 							}
 						}
 					} else if (sectionIndex == 4) { // River
-
+						if (innerSectionIndex == 0) {
+							foreach (TileManager.Map.River river in tileM.map.rivers) {
+								river.tiles.Clear();
+							}
+							tileM.map.rivers.Clear();
+						}
+						TileManager.Tile startTile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(lineData[1].Split(',')[1]), float.Parse(lineData[1].Split(',')[2])));
+						TileManager.Tile endTile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(lineData[2].Split(',')[1]), float.Parse(lineData[2].Split(',')[2])));
+						List<TileManager.Tile> riverTiles = new List<TileManager.Tile>();
+						foreach (string riverTilePositionString in lineData.Skip(3)) {
+							riverTiles.Add(tileM.map.GetTileFromPosition(new Vector2(float.Parse(riverTilePositionString.Split(',')[0]), float.Parse(riverTilePositionString.Split(',')[1]))));
+						}
+						tileM.map.rivers.Add(new TileManager.Map.River(startTile, endTile, riverTiles));
 					} else if (sectionIndex == 5) { // Object
 
 					} else if (sectionIndex == 6) { // Manufacturing Tile Object
@@ -581,7 +692,122 @@ public class PersistenceManager : MonoBehaviour {
 					} else if (sectionIndex == 8) { // Container
 
 					} else if (sectionIndex == 9) { // Colonist
+						Vector2 position = new Vector2(float.Parse(lineData[1].Split(',')[1]), float.Parse(lineData[1].Split(',')[2]));
+						TileManager.Tile tile = tileM.map.GetTileFromPosition(position);
 
+						string name = lineData[2].Split(',')[1];
+
+						Dictionary<ColonistManager.ColonistLook, int> colonistLookIndexes = new Dictionary<ColonistManager.ColonistLook, int>() {
+							{ ColonistManager.ColonistLook.Skin, int.Parse(lineData[3].Split(',')[1]) },
+							{ ColonistManager.ColonistLook.Hair, int.Parse(lineData[4].Split(',')[1]) },
+							{ ColonistManager.ColonistLook.Shirt, int.Parse(lineData[5].Split(',')[1]) },
+							{ ColonistManager.ColonistLook.Pants, int.Parse(lineData[6].Split(',')[1]) },
+						};
+
+						float health = float.Parse(lineData[7].Split(',')[1]);
+
+						bool playerMoved = bool.Parse(lineData[8].Split(',')[1]);
+
+						ColonistManager.Profession profession = colonistM.professions.Find(p => p.type.ToString() == lineData[9].Split(',')[1]);
+						ColonistManager.Profession oldProfession = colonistM.professions.Find(p => p.type.ToString() == lineData[10].Split(',')[1]);
+
+						ColonistManager.Colonist colonist = new ColonistManager.Colonist(tile, colonistLookIndexes, profession, health);
+
+						ResourceManager.Inventory inventory = new ResourceManager.Inventory(colonist, null, int.Parse(lineData[11].Split(',')[1]));
+						foreach (string inventoryResourceString in lineData[12].Split(',').Skip(1)) {
+							ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), inventoryResourceString.Split(':')[1]));
+							int amount = int.Parse(inventoryResourceString.Split(':')[2]);
+							inventory.ChangeResourceAmount(resource, amount);
+						}
+						colonistReservedResourcesData.Add(lineData[13]);
+
+						JobManager.Job job = null;
+						if (lineData[14] != "None") {
+							List<string> jobDataSplit = lineData[14].Split('~').ToList();
+							job = LoadJob(jobDataSplit);
+						}
+						JobManager.Job storedJob = null;
+						if (lineData[15] != "None") {
+							List<string> jobDataSplit = lineData[15].Split('~').ToList();
+							storedJob = LoadJob(jobDataSplit);
+						}
+						List<ColonistManager.SkillInstance> skills = new List<ColonistManager.SkillInstance>();
+						foreach (string skillDataString in lineData[16].Split(',').Skip(1)) {
+							ColonistManager.SkillPrefab skillPrefab = colonistM.GetSkillPrefabFromString(skillDataString.Split(':')[1]);
+							int level = int.Parse(skillDataString.Split(':')[2]);
+							float nextLevelExperience = float.Parse(skillDataString.Split(':')[3]);
+							float currentExperience = float.Parse(skillDataString.Split(':')[4]);
+							ColonistManager.SkillInstance skill = new ColonistManager.SkillInstance(colonist, skillPrefab, level) {
+								colonist = colonist,
+								prefab = skillPrefab,
+								level = level,
+								nextLevelExperience = nextLevelExperience,
+								currentExperience = currentExperience
+							};
+							skills.Add(skill);
+						}
+						//colonist.skills = skills;
+						List<ColonistManager.TraitInstance> traits = new List<ColonistManager.TraitInstance>();
+						foreach (string traitDataString in lineData[17].Split(',').Skip(1)) {
+							ColonistManager.TraitPrefab traitPrefab = colonistM.GetTraitPrefabFromString(traitDataString.Split(':')[1]);
+							traits.Add(new ColonistManager.TraitInstance(colonist, traitPrefab));
+						}
+						//colonist.traits = traits;
+						List<ColonistManager.NeedInstance> needs = new List<ColonistManager.NeedInstance>();
+						foreach (string needDataString in lineData[18].Split(',').Skip(1)) {
+							ColonistManager.NeedPrefab needPrefab = colonistM.GetNeedPrefabFromString(needDataString.Split(':')[1]);
+							float value = float.Parse(needDataString.Split(':')[2]);
+							needs.Add(new ColonistManager.NeedInstance(colonist, needPrefab) { value = value });
+						}
+						//colonist.needs = needs;
+						float baseHappiness = float.Parse(lineData[19].Split(',')[1]);
+						float effectiveHappiness = float.Parse(lineData[20].Split(',')[1]);
+						List<ColonistManager.HappinessModifierInstance> happinessModifiers = new List<ColonistManager.HappinessModifierInstance>();
+						foreach (string happinessModifierString in lineData[21].Split(',').Skip(1)) {
+							ColonistManager.HappinessModifierPrefab happinessModifierPrefab = colonistM.GetHappinessModifierPrefabFromString(happinessModifierString.Split(':')[1]);
+							float timer = float.Parse(happinessModifierString.Split(':')[2]);
+							happinessModifiers.Add(new ColonistManager.HappinessModifierInstance(colonist, happinessModifierPrefab) { timer = timer });
+						}
+						//colonist.happinessModifiers = happinessModifiers;
+						TileManager.Tile pathEndTile = null;
+						if (lineData[22] != "None") {
+							pathEndTile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(lineData[22].Split(',')[1]), float.Parse(lineData[22].Split(',')[2])));
+						}
+						colonist.LoadColonistData(
+							position,
+							name,
+							colonistLookIndexes,
+							health,
+							profession,
+							oldProfession,
+							inventory,
+							job,
+							storedJob,
+							skills,
+							traits,
+							needs,
+							baseHappiness,
+							effectiveHappiness,
+							happinessModifiers,
+							playerMoved,
+							pathEndTile
+						);
+						colonistM.colonists.Add(colonist);
+						if (sectionIndex == sectionEnd - 1) {
+							for (int colonistIndex = 0; colonistIndex < colonistM.colonists.Count; colonistIndex++) {
+								ColonistManager.Colonist colonistAtIndex = colonistM.colonists[colonistIndex];
+								foreach (string reservedResourcesString in colonistReservedResourcesData[colonistIndex].Split(',').Skip(1)) {
+									ColonistManager.Colonist reservedResourcesColonist = colonistM.colonists.Find(findColonist => findColonist.name == reservedResourcesString.Split(';')[0].Split(':')[1]);
+									List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
+									foreach (string reservedResourceString in reservedResourcesString.Split(';').Skip(1)) {
+										ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), reservedResourceString.Split(':')[1]));
+										int amount = int.Parse(reservedResourceString.Split(':')[2]);
+										resourcesToReserve.Add(new ResourceManager.ResourceAmount(resource, amount));
+									}
+									colonist.inventory.ReserveResources(resourcesToReserve, reservedResourcesColonist);
+								}
+							}
+						}
 					} else if (sectionIndex == 10) { // Job
 
 					}
@@ -597,28 +823,80 @@ public class PersistenceManager : MonoBehaviour {
 		tileM.map.DetermineVisibleRegionBlocks();
 		tileM.map.Bitmasking(tileM.map.tiles);
 
+		uiM.ToggleLoadMenu();
+		uiM.TogglePauseMenu();
+		if (timeM.timeModifier != 0) {
+			timeM.TogglePause();
+		}
+
+		tileM.generated = true;
+		tileM.generating = false;
+
 		return;
+	}
 
-		// Load the time data
+	public JobManager.Job LoadJob(List<string> jobDataSplit) {
+		TileManager.Tile jobTile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(jobDataSplit[1].Split(',')[1]), float.Parse(jobDataSplit[1].Split(',')[2])));
+		ResourceManager.TileObjectPrefab jobPrefab = resourceM.GetTileObjectPrefabByEnum((ResourceManager.TileObjectPrefabsEnum)System.Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), jobDataSplit[2].Split(',')[1]));
+		int rotationIndex = int.Parse(jobDataSplit[3].Split(',')[1]);
+		bool started = bool.Parse(jobDataSplit[4].Split(',')[1]);
+		float progress = float.Parse(jobDataSplit[5].Split(',')[1]);
+		float colonistBuildTime = float.Parse(jobDataSplit[6].Split(',')[1]);
+		List<ResourceManager.ResourceAmount> resourcesToBuild = new List<ResourceManager.ResourceAmount>();
+		foreach (string resourceToBuildString in jobDataSplit[7].Split(',').Skip(1)) {
+			ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), resourceToBuildString.Split(':')[1]));
+			int amount = int.Parse(resourceToBuildString.Split(':')[2]);
+			resourcesToBuild.Add(new ResourceManager.ResourceAmount(resource, amount));
+		}
+		List<ResourceManager.ResourceAmount> colonistResources = new List<ResourceManager.ResourceAmount>();
+		List<JobManager.ContainerPickup> containerPickups = new List<JobManager.ContainerPickup>();
+		if (jobDataSplit[8] != "None") {
+			List<string> onColonistDataSplit = jobDataSplit[8].Split(',').ToList();
+			if (onColonistDataSplit[1] != "None") {
+				foreach (string colonistResourceString in onColonistDataSplit[1].Split(';').Skip(1)) {
+					ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), colonistResourceString.Split(':')[1]));
+					int amount = int.Parse(colonistResourceString.Split(':')[2]);
+					colonistResources.Add(new ResourceManager.ResourceAmount(resource, amount));
+				}
+			}
+			if (onColonistDataSplit[2] != "None") {
+				foreach (string containerPickupString in onColonistDataSplit[2].Split(';').Skip(1)) {
+					List<string> containerPickupDataSplit = containerPickupString.Split(':').ToList();
+					Vector2 containerPosition = new Vector2(float.Parse(containerPickupDataSplit[1].Split('`')[0]), float.Parse(containerPickupDataSplit[1].Split('`')[0]));
+					TileManager.Tile containerTile = tileM.map.GetTileFromPosition(containerPosition);
+					ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == containerTile);
+					List<ResourceManager.ResourceAmount> resourcesToPickup = new List<ResourceManager.ResourceAmount>();
+					foreach (string resourceToPickupString in containerPickupDataSplit.Skip(2).ToList()) {
+						ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), resourceToPickupString.Split('`')[1]));
+						int amount = int.Parse(resourceToPickupString.Split(':')[2]);
+						resourcesToPickup.Add(new ResourceManager.ResourceAmount(resource, amount));
+					}
+					containerPickups.Add(new JobManager.ContainerPickup(container, resourcesToPickup));
+				}
+			}
+		}
 
-		// Load the camera data
+		JobManager.Job job = new JobManager.Job(jobTile, jobPrefab, rotationIndex) {
+			started = started,
+			jobProgress = progress,
+			colonistBuildTime = colonistBuildTime,
+			resourcesToBuild = resourcesToBuild,
+			colonistResources = colonistResources,
+			containerPickups = containerPickups
+		};
 
-		// Load the planet data
-
-		// Load the tile data
-
-		// Load the river data
-
-		// Load the object data
-
-		// Load the manufacturing tile object data
-
-		// Load the farm data
-
-		// Load the container data
-
-		// Load the colonist data
-
-		// Load the job data
+		if (jobDataSplit[9] != "None") {
+			job.plant = new TileManager.Plant(tileM.GetPlantGroupByBiome(jobTile.biome, true), jobTile, false, true);
+		}
+		if (jobDataSplit[10] != "None") {
+			job.createResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[10]));
+		}
+		if (jobDataSplit[11] != "None") {
+			ResourceManager.TileObjectPrefabsEnum activeTileObjectPrefab = (ResourceManager.TileObjectPrefabsEnum)System.Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), jobDataSplit[11].Split(',')[3]);
+			TileManager.Tile activeTileObjectTile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(jobDataSplit[11].Split(',')[1]), float.Parse(jobDataSplit[11].Split(',')[2])));
+			ResourceManager.TileObjectInstance activeTileObject = activeTileObjectTile.objectInstances.Values.ToList().Find(oi => oi.tile == activeTileObjectTile && oi.prefab.type == activeTileObjectPrefab);
+			job.activeTileObject = activeTileObject;
+		}
+		return job;
 	}
 }

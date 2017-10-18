@@ -1945,25 +1945,37 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 
+		public class ResourceVeinData {
+			public TileTypes tileType;
+			public int numVeins = 0;
+			public int veinDistance = 0;
+			public int veinSize = 0;
+			public int veinSizeRange = 0;
+
+			public ResourceVeinData(TileTypes tileType, int numVeins, int veinDistance, int veinSize, int veinSizeRange) {
+				this.tileType = tileType;
+				this.numVeins = numVeins;
+				this.veinDistance = veinDistance;
+				this.veinSize = veinSize;
+				this.veinSizeRange = veinSizeRange;
+			}
+		}
 
 		public void SetResourceVeins() {
-			Dictionary<TileTypes, int> stoneVeinResources = new Dictionary<TileTypes, int>() {
-
+			List<ResourceVeinData> stoneVeins = new List<ResourceVeinData>() {
+				
 			};
-			Dictionary<TileTypes, KeyValuePair<int, int>> coastVeinResources = new Dictionary<TileTypes, KeyValuePair<int, int>>() {
-				{ TileTypes.Clay, new KeyValuePair<int,int>(10,5) }
-			};
-
 			List<Tile> stoneTiles = new List<Tile>();
 			foreach (Tile tile in tiles) {
 				if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
 					stoneTiles.Add(tile);
 				}
 			}
-			foreach (KeyValuePair<TileTypes, int> stoneVeinResourceKVP in stoneVeinResources) {
+			// Place stone veins here, copy format of coast veins
 
-			}
-
+			List<ResourceVeinData> coastVeins = new List<ResourceVeinData>() {
+				new ResourceVeinData(TileTypes.Clay,Mathf.RoundToInt(mapData.mapSize / 10f),5,10,5)
+			};
 			List<Tile> coastTiles = new List<Tile>();
 			foreach (Tile tile in tiles) {
 				if (tileM.WaterEquivalentTileTypes.Contains(tile.tileType.type) && tile.surroundingTiles.Find(t => t != null && !tileM.WaterEquivalentTileTypes.Contains(t.tileType.type)) != null) {
@@ -1971,14 +1983,27 @@ public class TileManager:MonoBehaviour {
 				}
 			}
 			if (coastTiles.Count > 0) {
-				for (int i = 0; i < Mathf.RoundToInt(mapData.mapSize / 10f); i++) {
-					foreach (KeyValuePair<TileTypes, KeyValuePair<int, int>> coastVeinResourceKVP in coastVeinResources) {
+				foreach (ResourceVeinData resourceVeinData in coastVeins) {
+					List<Tile> previousVeinStartTiles = new List<Tile>();
+					for (int i = 0; i < resourceVeinData.numVeins; i++) {
 						List<Tile> validVeinStartTiles = coastTiles.Where(tile => !tileM.ResourceTileTypes.Contains(tile.tileType.type)).ToList();
+						foreach (Tile previousVeinStartTile in previousVeinStartTiles) {
+							List<Tile> removeTiles = new List<Tile>();
+							foreach (Tile validVeinStartTile in validVeinStartTiles) {
+								if (Vector2.Distance(validVeinStartTile.obj.transform.position, previousVeinStartTile.obj.transform.position) < resourceVeinData.veinDistance) {
+									removeTiles.Add(validVeinStartTile);
+								}
+							}
+							foreach (Tile removeTile in removeTiles) {
+								validVeinStartTiles.Remove(removeTile);
+							}
+						}
 						if (validVeinStartTiles.Count > 0) {
 
-							int veinSizeMax = coastVeinResourceKVP.Value.Key + Random.Range(-coastVeinResourceKVP.Value.Value, coastVeinResourceKVP.Value.Value);
+							int veinSizeMax = resourceVeinData.veinSize + Random.Range(-resourceVeinData.veinSizeRange, resourceVeinData.veinSizeRange);
 
 							Tile veinStartTile = validVeinStartTiles[Random.Range(0, validVeinStartTiles.Count)];
+							previousVeinStartTiles.Add(veinStartTile);
 
 							List<Tile> frontier = new List<Tile>() { veinStartTile };
 							List<Tile> checkedTiles = new List<Tile>();
@@ -1992,9 +2017,9 @@ public class TileManager:MonoBehaviour {
 								checkedTiles.Add(currentTile);
 
 								if (tileM.WaterEquivalentTileTypes.Contains(currentTile.tileType.type)) {
-									currentTile.SetTileType(tileM.GetTileTypeByEnum(tileM.GroundToWaterResourceMap[coastVeinResourceKVP.Key]),true,false,false,false);
+									currentTile.SetTileType(tileM.GetTileTypeByEnum(tileM.GroundToWaterResourceMap[resourceVeinData.tileType]),true,false,false,false);
 								} else {
-									currentTile.SetTileType(tileM.GetTileTypeByEnum(coastVeinResourceKVP.Key),true,false,false,false);
+									currentTile.SetTileType(tileM.GetTileTypeByEnum(resourceVeinData.tileType),true,false,false,false);
 								}
 
 								foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
@@ -2085,17 +2110,12 @@ public class TileManager:MonoBehaviour {
 			}
 			if ((sum < 16) || (bitmaskMap[sum] != 46)) {
 				if (sum >= 16) {
-					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key != null) {
-						tile.sr.sprite = tile.tileType.riverSprites[bitmaskMap[sum]];
-					} else {
-						tile.sr.sprite = tile.tileType.bitmaskSprites[bitmaskMap[sum]];
-					}
+					sum = bitmaskMap[sum];
+				}
+				if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key != null) {
+					tile.sr.sprite = tile.tileType.riverSprites[sum];
 				} else {
-					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key != null) {
-						tile.sr.sprite = tile.tileType.riverSprites[sum];
-					} else {
-						tile.sr.sprite = tile.tileType.bitmaskSprites[sum];
-					}
+					tile.sr.sprite = tile.tileType.bitmaskSprites[sum];
 				}
 			} else {
 				if (tile.tileType.baseSprites.Count > 0 && !tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
@@ -2124,7 +2144,7 @@ public class TileManager:MonoBehaviour {
 				List<TileTypes> compareTileTypes = new List<TileTypes>();
 				compareTileTypes.AddRange(tileM.WaterEquivalentTileTypes);
 				compareTileTypes.AddRange(tileM.StoneEquivalentTileTypes);
-				BitmaskTile(river.tiles[river.tiles.Count - 1],false,true,compareTileTypes,false);
+				BitmaskTile(river.startTile,false,true,compareTileTypes,false);
 			}
 		}
 
