@@ -863,26 +863,32 @@ public class UIManager : MonoBehaviour {
 				}
 			}
 
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Position").GetComponent<Text>().text = "<b>Position</b>\n(" + Mathf.FloorToInt(mouseOverTile.obj.transform.position.x) + ", " + Mathf.FloorToInt(mouseOverTile.obj.transform.position.y) + ")";
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Position").GetComponent<Text>().text = "(" + Mathf.FloorToInt(mouseOverTile.obj.transform.position.x) + ", " + Mathf.FloorToInt(mouseOverTile.obj.transform.position.y) + ")";
 			if (tileM.GetStoneEquivalentTileTypes().Contains(mouseOverTile.tileType.type)) {
-				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "<b><size=14>Tile Type</size></b>\n<size=12>" + mouseOverTile.tileType.name + "</size>";
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Tile Type";
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.tileType.name;
 			} else if (tileM.GetWaterEquivalentTileTypes().Contains(mouseOverTile.tileType.type)) {
 				if (tileM.GetWaterEquivalentTileTypes().Contains(mouseOverTile.tileType.type) && !tileM.GetLiquidWaterEquivalentTileTypes().Contains(mouseOverTile.tileType.type)) {
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "<b><size=14>Tile Type</size></b>\n<size=12>Ice</size>";
+					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Tile Type";
+					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "Ice";
 				} else {
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "<b><size=14>Tile Type</size></b>\n<size=12>Water</size>";
+					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Tile Type";
+					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "Water";
 				}
 			} else if (tileM.GetResourceTileTypes().Contains(mouseOverTile.tileType.type) || (tileM.GetWaterToGroundResourceMap().ContainsKey(mouseOverTile.tileType.type) && tileM.GetResourceTileTypes().Contains(tileM.GetWaterToGroundResourceMap()[mouseOverTile.tileType.type]))) {
 				if (tileM.GetResourceTileTypes().Contains(mouseOverTile.tileType.type)) {
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "<b><size=14>Tile Type</size></b>\n<size=12>" + mouseOverTile.tileType.name + "</size>";
+					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Tile Type";
+					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.tileType.name;
 				} else {
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "<b><size=14>Tile Type</size></b>\n<size=12>" + tileM.GetTileTypeByEnum(tileM.GetWaterToGroundResourceMap()[mouseOverTile.tileType.type]).name + "</size>";
+					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Tile Type";
+					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = tileM.GetTileTypeByEnum(tileM.GetWaterToGroundResourceMap()[mouseOverTile.tileType.type]).name;
 				}
 			} else {
-				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "<b><size=14>Biome</size></b>\n<size=12>" + mouseOverTile.biome.name + "</size>";
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Biome";
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.biome.name;
 			}
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Temperature").GetComponent<Text>().text = "<b>Temperature</b>\n" + Mathf.RoundToInt(mouseOverTile.temperature) + "°C";
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Precipitation").GetComponent<Text>().text = "<b>Precipitation</b>\n" + Mathf.RoundToInt(mouseOverTile.precipitation * 100f) + "%";
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Temperature").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.temperature) + "°C";
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Precipitation").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.precipitation * 100f) + "%";
 
 			if (!tileInformation.activeSelf) {
 				tileInformation.SetActive(true);
@@ -1162,7 +1168,12 @@ public class UIManager : MonoBehaviour {
 			selectedColonistInventoryPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().value = colonistM.selectedColonist.inventory.CountResources();
 			selectedColonistInventoryPanel.transform.Find("ColonistInventoryValue-Text").GetComponent<Text>().text = colonistM.selectedColonist.inventory.CountResources() + "/ " + colonistM.selectedColonist.inventory.maxAmount;
 
-			selectedColonistInformationPanel.transform.Find("ColonistAction-Text").GetComponent<Text>().text = jobM.GetJobDescription(colonistM.selectedColonist.job);
+			selectedColonistInformationPanel.transform.Find("ColonistCurrentAction-Text").GetComponent<Text>().text = jobM.GetJobDescription(colonistM.selectedColonist.job);
+			if (colonistM.selectedColonist.storedJob != null) {
+				selectedColonistInformationPanel.transform.Find("ColonistStoredAction-Text").GetComponent<Text>().text = jobM.GetJobDescription(colonistM.selectedColonist.storedJob);
+			} else {
+				selectedColonistInformationPanel.transform.Find("ColonistStoredAction-Text").GetComponent<Text>().text = string.Empty;
+			}
 
 			selectedColonistInformationPanel.transform.Find("SkillsList-Panel/SkillsListTitle-Panel/Profession-Text").GetComponent<Text>().text = colonistM.selectedColonist.profession.name;
 
@@ -1229,8 +1240,9 @@ public class UIManager : MonoBehaviour {
 		colonistElements.Clear();
 	}
 
-	/* Called from ColonistManager.SpawnColonists() */
+	/* Called from ColonistManager.AddColonists() */
 	public void SetColonistElements() {
+		RemoveColonistElements();
 		if (colonistList.activeSelf) {
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
 				colonistElements.Add(new ColonistElement(colonist, colonistList.transform.Find("ColonistList-Panel")));
@@ -1957,6 +1969,10 @@ public class UIManager : MonoBehaviour {
 		}
 		this.selectedMTO = selectedMTO;
 		SetSelectedManufacturingTileObjectPanel();
+		if (this.selectedMTO != null) {
+			SetSelectedMTOCreateResource(this.selectedMTO.createResource);
+			SetSelectedMTOFuelResource(this.selectedMTO.fuelResource);
+		}
 	}
 
 	private Dictionary<GameObject,ResourceManager.Resource> selectResourceListElements = new Dictionary<GameObject, ResourceManager.Resource>();
@@ -2057,10 +2073,15 @@ public class UIManager : MonoBehaviour {
 
 	public void SetSelectedMTOCreateResource(ResourceManager.Resource newCreateResource) {
 		selectedMTO.createResource = newCreateResource;
-		selectedMTOPanel.transform.Find("SelectResource-Button/SelectedResourceImage-Image").GetComponent<Image>().sprite = selectedMTO.createResource.image;
-		SetSelectedMTOResourceRequiredResources();
+
 		selectResourcePanel.SetActive(false);
-		selectedMTO.createResource.UpdateDesiredAmountText();
+		SetSelectedMTOResourceRequiredResources();
+		if (selectedMTO.createResource != null) {
+			selectedMTO.createResource.UpdateDesiredAmountText();
+			selectedMTOPanel.transform.Find("SelectResource-Button/SelectedResourceImage-Image").GetComponent<Image>().sprite = selectedMTO.createResource.image;
+		} else {
+			selectedMTOPanel.transform.Find("SelectResource-Button/SelectedResourceImage-Image").GetComponent<Image>().sprite = Resources.Load<Sprite>(@"UI/white-square");
+		}
 	}
 
 	public Dictionary<GameObject, ResourceManager.ResourceAmount> selectedMTOResourceRequiredResources = new Dictionary<GameObject, ResourceManager.ResourceAmount>();
@@ -2071,44 +2092,51 @@ public class UIManager : MonoBehaviour {
 		}
 		selectedMTOResourceRequiredResources.Clear();
 
-		Transform requiredResourcesList = selectedMTOPanel.transform.Find("RequiredResources-Panel/RequiredResources-ScrollPanel/RequiredResourcesList-Panel");
-		foreach (ResourceManager.ResourceAmount requiredResource in selectedMTO.createResource.requiredResources) {
-			GameObject requiredResourcePanel = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/RequiredResource-Panel"), requiredResourcesList, false);
+		if (selectedMTO.createResource != null) {
+			Transform requiredResourcesList = selectedMTOPanel.transform.Find("RequiredResources-Panel/RequiredResources-ScrollPanel/RequiredResourcesList-Panel");
+			foreach (ResourceManager.ResourceAmount requiredResource in selectedMTO.createResource.requiredResources) {
+				GameObject requiredResourcePanel = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/RequiredResource-Panel"), requiredResourcesList, false);
 
-			requiredResourcePanel.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = requiredResource.resource.image;
-			requiredResourcePanel.transform.Find("ResourceName-Text").GetComponent<Text>().text = requiredResource.resource.name;
-			requiredResourcePanel.transform.Find("RequiredAmount-Text").GetComponent<Text>().text = "Need: " + requiredResource.amount.ToString();
+				requiredResourcePanel.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = requiredResource.resource.image;
+				requiredResourcePanel.transform.Find("ResourceName-Text").GetComponent<Text>().text = requiredResource.resource.name;
+				requiredResourcePanel.transform.Find("RequiredAmount-Text").GetComponent<Text>().text = "Need: " + requiredResource.amount.ToString();
 
-			selectedMTOResourceRequiredResources.Add(requiredResourcePanel, requiredResource);
-		}
-
-		InputField desiredAmountInput = selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>();
-		/*
-		if (selectedMTO.createResource.desiredAmount > 0) {
-			desiredAmountInput.text = selectedMTO.createResource.desiredAmount.ToString();
-		}
-		*/
-		Text desiredAmountText = desiredAmountInput.transform.Find("Text").GetComponent<Text>();
-		desiredAmountInput.onEndEdit.AddListener(delegate {
-			int newDesiredAmount = 0;
-			if (int.TryParse(desiredAmountInput.text, out newDesiredAmount)) {
-				if (newDesiredAmount >= 0) {
-					selectedMTO.createResource.ChangeDesiredAmount(newDesiredAmount);
-					if (newDesiredAmount == 0) {
-						desiredAmountInput.text = String.Empty;
-					}
-				}
-			} else {
-				selectedMTO.createResource.ChangeDesiredAmount(0);
+				selectedMTOResourceRequiredResources.Add(requiredResourcePanel, requiredResource);
 			}
-			//selectedMTOUpdateDesiredAmountText = true;
-		});
+
+			InputField desiredAmountInput = selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>();
+			/*
+			if (selectedMTO.createResource.desiredAmount > 0) {
+				desiredAmountInput.text = selectedMTO.createResource.desiredAmount.ToString();
+			}
+			*/
+			Text desiredAmountText = desiredAmountInput.transform.Find("Text").GetComponent<Text>();
+			desiredAmountInput.onEndEdit.AddListener(delegate {
+				int newDesiredAmount = 0;
+				if (int.TryParse(desiredAmountInput.text, out newDesiredAmount)) {
+					if (newDesiredAmount >= 0) {
+						selectedMTO.createResource.ChangeDesiredAmount(newDesiredAmount);
+						if (newDesiredAmount == 0) {
+							desiredAmountInput.text = String.Empty;
+						}
+					}
+				} else {
+					selectedMTO.createResource.ChangeDesiredAmount(0);
+				}
+				//selectedMTOUpdateDesiredAmountText = true;
+			});
+		}
 	}
 
 	public void SetSelectedMTOFuelResource(ResourceManager.Resource newFuelResource) {
 		selectedMTO.fuelResource = newFuelResource;
-		selectedMTOPanel.transform.Find("SelectFuelResource-Button/SelectedFuelResourceImage-Image").GetComponent<Image>().sprite = selectedMTO.fuelResource.image;
+
 		selectFuelResourcePanel.SetActive(false);
+		if (selectedMTO.fuelResource != null) {
+			selectedMTOPanel.transform.Find("SelectFuelResource-Button/SelectedFuelResourceImage-Image").GetComponent<Image>().sprite = selectedMTO.fuelResource.image;
+		} else {
+			selectedMTOPanel.transform.Find("SelectFuelResource-Button/SelectedFuelResourceImage-Image").GetComponent<Image>().sprite = Resources.Load<Sprite>(@"UI/white-square");
+		}
 	}
 
 	public void UpdateSelectedManufacturingTileObjectPanel() {
@@ -2136,11 +2164,15 @@ public class UIManager : MonoBehaviour {
 			*/
 
 		} else {
+			selectedMTOPanel.transform.Find("SelectResource-Button/SelectedResourceName-Text").GetComponent<Text>().text = "Select Resource";
+
 			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/CurrentAmountValue-Text").GetComponent<Text>().text = String.Empty;
 			selectedMTOPanel.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().text = String.Empty;
 		}
 		if (selectedMTO.fuelResource != null) {
 			selectedMTOPanel.transform.Find("SelectFuelResource-Button/SelectedFuelResourceName-Text").GetComponent<Text>().text = selectedMTO.fuelResource.name;
+		} else {
+			selectedMTOPanel.transform.Find("SelectFuelResource-Button/SelectedFuelResourceName-Text").GetComponent<Text>().text = "Select Fuel Resource";
 		}
 		if (selectFuelResourcePanel.activeSelf) {
 			foreach (KeyValuePair<GameObject, ResourceManager.Resource> selectFuelResourceButtonKVP in selectFuelResourceListElements) {
@@ -2186,8 +2218,8 @@ public class UIManager : MonoBehaviour {
 			}
 		}
 
-		selectedMTOPanel.transform.Find("SelectResource-Button").GetComponent<Image>().color = selectedMTO.hasEnoughRequiredResources ? colourMap[Colours.LightGreen] : colourMap[Colours.LightRed];
-		selectedMTOPanel.transform.Find("SelectFuelResource-Button").GetComponent<Image>().color = selectedMTO.hasEnoughFuel ? colourMap[Colours.LightGreen] : colourMap[Colours.LightRed];
+		selectedMTOPanel.transform.Find("SelectResource-Button").GetComponent<Image>().color = (selectedMTO.createResource != null ? (selectedMTO.hasEnoughRequiredResources ? colourMap[Colours.LightGreen] : colourMap[Colours.LightRed]) : (colourMap[Colours.LightGrey220]));
+		selectedMTOPanel.transform.Find("SelectFuelResource-Button").GetComponent<Image>().color = (selectedMTO.fuelResource != null ? (selectedMTO.hasEnoughFuel ? colourMap[Colours.LightGreen] : colourMap[Colours.LightRed]) : (colourMap[Colours.LightGrey220]));
 	}
 
 	public void TogglePauseMenu() {

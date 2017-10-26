@@ -170,7 +170,7 @@ public class JobManager:MonoBehaviour {
 			}
 		});
 		jobDescriptionFunctions.Add(JobTypesEnum.PlantFarm,delegate (Job job) {
-			return "Planting a farm of " + job.prefab.name + ".";
+			return "Planting a " + job.prefab.name + ".";
 		});
 		jobDescriptionFunctions.Add(JobTypesEnum.HarvestFarm,delegate (Job job) {
 			return "Harvesting a farm of " + job.tile.farm.name + ".";
@@ -724,17 +724,11 @@ public class JobManager:MonoBehaviour {
 
 		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
 
+			bool removeJob = false;
 			bool removeStoredJob = false;
 
-			if (colonist.job != null) {
-				if (colonist.job.prefab.jobType == JobTypesEnum.CreateResource) {
-					colonist.job.activeTileObject.mto.jobBacklog.Remove(colonist.job);
-				}
-				colonist.job.jobUIElement.Remove(uiM);
-				colonist.job.Remove();
-				colonist.job = null;
-				colonist.path.Clear();
-				colonist.MoveToClosestWalkableTile(false);
+			if (colonist.job != null && selectionArea.Contains(colonist.job.tile)) {
+				removeJob = true;
 
 				if (colonist.storedJob != null && !selectionArea.Contains(colonist.storedJob.tile)) {
 					removeStoredJob = true;
@@ -752,6 +746,23 @@ public class JobManager:MonoBehaviour {
 				}
 				colonist.storedJob.Remove();
 				colonist.storedJob = null;
+
+				if (colonist.job != null) {
+					removeJob = true;
+				}
+			}
+
+			if (removeJob) {
+				if (colonist.job.prefab.jobType == JobTypesEnum.CreateResource) {
+					colonist.job.activeTileObject.mto.jobBacklog.Remove(colonist.job);
+				}
+				if (colonist.job.jobUIElement != null) {
+					colonist.job.jobUIElement.Remove(uiM);
+				}
+				colonist.job.Remove();
+				colonist.job = null;
+				colonist.path.Clear();
+				colonist.MoveToClosestWalkableTile(false);
 			}
 
 			/*
