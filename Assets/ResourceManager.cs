@@ -303,7 +303,7 @@ public class ResourceManager : MonoBehaviour {
 	};
 	public enum TileObjectPrefabSubGroupsEnum {
 		Walls, Doors, Floors, Containers, Beds, Lights,
-		Furnaces,
+		Furnaces,Processing,
 		Plants, Terrain, Remove,
 		PlantFarm, HarvestFarm,
 		None
@@ -316,6 +316,7 @@ public class ResourceManager : MonoBehaviour {
 		WoodenBed,
 		Torch, WoodenLamp,
 		StoneFurnace,
+		CottonGin,
 		RemoveLayer1, RemoveLayer2, RemoveAll,
 		ChopPlant, PlantPlant, Mine, Dig,
 		WheatFarm, PotatoFarm, CottonFarm, HarvestFarm,
@@ -340,10 +341,23 @@ public class ResourceManager : MonoBehaviour {
 	};
 
 	Dictionary<TileObjectPrefabSubGroupsEnum,List<TileObjectPrefabsEnum>> ManufacturingTileObjects = new Dictionary<TileObjectPrefabSubGroupsEnum,List<TileObjectPrefabsEnum>>() {
-		{TileObjectPrefabSubGroupsEnum.Furnaces,new List<TileObjectPrefabsEnum>() { TileObjectPrefabsEnum.StoneFurnace } }
+		{TileObjectPrefabSubGroupsEnum.Furnaces,new List<TileObjectPrefabsEnum>() { TileObjectPrefabsEnum.StoneFurnace } },
+		{TileObjectPrefabSubGroupsEnum.Processing,new List<TileObjectPrefabsEnum>() { TileObjectPrefabsEnum.CottonGin } }
 	};
 	public Dictionary<TileObjectPrefabSubGroupsEnum, List<TileObjectPrefabsEnum>> GetManufacturingTileObjects() {
 		return ManufacturingTileObjects;
+	}
+	List<TileObjectPrefabsEnum> ManufacturingTileObjectsFuel = new List<TileObjectPrefabsEnum>() {
+		TileObjectPrefabsEnum.StoneFurnace
+	};
+	public List<TileObjectPrefabsEnum> GetManufacturingTileObjectsFuel() {
+		return ManufacturingTileObjectsFuel;
+	}
+	List<TileObjectPrefabsEnum> ManufacturingTileObjectsNoFuel = new List<TileObjectPrefabsEnum>() {
+		TileObjectPrefabsEnum.CottonGin
+	};
+	public List<TileObjectPrefabsEnum> GetManufacturingTileObjectsNoFuel() {
+		return ManufacturingTileObjectsNoFuel;
 	}
 
 	List<TileObjectPrefabsEnum> LightSourceTileObjects = new List<TileObjectPrefabsEnum>() {
@@ -808,16 +822,22 @@ public class ResourceManager : MonoBehaviour {
 		public List<Sprite> growProgressSprites = new List<Sprite>();
 		public int maxSpriteIndex = 0;
 
+		private float precipitationGrowthMultiplier = 0;
+		private float temperatureGrowthMultipler = 0;
+
 		public Farm(TileObjectPrefab prefab, TileManager.Tile tile) : base(prefab,tile,0) {
 
 			GetScriptReferencecs();
 
 			seedType = prefab.resourcesToBuild[0].resource.type;
 			name = (uiM.SplitByCapitals(seedType.ToString()).Split(' ')[0]).Replace(" ","") + " Farm";
-			maxGrowthTime = resourceM.GetFarmGrowTimes()[seedType] * Random.Range(-0.9f, 1.1f);
+			maxGrowthTime = resourceM.GetFarmGrowTimes()[seedType] * Random.Range(0.9f, 1.1f);
 
 			growProgressSprites = prefab.bitmaskSprites;
 			maxSpriteIndex = growProgressSprites.Count - 1;
+
+			precipitationGrowthMultiplier = Mathf.Min((-2 * Mathf.Pow(tile.precipitation - 0.7f, 2) + 1), (-30 * Mathf.Pow(tile.precipitation - 0.7f, 3) + 1));
+			temperatureGrowthMultipler = Mathf.Clamp(Mathf.Min(((tile.temperature - 10) / 15f + 1), (-((tile.temperature - 50) / 20f))), 0, 1);
 		}
 
 		public void Update() {
@@ -838,10 +858,9 @@ public class ResourceManager : MonoBehaviour {
 		public float CalculateGrowthRate() {
 			float growthRate = timeM.deltaTime;
 			growthRate *= Mathf.Max(tileM.map.CalculateBrightnessLevelAtHour(timeM.GetTileBrightnessTime()), tile.lightSourceBrightness);
-			growthRate *= Mathf.Min((-2 * Mathf.Pow(tile.precipitation - 0.7f,2) + 1),(-30 * Mathf.Pow(tile.precipitation - 0.7f,3) + 1));
-			growthRate *= Mathf.Clamp(Mathf.Min(((tile.temperature - 10) / 15f + 1), (-((tile.temperature - 50) / 20f))), 0, 1);
+			growthRate *= precipitationGrowthMultiplier;
+			growthRate *= temperatureGrowthMultipler;
 			growthRate = Mathf.Clamp(growthRate, 0, 1);
-			print(growthRate);
 			return growthRate;
 		}
 	}

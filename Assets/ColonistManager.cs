@@ -200,15 +200,19 @@ public class ColonistManager : MonoBehaviour {
 			obj.name = "Human: " + name;
 
 			nameCanvas = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"),obj.transform,false);
+			SetNameCanvas(name);
+		}
+
+		public void SetNameCanvas(string name) {
 			nameCanvas.transform.Find("NameBackground-Image/Name-Text").GetComponent<Text>().text = name;
 			Canvas.ForceUpdateCanvases(); // The charInfo.advance is not calculated until the text is rendered
 			int textWidthPixels = 0;
 			foreach (char character in name) {
 				CharacterInfo charInfo;
-				Resources.Load<Font>(@"UI/Fonts/Quicksand/Quicksand-Bold").GetCharacterInfo(character,out charInfo,48,FontStyle.Normal);
+				Resources.Load<Font>(@"UI/Fonts/Quicksand/Quicksand-Bold").GetCharacterInfo(character, out charInfo, 48, FontStyle.Normal);
 				textWidthPixels += charInfo.advance;
 			}
-			nameCanvas.transform.Find("NameBackground-Image").GetComponent<RectTransform>().sizeDelta = new Vector2(textWidthPixels/2.8f,20);
+			nameCanvas.transform.Find("NameBackground-Image").GetComponent<RectTransform>().sizeDelta = new Vector2(textWidthPixels / 2.8f, 20);
 		}
 
 		public new void Update() {
@@ -1049,6 +1053,7 @@ public class ColonistManager : MonoBehaviour {
 				obj.transform.position = position;
 
 				this.name = name;
+				SetNameCanvas(name);
 
 				moveSprites = colonistM.humanMoveSprites[colonistLookIndexes[ColonistLook.Skin]];
 				this.colonistLookIndexes = colonistLookIndexes;
@@ -1061,8 +1066,10 @@ public class ColonistManager : MonoBehaviour {
 				this.inventory = inventory;
 
 				if (storedJob != null) {
+				print("StoredJob: " + name + storedJob.prefab.type);
 					SetJob(new JobManager.ColonistJob(this, storedJob, storedJob.colonistResources, storedJob.containerPickups, jobM, pathM));
 				} else if (job != null) {
+					print("Job: " + name + job.prefab.type);
 					SetJob(new JobManager.ColonistJob(this, job, job.colonistResources, job.containerPickups, jobM, pathM));
 				}
 
@@ -1146,13 +1153,16 @@ public class ColonistManager : MonoBehaviour {
 			TileManager.Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
 
 			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes,professions[Random.Range(0,professions.Count)],1);
-			colonists.Add(colonist);
+			AddColonist(colonist);
 		}
 
 		colonists[Random.Range(0,colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.WheatSeeds),Random.Range(5,11));
 		colonists[Random.Range(0,colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.PotatoSeeds),Random.Range(5,11));
 		colonists[Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.CottonSeeds), Random.Range(5, 11));
+	}
 
+	public void AddColonist(Colonist colonist) {
+		colonists.Add(colonist);
 		uiM.SetColonistElements();
 		tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 	}
