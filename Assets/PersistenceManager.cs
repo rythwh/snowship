@@ -67,9 +67,7 @@ public class PersistenceManager : MonoBehaviour {
 		fileName = GenerateSavePath(fileName);
 
 		string directory = GenerateSavePath(string.Empty);
-		print(directory);
 		Directory.CreateDirectory(directory);
-		print(fileName);
 		StreamWriter file = new StreamWriter(fileName);
 
 		string versionData = "Version";
@@ -511,27 +509,30 @@ public class PersistenceManager : MonoBehaviour {
 		return jobData;
 	}
 
-	public void LoadGame(string fileName) {
-
+	public void LoadGame(string fileName, bool fromMainMenu) {
 		tileM.generated = false;
 
-		colonistM.SetSelectedColonist(null);
-		uiM.SetSelectedContainer(null);
-		uiM.SetSelectedManufacturingTileObject(null);
+		if (!fromMainMenu) {
+			colonistM.SetSelectedColonist(null);
+			uiM.SetSelectedContainer(null);
+			uiM.SetSelectedManufacturingTileObject(null);
+		}
 
 		foreach (UIManager.PlanetTile planetTile in uiM.planetTiles) {
 			Destroy(planetTile.obj);
 		}
 
-		foreach (TileManager.Tile tile in tileM.map.tiles) {
-			if (tile.plant != null) {
-				Destroy(tile.plant.obj);
-				tile.plant = null;
+		if (tileM.map != null) {
+			foreach (TileManager.Tile tile in tileM.map.tiles) {
+				if (tile.plant != null) {
+					Destroy(tile.plant.obj);
+					tile.plant = null;
+				}
+				Destroy(tile.obj);
 			}
-			Destroy(tile.obj);
+			tileM.map.tiles.Clear();
+			tileM.map = null;
 		}
-		tileM.map.tiles.Clear();
-		tileM.map = null;
 
 		foreach (KeyValuePair<ResourceManager.TileObjectPrefab, List<ResourceManager.TileObjectInstance>> objectInstanceKVP in resourceM.tileObjectInstances) {
 			foreach (ResourceManager.TileObjectInstance objectInstance in objectInstanceKVP.Value) {
@@ -552,7 +553,6 @@ public class PersistenceManager : MonoBehaviour {
 			Destroy(colonist.obj);
 		}
 		colonistM.colonists.Clear();
-		print(colonistM.colonists.Count);
 		uiM.RemoveColonistElements();
 
 		foreach (JobManager.Job job in jobM.jobs) {
@@ -571,7 +571,6 @@ public class PersistenceManager : MonoBehaviour {
 			sectionLength += additionalLine;
 			sectionLengths.Add(sectionLength);
 			sectionIndex += 1;
-			print(section);
 		}
 
 		// Planet Data
@@ -582,11 +581,9 @@ public class PersistenceManager : MonoBehaviour {
 		TileManager.MapData mapData = null;
 
 		// Container Data
-		//List<string> containerReservedResourcesData = new List<string>();
 		Dictionary<ResourceManager.Container, string> containerReservedResourcesData = new Dictionary<ResourceManager.Container, string>();
 
 		// Colonist Data
-		//List<string> colonistReservedResourcesData = new List<string>();
 		Dictionary<ColonistManager.Colonist, string> colonistReservedResourcesData = new Dictionary<ColonistManager.Colonist, string>();
 
 		sectionIndex = 0;
@@ -595,7 +592,6 @@ public class PersistenceManager : MonoBehaviour {
 			if (sectionLength > 0) {
 				int sectionStart = lastSectionEnd + 1;
 				int sectionEnd = sectionStart + sectionLength;
-				print(sectionStart + " -> " + (sectionEnd - 1));
 				int innerSectionIndex = 0;
 				for (int lineIndex = sectionStart; lineIndex < sectionEnd; lineIndex++) {
 					string line = lines[lineIndex - 1];
@@ -604,7 +600,6 @@ public class PersistenceManager : MonoBehaviour {
 						timeM.SetTime(float.Parse(lineData[1].Split(',')[1]));
 						timeM.SetDate(int.Parse(lineData[2].Split(',')[1]), int.Parse(lineData[2].Split(',')[2]), int.Parse(lineData[2].Split(',')[3]));
 					} else if (sectionIndex == 1) { // Camera
-						print(lineData[1].Split(',')[1]);
 						cameraM.SetCameraPosition(new Vector2(float.Parse(lineData[1].Split(',')[1]), float.Parse(lineData[1].Split(',')[2])));
 						cameraM.SetCameraZoom(float.Parse(lineData[2].Split(',')[1]));
 					} else if (sectionIndex == 2) { // Planet
@@ -663,6 +658,9 @@ public class PersistenceManager : MonoBehaviour {
 								false
 							);
 							tileM.map = new TileManager.Map(mapData, true);
+							if (fromMainMenu) {
+								uiM.InitializeGameUI();
+							}
 						} else {
 							TileManager.Tile tile = tileM.map.tiles[innerSectionIndex - 1];
 
@@ -699,6 +697,9 @@ public class PersistenceManager : MonoBehaviour {
 								TileManager.Plant savedPlant = new TileManager.Plant(savedPlantGroup, tile, false, savedPlantSmall);
 								tile.SetPlant(false, savedPlant);
 								tile.plant.obj.GetComponent<SpriteRenderer>().sprite = plantSprite;
+							}
+							if (fromMainMenu && lineIndex == sectionEnd - 1) {
+								uiM.MainMenuToGameTransition(true);
 							}
 						}
 					} else if (sectionIndex == 4) { // River
@@ -751,7 +752,7 @@ public class PersistenceManager : MonoBehaviour {
 							int amount = int.Parse(inventoryResourceString.Split(':')[2]);
 							inventory.ChangeResourceAmount(resource, amount);
 						}
-						print(lineData[4]);
+						container.inventory = inventory;
 						containerReservedResourcesData.Add(container,lineData[4]);
 					} else if (sectionIndex == 10) { // Colonist
 						Vector2 position = new Vector2(float.Parse(lineData[1].Split(',')[1]), float.Parse(lineData[1].Split(',')[2]));
@@ -808,20 +809,17 @@ public class PersistenceManager : MonoBehaviour {
 							};
 							skills.Add(skill);
 						}
-						//colonist.skills = skills;
 						List<ColonistManager.TraitInstance> traits = new List<ColonistManager.TraitInstance>();
 						foreach (string traitDataString in lineData[17].Split(',').Skip(1)) {
 							ColonistManager.TraitPrefab traitPrefab = colonistM.GetTraitPrefabFromString(traitDataString.Split(':')[1]);
 							traits.Add(new ColonistManager.TraitInstance(colonist, traitPrefab));
 						}
-						//colonist.traits = traits;
 						List<ColonistManager.NeedInstance> needs = new List<ColonistManager.NeedInstance>();
 						foreach (string needDataString in lineData[18].Split(',').Skip(1)) {
 							ColonistManager.NeedPrefab needPrefab = colonistM.GetNeedPrefabFromString(needDataString.Split(':')[1]);
 							float value = float.Parse(needDataString.Split(':')[2]);
 							needs.Add(new ColonistManager.NeedInstance(colonist, needPrefab) { value = value });
 						}
-						//colonist.needs = needs;
 						float baseHappiness = float.Parse(lineData[19].Split(',')[1]);
 						float effectiveHappiness = float.Parse(lineData[20].Split(',')[1]);
 						List<ColonistManager.HappinessModifierInstance> happinessModifiers = new List<ColonistManager.HappinessModifierInstance>();
@@ -830,7 +828,6 @@ public class PersistenceManager : MonoBehaviour {
 							float timer = float.Parse(happinessModifierString.Split(':')[2]);
 							happinessModifiers.Add(new ColonistManager.HappinessModifierInstance(colonist, happinessModifierPrefab) { timer = timer });
 						}
-						//colonist.happinessModifiers = happinessModifiers;
 						TileManager.Tile pathEndTile = null;
 						if (lineData[22] != "None") {
 							pathEndTile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(lineData[22].Split(',')[1]), float.Parse(lineData[22].Split(',')[2])));
@@ -857,7 +854,7 @@ public class PersistenceManager : MonoBehaviour {
 						colonistM.AddColonist(colonist);
 						if (lineIndex == sectionEnd - 1) {
 							foreach (KeyValuePair<ColonistManager.Colonist, string> reservedResourcesStringKVP in colonistReservedResourcesData) {
-								if (int.Parse(reservedResourcesStringKVP.Value.Split(':')[1]) > 0) {
+								if (int.Parse(reservedResourcesStringKVP.Value.Split(',')[0].Split(':')[1]) > 0) {
 									ColonistManager.Colonist reservedResourcesColonist = colonistM.colonists.Find(findColonist => findColonist.name == reservedResourcesStringKVP.Value.Split(';')[0].Split(':')[1]);
 									List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
 									foreach (string reservedResourceString in reservedResourcesStringKVP.Value.Split(';').Skip(1)) {
@@ -868,9 +865,10 @@ public class PersistenceManager : MonoBehaviour {
 									reservedResourcesStringKVP.Key.inventory.ReserveResources(resourcesToReserve, reservedResourcesColonist);
 								}
 							}
+							/*
 							foreach (KeyValuePair<ResourceManager.Container, string> reservedResourcesStringKVP in containerReservedResourcesData) {
-								if (int.Parse(reservedResourcesStringKVP.Value.Split(':')[1]) > 0) {
-									ColonistManager.Colonist reservedResourcesColonist = colonistM.colonists.Find(findColonist => findColonist.name == reservedResourcesStringKVP.Value.Split(';')[0].Split(':')[1]);
+								if (int.Parse(reservedResourcesStringKVP.Value.Split(',')[0].Split(':')[1]) > 0) {
+									ColonistManager.Colonist reservedResourcesColonist = colonistM.colonists.Find(findColonist => findColonist.name == reservedResourcesStringKVP.Value.Split(',')[1].Split(';')[0].Split(':')[1]);
 									List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
 									foreach (string reservedResourceString in reservedResourcesStringKVP.Value.Split(';').Skip(1)) {
 										ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), reservedResourceString.Split(':')[1]));
@@ -880,6 +878,7 @@ public class PersistenceManager : MonoBehaviour {
 									reservedResourcesStringKVP.Key.inventory.ReserveResources(resourcesToReserve, reservedResourcesColonist);
 								}
 							}
+							*/
 						}
 					} else if (sectionIndex == 11) { // Job
 						jobM.AddExistingJob(LoadJob(lineData));
@@ -897,16 +896,14 @@ public class PersistenceManager : MonoBehaviour {
 		tileM.map.Bitmasking(tileM.map.tiles);
 		resourceM.Bitmask(tileM.map.tiles);
 
-		uiM.ToggleLoadMenu();
-		uiM.TogglePauseMenu();
-		if (timeM.timeModifier != 0) {
-			timeM.TogglePause();
+		uiM.ToggleLoadMenu(false);
+		if (!fromMainMenu) {
+			uiM.TogglePauseMenu();
 		}
+		timeM.SetPaused(true);
 
 		tileM.generated = true;
 		tileM.generating = false;
-
-		return;
 	}
 
 	public JobManager.Job LoadJob(List<string> jobDataSplit) {
@@ -936,13 +933,13 @@ public class PersistenceManager : MonoBehaviour {
 			if (onColonistDataSplit[2] != "None") {
 				foreach (string containerPickupString in onColonistDataSplit[2].Split(';').Skip(1)) {
 					List<string> containerPickupDataSplit = containerPickupString.Split(':').ToList();
-					Vector2 containerPosition = new Vector2(float.Parse(containerPickupDataSplit[1].Split('`')[0]), float.Parse(containerPickupDataSplit[1].Split('`')[0]));
+					Vector2 containerPosition = new Vector2(float.Parse(containerPickupDataSplit[1].Split('`')[0]), float.Parse(containerPickupDataSplit[1].Split('`')[1]));
 					TileManager.Tile containerTile = tileM.map.GetTileFromPosition(containerPosition);
 					ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == containerTile);
 					List<ResourceManager.ResourceAmount> resourcesToPickup = new List<ResourceManager.ResourceAmount>();
 					foreach (string resourceToPickupString in containerPickupDataSplit.Skip(2).ToList()) {
 						ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), resourceToPickupString.Split('`')[1]));
-						int amount = int.Parse(resourceToPickupString.Split(':')[2]);
+						int amount = int.Parse(resourceToPickupString.Split('`')[2]);
 						resourcesToPickup.Add(new ResourceManager.ResourceAmount(resource, amount));
 					}
 					containerPickups.Add(new JobManager.ContainerPickup(container, resourcesToPickup));

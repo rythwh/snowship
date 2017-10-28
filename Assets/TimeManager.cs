@@ -14,8 +14,14 @@ public class TimeManager : MonoBehaviour {
 		debugM = GetComponent<DebugManager>();
 	}
 
-	public int pauseTimeModifier = 0;
-	public int timeModifier = 0;
+	private bool paused;
+
+	private int pauseTimeModifier = 0;
+	private int timeModifier = 0;
+
+	public int GetTimeModifier() {
+		return timeModifier;
+	}
 
 	public float deltaTime;
 
@@ -33,7 +39,7 @@ public class TimeManager : MonoBehaviour {
 
 	void Update() {
 		if (tileM.generated) {
-			if (Input.GetKeyDown(KeyCode.Alpha1)) {
+			if (Input.GetKeyDown(KeyCode.Alpha1) && !uiM.pauseMenu.activeSelf) {
 				if (timeModifier > 0) {
 					timeModifier -= 1;
 					if (timeModifier <= 0) {
@@ -41,12 +47,12 @@ public class TimeManager : MonoBehaviour {
 					}
 				}
 			}
-			if (Input.GetKeyDown(KeyCode.Alpha2)) {
+			if (Input.GetKeyDown(KeyCode.Alpha2) && !uiM.pauseMenu.activeSelf) {
 				timeModifier += 1;
 			}
 			timeModifier = Mathf.Clamp(timeModifier, 0, 5);
 			pauseTimeModifier = Mathf.Clamp(pauseTimeModifier, 0, 5);
-			if (Input.GetKeyDown(KeyCode.Space)) {
+			if (Input.GetKeyDown(KeyCode.Space) && !uiM.pauseMenu.activeSelf) {
 				TogglePause();
 			}
 			deltaTime = Time.deltaTime * timeModifier;
@@ -84,7 +90,8 @@ public class TimeManager : MonoBehaviour {
 	}
 
 	public void TogglePause() {
-		if (timeModifier != 0) {
+		paused = !paused;
+		if (paused) {
 			pauseTimeModifier = timeModifier;
 			timeModifier = 0;
 		} else {
@@ -94,6 +101,15 @@ public class TimeManager : MonoBehaviour {
 				timeModifier = pauseTimeModifier;
 			}
 		}
+	}
+
+	public void SetPaused(bool newPausedState) {
+		paused = !newPausedState;
+		TogglePause();
+	}
+
+	public bool GetPaused() {
+		return paused;
 	}
 
 	public int Get12HourTime() {

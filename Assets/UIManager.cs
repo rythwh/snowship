@@ -57,6 +57,8 @@ public class UIManager : MonoBehaviour {
 	private GameObject mainMenuButtonsPanel;
 	private GameObject snowshipLogo;
 
+	private GameObject loadGamePanel;
+
 	private GameObject mapSelectionPanel;
 	private GameObject mapPanelExitButton;
 
@@ -129,7 +131,6 @@ public class UIManager : MonoBehaviour {
 	private GameObject pauseLabel;
 
 	private GameObject pauseSavePanel;
-	private GameObject pauseLoadPanel;
 
 	void Awake() {
 
@@ -143,9 +144,15 @@ public class UIManager : MonoBehaviour {
 
 		SetMenuBackground();
 
+		GameObject canvas = GameObject.Find("Canvas");
+
 		mainMenu = GameObject.Find("MainMenu");
 		mainMenuButtonsPanel = mainMenu.transform.Find("MainMenuButtons-Panel").gameObject;
 		snowshipLogo = mainMenu.transform.Find("SnowshipLogo-Image").gameObject;
+
+		loadGamePanel = canvas.transform.Find("LoadGame-Panel").gameObject;
+		loadGamePanel.transform.Find("LoadGamePanelClose-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(false); });
+		
 
 		mapSelectionPanel = mainMenu.transform.Find("Map-Panel").gameObject;
 		mapPanelExitButton = mapSelectionPanel.transform.Find("Exit-Button").gameObject;
@@ -153,7 +160,7 @@ public class UIManager : MonoBehaviour {
 
 		mainMenuButtonsPanel.transform.Find("New-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleNewGameMM(); });
 		mainMenuButtonsPanel.transform.Find("Continue-Button").GetComponent<Button>().onClick.AddListener(delegate { });
-		mainMenuButtonsPanel.transform.Find("Load-Button").GetComponent<Button>().onClick.AddListener(delegate { });
+		mainMenuButtonsPanel.transform.Find("Load-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(true); });
 		mainMenuButtonsPanel.transform.Find("Options-Button").GetComponent<Button>().onClick.AddListener(delegate { });
 		mainMenuButtonsPanel.transform.Find("Exit-Button").GetComponent<Button>().onClick.AddListener(delegate { });
 
@@ -257,15 +264,9 @@ public class UIManager : MonoBehaviour {
 		pauseSavePanel.transform.Find("PauseSavePanelClose-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleSaveMenu(); });
 		ToggleSaveMenu();
 
-		pauseLoadPanel = pauseMenu.transform.Find("PauseLoad-Panel").gameObject;
-		pauseMenuButtons.transform.Find("PauseLoad-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(); });
-		pauseLoadPanel.transform.Find("PauseLoadPanelClose-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(); });
-		ToggleLoadMenu();
-
-		//pauseLoadButton = pauseMenuButtons.transform.Find("PauseLoad-Button").gameObject;
-		//pauseSettingsButton = pauseMenuButtons.transform.Find("PauseSettings-Button").gameObject;
-		//pauseExitToMainMenuButton = pauseMenuButtons.transform.Find("PauseExitToMainMenu-Button").gameObject;
-		//pauseExitToDesktopButton = pauseMenuButtons.transform.Find("PauseExitToDesktop-Button").gameObject;
+		pauseMenuButtons.transform.Find("PauseLoad-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(false); });
+		
+		ToggleLoadMenu(false);
 
 		TogglePauseMenu();
 
@@ -274,6 +275,17 @@ public class UIManager : MonoBehaviour {
 		InitializeTileInformation();
 		InitializeSelectedContainerIndicator();
 		InitializeSelectedManufacturingTileObjectIndicator();
+	}
+
+	public void InitializeGameUI() {
+		SetSelectedColonistInformation();
+		SetSelectedContainerInfo();
+		SetJobElements();
+		InitializeProfessionsList();
+		InitializeResourcesList();
+		InitializeSelectedManufacturingTileObjectPanel();
+
+		ToggleLoadingScreen(false);
 	}
 
 	public ResourceManager.Container selectedContainer;
@@ -377,7 +389,6 @@ public class UIManager : MonoBehaviour {
 	void CreateNewGamePlanet() {
 		createdPlanet = true;
 
-		tileM.PreInitialize();
 		GeneratePlanet();
 		SetSelectedPlanetTileInfo();
 	}
@@ -601,9 +612,7 @@ public class UIManager : MonoBehaviour {
 		string mapSeedString = mapSeedInput.text;
 		int mapSeed = SeedParser(mapSeedString, GameObject.Find("MapSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
 
-		mainMenu.SetActive(false);
-		ToggleLoadingScreen(true);
-		ToggleGameUI(false);
+		MainMenuToGameTransition(false);
 
 		tileM.Initialize(new TileManager.MapData(
 			mapSeed,
@@ -619,6 +628,17 @@ public class UIManager : MonoBehaviour {
 			selectedPlanetTile.surroundingPlanetTileHeightDirections,
 			false
 		));
+	}
+
+	public void MainMenuToGameTransition(bool enableGameUIImmediately) {
+		mainMenu.SetActive(false);
+		if (enableGameUIImmediately) {
+			ToggleLoadingScreen(false);
+			ToggleGameUI(true);
+		} else {
+			ToggleLoadingScreen(true);
+			ToggleGameUI(false);
+		}
 	}
 
 	public void UpdateMapSizeText() {
@@ -1360,7 +1380,7 @@ public class UIManager : MonoBehaviour {
 
 	public void UpdateDateTimeInformation(int minute, int hour, int day, int month, int year, bool isDay) {
 		dateTimeInformationPanel.transform.Find("DateTimeInformation-Time-Text").GetComponent<Text>().text = timeM.Get12HourTime() + ":" + (minute < 10 ? ("0" + minute) : minute.ToString()) + (hour < 13 ? "AM" : "PM") + "(" + (isDay ? "D" : "N") + ")";
-		dateTimeInformationPanel.transform.Find("DateTimeInformation-Speed-Text").GetComponent<Text>().text = (timeM.timeModifier > 0 ? new string('>', timeM.timeModifier) : "-");
+		dateTimeInformationPanel.transform.Find("DateTimeInformation-Speed-Text").GetComponent<Text>().text = (timeM.GetTimeModifier() > 0 ? new string('>', timeM.GetTimeModifier()) : "-");
 		dateTimeInformationPanel.transform.Find("DateTimeInformation-Date-Text").GetComponent<Text>().text = "D" + day + " M" + month + " Y" + year;
 	}
 
@@ -2224,11 +2244,14 @@ public class UIManager : MonoBehaviour {
 
 	public void TogglePauseMenu() {
 		pauseMenu.SetActive(!pauseMenu.activeSelf);
+		timeM.SetPaused(pauseMenu.activeSelf);
+		/*
 		if (pauseMenu.activeSelf && timeM.timeModifier != 0) {
 			timeM.TogglePause();
 		} else if (timeM.timeModifier == 0) {
 			timeM.TogglePause();
 		}
+		*/
 	}
 
 	public void TogglePauseMenuButtons() {
@@ -2269,27 +2292,27 @@ public class UIManager : MonoBehaviour {
 
 	private LoadFile selectedLoadFile;
 
-	public void SetSelectedLoadFile(LoadFile newSelectedLoadFile) {
+	public void SetSelectedLoadFile(LoadFile newSelectedLoadFile, bool fromMainMenu) {
 		if (selectedLoadFile != null) {
 			selectedLoadFile.loadFilePanel.GetComponent<Image>().color = colourMap[Colours.LightGrey220];
 		}
 		selectedLoadFile = newSelectedLoadFile;
 		if (selectedLoadFile != null) {
 			selectedLoadFile.loadFilePanel.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
-			pauseLoadPanel.transform.Find("PauseLoadPanelLoad-Button").GetComponent<Button>().onClick.RemoveAllListeners();
-			pauseLoadPanel.transform.Find("PauseLoadPanelLoad-Button").GetComponent<Button>().onClick.AddListener(delegate {
-				persistenceM.LoadGame(selectedLoadFile.fileName);
+			loadGamePanel.transform.Find("LoadGamePanelLoad-Button").GetComponent<Button>().onClick.RemoveAllListeners();
+			loadGamePanel.transform.Find("LoadGamePanelLoad-Button").GetComponent<Button>().onClick.AddListener(delegate {
+				persistenceM.LoadGame(selectedLoadFile.fileName,fromMainMenu);
 			});
 		}
 	}
 
-	public void ToggleLoadMenu() {
-		pauseLoadPanel.SetActive(!pauseLoadPanel.activeSelf);
+	public void ToggleLoadMenu(bool fromMainMenu) {
+		loadGamePanel.SetActive(!loadGamePanel.activeSelf);
 		foreach (LoadFile loadFile in loadFiles) {
 			Destroy(loadFile.loadFilePanel);
 		}
 		loadFiles.Clear();
-		if (pauseLoadPanel.activeSelf) {
+		if (loadGamePanel.activeSelf) {
 			TogglePauseMenuButtons();
 			List<string> saveFiles = Directory.GetFiles(persistenceM.GenerateSavePath("")).ToList().OrderBy(fileName => SaveFileDateTimeSum(fileName)).Reverse().ToList();
 			foreach (string fileName in saveFiles) {
@@ -2307,7 +2330,7 @@ public class UIManager : MonoBehaviour {
 					string second = (splitRawSaveDT[5].Length == 1 ? "0" : "") + splitRawSaveDT[5];
 					string saveTime = hour + ":" + minute + ":" + second;
 
-					GameObject loadFilePanel = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/LoadFile-Panel"), pauseLoadPanel.transform.Find("LoadFilesList-ScrollPanel/LoadFilesList-Panel"), false);
+					GameObject loadFilePanel = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/LoadFile-Panel"), loadGamePanel.transform.Find("LoadFilesList-ScrollPanel/LoadFilesList-Panel"), false);
 					loadFilePanel.transform.Find("ColonyName-Text").GetComponent<Text>().text = colonyName;
 					loadFilePanel.transform.Find("SaveDate-Text").GetComponent<Text>().text = saveDate;
 					loadFilePanel.transform.Find("SaveTime-Text").GetComponent<Text>().text = saveTime;
@@ -2320,12 +2343,12 @@ public class UIManager : MonoBehaviour {
 
 					LoadFile loadFile = new LoadFile(fileName, loadFilePanel);
 					loadFiles.Add(loadFile);
-					loadFilePanel.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedLoadFile(loadFile); });
+					loadFilePanel.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedLoadFile(loadFile,fromMainMenu); });
 				}
 			}
 		} else {
 			TogglePauseMenuButtons();
-			SetSelectedLoadFile(null);
+			SetSelectedLoadFile(null,false);
 		}
 	}
 

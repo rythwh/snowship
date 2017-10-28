@@ -185,9 +185,9 @@ public class ColonistManager : MonoBehaviour {
 
 			inventory = new ResourceManager.Inventory(this,null,50);
 
-			List<string> validNames = colonistM.humanNames.Where(name => colonistM.colonists.Find(colonistWithName => colonistWithName.name == name) == null).ToList();
+			List<string> validNames = colonistM.humanNames.Where(name => colonistM.colonists.Find(colonistWithName => colonistWithName.name.ToLower() == name.ToLower()) == null).ToList();
 			if (validNames.Count > 0) {
-				name = validNames[Random.Range(0,validNames.Count)];
+				name = validNames[Random.Range(0, validNames.Count)];
 			} else {
 				name = colonistM.humanNames[Random.Range(0,colonistM.humanNames.Count)];
 			}
@@ -1148,8 +1148,6 @@ public class ColonistManager : MonoBehaviour {
 					}
 				}
 			}
-
-			//TileManager.Tile colonistSpawnTile = walkableTilesByDistanceToCentre[Random.Range(0,(walkableTilesByDistanceToCentre.Count > 30 ? 30 : walkableTilesByDistanceToCentre.Count))];
 			TileManager.Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
 
 			Colonist colonist = new Colonist(colonistSpawnTile,colonistLookIndexes,professions[Random.Range(0,professions.Count)],1);
@@ -1175,7 +1173,7 @@ public class ColonistManager : MonoBehaviour {
 		foreach (Colonist colonist in colonists) {
 			colonist.Update();
 		}
-		if (timeM.timeModifier > 0) {
+		if (!timeM.GetPaused()) {
 			jobM.GiveJobsToColonists();
 		}
 		if (Input.GetKey(KeyCode.F) && selectedColonist != null) {

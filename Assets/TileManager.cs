@@ -21,6 +21,10 @@ public class TileManager:MonoBehaviour {
 		persistenceM = GetComponent<PersistenceManager>();
 	}
 
+	void Start() {
+		PreInitialize();
+	}
+
 	public enum PlantGroupsEnum { Cactus, ColourfulShrub, ColourfulTree, DeadTree, Shrub, SnowTree, ThinTree, WideTree };
 
 	private Dictionary<PlantGroupsEnum,ResourceManager.ResourcesEnum> plantSeeds = new Dictionary<PlantGroupsEnum,ResourceManager.ResourcesEnum>() {
@@ -918,14 +922,7 @@ public class TileManager:MonoBehaviour {
 		generated = true;
 		generating = false;
 
-		uiM.SetSelectedColonistInformation();
-		uiM.SetSelectedContainerInfo();
-		uiM.SetJobElements();
-		uiM.InitializeProfessionsList();
-		uiM.InitializeResourcesList();
-		uiM.InitializeSelectedManufacturingTileObjectPanel();
-
-		uiM.ToggleLoadingScreen(false);
+		uiM.InitializeGameUI();
 	}
 
 	public class Map {
