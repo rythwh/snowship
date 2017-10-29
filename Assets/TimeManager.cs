@@ -51,6 +51,9 @@ public class TimeManager : MonoBehaviour {
 				timeModifier += 1;
 			}
 			timeModifier = Mathf.Clamp(timeModifier, 0, 5);
+			if (timeModifier > 0 && paused) {
+				TogglePause();
+			}
 			pauseTimeModifier = Mathf.Clamp(pauseTimeModifier, 0, 5);
 			if (Input.GetKeyDown(KeyCode.Space) && !uiM.pauseMenu.activeSelf) {
 				TogglePause();

@@ -39,7 +39,7 @@ public class ResourceManager : MonoBehaviour {
 	};
 
 	public enum ResourcesEnum {
-		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Wood, Snow, Sand,
+		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Wood, Firewood, Snow, Sand,
 		Brick, Glass, Cotton, Cloth, 
 		WheatSeeds, PotatoSeeds, CottonSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
 		Wheat,
@@ -54,7 +54,7 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	List<ResourcesEnum> FuelResources = new List<ResourcesEnum>() {
-		ResourcesEnum.Wood
+		ResourcesEnum.Wood, ResourcesEnum.Firewood
 	};
 	public List<ResourcesEnum> GetFuelResources() {
 		return FuelResources;
