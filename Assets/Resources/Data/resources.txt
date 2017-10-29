@@ -19,6 +19,10 @@ Natural:
 		2/
 		0/
 		10`
+	Firewood/
+		3/
+		0/
+		20`
 	Snow/
 		1`
 	Sand/

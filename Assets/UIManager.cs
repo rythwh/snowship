@@ -25,7 +25,7 @@ public class UIManager : MonoBehaviour {
 		return new Color(r, g, b, 255f) / 255f;
 	}
 
-	public enum Colours { DarkRed, DarkGreen, LightRed, LightGreen, LightGrey220, LightGrey200, Grey150, DarkGrey50, LightBlue, LightOrange, White };
+	public enum Colours { DarkRed, DarkGreen, LightRed, LightGreen, LightGrey220, LightGrey200, Grey150, DarkGrey50, LightBlue, LightOrange, White, DarkYellow, LightYellow };
 
 	private Dictionary<Colours, Color> colourMap = new Dictionary<Colours, Color>() {
 		{Colours.DarkRed,new Color(192f, 57f, 43f, 255f) / 255f },
@@ -38,7 +38,9 @@ public class UIManager : MonoBehaviour {
 		{Colours.DarkGrey50,new Color(50f, 50f, 50f, 255f) / 255f },
 		{Colours.LightBlue,new Color(52f, 152f, 219f, 255f) / 255f },
 		{Colours.LightOrange,new Color(230f, 126f, 34f, 255f) / 255f },
-		{Colours.White,new Color(255f, 255f, 255f, 255f) / 255f }
+		{Colours.White,new Color(255f, 255f, 255f, 255f) / 255f },
+		{Colours.DarkYellow,new Color(216f, 176f, 15f, 255f) / 255f },
+		{Colours.LightYellow,new Color(241f, 196f, 15f, 255f) / 255f }
 	};
 
 	public Color GetColour(Colours colourKey) {
@@ -942,9 +944,31 @@ public class UIManager : MonoBehaviour {
 		public void Update() {
 			obj.transform.Find("Level").GetComponent<Text>().text = "Level " + skill.level + " (+" + Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f) + "%)";
 			obj.transform.Find("Experience-Slider").GetComponent<Slider>().value = Mathf.RoundToInt((skill.currentExperience / skill.nextLevelExperience) * 100f);
-			if (skill.level >= 10) {
-				obj.transform.Find("Experience-Slider/Fill Area/Fill").GetComponent<Image>().color = uiM.colourMap[Colours.DarkRed];
-				obj.transform.Find("Experience-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = uiM.colourMap[Colours.LightRed];
+
+			float highestLevel = 0;
+			float highestSkill = 0;
+			ColonistManager.Colonist highestSkillColonist = colonist;
+			foreach (ColonistManager.Colonist otherColonist in uiM.colonistM.colonists) {
+				ColonistManager.SkillInstance foundSkill = otherColonist.skills.Find(findSkill => findSkill.prefab == skill.prefab);
+				float otherColonistSkill = foundSkill.level + (foundSkill.currentExperience / foundSkill.nextLevelExperience);
+				if (otherColonistSkill > highestSkill) {
+					highestSkill = otherColonistSkill;
+					highestSkillColonist = otherColonist;
+				}
+				if (foundSkill.level > highestLevel) {
+					highestLevel = foundSkill.level;
+				}
+			}
+
+			obj.transform.Find("Level-Slider").GetComponent<Slider>().value = Mathf.RoundToInt((skill.level / (highestLevel > 0 ? highestLevel : 1)) * 100f);
+
+			float skillValue = skill.level + (skill.currentExperience / skill.nextLevelExperience);
+			if (highestSkillColonist == colonist || Mathf.Approximately(highestSkill,skillValue)) {
+				obj.transform.Find("Level-Slider/Fill Area/Fill").GetComponent<Image>().color = uiM.colourMap[Colours.DarkYellow];
+				obj.transform.Find("Level-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = uiM.colourMap[Colours.LightYellow];
+			} else {
+				obj.transform.Find("Level-Slider/Fill Area/Fill").GetComponent<Image>().color = uiM.colourMap[Colours.DarkGreen];
+				obj.transform.Find("Level-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = uiM.colourMap[Colours.LightGreen];
 			}
 		}
 	}
@@ -961,7 +985,7 @@ public class UIManager : MonoBehaviour {
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ResourceInfoElement-Panel"), parent, false);
 
 			obj.transform.Find("Name").GetComponent<Text>().text = uiM.SplitByCapitals(resourceAmount.resource.name);
-			// ADD RESOURCE IMAGE
+			obj.transform.Find("Image").GetComponent<Image>().sprite = resourceAmount.resource.image;
 
 			Update();
 		}
@@ -1435,6 +1459,8 @@ public class UIManager : MonoBehaviour {
 			}
 			containerInventoryElements.Clear();
 
+			selectedContainerInventoryPanel.transform.Find("SelectedContainerInventoryName-Text").GetComponent<Text>().text = selectedContainer.parentObject.prefab.name;
+
 			int numResources = selectedContainer.inventory.CountResources();
 			selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-Slider").GetComponent<Slider>().minValue = 0;
 			selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-Slider").GetComponent<Slider>().maxValue = selectedContainer.maxAmount;
@@ -1447,6 +1473,7 @@ public class UIManager : MonoBehaviour {
 			foreach (ResourceManager.ResourceAmount ra in selectedContainer.inventory.resources) {
 				containerInventoryElements.Add(new InventoryElement(colonistM.selectedColonist, ra, selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel"), this));
 			}
+			selectedContainerInventoryPanel.transform.Find("SelectedContainerSprite-Image").GetComponent<Image>().sprite = selectedContainer.parentObject.obj.GetComponent<SpriteRenderer>().sprite;
 		} else {
 			selectedContainerIndicator.SetActive(false);
 			foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in containerReservedResourcesColonistElements) {
@@ -2057,6 +2084,8 @@ public class UIManager : MonoBehaviour {
 
 			selectedMTOPanel.transform.Find("SelectedManufacturingTileObjectName-Text").GetComponent<Text>().text = selectedMTO.parentObject.prefab.name;
 
+			selectedMTOPanel.transform.Find("SelectedManufacturingTileObjectSprite-Image").GetComponent<Image>().sprite = selectedMTO.parentObject.obj.GetComponent<SpriteRenderer>().sprite;
+
 			foreach (KeyValuePair<GameObject,ResourceManager.Resource> selectResourceButtonKVP in selectResourceListElements) {
 				selectResourceButtonKVP.Key.GetComponent<Button>().onClick.AddListener(delegate {
 					SetSelectedMTOCreateResource(selectResourceButtonKVP.Value);
@@ -2192,7 +2221,7 @@ public class UIManager : MonoBehaviour {
 		if (selectedMTO.fuelResource != null) {
 			selectedMTOPanel.transform.Find("SelectFuelResource-Button/SelectedFuelResourceName-Text").GetComponent<Text>().text = selectedMTO.fuelResource.name;
 		} else {
-			selectedMTOPanel.transform.Find("SelectFuelResource-Button/SelectedFuelResourceName-Text").GetComponent<Text>().text = "Select Fuel Resource";
+			selectedMTOPanel.transform.Find("SelectFuelResource-Button/SelectedFuelResourceName-Text").GetComponent<Text>().text = "Select Fuel";
 		}
 		if (selectFuelResourcePanel.activeSelf) {
 			foreach (KeyValuePair<GameObject, ResourceManager.Resource> selectFuelResourceButtonKVP in selectFuelResourceListElements) {

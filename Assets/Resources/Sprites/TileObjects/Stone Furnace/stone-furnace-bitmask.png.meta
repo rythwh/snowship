@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 59fb071dd3afa6c46bfeef583307b0b8
-timeCreated: 1497731830
+timeCreated: 1509216388
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -12,6 +12,10 @@ TextureImporter:
     21300010: wooden-bed-bitmask_1
     21300012: wooden-bed-bitmask_2
     21300014: wooden-bed-bitmask_3
+    21300016: stone-furnace-bitmask_0
+    21300018: stone-furnace-bitmask_1
+    21300020: stone-furnace-bitmask_2
+    21300022: stone-furnace-bitmask_3
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -20,6 +24,8 @@ TextureImporter:
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
@@ -35,10 +41,13 @@ TextureImporter:
   textureFormat: -3
   maxTextureSize: 2048
   textureSettings:
+    serializedVersion: 2
     filterMode: 0
     aniso: 16
     mipBias: -1
-    wrapMode: 1
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -70,7 +79,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: wooden-bed-bitmask_0
+      name: stone-furnace-bitmask_0
       rect:
         serializedVersion: 2
         x: 0
@@ -81,9 +90,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wooden-bed-bitmask_1
+      name: stone-furnace-bitmask_1
       rect:
         serializedVersion: 2
         x: 33
@@ -94,9 +104,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wooden-bed-bitmask_2
+      name: stone-furnace-bitmask_2
       rect:
         serializedVersion: 2
         x: 66
@@ -107,9 +118,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wooden-bed-bitmask_3
+      name: stone-furnace-bitmask_3
       rect:
         serializedVersion: 2
         x: 99
@@ -120,8 +132,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     outline: []
+    physicsShape: []
   spritePackingTag: 
   userData: 
   assetBundleName: 
