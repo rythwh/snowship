@@ -57,32 +57,32 @@ public class TileManager:MonoBehaviour {
 
 	private Dictionary<PlantGroupsEnum,List<ResourceManager.ResourceAmount>> plantResources = new Dictionary<PlantGroupsEnum,List<ResourceManager.ResourceAmount>>();
 	public void SetPlantResources() {
-		ResourceManager.Resource woodResource = resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Wood);
+		ResourceManager.Resource logResource = resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Log);
 		plantResources.Add(PlantGroupsEnum.ColourfulShrub,	new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(woodResource,2),
+			new ResourceManager.ResourceAmount(logResource,2),
 			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.ColourfulShrub]),2)
 		});
 		plantResources.Add(PlantGroupsEnum.ColourfulTree,	new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(woodResource,5),
+			new ResourceManager.ResourceAmount(logResource,5),
 			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.ColourfulTree]),3)
 		});
 		plantResources.Add(PlantGroupsEnum.DeadTree,		new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(woodResource,3)
+			new ResourceManager.ResourceAmount(logResource,3)
 		});
 		plantResources.Add(PlantGroupsEnum.Shrub,			new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(woodResource,2),
+			new ResourceManager.ResourceAmount(logResource,2),
 			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.Shrub]),2)
 		});
 		plantResources.Add(PlantGroupsEnum.SnowTree,		new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(woodResource,5),
+			new ResourceManager.ResourceAmount(logResource,5),
 			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.SnowTree]),3)
 		});
 		plantResources.Add(PlantGroupsEnum.ThinTree,		new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(woodResource,5),
+			new ResourceManager.ResourceAmount(logResource,5),
 			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.ThinTree]),3)
 		});
 		plantResources.Add(PlantGroupsEnum.WideTree,		new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(woodResource,6),
+			new ResourceManager.ResourceAmount(logResource,6),
 			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.WideTree]),3)
 		});
 		plantResources.Add(PlantGroupsEnum.Cactus,new List<ResourceManager.ResourceAmount>() {
@@ -1563,7 +1563,7 @@ public class TileManager:MonoBehaviour {
 		private int windDirection = 0;
 		void CalculatePrecipitation() {
 			List<List<float>> precipitations = new List<List<float>>();
-			for (int i = 0; i < 5; i++) { // 0 - up, 1 - right, 2 - down, 3 - left, 4 - up/right, 5 - down/right, 6 - down-left, 7 - up/left
+			for (int i = 0; i < 8; i++) { // 0 - up, 1 - right, 2 - down, 3 - left, 4 - up/right, 5 - down/right, 6 - down-left, 7 - up/left
 				windDirection = i;
 				if (windDirection <= 3) { // Wind is going horizontally/vertically
 					bool yStartAtTop = (windDirection == 2);
@@ -1585,7 +1585,9 @@ public class TileManager:MonoBehaviour {
 						}
 					}
 				} else { // Wind is going diagonally
-					for (int k = 0; k < mapData.mapSize * 2; k++) {
+					bool up = (windDirection == 4 || windDirection == 7);
+					int mapSize2x = mapData.mapSize * 2;
+					for (int k = (up ? 0 : mapSize2x); (up ? k < mapSize2x : k >= 0); k += (up ? 1 : -1)) {
 						for (int x = 0; x <= k; x++) {
 							int y = k - x;
 							if (y < mapData.mapSize && x < mapData.mapSize) {
@@ -1616,11 +1618,11 @@ public class TileManager:MonoBehaviour {
 
 			for (int t = 0; t < tiles.Count; t++) {
 				tiles[t].precipitation = 0;
-				for (int i = 0; i < 4; i++) {
+				for (int i = 0; i < 8; i++) {
 					if (i == oppositeDirection) {
-						tiles[t].precipitation += precipitations[i][t] * 0.25f; // 0.25f
+						tiles[t].precipitation += precipitations[i][t] * 0.1f; // 0.25f
 					} else if (i != primaryDirection) {
-						tiles[t].precipitation += precipitations[i][t] * 0.5f; // 0.5f
+						tiles[t].precipitation += precipitations[i][t] * 0.2f; // 0.5f
 					} else {
 						tiles[t].precipitation += precipitations[i][t];
 					}

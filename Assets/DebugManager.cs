@@ -73,7 +73,7 @@ public class DebugManager : MonoBehaviour {
 				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 				TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
 
-				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Wood", "10", "true", "true" });
+				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Log", "10", "true", "true" });
 				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Glass", "10", "true", "true" });
 
 				//tile.SetColour(tileM.map.GetTileColourAtHour(timeM.GetTileBrightnessTime()), Mathf.RoundToInt(timeM.GetTileBrightnessTime()), true);
@@ -81,7 +81,7 @@ public class DebugManager : MonoBehaviour {
 				/*
 				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Stone","10","true","true"});
 				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Clay", "20", "true", "true" });
-				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Wood", "3", "true", "true" });
+				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Log", "3", "true", "true" });
 				//JobManager.Job newJob = new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.StoneFurnace), 0);
 				JobManager.Job newJob = new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.WoodenFence), 0);
 				newJob.jobProgress = 0.1f;

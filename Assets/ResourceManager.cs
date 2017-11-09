@@ -39,7 +39,7 @@ public class ResourceManager : MonoBehaviour {
 	};
 
 	public enum ResourcesEnum {
-		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Wood, Firewood, Snow, Sand,
+		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Log, Firewood, Snow, Sand,
 		Brick, Glass, Cotton, Cloth, 
 		WheatSeeds, PotatoSeeds, CottonSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
 		Wheat,
@@ -54,7 +54,7 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	List<ResourcesEnum> FuelResources = new List<ResourcesEnum>() {
-		ResourcesEnum.Wood, ResourcesEnum.Firewood
+		ResourcesEnum.Log, ResourcesEnum.Firewood
 	};
 	public List<ResourcesEnum> GetFuelResources() {
 		return FuelResources;
@@ -436,7 +436,7 @@ public class ResourceManager : MonoBehaviour {
 	0	Name/
 	1	10/			timeToBuild		Seconds it takes to create the object (int or float)
 	2	5,2/						Amount of each resource to create the object
-	3	Wood,Cloth/					Name of each resource to create the object
+	3	Log,Cloth/					Name of each resource to create the object
 	4	true/						Whether there are any modifiers to the selection
 	5	Outline,Walkable/			List of selection modifiers
 	6	Build/						Job type
