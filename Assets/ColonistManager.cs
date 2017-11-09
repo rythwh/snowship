@@ -1024,6 +1024,7 @@ public class ColonistManager : MonoBehaviour {
 		public void ChangeProfession(Profession newProfession) {
 			if (profession != newProfession) {
 				profession.colonistsInProfession.Remove(this);
+				oldProfession = profession;
 				profession = newProfession;
 				if (newProfession != null) {
 					profession.colonistsInProfession.Add(this);

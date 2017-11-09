@@ -265,7 +265,7 @@ public class PersistenceManager : MonoBehaviour {
 	/*
 		"MTO/Position,x,y/CreateResource,resourceType/FuelResource,resourceType"
 
-		Example: "MTO/Position,35.0,45.0/CreateResource,Brick/FuelResource,Wood"
+		Example: "MTO/Position,35.0,45.0/CreateResource,Brick/FuelResource,Firewood"
 	*/
 	public string GetManufacturingTileObjectDataString(ResourceManager.ManufacturingTileObject mto) {
 		string mtoData = "MTO";
