@@ -1322,7 +1322,7 @@ public class UIManager : MonoBehaviour {
 			});
 
 			if (colonist != null) {
-				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, 105);
+				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, 110);
 				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().minValue = 0;
 				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().maxValue = job.colonistBuildTime;
 				if (colonist.job.started) {
@@ -2386,7 +2386,7 @@ public class UIManager : MonoBehaviour {
 
 					string imageFile = "file:" + fileName.Split('.')[0] + ".png";
 					WWW www = new WWW(imageFile);
-					Texture2D texture = new Texture2D(35, 63,TextureFormat.RGB24,false);
+					Texture2D texture = new Texture2D(35, 63, TextureFormat.RGB24, false);
 					www.LoadImageIntoTexture(texture);
 					loadFilePanel.transform.Find("SavePreview-Image").GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(new Vector2(0, 0), new Vector2(texture.width, texture.height)), new Vector2(0, 0));
 
