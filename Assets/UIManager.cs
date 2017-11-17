@@ -190,7 +190,7 @@ public class UIManager : MonoBehaviour {
 		planetDistanceSlider.value = 4;
 
 		temperatureRangeSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
-		temperatureRangeSlider.value = 8;
+		temperatureRangeSlider.value = 5;
 
 		GameObject.Find("ReloadPlanet-Button").GetComponent<Button>().onClick.AddListener(delegate { GeneratePlanet(); });
 
@@ -1614,11 +1614,24 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
+	double CalculateProfessionSkillLevel(ColonistManager.Profession profession, ColonistManager.Colonist colonist, bool round, int decimalPlaces) {
+		if (profession.type != ColonistManager.ProfessionTypeEnum.Nothing) {
+			ColonistManager.SkillInstance skillInstance = colonist.skills.Find(skill => skill.prefab == profession.primarySkill);
+			double skillLevel = skillInstance.level + (skillInstance.currentExperience / skillInstance.nextLevelExperience);
+			if (round) {
+				return Math.Round(skillLevel, decimalPlaces);
+			}
+			return skillLevel;
+		}
+		return 0;
+	}
+
 	void UpdateProfessionLevelInfo(GameObject obj, ColonistManager.Colonist colonist, ColonistManager.Profession currentProfession, ColonistManager.Profession nextProfession) {
 		obj.transform.Find("ColonistCurrentProfession-Text").GetComponent<Text>().text = currentProfession.name;
 		if (colonist.profession.type != ColonistManager.ProfessionTypeEnum.Nothing) {
-			ColonistManager.SkillInstance currentSkillInstance = colonist.skills.Find(skill => skill.prefab == colonist.profession.primarySkill);
-			double currentSkillLevel = Math.Round(currentSkillInstance.level + (currentSkillInstance.currentExperience / currentSkillInstance.nextLevelExperience), 2);
+			/*ColonistManager.SkillInstance currentSkillInstance = colonist.skills.Find(skill => skill.prefab == colonist.profession.primarySkill);
+			double currentSkillLevel = Math.Round(currentSkillInstance.level + (currentSkillInstance.currentExperience / currentSkillInstance.nextLevelExperience), 2);*/
+			double currentSkillLevel = CalculateProfessionSkillLevel(currentProfession, colonist, true, 2);
 			obj.transform.Find("ColonistProfessionLevel-Text").GetComponent<Text>().text = currentSkillLevel.ToString();
 		} else {
 			obj.transform.Find("ColonistProfessionLevel-Text").GetComponent<Text>().text = "0";
@@ -1626,8 +1639,9 @@ public class UIManager : MonoBehaviour {
 
 		obj.transform.Find("ColonistNextProfession-Text").GetComponent<Text>().text = nextProfession.name;
 		if (nextProfession.type != ColonistManager.ProfessionTypeEnum.Nothing) {
-			ColonistManager.SkillInstance nextSkillInstance = colonist.skills.Find(skill => skill.prefab == nextProfession.primarySkill);
-			double nextSkillLevel = Math.Round(nextSkillInstance.level + (nextSkillInstance.currentExperience / nextSkillInstance.nextLevelExperience), 2);
+			/*ColonistManager.SkillInstance nextSkillInstance = colonist.skills.Find(skill => skill.prefab == nextProfession.primarySkill);
+			double nextSkillLevel = Math.Round(nextSkillInstance.level + (nextSkillInstance.currentExperience / nextSkillInstance.nextLevelExperience), 2);*/
+			double nextSkillLevel = CalculateProfessionSkillLevel(nextProfession, colonist, true, 2);
 			obj.transform.Find("ColonistNextProfessionLevel-Text").GetComponent<Text>().text = nextSkillLevel.ToString();
 		} else {
 			obj.transform.Find("ColonistNextProfessionLevel-Text").GetComponent<Text>().text = "0";
@@ -1641,51 +1655,55 @@ public class UIManager : MonoBehaviour {
 		professionElement.editColonistsInProfessionElements.Clear();
 		ColonistManager.Profession nothingProfession = colonistM.professions.Find(findProfession => findProfession.type == ColonistManager.ProfessionTypeEnum.Nothing);
 		if (remove) { // User clicked red minus button
-			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-				if (colonist.profession == professionElement.profession) {
-					GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/EditColonistInProfessionInfoElement-Panel"), professionElement.editColonistsInProfessionListObj.transform, false);
-					obj.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
-					obj.GetComponent<Button>().onClick.AddListener(delegate {
-						if (colonist.profession == professionElement.profession) {
-							colonist.ChangeProfession(colonist.oldProfession);
-							obj.GetComponent<Image>().color = colourMap[Colours.LightRed];
-						} else {
-							colonist.ChangeProfession(professionElement.profession);
-							obj.GetComponent<Image>().color = colourMap[Colours.LightBlue];
-						}
-						UpdateProfessionLevelInfo(obj, colonist, colonist.profession, colonist.oldProfession);
-					});
-					obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
-					obj.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonist.name;
-
+			List<ColonistManager.Colonist> validColonists = colonistM.colonists.Where(c => c.profession == professionElement.profession).ToList();
+			validColonists = validColonists.OrderBy(c => CalculateProfessionSkillLevel(c.profession, c, false, 0)).ToList();
+			foreach (ColonistManager.Colonist colonist in validColonists) {
+				GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/EditColonistInProfessionInfoElement-Panel"), professionElement.editColonistsInProfessionListObj.transform, false);
+				obj.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
+				obj.GetComponent<Button>().onClick.AddListener(delegate {
+					if (colonist.profession == professionElement.profession) {
+						colonist.ChangeProfession(colonist.oldProfession);
+						obj.GetComponent<Image>().color = colourMap[Colours.LightRed];
+					} else {
+						colonist.ChangeProfession(professionElement.profession);
+						obj.GetComponent<Image>().color = colourMap[Colours.LightBlue];
+					}
 					UpdateProfessionLevelInfo(obj, colonist, colonist.profession, colonist.oldProfession);
+				});
+				obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
+				obj.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonist.name;
 
-					obj.GetComponent<Image>().color = colourMap[Colours.LightBlue];
-					professionElement.editColonistsInProfessionElements.Add(obj);
-				}
+				UpdateProfessionLevelInfo(obj, colonist, colonist.profession, colonist.oldProfession);
+
+				obj.GetComponent<Image>().color = colourMap[Colours.LightBlue];
+				professionElement.editColonistsInProfessionElements.Add(obj);
 			}
 		} else { // User clicked green plus button
-			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-				if (colonist.profession != professionElement.profession) {
-					GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/EditColonistInProfessionInfoElement-Panel"), professionElement.editColonistsInProfessionListObj.transform, false);
-					obj.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
-					obj.GetComponent<Button>().onClick.AddListener(delegate {
-						if (colonist.profession == professionElement.profession) {
-							colonist.ChangeProfession(colonist.oldProfession);
-							obj.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
-						} else {
-							colonist.ChangeProfession(professionElement.profession);
-							obj.GetComponent<Image>().color = colourMap[Colours.LightBlue];
-						}
-						UpdateProfessionLevelInfo(obj, colonist, colonist.profession, colonist.oldProfession);
-					});
-					obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
-					obj.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonist.name;
+			List<ColonistManager.Colonist> validColonists = colonistM.colonists.Where(c => c.profession != professionElement.profession).ToList();
+			if (professionElement.profession.type == ColonistManager.ProfessionTypeEnum.Nothing) {
+				validColonists = validColonists.OrderBy(c => CalculateProfessionSkillLevel(professionElement.profession, c, false, 0)).ToList();
+			} else {
+				validColonists = validColonists.OrderByDescending(c => CalculateProfessionSkillLevel(professionElement.profession, c, false, 0)).ToList();
+			}
+			foreach (ColonistManager.Colonist colonist in validColonists) {
+				GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/EditColonistInProfessionInfoElement-Panel"), professionElement.editColonistsInProfessionListObj.transform, false);
+				obj.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
+				obj.GetComponent<Button>().onClick.AddListener(delegate {
+					if (colonist.profession == professionElement.profession) {
+						colonist.ChangeProfession(colonist.oldProfession);
+						obj.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
+					} else {
+						colonist.ChangeProfession(professionElement.profession);
+						obj.GetComponent<Image>().color = colourMap[Colours.LightBlue];
+					}
+					UpdateProfessionLevelInfo(obj, colonist, colonist.profession, colonist.oldProfession);
+				});
+				obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
+				obj.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonist.name;
 
-					UpdateProfessionLevelInfo(obj, colonist, colonist.profession, professionElement.profession);
+				UpdateProfessionLevelInfo(obj, colonist, colonist.profession, professionElement.profession);
 
-					professionElement.editColonistsInProfessionElements.Add(obj);
-				}
+				professionElement.editColonistsInProfessionElements.Add(obj);
 			}
 		}
 	}
