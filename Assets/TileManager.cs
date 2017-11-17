@@ -964,8 +964,8 @@ public class TileManager:MonoBehaviour {
 				SetTileRegions(true);
 				ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f), new List<TileTypes>() { TileTypes.GrassWater, TileTypes.Stone, TileTypes.Grass });
 				ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypes>() { TileTypes.GrassWater });
-				CalculatePrecipitation();
 				CalculateTemperature();
+				CalculatePrecipitation();
 				SetTileRegions(false);
 				SetBiomes();
 				SetMapEdgeTiles();
@@ -1014,11 +1014,11 @@ public class TileManager:MonoBehaviour {
 			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f),new List<TileTypes>() { TileTypes.GrassWater });
 			Bitmasking(tiles);
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Calculating Precipitation"); yield return null; }
-			CalculatePrecipitation();
-
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Calculating Temperature"); yield return null; }
 			CalculateTemperature();
+
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Calculating Precipitation"); yield return null; }
+			CalculatePrecipitation();
 
 			/*
 			foreach (Tile tile in tiles) {
@@ -1558,12 +1558,41 @@ public class TileManager:MonoBehaviour {
 			RemoveEmptyRegions();
 		}
 
+		public float TemperatureFromMapLatitude(float yPos, float temperatureRange, float temperatureOffset, int mapSize) {
+			return ((-2 * Mathf.Abs((yPos - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureRange / 50f)))) + temperatureRange) + temperatureOffset;
+		}
+
+		void CalculateTemperature() {
+			foreach (Tile tile in tiles) {
+				if (mapData.planetTemperature) {
+					tile.temperature = TemperatureFromMapLatitude(tile.position.y, mapData.temperatureRange, mapData.temperatureOffset, mapData.mapSize);
+				} else {
+					tile.temperature = mapData.averageTemperature;
+				}
+				tile.temperature += -(100f * Mathf.Pow(tile.height - 0.5f, 3));
+			}
+
+			AverageTileTemperatures();
+		}
+
 		Dictionary<int,int> oppositeDirectionTileMap = new Dictionary<int,int>() { { 0,2 },{ 1,3 },{ 2,0 },{ 3,1 },{ 4,6 },{ 5,7 },{ 6,4 },{ 7,5 } };
+		Dictionary<int, List<float>> windStrengthMap = new Dictionary<int, List<float>>() {
+			{ 0,new List<float>(){ 1.0f,0.6f,0.1f,0.6f,0.8f,0.2f,0.2f,0.8f } },
+			{ 1,new List<float>(){ 0.6f,1.0f,0.6f,0.1f,0.8f,0.8f,0.2f,0.2f } },
+			{ 2,new List<float>(){ 0.1f,0.6f,1.0f,0.6f,0.2f,0.8f,0.8f,0.2f } },
+			{ 3,new List<float>(){ 0.6f,0.1f,0.6f,1.0f,0.2f,0.2f,0.8f,0.8f } },
+			{ 4,new List<float>(){ 0.8f,0.8f,0.2f,0.2f,1.0f,0.6f,0.1f,0.6f } },
+			{ 5,new List<float>(){ 0.2f,0.8f,0.8f,0.2f,0.6f,1.0f,0.6f,0.1f } },
+			{ 6,new List<float>(){ 0.2f,0.2f,0.8f,0.8f,0.1f,0.6f,1.0f,0.6f } },
+			{ 7,new List<float>(){ 0.8f,0.2f,0.2f,0.8f,0.6f,0.1f,0.6f,1.0f } }
+		};
 
 		private int windDirection = 0;
 		void CalculatePrecipitation() {
 			List<List<float>> precipitations = new List<List<float>>();
-			for (int i = 0; i < 8; i++) { // 0 - up, 1 - right, 2 - down, 3 - left, 4 - up/right, 5 - down/right, 6 - down-left, 7 - up/left
+			int windDirectionMin = 0;
+			int windDirectionMax = 7;
+			for (int i = windDirectionMin; i < (windDirectionMax + 1); i++) { // 0 - up, 1 - right, 2 - down, 3 - left, 4 - up/right, 5 - down/right, 6 - down-left, 7 - up/left
 				windDirection = i;
 				if (windDirection <= 3) { // Wind is going horizontally/vertically
 					bool yStartAtTop = (windDirection == 2);
@@ -1573,15 +1602,27 @@ public class TileManager:MonoBehaviour {
 						for (int x = (xStartAtRight ? mapData.mapSize - 1 : 0); (xStartAtRight ? x >= 0 : x < mapData.mapSize); x += (xStartAtRight ? -1 : 1)) {
 							Tile tile = sortedTiles[y][x];
 							Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
+							SetTilePrecipitation(tile, previousTile, mapData.planetTemperature);
+							/*
 							if (previousTile != null) {
 								if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-									tile.precipitation = previousTile.precipitation + (Random.Range(0f,1f) < 1 - previousTile.precipitation ? Random.Range(0f,(1 - previousTile.precipitation) / 5f) : 0f);
+									tile.precipitation = previousTile.precipitation + (tile.height * Random.Range(0.2f, 0.4f));//((Random.Range(0f, 1f) < (1 - previousTile.precipitation)) ? (Random.Range(0f, (1 - previousTile.precipitation))) : 0f);
+								} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+									tile.precipitation = previousTile.precipitation - (tile.height * Random.Range(0.25f, 0.4f));
 								} else {
-									tile.precipitation = previousTile.precipitation - (Random.Range(0f,1f) < 1 - previousTile.precipitation ? Random.Range(0f,previousTile.precipitation / 5f) * tile.height : 0f);//(tile.height * Random.Range(0.005f,0.03f));
+									tile.precipitation = previousTile.precipitation - (tile.height * Random.Range(0.05f,0.1f));//((Random.Range(0f,1f) < (1 - previousTile.precipitation)) ? (Random.Range(0f,previousTile.precipitation) * (tile.height / Random.Range(5f, 15f))) : 0f);//(tile.height * Random.Range(0.005f,0.03f));
 								}
 							} else {
-								tile.precipitation = Random.Range(0.1f,0.5f) * (1 - tile.height);
+								if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+									tile.precipitation = tile.height * Random.Range(0.6f, 1f);
+								} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+									tile.precipitation = tile.height * Random.Range(0.1f, 0.3f);
+								} else {
+									tile.precipitation = tile.height * Random.Range(0.1f, 0.9f);
+								}
+								//tile.precipitation = Random.Range(0.1f,0.5f) * (1 - tile.height);
 							}
+							*/
 						}
 					}
 				} else { // Wind is going diagonally
@@ -1593,15 +1634,27 @@ public class TileManager:MonoBehaviour {
 							if (y < mapData.mapSize && x < mapData.mapSize) {
 								Tile tile = sortedTiles[y][x];
 								Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
+								SetTilePrecipitation(tile, previousTile, mapData.planetTemperature);
+								/*
 								if (previousTile != null) {
 									if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-										tile.precipitation = previousTile.precipitation + (Random.Range(0f,1f) < 1 - previousTile.precipitation ? Random.Range(0f,(1 - previousTile.precipitation) / 5f) : 0f);
+										tile.precipitation = previousTile.precipitation + ((1 - tile.height) * Random.Range(0.2f, 0.4f));
+									} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+										tile.precipitation = previousTile.precipitation - (tile.height * Random.Range(0.25f, 0.4f));
 									} else {
-										tile.precipitation = previousTile.precipitation - (Random.Range(0f,1f) < 1 - previousTile.precipitation ? Random.Range(0f,previousTile.precipitation / 5f) * tile.height : 0f);
+										tile.precipitation = previousTile.precipitation - (tile.height * Random.Range(0.05f, 0.1f));
 									}
 								} else {
-									tile.precipitation = Random.Range(0.1f,0.5f) * (1 - tile.height);
+									if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+										tile.precipitation = tile.height * Random.Range(0.6f, 1f);
+									} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+										tile.precipitation = tile.height * Random.Range(0.1f, 0.3f);
+									} else {
+										tile.precipitation = tile.height * Random.Range(0.1f, 0.9f);
+									}
+									//tile.precipitation = Random.Range(0.1f,0.5f) * (1 - tile.height);
 								}
+								*/
 							}
 						}
 					}
@@ -1613,31 +1666,74 @@ public class TileManager:MonoBehaviour {
 				}
 				precipitations.Add(directionPrecipitations);
 			}
-			int primaryDirection = Random.Range(0,3);
-			int oppositeDirection = oppositeDirectionTileMap[primaryDirection];
+			int primaryDirection = Random.Range(windDirectionMin,(windDirectionMax+1));
+			print(primaryDirection);
+
+			float windStrengthMapSum = windStrengthMap[primaryDirection].Sum();
 
 			for (int t = 0; t < tiles.Count; t++) {
 				tiles[t].precipitation = 0;
 				for (int i = 0; i < 8; i++) {
-					if (i == oppositeDirection) {
-						tiles[t].precipitation += precipitations[i][t] * 0.1f; // 0.25f
-					} else if (i != primaryDirection) {
-						tiles[t].precipitation += precipitations[i][t] * 0.2f; // 0.5f
-					} else {
-						tiles[t].precipitation += precipitations[i][t];
-					}
+					tiles[t].precipitation += precipitations[i][t] * windStrengthMap[primaryDirection][i];
 				}
-				tiles[t].precipitation /= 1.35f; //1.3f; // 2.25f
+				tiles[t].precipitation /= windStrengthMapSum;
 			}
 			AverageTilePrecipitations();
 
 			foreach (Tile tile in tiles) {
-				tile.precipitation = Mathf.Clamp((Mathf.RoundToInt(mapData.averagePrecipitation) != -1 ? (tile.precipitation + mapData.averagePrecipitation) / 2f : tile.precipitation),0f,1f);
+				if (Mathf.RoundToInt(mapData.averagePrecipitation) != -1) {
+					tile.precipitation = (tile.precipitation + mapData.averagePrecipitation) / 2f;
+				}
+				tile.precipitation = Mathf.Clamp(tile.precipitation, 0f, 1f);
 			}
 		}
 
+		private void SetTilePrecipitation(Tile tile, Tile previousTile, bool planet) {
+			if (planet) {
+				if (previousTile != null) {
+					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
+					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) + Random.Range(0.1f, 0.2f);
+					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) - (tile.height * Random.Range(0.1f, 0.2f));
+					} else {
+						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) - (tile.height * Random.Range(0.1f, 0.2f));
+					}
+				} else {
+					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.precipitation = Random.Range(0.7f, 1f);
+					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.precipitation = tile.height * Random.Range(0.1f, 0.3f);
+					} else {
+						tile.precipitation = tile.height * Random.Range(0.1f, 0.9f);
+					}
+				}
+			} else {
+				if (previousTile != null) {
+					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
+					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) + Random.Range(0.25f, 0.5f);
+					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) - (tile.height * Random.Range(0.01f, 0.02f));
+					} else {
+						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) - (tile.height * Random.Range(0.005f, 0.01f));
+					}
+				} else {
+					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.precipitation = Random.Range(0.7f, 1f);
+					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.precipitation = tile.height * Random.Range(0.1f, 0.3f);
+					} else {
+						tile.precipitation = tile.height * Random.Range(0.1f, 0.9f);
+					}
+				}
+			}
+			tile.precipitation *= Mathf.Clamp(-Mathf.Pow((tile.temperature - 30) / (90 - 30), 3) + 1, 0f, 1f); // Less precipitation as the temperature gets higher
+		}
+
 		void AverageTilePrecipitations() {
-			for (int i = 0; i < 3; i++) {
+			int numPasses = 4;
+			for (int i = 0; i < numPasses; i++) {
 				List<float> averageTilePrecipitations = new List<float>();
 
 				foreach (Tile tile in tiles) {
@@ -1658,23 +1754,6 @@ public class TileManager:MonoBehaviour {
 					tiles[k].precipitation = averageTilePrecipitations[k];
 				}
 			}
-		}
-
-		public float TemperatureFromMapLatitude(float yPos,float temperatureRange, float temperatureOffset,int mapSize) {
-			return ((-2 * Mathf.Abs((yPos - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureRange / 50f)))) + temperatureRange) + temperatureOffset;
-		}
-
-		void CalculateTemperature() {
-			foreach (Tile tile in tiles) {
-				if (mapData.planetTemperature) {
-					tile.temperature = TemperatureFromMapLatitude(tile.position.y, mapData.temperatureRange, mapData.temperatureOffset, mapData.mapSize);
-				} else {
-					tile.temperature = mapData.averageTemperature;
-				}
-				tile.temperature += -(100f * Mathf.Pow(tile.height - 0.5f,3));
-			}
-
-			AverageTileTemperatures();
 		}
 
 		void AverageTileTemperatures() {
