@@ -43,7 +43,7 @@ public class ResourceManager : MonoBehaviour {
 		Brick, Glass, Cotton, Cloth, 
 		WheatSeeds, PotatoSeeds, CottonSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
 		Wheat,
-		Potatoes, Berries, Apples,
+		Potatoes, BakedPotatoes, Berries, Apples, BakedApples
 	};
 
 	List<ResourcesEnum> ManufacturableResources = new List<ResourcesEnum>() {
@@ -836,7 +836,7 @@ public class ResourceManager : MonoBehaviour {
 			growProgressSprites = prefab.bitmaskSprites;
 			maxSpriteIndex = growProgressSprites.Count - 1;
 
-			precipitationGrowthMultiplier = Mathf.Min((-2 * Mathf.Pow(tile.precipitation - 0.7f, 2) + 1), (-30 * Mathf.Pow(tile.precipitation - 0.7f, 3) + 1));
+			precipitationGrowthMultiplier = Mathf.Min((-2 * Mathf.Pow(tile.GetPrecipitation() - 0.7f, 2) + 1), (-30 * Mathf.Pow(tile.GetPrecipitation() - 0.7f, 3) + 1));
 			temperatureGrowthMultipler = Mathf.Clamp(Mathf.Min(((tile.temperature - 10) / 15f + 1), (-((tile.temperature - 50) / 20f))), 0, 1);
 		}
 

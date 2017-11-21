@@ -78,6 +78,10 @@ public class UIManager : MonoBehaviour {
 	private Slider temperatureRangeSlider;
 	private Text temperatureRangeText;
 
+	public int windDirection = 0;
+	private Slider windDirectionSlider;
+	private Text windDirectionText;
+
 	public string colonyName;
 
 	public int mapSize = 0;
@@ -183,6 +187,11 @@ public class UIManager : MonoBehaviour {
 		temperatureRangeSlider.maxValue = 10;
 		temperatureRangeSlider.minValue = 0;
 
+		windDirectionSlider = GameObject.Find("WindDirection-Slider").GetComponent<Slider>();
+		windDirectionText = GameObject.Find("WindDirectionValue-Text").GetComponent<Text>();
+		windDirectionSlider.maxValue = 7;
+		windDirectionSlider.minValue = 0;
+
 		planetSizeSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
 		planetSizeSlider.value = Mathf.FloorToInt((planetTileSizes.Count - 1) / 2f);
 
@@ -191,6 +200,9 @@ public class UIManager : MonoBehaviour {
 
 		temperatureRangeSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
 		temperatureRangeSlider.value = 5;
+
+		windDirectionSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
+		windDirectionSlider.value = UnityEngine.Random.Range(0, 8); // 0 -> 7 (8 is exclusive)
 
 		GameObject.Find("ReloadPlanet-Button").GetComponent<Button>().onClick.AddListener(delegate { GeneratePlanet(); });
 
@@ -354,8 +366,7 @@ public class UIManager : MonoBehaviour {
 		} else {
 			playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null);
 			if (Input.GetMouseButtonDown(1) && selectedPlanetTile != null && !tileM.generating) {
-				selectedPlanetTile = null;
-				SetSelectedPlanetTileInfo();
+				SetSelectedPlanetTile(null);
 			}
 		}
 	}
@@ -397,6 +408,11 @@ public class UIManager : MonoBehaviour {
 
 
 	public PlanetTile selectedPlanetTile;
+
+	public void SetSelectedPlanetTile(PlanetTile selectedPlanetTile) {
+		this.selectedPlanetTile = selectedPlanetTile;
+		SetSelectedPlanetTileInfo();
+	}
 
 	public List<PlanetTile> planetTiles = new List<PlanetTile>();
 
@@ -446,8 +462,7 @@ public class UIManager : MonoBehaviour {
 			image.sprite = tile.obj.GetComponent<SpriteRenderer>().sprite;
 
 			obj.GetComponent<Button>().onClick.AddListener(delegate {
-				uiM.selectedPlanetTile = this;
-				uiM.SetSelectedPlanetTileInfo();
+				uiM.SetSelectedPlanetTile(this);
 			});
 
 			SetMapData();
@@ -458,7 +473,7 @@ public class UIManager : MonoBehaviour {
 		public void SetMapData() {
 			equatorOffset = ((position.y - (planetSize / 2f)) * 2) / planetSize;
 			averageTemperature = tile.temperature + planetTemperature;
-			averagePrecipitation = tile.precipitation;
+			averagePrecipitation = tile.GetPrecipitation();
 
 			if (!tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
 				foreach (TileManager.Tile nTile in tile.horizontalSurroundingTiles) {
@@ -478,7 +493,7 @@ public class UIManager : MonoBehaviour {
 
 			float waterThreshold = 0.40f;
 			float stoneThreshold = 0.75f;
-			waterThreshold = waterThreshold * tile.precipitation * (1 - tile.height);
+			waterThreshold = waterThreshold * tile.GetPrecipitation() * (1 - tile.height);
 			stoneThreshold = stoneThreshold * (1 - (tile.height - (1 - stoneThreshold)));
 
 			terrainTypeHeights = new Dictionary<TileManager.TileTypes, float>() {
@@ -539,6 +554,7 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void GeneratePlanet() {
+		SetSelectedPlanetTile(null);
 
 		foreach (PlanetTile tile in planetTiles) {
 			Destroy(tile.obj);
@@ -572,12 +588,35 @@ public class UIManager : MonoBehaviour {
 			StaticPlanetMapDataValues.terrainTypeHeights,
 			StaticPlanetMapDataValues.surroundingPlanetTileHeightDirections,
 			StaticPlanetMapDataValues.preventEdgeTouching
-		);
+		) {
+			primaryWindDirection = windDirection
+		};
 		planet = new TileManager.Map(planetData, false);
 		foreach (TileManager.Tile tile in planet.tiles) {
 			planetTiles.Add(new PlanetTile(tile, planetPreviewPanel.transform, tile.position, planetSize, planetTemperature));
 		}
 	}
+
+	private Dictionary<int, string> windCardinalDirectionMap = new Dictionary<int, string>() {
+		{0,"N" },
+		{1,"E" },
+		{2,"S" },
+		{3,"W" },
+		{4,"NE" },
+		{5,"SE" },
+		{6,"SW" },
+		{7,"NW" },
+	};
+	private Dictionary<int, int> windCircularDirectionMap = new Dictionary<int, int>() {
+		{0,0 },
+		{1,4 },
+		{2,1 },
+		{3,5 },
+		{4,2 },
+		{5,6 },
+		{6,3 },
+		{7,7 },
+	};
 
 	public void UpdatePlanetInfo() {
 		planetTileSize = planetTileSizes[Mathf.RoundToInt(planetSizeSlider.value)];
@@ -588,6 +627,9 @@ public class UIManager : MonoBehaviour {
 
 		temperatureRange = Mathf.RoundToInt(temperatureRangeSlider.value * 10);
 		temperatureRangeText.text = temperatureRange + "°C";
+
+		windDirection = windCircularDirectionMap[Mathf.RoundToInt(windDirectionSlider.value)];
+		windDirectionText.text = windCardinalDirectionMap[windDirection];
 	}
 
 	public int SeedParser(string seedString, InputField inputObject) {
@@ -616,7 +658,7 @@ public class UIManager : MonoBehaviour {
 
 		MainMenuToGameTransition(false);
 
-		tileM.Initialize(new TileManager.MapData(
+		TileManager.MapData mapData = new TileManager.MapData(
 			mapSeed,
 			mapSize,
 			true,
@@ -629,7 +671,10 @@ public class UIManager : MonoBehaviour {
 			selectedPlanetTile.terrainTypeHeights,
 			selectedPlanetTile.surroundingPlanetTileHeightDirections,
 			false
-		));
+		) {
+			primaryWindDirection = planet.mapData.primaryWindDirection
+		};
+		tileM.Initialize(mapData);
 	}
 
 	public void MainMenuToGameTransition(bool enableGameUIImmediately) {
@@ -910,7 +955,7 @@ public class UIManager : MonoBehaviour {
 				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.biome.name;
 			}
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Temperature").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.temperature) + "°C";
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Precipitation").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.precipitation * 100f) + "%";
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Precipitation").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.GetPrecipitation() * 100f) + "%";
 
 			if (!tileInformation.activeSelf) {
 				tileInformation.SetActive(true);

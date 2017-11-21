@@ -951,7 +951,7 @@ public class DebugManager : MonoBehaviour {
 			if (parameters.Count == 0) {
 				foreach (TileManager.Tile tile in tileM.map.tiles) {
 					tile.sr.sprite = whiteSquare;
-					tile.sr.color = new Color(tile.precipitation, tile.precipitation, tile.precipitation, 1f);
+					tile.sr.color = new Color(tile.GetPrecipitation(), tile.GetPrecipitation(), tile.GetPrecipitation(), 1f);
 				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");

@@ -453,15 +453,15 @@ public class TileManager:MonoBehaviour {
 		public Plant plant;
 		public ResourceManager.Farm farm;
 
-		public float precipitation;
-		public float temperature;
+		private float precipitation = 0;
+		public float temperature = 0;
 
-		public bool walkable;
-		public float walkSpeed;
+		public bool walkable = false;
+		public float walkSpeed = 0;
 
-		public bool roof;
+		public bool roof = false;
 
-		public float brightness;
+		public float brightness = 0;
 		public Dictionary<int,float> brightnessAtHour = new Dictionary<int,float>();
 		public Dictionary<int,Dictionary<Tile,float>> shadowsFrom = new Dictionary<int,Dictionary<Tile,float>>(); // Tiles that affect the shadow on this tile
 		public Dictionary<int,List<Tile>> shadowsTo = new Dictionary<int,List<Tile>>(); // Tiles that have shadows due to this tile
@@ -831,6 +831,14 @@ public class TileManager:MonoBehaviour {
 				primaryLightSource = null;
 			}
 		}
+
+		public void SetPrecipitation(float precipitation) {
+			this.precipitation = precipitation;
+		}
+
+		public float GetPrecipitation() {
+			return precipitation;
+		}
 	}
 
 	public bool generating;
@@ -857,6 +865,8 @@ public class TileManager:MonoBehaviour {
 		public List<int> surroundingPlanetTileHeightDirections;
 
 		public bool preventEdgeTouching;
+
+		public int primaryWindDirection = -1;
 
 		public MapData(int mapSeed, int mapSize, bool actualMap, float equatorOffset, bool planetTemperature, int temperatureRange, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, List<int> surroundingPlanetTileHeightDirections, bool preventEdgeTouching) {
 
@@ -959,18 +969,18 @@ public class TileManager:MonoBehaviour {
 			createdMap = false;
 			if (loadMap) {
 				CreateTiles();
+				SetMapEdgeTiles();
 				SetSortedMapEdgeTiles();
 				SmoothHeightWithSurroundingPlanetTiles();
 				SetTileRegions(true);
 				ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f), new List<TileTypes>() { TileTypes.GrassWater, TileTypes.Stone, TileTypes.Grass });
 				ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypes>() { TileTypes.GrassWater });
-				CalculateTemperature();
-				CalculatePrecipitation();
 				SetTileRegions(false);
-				SetBiomes();
-				SetMapEdgeTiles();
 				DetermineDrainageBasins();
 				CreateRivers();
+				CalculateTemperature();
+				CalculatePrecipitation();
+				SetBiomes();
 				CreateRegionBlocks();
 				SetRoofs();
 				SetResourceVeins();
@@ -993,6 +1003,7 @@ public class TileManager:MonoBehaviour {
 		public IEnumerator CreateMap() {
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Tiles"); yield return null; }
 			CreateTiles();
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Bitmasking"); yield return null; }
 			Bitmasking(tiles);
 
 			if (mapData.preventEdgeTouching) {
@@ -1000,9 +1011,13 @@ public class TileManager:MonoBehaviour {
 			}
 
 			if (mapData.actualMap) {
-				uiM.UpdateLoadingStateText("Merging Terrain with Planet"); yield return null;
+				uiM.UpdateLoadingStateText("Setting Map Edges"); yield return null;
+				SetMapEdgeTiles();
+				uiM.UpdateLoadingStateText("Setting Sorted Map Edges"); yield return null;
 				SetSortedMapEdgeTiles();
+				uiM.UpdateLoadingStateText("Merging Terrain with Planet"); yield return null;
 				SmoothHeightWithSurroundingPlanetTiles();
+				uiM.UpdateLoadingStateText("Bitmasking"); yield return null;
 				Bitmasking(tiles);
 			}
 
@@ -1012,13 +1027,26 @@ public class TileManager:MonoBehaviour {
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Reducing Terrain Noise"); yield return null; }
 			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f),new List<TileTypes>() { TileTypes.GrassWater,TileTypes.Stone,TileTypes.Grass });
 			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f),new List<TileTypes>() { TileTypes.GrassWater });
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Regions"); yield return null; }
+			SetTileRegions(false);
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Bitmasking"); yield return null; }
 			Bitmasking(tiles);
+
+			if (mapData.actualMap) {
+				uiM.UpdateLoadingStateText("Creating Drainage Basins"); yield return null;
+				DetermineDrainageBasins();
+				uiM.UpdateLoadingStateText("Creating Rivers"); yield return null;
+				CreateRivers();
+				uiM.UpdateLoadingStateText("Bitmasking"); yield return null;
+				Bitmasking(tiles);
+			}
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Calculating Temperature"); yield return null; }
 			CalculateTemperature();
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Calculating Precipitation"); yield return null; }
 			CalculatePrecipitation();
+			mapData.primaryWindDirection = primaryWindDirection;
 
 			/*
 			foreach (Tile tile in tiles) {
@@ -1029,39 +1057,38 @@ public class TileManager:MonoBehaviour {
 			*/
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Biomes"); yield return null; }
-			SetTileRegions(false);
 			SetBiomes();
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Bitmasking"); yield return null; }
 			Bitmasking(tiles);
 
-			if (mapData.actualMap) {
-				uiM.UpdateLoadingStateText("Creating Rivers"); yield return null;
-				SetMapEdgeTiles();
-				DetermineDrainageBasins();
-				CreateRivers();
-				Bitmasking(tiles);
-			}
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Region Blocks"); yield return null; }
 			CreateRegionBlocks();
 
 			if (mapData.actualMap) {
 				uiM.UpdateLoadingStateText("Creating Roofs"); yield return null;
 				SetRoofs();
+				uiM.UpdateLoadingStateText("Bitmasking"); yield return null;
 				Bitmasking(tiles);
 
 				uiM.UpdateLoadingStateText("Creating Resource Veins"); yield return null;
 				SetResourceVeins();
+				uiM.UpdateLoadingStateText("Bitmasking"); yield return null;
 				Bitmasking(tiles);
 
-				uiM.UpdateLoadingStateText("Calculating Lighting"); yield return null;
+				uiM.UpdateLoadingStateText("Determining Hourly Shadow Directions"); yield return null;
 				DetermineShadowDirectionsAtHour();
+				uiM.UpdateLoadingStateText("Determining Shadow Generating Tiles"); yield return null;
 				DetermineShadowTiles(tiles,false);
+				uiM.UpdateLoadingStateText("Creating Shadows"); yield return null;
 				SetTileBrightness(timeM.GetTileBrightnessTime());
+				uiM.UpdateLoadingStateText("Determining Visible Region Blocks"); yield return null;
 				DetermineVisibleRegionBlocks();
 			}
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Bitmasking"); yield return null; }
 			Bitmasking(tiles);
 
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Completing"); yield return null; }
 			createdMap = true;
 		}
 
@@ -1558,6 +1585,181 @@ public class TileManager:MonoBehaviour {
 			RemoveEmptyRegions();
 		}
 
+		public List<River> rivers = new List<River>();
+
+		public Dictionary<Region, Tile> drainageBasins = new Dictionary<Region, Tile>();
+		public int drainageBasinID = 0;
+
+		void DetermineDrainageBasins() {
+			List<Tile> tilesByHeight = tiles.OrderBy(tile => tile.height).ToList();
+			foreach (Tile tile in tilesByHeight) {
+				if (!tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type) && tile.drainageBasin == null) {
+					Region drainageBasin = new Region(null, drainageBasinID);
+					drainageBasinID += 1;
+
+					Tile currentTile = tile;
+
+					List<Tile> checkedTiles = new List<Tile>();
+					checkedTiles.Add(currentTile);
+					List<Tile> frontier = new List<Tile>();
+					frontier.Add(currentTile);
+
+					while (frontier.Count > 0) {
+						currentTile = frontier[0];
+						frontier.RemoveAt(0);
+
+						drainageBasin.tiles.Add(currentTile);
+						currentTile.drainageBasin = drainageBasin;
+
+						foreach (Tile nTile in currentTile.surroundingTiles) {
+							if (nTile != null && !checkedTiles.Contains(nTile) && !tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type) && nTile.drainageBasin == null) {
+								if (nTile.height >= currentTile.height) {
+									frontier.Add(nTile);
+									checkedTiles.Add(nTile);
+								}
+							}
+						}
+					}
+					drainageBasins.Add(drainageBasin, tile);
+				}
+			}
+		}
+
+		public class River {
+			public Tile startTile;
+			public Tile endTile;
+			public List<Tile> tiles;
+
+			public River(Tile startTile, Tile endTile, List<Tile> tiles) {
+				this.startTile = startTile;
+				this.endTile = endTile;
+				this.tiles = tiles;
+			}
+		}
+
+		void CreateRivers() {
+			Dictionary<Tile, Tile> riverStartTiles = new Dictionary<Tile, Tile>();
+			foreach (KeyValuePair<Region, Tile> kvp in drainageBasins) {
+				Region drainageBasin = kvp.Key;
+				if (drainageBasin.tiles.Find(o => tileM.WaterEquivalentTileTypes.Contains(o.tileType.type)) != null && drainageBasin.tiles.Find(o => o.horizontalSurroundingTiles.Find(o2 => o2 != null && tileM.StoneEquivalentTileTypes.Contains(o2.tileType.type)) != null) != null) {
+					foreach (Tile tile in drainageBasin.tiles) {
+						if (tile.walkable && !tileM.WaterEquivalentTileTypes.Contains(tile.tileType.type) && tile.horizontalSurroundingTiles.Find(o => o != null && tileM.StoneEquivalentTileTypes.Contains(o.tileType.type)) != null) {
+							riverStartTiles.Add(tile, kvp.Value);
+						}
+					}
+				}
+			}
+			for (int i = 0; i < mapData.mapSize / 10f && i < riverStartTiles.Count; i++) {
+				Tile riverStartTile = Enumerable.ToList(riverStartTiles.Keys)[Random.Range(0, riverStartTiles.Count)];
+				Tile riverEndTile = riverStartTiles[riverStartTile];
+				List<Tile> removeTiles = new List<Tile>();
+				foreach (KeyValuePair<Tile, Tile> kvp in riverStartTiles) {
+					if (Vector2.Distance(kvp.Key.obj.transform.position, riverStartTile.obj.transform.position) < 5f) {
+						removeTiles.Add(kvp.Key);
+					}
+				}
+				foreach (Tile removeTile in removeTiles) {
+					riverStartTiles.Remove(removeTile);
+				}
+				removeTiles.Clear();
+
+				List<Tile> riverTiles = RiverPathfinding(riverStartTile, riverEndTile);
+
+				rivers.Add(new River(riverStartTile, riverEndTile, riverTiles));
+			}
+		}
+
+		public List<Tile> RiverPathfinding(Tile riverStartTile, Tile riverEndTile) {
+			PathManager.PathfindingTile currentTile = new PathManager.PathfindingTile(riverStartTile, null, 0);
+
+			List<PathManager.PathfindingTile> checkedTiles = new List<PathManager.PathfindingTile>();
+			checkedTiles.Add(currentTile);
+			List<PathManager.PathfindingTile> frontier = new List<PathManager.PathfindingTile>();
+			frontier.Add(currentTile);
+
+			List<Tile> river = new List<Tile>();
+
+			while (frontier.Count > 0) {
+				currentTile = frontier[0];
+				frontier.RemoveAt(0);
+
+				if (tileM.WaterEquivalentTileTypes.Contains(currentTile.tile.tileType.type) || (currentTile.tile.horizontalSurroundingTiles.Find(tile => tile != null && tileM.WaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key == null) != null)) {
+					Tile foundOtherRiverAtTile = null;
+					River foundOtherRiver = null;
+					bool expandRiver = true; // false: SET TO FALSE TO ENABLE RIVER EXPANSION
+					while (currentTile != null) {
+						river.Add(currentTile.tile);
+						currentTile.tile.SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater), false, false, false, true);
+						if (!expandRiver) {
+							KeyValuePair<Tile, River> kvp = RiversContainTile(currentTile.tile);
+							if (kvp.Key != null) {
+								foundOtherRiverAtTile = kvp.Key;
+								foundOtherRiver = kvp.Value;
+								expandRiver = true;
+								print("Expanding river at " + foundOtherRiverAtTile.obj.transform.position);
+							}
+						}
+						currentTile = currentTile.cameFrom;
+					}
+					if (foundOtherRiver != null && foundOtherRiver.tiles.Count > 1) {
+						int riverTileIndex = 1;
+						while (expandRiver) {
+							Tile riverTile = foundOtherRiver.tiles[riverTileIndex];
+							if (riverTile == foundOtherRiverAtTile) {
+								break;
+							}
+							int maxExpandRadius = 1;
+							List<Tile> expandFrontier = new List<Tile>();
+							expandFrontier.Add(riverTile);
+							List<Tile> checkedExpandTiles = new List<Tile>();
+							checkedExpandTiles.Add(riverTile);
+							while (expandFrontier.Count > 0) {
+								Tile expandTile = expandFrontier[0];
+								expandFrontier.RemoveAt(0);
+								expandTile.SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater), false, false, false, true);
+								foreach (Tile nTile in expandTile.surroundingTiles) {
+									if (nTile != null && !checkedExpandTiles.Contains(nTile) && !tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type) && Vector2.Distance(nTile.obj.transform.position, riverTile.obj.transform.position) <= maxExpandRadius) {
+										expandFrontier.Add(nTile);
+										checkedExpandTiles.Add(nTile);
+									}
+								}
+							}
+							riverTileIndex += 1;
+						}
+					}
+					break;
+				}
+
+				foreach (Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
+					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && !tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type)) {
+						if (rivers.Find(otherRiver => otherRiver.tiles.Find(riverTile => nTile == riverTile) != null) != null) {
+							frontier.Clear();
+							frontier.Add(new PathManager.PathfindingTile(nTile, currentTile, 0));
+							nTile.SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater), false, false, false, true);
+							break;
+						}
+						float cost = Vector2.Distance(nTile.obj.transform.position, riverEndTile.obj.transform.position) + (nTile.height * (mapData.mapSize / 10f)) + Random.Range(0, 10);
+						PathManager.PathfindingTile pTile = new PathManager.PathfindingTile(nTile, currentTile, cost);
+						frontier.Add(pTile);
+						checkedTiles.Add(pTile);
+					}
+				}
+				frontier = frontier.OrderBy(frontierTile => frontierTile.cost).ToList();
+			}
+			return river;
+		}
+
+		public KeyValuePair<Tile, River> RiversContainTile(Tile tile) {
+			foreach (River river in rivers) {
+				foreach (Tile riverTile in river.tiles) {
+					if (riverTile == tile) {
+						return new KeyValuePair<Tile, River>(riverTile, river);
+					}
+				}
+			}
+			return new KeyValuePair<Tile, River>(null, null);
+		}
+
 		public float TemperatureFromMapLatitude(float yPos, float temperatureRange, float temperatureOffset, int mapSize) {
 			return ((-2 * Mathf.Abs((yPos - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureRange / 50f)))) + temperatureRange) + temperatureOffset;
 		}
@@ -1573,187 +1775,6 @@ public class TileManager:MonoBehaviour {
 			}
 
 			AverageTileTemperatures();
-		}
-
-		Dictionary<int,int> oppositeDirectionTileMap = new Dictionary<int,int>() { { 0,2 },{ 1,3 },{ 2,0 },{ 3,1 },{ 4,6 },{ 5,7 },{ 6,4 },{ 7,5 } };
-		Dictionary<int, List<float>> windStrengthMap = new Dictionary<int, List<float>>() {
-			{ 0,new List<float>(){ 1.0f,0.6f,0.1f,0.6f,0.8f,0.2f,0.2f,0.8f } },
-			{ 1,new List<float>(){ 0.6f,1.0f,0.6f,0.1f,0.8f,0.8f,0.2f,0.2f } },
-			{ 2,new List<float>(){ 0.1f,0.6f,1.0f,0.6f,0.2f,0.8f,0.8f,0.2f } },
-			{ 3,new List<float>(){ 0.6f,0.1f,0.6f,1.0f,0.2f,0.2f,0.8f,0.8f } },
-			{ 4,new List<float>(){ 0.8f,0.8f,0.2f,0.2f,1.0f,0.6f,0.1f,0.6f } },
-			{ 5,new List<float>(){ 0.2f,0.8f,0.8f,0.2f,0.6f,1.0f,0.6f,0.1f } },
-			{ 6,new List<float>(){ 0.2f,0.2f,0.8f,0.8f,0.1f,0.6f,1.0f,0.6f } },
-			{ 7,new List<float>(){ 0.8f,0.2f,0.2f,0.8f,0.6f,0.1f,0.6f,1.0f } }
-		};
-
-		private int windDirection = 0;
-		void CalculatePrecipitation() {
-			List<List<float>> precipitations = new List<List<float>>();
-			int windDirectionMin = 0;
-			int windDirectionMax = 7;
-			for (int i = windDirectionMin; i < (windDirectionMax + 1); i++) { // 0 - up, 1 - right, 2 - down, 3 - left, 4 - up/right, 5 - down/right, 6 - down-left, 7 - up/left
-				windDirection = i;
-				if (windDirection <= 3) { // Wind is going horizontally/vertically
-					bool yStartAtTop = (windDirection == 2);
-					bool xStartAtRight = (windDirection == 3);
-
-					for (int y = (yStartAtTop ? mapData.mapSize - 1 : 0); (yStartAtTop ? y >= 0 : y < mapData.mapSize); y += (yStartAtTop ? -1 : 1)) {
-						for (int x = (xStartAtRight ? mapData.mapSize - 1 : 0); (xStartAtRight ? x >= 0 : x < mapData.mapSize); x += (xStartAtRight ? -1 : 1)) {
-							Tile tile = sortedTiles[y][x];
-							Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
-							SetTilePrecipitation(tile, previousTile, mapData.planetTemperature);
-							/*
-							if (previousTile != null) {
-								if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-									tile.precipitation = previousTile.precipitation + (tile.height * Random.Range(0.2f, 0.4f));//((Random.Range(0f, 1f) < (1 - previousTile.precipitation)) ? (Random.Range(0f, (1 - previousTile.precipitation))) : 0f);
-								} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-									tile.precipitation = previousTile.precipitation - (tile.height * Random.Range(0.25f, 0.4f));
-								} else {
-									tile.precipitation = previousTile.precipitation - (tile.height * Random.Range(0.05f,0.1f));//((Random.Range(0f,1f) < (1 - previousTile.precipitation)) ? (Random.Range(0f,previousTile.precipitation) * (tile.height / Random.Range(5f, 15f))) : 0f);//(tile.height * Random.Range(0.005f,0.03f));
-								}
-							} else {
-								if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-									tile.precipitation = tile.height * Random.Range(0.6f, 1f);
-								} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-									tile.precipitation = tile.height * Random.Range(0.1f, 0.3f);
-								} else {
-									tile.precipitation = tile.height * Random.Range(0.1f, 0.9f);
-								}
-								//tile.precipitation = Random.Range(0.1f,0.5f) * (1 - tile.height);
-							}
-							*/
-						}
-					}
-				} else { // Wind is going diagonally
-					bool up = (windDirection == 4 || windDirection == 7);
-					int mapSize2x = mapData.mapSize * 2;
-					for (int k = (up ? 0 : mapSize2x); (up ? k < mapSize2x : k >= 0); k += (up ? 1 : -1)) {
-						for (int x = 0; x <= k; x++) {
-							int y = k - x;
-							if (y < mapData.mapSize && x < mapData.mapSize) {
-								Tile tile = sortedTiles[y][x];
-								Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
-								SetTilePrecipitation(tile, previousTile, mapData.planetTemperature);
-								/*
-								if (previousTile != null) {
-									if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-										tile.precipitation = previousTile.precipitation + ((1 - tile.height) * Random.Range(0.2f, 0.4f));
-									} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-										tile.precipitation = previousTile.precipitation - (tile.height * Random.Range(0.25f, 0.4f));
-									} else {
-										tile.precipitation = previousTile.precipitation - (tile.height * Random.Range(0.05f, 0.1f));
-									}
-								} else {
-									if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-										tile.precipitation = tile.height * Random.Range(0.6f, 1f);
-									} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-										tile.precipitation = tile.height * Random.Range(0.1f, 0.3f);
-									} else {
-										tile.precipitation = tile.height * Random.Range(0.1f, 0.9f);
-									}
-									//tile.precipitation = Random.Range(0.1f,0.5f) * (1 - tile.height);
-								}
-								*/
-							}
-						}
-					}
-				}
-				List<float> directionPrecipitations = new List<float>();
-				foreach (Tile tile in tiles) {
-					directionPrecipitations.Add(tile.precipitation);
-					tile.precipitation = 0;
-				}
-				precipitations.Add(directionPrecipitations);
-			}
-			int primaryDirection = Random.Range(windDirectionMin,(windDirectionMax+1));
-			print(primaryDirection);
-
-			float windStrengthMapSum = windStrengthMap[primaryDirection].Sum();
-
-			for (int t = 0; t < tiles.Count; t++) {
-				tiles[t].precipitation = 0;
-				for (int i = 0; i < 8; i++) {
-					tiles[t].precipitation += precipitations[i][t] * windStrengthMap[primaryDirection][i];
-				}
-				tiles[t].precipitation /= windStrengthMapSum;
-			}
-			AverageTilePrecipitations();
-
-			foreach (Tile tile in tiles) {
-				if (Mathf.RoundToInt(mapData.averagePrecipitation) != -1) {
-					tile.precipitation = (tile.precipitation + mapData.averagePrecipitation) / 2f;
-				}
-				tile.precipitation = Mathf.Clamp(tile.precipitation, 0f, 1f);
-			}
-		}
-
-		private void SetTilePrecipitation(Tile tile, Tile previousTile, bool planet) {
-			if (planet) {
-				if (previousTile != null) {
-					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
-					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) + Random.Range(0.1f, 0.2f);
-					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) - (tile.height * Random.Range(0.1f, 0.2f));
-					} else {
-						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) - (tile.height * Random.Range(0.1f, 0.2f));
-					}
-				} else {
-					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.precipitation = Random.Range(0.7f, 1f);
-					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.precipitation = tile.height * Random.Range(0.1f, 0.3f);
-					} else {
-						tile.precipitation = tile.height * Random.Range(0.1f, 0.9f);
-					}
-				}
-			} else {
-				if (previousTile != null) {
-					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
-					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) + Random.Range(0.25f, 0.5f);
-					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) - (tile.height * Random.Range(0.01f, 0.02f));
-					} else {
-						tile.precipitation = (previousTile.precipitation * previousTileDistanceMultiplier) - (tile.height * Random.Range(0.005f, 0.01f));
-					}
-				} else {
-					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.precipitation = Random.Range(0.7f, 1f);
-					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.precipitation = tile.height * Random.Range(0.1f, 0.3f);
-					} else {
-						tile.precipitation = tile.height * Random.Range(0.1f, 0.9f);
-					}
-				}
-			}
-			tile.precipitation *= Mathf.Clamp(-Mathf.Pow((tile.temperature - 30) / (90 - 30), 3) + 1, 0f, 1f); // Less precipitation as the temperature gets higher
-		}
-
-		void AverageTilePrecipitations() {
-			int numPasses = 4;
-			for (int i = 0; i < numPasses; i++) {
-				List<float> averageTilePrecipitations = new List<float>();
-
-				foreach (Tile tile in tiles) {
-					float averagePrecipitation = tile.precipitation;
-					int numValidTiles = 1;
-					for (int t = 0; t < tile.surroundingTiles.Count; t++) {
-						Tile nTile = tile.surroundingTiles[t];
-						if (nTile != null) {
-							numValidTiles += 1;
-							averagePrecipitation += nTile.precipitation;
-						}
-					}
-					averagePrecipitation /= numValidTiles;
-					averageTilePrecipitations.Add(averagePrecipitation);
-				}
-
-				for (int k = 0; k < tiles.Count; k++) {
-					tiles[k].precipitation = averageTilePrecipitations[k];
-				}
-			}
 		}
 
 		void AverageTileTemperatures() {
@@ -1780,11 +1801,176 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 
+		private Dictionary<int,int> oppositeDirectionTileMap = new Dictionary<int,int>() { { 0,2 },{ 1,3 },{ 2,0 },{ 3,1 },{ 4,6 },{ 5,7 },{ 6,4 },{ 7,5 } };
+		private Dictionary<int, List<float>> windStrengthMap = new Dictionary<int, List<float>>() {
+			{ 0,new List<float>(){ 1.0f,0.6f,0.1f,0.6f,0.8f,0.2f,0.2f,0.8f } },
+			{ 1,new List<float>(){ 0.6f,1.0f,0.6f,0.1f,0.8f,0.8f,0.2f,0.2f } },
+			{ 2,new List<float>(){ 0.1f,0.6f,1.0f,0.6f,0.2f,0.8f,0.8f,0.2f } },
+			{ 3,new List<float>(){ 0.6f,0.1f,0.6f,1.0f,0.2f,0.2f,0.8f,0.8f } },
+			{ 4,new List<float>(){ 0.8f,0.8f,0.2f,0.2f,1.0f,0.6f,0.1f,0.6f } },
+			{ 5,new List<float>(){ 0.2f,0.8f,0.8f,0.2f,0.6f,1.0f,0.6f,0.1f } },
+			{ 6,new List<float>(){ 0.2f,0.2f,0.8f,0.8f,0.1f,0.6f,1.0f,0.6f } },
+			{ 7,new List<float>(){ 0.8f,0.2f,0.2f,0.8f,0.6f,0.1f,0.6f,1.0f } }
+		};
+
+		public int primaryWindDirection = -1;
+		private void CalculatePrecipitation() {
+			int windDirectionMin = 0;
+			int windDirectionMax = 7;
+
+			List<List<float>> directionPrecipitations = new List<List<float>>();
+			for (int i = 0; i < windDirectionMin; i++) {
+				directionPrecipitations.Add(new List<float>());
+			}
+			for (int i = windDirectionMin; i < (windDirectionMax + 1); i++) { // 0 - up, 1 - right, 2 - down, 3 - left, 4 - up/right, 5 - down/right, 6 - down-left, 7 - up/left
+				int windDirection = i;
+				if (windDirection <= 3) { // Wind is going horizontally/vertically
+					bool yStartAtTop = (windDirection == 2);
+					bool xStartAtRight = (windDirection == 3);
+
+					for (int y = (yStartAtTop ? mapData.mapSize - 1 : 0); (yStartAtTop ? y >= 0 : y < mapData.mapSize); y += (yStartAtTop ? -1 : 1)) {
+						for (int x = (xStartAtRight ? mapData.mapSize - 1 : 0); (xStartAtRight ? x >= 0 : x < mapData.mapSize); x += (xStartAtRight ? -1 : 1)) {
+							Tile tile = sortedTiles[y][x];
+							Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
+							SetTilePrecipitation(tile, previousTile, mapData.planetTemperature);
+						}
+					}
+				} else { // Wind is going diagonally
+					bool up = (windDirection == 4 || windDirection == 7);
+					bool left = (windDirection == 6 || windDirection == 7);
+					int mapSize2x = mapData.mapSize * 2;
+					for (int k = (up ? 0 : mapSize2x); (up ? k < mapSize2x : k >= 0); k += (up ? 1 : -1)) {
+						for (int x = (left ? k : 0); (left ? x >= 0 : x <= k); x += (left ? -1 : 1)) {
+							int y = k - x;
+							if (y < mapData.mapSize && x < mapData.mapSize) {
+								Tile tile = sortedTiles[y][x];
+								Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
+								SetTilePrecipitation(tile, previousTile, mapData.planetTemperature);
+							}
+						}
+					}
+				}
+				List<float> singleDirectionPrecipitations = new List<float>();
+				foreach (Tile tile in tiles) {
+					singleDirectionPrecipitations.Add(tile.GetPrecipitation());
+					tile.SetPrecipitation(0);
+				}
+				directionPrecipitations.Add(singleDirectionPrecipitations);
+			}
+
+			if (mapData.primaryWindDirection == -1) {
+				primaryWindDirection = Random.Range(windDirectionMin, (windDirectionMax + 1));
+			} else {
+				primaryWindDirection = mapData.primaryWindDirection;
+			}
+			print("Wind Direction: " + primaryWindDirection);
+
+			float windStrengthMapSum = 0;
+			for (int i = windDirectionMin; i < (windDirectionMax + 1); i++) {
+				windStrengthMapSum += windStrengthMap[primaryWindDirection][i];
+			}
+
+			for (int t = 0; t < tiles.Count; t++) {
+				Tile tile = tiles[t];
+				tile.SetPrecipitation(0);
+				for (int i = windDirectionMin; i < (windDirectionMax + 1); i++) {
+					tile.SetPrecipitation(tile.GetPrecipitation() + (directionPrecipitations[i][t] * windStrengthMap[primaryWindDirection][i]));
+				}
+				tile.SetPrecipitation(tile.GetPrecipitation() / windStrengthMapSum);
+			}
+
+			AverageTilePrecipitations();
+
+			foreach (Tile tile in tiles) {
+				if (Mathf.RoundToInt(mapData.averagePrecipitation) != -1) {
+					tile.SetPrecipitation((tile.GetPrecipitation() + mapData.averagePrecipitation) / 2f);
+				}
+				tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), 0f, 1f));
+			}
+		}
+
+		private void SetTilePrecipitation(Tile tile, Tile previousTile, bool planet) {
+			if (planet) {
+				if (previousTile != null) {
+					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
+					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(),0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * (mapData.mapSize / 5f));
+					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.25f);
+					} else {
+						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.9f);
+					}
+				} else {
+					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.SetPrecipitation(1f);
+					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.SetPrecipitation(0f);
+					} else {
+						tile.SetPrecipitation(0.1f);
+					}
+				}
+			} else {
+				if (previousTile != null) {
+					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
+					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+						float waterMultiplier = (mapData.mapSize / 5f);
+						if (RiversContainTile(tile).Value != null) {
+							waterMultiplier *= 5;
+						}
+						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * waterMultiplier);
+					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.5f);
+					} else {
+						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.95f);
+					}
+				} else {
+					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.SetPrecipitation(1f);
+					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.SetPrecipitation(0f);
+					} else {
+						tile.SetPrecipitation(0.1f);
+					}
+				}
+			}
+			tile.SetPrecipitation(ChangePrecipitationByTemperature(tile.GetPrecipitation(),tile.temperature));
+			tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), 0f, 1f));
+		}
+
+		private float ChangePrecipitationByTemperature(float precipitation, float temperature) {
+			return precipitation * (Mathf.Clamp(-Mathf.Pow((temperature - 30) / (90 - 30), 3) + 1, 0f, 1f)); // Less precipitation as the temperature gets higher
+		}
+
+		void AverageTilePrecipitations() {
+			int numPasses = 2;
+			for (int i = 0; i < numPasses; i++) {
+				List<float> averageTilePrecipitations = new List<float>();
+
+				foreach (Tile tile in tiles) {
+					float averagePrecipitation = tile.GetPrecipitation();
+					int numValidTiles = 1;
+					for (int t = 0; t < tile.surroundingTiles.Count; t++) {
+						Tile nTile = tile.surroundingTiles[t];
+						if (nTile != null) {
+							numValidTiles += 1;
+							averagePrecipitation += nTile.GetPrecipitation();
+						}
+					}
+					averagePrecipitation /= numValidTiles;
+					averageTilePrecipitations.Add(averagePrecipitation);
+				}
+
+				for (int k = 0; k < tiles.Count; k++) {
+					tiles[k].SetPrecipitation(averageTilePrecipitations[k]);
+				}
+			}
+		}
+
 		void SetBiomes() {
 			foreach (Tile tile in tiles) {
 				bool next = false;
 				foreach (PrecipitationRange precipitationRange in tileM.biomeRanges) {
-					if (tile.precipitation >= precipitationRange.min && tile.precipitation < precipitationRange.max) {
+					if (tile.GetPrecipitation() >= precipitationRange.min && tile.GetPrecipitation() < precipitationRange.max) {
 						foreach (PrecipitationRange.TemperatureRange temperatureRange in precipitationRange.temperatureRanges) {
 							if (tile.temperature >= temperatureRange.min && tile.temperature < temperatureRange.max) {
 								tile.SetBiome(temperatureRange.biome);
@@ -1835,181 +2021,6 @@ public class TileManager:MonoBehaviour {
 					break;
 				}
 			}
-		}
-
-		public List<River> rivers = new List<River>();
-
-		public Dictionary<Region,Tile> drainageBasins = new Dictionary<Region,Tile>();
-		public int drainageBasinID = 0;
-
-		void DetermineDrainageBasins() {
-			List<Tile> tilesByHeight = tiles.OrderBy(tile => tile.height).ToList();
-			foreach (Tile tile in tilesByHeight) {
-				if (!tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type) && tile.drainageBasin == null) {
-					Region drainageBasin = new Region(null,drainageBasinID);
-					drainageBasinID += 1;
-
-					Tile currentTile = tile;
-
-					List<Tile> checkedTiles = new List<Tile>();
-					checkedTiles.Add(currentTile);
-					List<Tile> frontier = new List<Tile>();
-					frontier.Add(currentTile);
-
-					while (frontier.Count > 0) {
-						currentTile = frontier[0];
-						frontier.RemoveAt(0);
-
-						drainageBasin.tiles.Add(currentTile);
-						currentTile.drainageBasin = drainageBasin;
-
-						foreach (Tile nTile in currentTile.surroundingTiles) {
-							if (nTile != null && !checkedTiles.Contains(nTile) && !tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type) && nTile.drainageBasin == null) {
-								if (nTile.height >= currentTile.height) {
-									frontier.Add(nTile);
-									checkedTiles.Add(nTile);
-								}
-							}
-						}
-					}
-					drainageBasins.Add(drainageBasin,tile);
-				}
-			}
-		}
-
-		public class River {
-			public Tile startTile;
-			public Tile endTile;
-			public List<Tile> tiles;
-
-			public River(Tile startTile,Tile endTile,List<Tile> tiles) {
-				this.startTile = startTile;
-				this.endTile = endTile;
-				this.tiles = tiles;
-			}
-		}
-
-		void CreateRivers() {
-			Dictionary<Tile,Tile> riverStartTiles = new Dictionary<Tile,Tile>();
-			foreach (KeyValuePair<Region,Tile> kvp in drainageBasins) {
-				Region drainageBasin = kvp.Key;
-				if (drainageBasin.tiles.Find(o => tileM.WaterEquivalentTileTypes.Contains(o.tileType.type)) != null && drainageBasin.tiles.Find(o => o.horizontalSurroundingTiles.Find(o2 => o2 != null && tileM.StoneEquivalentTileTypes.Contains(o2.tileType.type)) != null) != null) {
-					foreach (Tile tile in drainageBasin.tiles) {
-						if (tile.walkable && !tileM.WaterEquivalentTileTypes.Contains(tile.tileType.type) && tile.horizontalSurroundingTiles.Find(o => o != null && tileM.StoneEquivalentTileTypes.Contains(o.tileType.type)) != null) {
-							riverStartTiles.Add(tile,kvp.Value);
-						}
-					}
-				}
-			}
-			for (int i = 0; i < mapData.mapSize / 10f && i < riverStartTiles.Count; i++) {
-				Tile riverStartTile = Enumerable.ToList(riverStartTiles.Keys)[Random.Range(0,riverStartTiles.Count)];
-				Tile riverEndTile = riverStartTiles[riverStartTile];
-				List<Tile> removeTiles = new List<Tile>();
-				foreach (KeyValuePair<Tile,Tile> kvp in riverStartTiles) {
-					if (Vector2.Distance(kvp.Key.obj.transform.position,riverStartTile.obj.transform.position) < 5f) {
-						removeTiles.Add(kvp.Key);
-					}
-				}
-				foreach (Tile removeTile in removeTiles) {
-					riverStartTiles.Remove(removeTile);
-				}
-				removeTiles.Clear();
-
-				List<Tile> riverTiles = RiverPathfinding(riverStartTile,riverEndTile);
-
-				rivers.Add(new River(riverStartTile,riverEndTile,riverTiles));
-			}
-		}
-
-		public List<Tile> RiverPathfinding(Tile riverStartTile,Tile riverEndTile) {
-			PathManager.PathfindingTile currentTile = new PathManager.PathfindingTile(riverStartTile,null,0);
-
-			List<PathManager.PathfindingTile> checkedTiles = new List<PathManager.PathfindingTile>();
-			checkedTiles.Add(currentTile);
-			List<PathManager.PathfindingTile> frontier = new List<PathManager.PathfindingTile>();
-			frontier.Add(currentTile);
-
-			List<Tile> river = new List<Tile>();
-
-			while (frontier.Count > 0) {
-				currentTile = frontier[0];
-				frontier.RemoveAt(0);
-
-				if (tileM.WaterEquivalentTileTypes.Contains(currentTile.tile.tileType.type) || (currentTile.tile.horizontalSurroundingTiles.Find(tile => tile != null && tileM.WaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key == null) != null)) {
-					Tile foundOtherRiverAtTile = null;
-					River foundOtherRiver = null;
-					bool expandRiver = true; // false: SET TO FALSE TO ENABLE RIVER EXPANSION
-					while (currentTile != null) {
-						river.Add(currentTile.tile);
-						currentTile.tile.SetTileType(currentTile.tile.biome.waterType,false,false,false,true);
-						if (!expandRiver) {
-							KeyValuePair<Tile,River> kvp = RiversContainTile(currentTile.tile);
-							if (kvp.Key != null) {
-								foundOtherRiverAtTile = kvp.Key;
-								foundOtherRiver = kvp.Value;
-								expandRiver = true;
-								print("Expanding river at " + foundOtherRiverAtTile.obj.transform.position);
-							}
-						}
-						currentTile = currentTile.cameFrom;
-					}
-					if (foundOtherRiver != null && foundOtherRiver.tiles.Count > 1) {
-						int riverTileIndex = 1;
-						while (expandRiver) {
-							Tile riverTile = foundOtherRiver.tiles[riverTileIndex];
-							if (riverTile == foundOtherRiverAtTile) {
-								break;
-							}
-							int maxExpandRadius = 1;
-							List<Tile> expandFrontier = new List<Tile>();
-							expandFrontier.Add(riverTile);
-							List<Tile> checkedExpandTiles = new List<Tile>();
-							checkedExpandTiles.Add(riverTile);
-							while (expandFrontier.Count > 0) {
-								Tile expandTile = expandFrontier[0];
-								expandFrontier.RemoveAt(0);
-								expandTile.SetTileType(expandTile.biome.waterType,false,false,false,true);
-								foreach (Tile nTile in expandTile.surroundingTiles) {
-									if (nTile != null && !checkedExpandTiles.Contains(nTile) && !tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type) && Vector2.Distance(nTile.obj.transform.position,riverTile.obj.transform.position) <= maxExpandRadius) {
-										expandFrontier.Add(nTile);
-										checkedExpandTiles.Add(nTile);
-									}
-								}
-							}
-							riverTileIndex += 1;
-						}
-					}
-					break;
-				}
-
-				foreach (Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
-					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && !tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type)) {
-						if (rivers.Find(otherRiver => otherRiver.tiles.Find(riverTile => nTile == riverTile) != null) != null) {
-							frontier.Clear();
-							frontier.Add(new PathManager.PathfindingTile(nTile,currentTile,0));
-							nTile.SetTileType(nTile.biome.waterType,false,false,false,true);
-							break;
-						}
-						float cost = Vector2.Distance(nTile.obj.transform.position,riverEndTile.obj.transform.position) + (nTile.height * (mapData.mapSize / 10f)) + Random.Range(0,10);
-						PathManager.PathfindingTile pTile = new PathManager.PathfindingTile(nTile,currentTile,cost);
-						frontier.Add(pTile);
-						checkedTiles.Add(pTile);
-					}
-				}
-				frontier = frontier.OrderBy(frontierTile => frontierTile.cost).ToList();
-			}
-			return river;
-		}
-
-		KeyValuePair<Tile,River> RiversContainTile(Tile tile) {
-			foreach (River river in rivers) {
-				foreach (Tile riverTile in river.tiles) {
-					if (riverTile == tile) {
-						return new KeyValuePair<Tile,River>(riverTile,river);
-					}
-				}
-			}
-			return new KeyValuePair<Tile,River>(null,null);
 		}
 
 		public void SetRoofs() {
