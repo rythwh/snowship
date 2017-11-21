@@ -71,10 +71,16 @@ RawFoods:
 Foods:
 	Potatoes/
 		10/
-		3`
+		5`
+	BakedPotatoes/
+		15/
+		8`
 	Berries/
 		3/
 		1`
 	Apples/
 		5/
-		3
+		3`
+	BakedApples/
+		10/
+		5
