@@ -92,6 +92,7 @@ public class UIManager : MonoBehaviour {
 	private GameObject playButton;
 
 	private Text loadingStateText;
+	private Text subLoadingStateText;
 
 	private GameObject gameUI;
 
@@ -165,7 +166,7 @@ public class UIManager : MonoBehaviour {
 		mapPanelExitButton.GetComponent<Button>().onClick.AddListener(delegate { ToggleNewGameMM(); });
 
 		mainMenuButtonsPanel.transform.Find("New-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleNewGameMM(); });
-		mainMenuButtonsPanel.transform.Find("Continue-Button").GetComponent<Button>().onClick.AddListener(delegate { });
+		mainMenuButtonsPanel.transform.Find("Continue-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleMainMenuContinue(); });
 		mainMenuButtonsPanel.transform.Find("Load-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(true); });
 		mainMenuButtonsPanel.transform.Find("Settings-Button").GetComponent<Button>().onClick.AddListener(delegate { });
 		mainMenuButtonsPanel.transform.Find("Exit-Button").GetComponent<Button>().onClick.AddListener(delegate { });
@@ -217,6 +218,7 @@ public class UIManager : MonoBehaviour {
 		playButton.GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
 
 		loadingStateText = GameObject.Find("LoadingState-Text").GetComponent<Text>();
+		subLoadingStateText = GameObject.Find("SubLoadingState-Text").GetComponent<Text>();
 		ToggleLoadingScreen(false);
 
 		gameUI = GameObject.Find("Game-BackgroundPanel");
@@ -289,6 +291,8 @@ public class UIManager : MonoBehaviour {
 		InitializeTileInformation();
 		InitializeSelectedContainerIndicator();
 		InitializeSelectedManufacturingTileObjectIndicator();
+
+		PreviewMainMenuContinueFile();
 	}
 
 	public void InitializeGameUI() {
@@ -383,6 +387,7 @@ public class UIManager : MonoBehaviour {
 		} else if (!mainMenuButtonsPanel.activeSelf && !coverPanel.activeSelf) {
 			mainMenuButtonsPanel.SetActive(true);
 			snowshipLogo.SetActive(true);
+			PreviewMainMenuContinueFile();
 		}
 	}
 
@@ -587,10 +592,9 @@ public class UIManager : MonoBehaviour {
 			StaticPlanetMapDataValues.averagePrecipitation,
 			StaticPlanetMapDataValues.terrainTypeHeights,
 			StaticPlanetMapDataValues.surroundingPlanetTileHeightDirections,
-			StaticPlanetMapDataValues.preventEdgeTouching
-		) {
-			primaryWindDirection = windDirection
-		};
+			StaticPlanetMapDataValues.preventEdgeTouching,
+			windDirection
+		);
 		planet = new TileManager.Map(planetData, false);
 		foreach (TileManager.Tile tile in planet.tiles) {
 			planetTiles.Add(new PlanetTile(tile, planetPreviewPanel.transform, tile.position, planetSize, planetTemperature));
@@ -670,10 +674,9 @@ public class UIManager : MonoBehaviour {
 			selectedPlanetTile.averagePrecipitation,
 			selectedPlanetTile.terrainTypeHeights,
 			selectedPlanetTile.surroundingPlanetTileHeightDirections,
-			false
-		) {
-			primaryWindDirection = planet.mapData.primaryWindDirection
-		};
+			false,
+			planet.mapData.primaryWindDirection
+		);
 		tileM.Initialize(mapData);
 	}
 
@@ -713,9 +716,12 @@ public class UIManager : MonoBehaviour {
 		menuBackground.GetComponent<RectTransform>().sizeDelta = newMenuBackgroundSize;
 	}
 
-	public void UpdateLoadingStateText(string text) {
+	public void UpdateLoadingStateText(string primaryText, string secondaryText) {
 		if (loadingStateText.gameObject.activeSelf) {
-			loadingStateText.text = text.ToUpper();
+			loadingStateText.text = primaryText.ToUpper();
+		}
+		if (subLoadingStateText.gameObject.activeSelf) {
+			subLoadingStateText.text = secondaryText.ToUpper();
 		}
 	}
 
@@ -1304,6 +1310,8 @@ public class UIManager : MonoBehaviour {
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ColonistInfoElement-Panel"), transform, false);
 
+			obj.GetComponent<RectTransform>().sizeDelta = new Vector2(170, obj.GetComponent<RectTransform>().sizeDelta.y);
+
 			obj.transform.Find("BodySprite").GetComponent<Image>().sprite = colonist.moveSprites[0];
 			obj.transform.Find("Name").GetComponent<Text>().text = colonist.name;
 			obj.GetComponent<Button>().onClick.AddListener(delegate { colonist.colonistM.SetSelectedColonist(colonist); });
@@ -1367,7 +1375,7 @@ public class UIManager : MonoBehaviour {
 			});
 
 			if (colonist != null) {
-				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, 110);
+				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, 107);
 				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().minValue = 0;
 				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().maxValue = job.colonistBuildTime;
 				if (colonist.job.started) {
@@ -1382,7 +1390,7 @@ public class UIManager : MonoBehaviour {
 				colonistObj.transform.Find("Name").GetComponent<Text>().text = colonist.name;
 				colonistObj.GetComponent<Button>().onClick.AddListener(delegate { colonist.colonistM.SetSelectedColonist(colonist); });
 				colonistObj.GetComponent<Image>().color = uiM.colourMap[Colours.LightBlue];
-				colonistObj.GetComponent<RectTransform>().sizeDelta = new Vector2(175, colonistObj.GetComponent<RectTransform>().sizeDelta.y);
+				colonistObj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, colonistObj.GetComponent<RectTransform>().sizeDelta.y);
 				colonistObj.GetComponent<Outline>().enabled = false;
 			}
 
@@ -2357,13 +2365,6 @@ public class UIManager : MonoBehaviour {
 	public void TogglePauseMenu() {
 		pauseMenu.SetActive(!pauseMenu.activeSelf);
 		timeM.SetPaused(pauseMenu.activeSelf);
-		/*
-		if (pauseMenu.activeSelf && timeM.timeModifier != 0) {
-			timeM.TogglePause();
-		} else if (timeM.timeModifier == 0) {
-			timeM.TogglePause();
-		}
-		*/
 	}
 
 	public void TogglePauseMenuButtons() {
@@ -2396,9 +2397,34 @@ public class UIManager : MonoBehaviour {
 		public string fileName;
 		public GameObject loadFilePanel;
 
-		public LoadFile(string fileName, GameObject loadFilePanel) {
+		public LoadFile(string fileName, Transform loadFilePanelParent, bool fromMainMenu, UIManager uiM) {
 			this.fileName = fileName;
-			this.loadFilePanel = loadFilePanel;
+
+			string colonyName = fileName.Split('-')[2];
+
+			string rawSaveDT = fileName.Split('-')[3];
+			List<string> splitRawSaveDT = new Regex(@"[a-zA-Z]").Split(rawSaveDT).ToList();
+			string year = splitRawSaveDT[0];
+			string month = (splitRawSaveDT[1].Length == 1 ? "0" : "") + splitRawSaveDT[1];
+			string day = (splitRawSaveDT[2].Length == 1 ? "0" : "") + splitRawSaveDT[2];
+			string saveDate = year + "-" + month + "-" + day;
+			string hour = (splitRawSaveDT[3].Length == 1 ? "0" : "") + splitRawSaveDT[3];
+			string minute = (splitRawSaveDT[4].Length == 1 ? "0" : "") + splitRawSaveDT[4];
+			string second = (splitRawSaveDT[5].Length == 1 ? "0" : "") + splitRawSaveDT[5];
+			string saveTime = hour + ":" + minute + ":" + second;
+
+			loadFilePanel = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/LoadFile-Panel"), loadFilePanelParent, false);
+			loadFilePanel.transform.Find("ColonyName-Text").GetComponent<Text>().text = colonyName;
+			loadFilePanel.transform.Find("SaveDate-Text").GetComponent<Text>().text = saveDate;
+			loadFilePanel.transform.Find("SaveTime-Text").GetComponent<Text>().text = saveTime;
+
+			string imageFile = "file:" + fileName.Split('.')[0] + ".png";
+			WWW www = new WWW(imageFile);
+			Texture2D texture = new Texture2D(35, 63, TextureFormat.RGB24, false);
+			www.LoadImageIntoTexture(texture);
+			loadFilePanel.transform.Find("SavePreview-Image").GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(new Vector2(0, 0), new Vector2(texture.width, texture.height)), new Vector2(0, 0));
+
+			loadFilePanel.GetComponent<Button>().onClick.AddListener(delegate { uiM.SetSelectedLoadFile(this, fromMainMenu); });
 		}
 	}
 
@@ -2418,8 +2444,41 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
+	private LoadFile continueLoadFile = null;
+	public void PreviewMainMenuContinueFile() {
+		if (continueLoadFile != null) {
+			Destroy(continueLoadFile.loadFilePanel);
+			continueLoadFile = null;
+		}
+		List<string> saveFiles = Directory.GetFiles(persistenceM.GenerateSavePath("")).ToList().OrderBy(fileName => SaveFileDateTimeSum(fileName)).Reverse().ToList();
+		if (saveFiles.Count > 0) {
+			continueLoadFile = new LoadFile(saveFiles[0], mainMenu.transform.Find("MainMenuButtons-Panel/Continue-Button/LoadFilePanelParent-Panel"), true, this);
+			continueLoadFile.loadFilePanel.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
+			Destroy(continueLoadFile.loadFilePanel.GetComponent<Button>());
+		}
+	}
+
+	public void ToggleMainMenuContinue() {
+		if (continueLoadFile != null) {
+			persistenceM.LoadGame(continueLoadFile.fileName, true);
+		}
+	}
+
+	public void SetLoadMenuActive(bool active, bool fromMainMenu) {
+		if (active) {
+			if (!loadGamePanel.activeSelf) {
+				ToggleLoadMenu(fromMainMenu);
+			}
+		} else {
+			if (loadGamePanel.activeSelf) {
+				ToggleLoadMenu(fromMainMenu);
+			}
+		}
+	}
+
 	public void ToggleLoadMenu(bool fromMainMenu) {
 		loadGamePanel.SetActive(!loadGamePanel.activeSelf);
+		ToggleMainMenuButtons(loadGamePanel);
 		foreach (LoadFile loadFile in loadFiles) {
 			Destroy(loadFile.loadFilePanel);
 		}
@@ -2429,33 +2488,8 @@ public class UIManager : MonoBehaviour {
 			List<string> saveFiles = Directory.GetFiles(persistenceM.GenerateSavePath("")).ToList().OrderBy(fileName => SaveFileDateTimeSum(fileName)).Reverse().ToList();
 			foreach (string fileName in saveFiles) {
 				if (fileName.Split('.')[1] == "snowship") {
-					string colonyName = fileName.Split('-')[2];
-
-					string rawSaveDT = fileName.Split('-')[3];
-					List<string> splitRawSaveDT = new Regex(@"[a-zA-Z]").Split(rawSaveDT).ToList();
-					string year = splitRawSaveDT[0];
-					string month = (splitRawSaveDT[1].Length == 1 ? "0" : "") + splitRawSaveDT[1];
-					string day = (splitRawSaveDT[2].Length == 1 ? "0" : "") + splitRawSaveDT[2];
-					string saveDate = year + "-" + month + "-" + day;
-					string hour = (splitRawSaveDT[3].Length == 1 ? "0" : "") + splitRawSaveDT[3];
-					string minute = (splitRawSaveDT[4].Length == 1 ? "0" : "") + splitRawSaveDT[4];
-					string second = (splitRawSaveDT[5].Length == 1 ? "0" : "") + splitRawSaveDT[5];
-					string saveTime = hour + ":" + minute + ":" + second;
-
-					GameObject loadFilePanel = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/LoadFile-Panel"), loadGamePanel.transform.Find("LoadFilesList-ScrollPanel/LoadFilesList-Panel"), false);
-					loadFilePanel.transform.Find("ColonyName-Text").GetComponent<Text>().text = colonyName;
-					loadFilePanel.transform.Find("SaveDate-Text").GetComponent<Text>().text = saveDate;
-					loadFilePanel.transform.Find("SaveTime-Text").GetComponent<Text>().text = saveTime;
-
-					string imageFile = "file:" + fileName.Split('.')[0] + ".png";
-					WWW www = new WWW(imageFile);
-					Texture2D texture = new Texture2D(35, 63, TextureFormat.RGB24, false);
-					www.LoadImageIntoTexture(texture);
-					loadFilePanel.transform.Find("SavePreview-Image").GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(new Vector2(0, 0), new Vector2(texture.width, texture.height)), new Vector2(0, 0));
-
-					LoadFile loadFile = new LoadFile(fileName, loadFilePanel);
+					LoadFile loadFile = new LoadFile(fileName, loadGamePanel.transform.Find("LoadFilesList-ScrollPanel/LoadFilesList-Panel"), fromMainMenu, this);
 					loadFiles.Add(loadFile);
-					loadFilePanel.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedLoadFile(loadFile,fromMainMenu); });
 				}
 			}
 		} else {

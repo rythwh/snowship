@@ -244,7 +244,7 @@
 			PotatoFarm/
 			15/
 			1/
-			PotatoSeeds/
+			Potatoes/
 			true/
 			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
 			PlantFarm/
@@ -308,7 +308,7 @@
 			0/
 			/
 			true/
-			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes/
 			PlantPlant/
 			0.0/
 			true/
@@ -498,7 +498,7 @@
 			1/
 			TreeSeeds/
 			true/
-			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes/
 			PlantPlant/
 			0.0/
 			true/
@@ -512,7 +512,7 @@
 			1/
 			ShrubSeeds/
 			true/
-			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes/
 			PlantPlant/
 			0.0/
 			true/
@@ -526,7 +526,7 @@
 			1/
 			CactusSeeds/
 			true/
-			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes/
 			PlantPlant/
 			0.0/
 			true/

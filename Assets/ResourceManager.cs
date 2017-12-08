@@ -41,7 +41,7 @@ public class ResourceManager : MonoBehaviour {
 	public enum ResourcesEnum {
 		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Log, Firewood, Snow, Sand,
 		Brick, Glass, Cotton, Cloth, 
-		WheatSeeds, PotatoSeeds, CottonSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
+		WheatSeeds, CottonSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
 		Wheat,
 		Potatoes, BakedPotatoes, Berries, Apples, BakedApples
 	};
@@ -770,25 +770,25 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	Dictionary<ResourcesEnum, int> FarmGrowTimes = new Dictionary<ResourcesEnum, int>() {
-		{ ResourcesEnum.WheatSeeds,		5760 },
-		{ ResourcesEnum.PotatoSeeds,	2880 },
-		{ ResourcesEnum.CottonSeeds,	5760 }
+		{ ResourcesEnum.WheatSeeds,5760 },
+		{ ResourcesEnum.Potatoes,2880 },
+		{ ResourcesEnum.CottonSeeds,5760 }
 	};
 	public Dictionary<ResourcesEnum,int> GetFarmGrowTimes() {
 		return FarmGrowTimes;
 	}
 	Dictionary<ResourcesEnum,ResourcesEnum> FarmSeedReturnResource = new Dictionary<ResourcesEnum,ResourcesEnum>() {
-		{ ResourcesEnum.WheatSeeds,		ResourcesEnum.Wheat },
-		{ ResourcesEnum.PotatoSeeds,	ResourcesEnum.Potatoes },
-		{ ResourcesEnum.CottonSeeds,	ResourcesEnum.Cotton }
+		{ ResourcesEnum.WheatSeeds,ResourcesEnum.Wheat },
+		{ ResourcesEnum.Potatoes,ResourcesEnum.Potatoes },
+		{ ResourcesEnum.CottonSeeds,ResourcesEnum.Cotton }
 	};
 	public Dictionary<ResourcesEnum,ResourcesEnum> GetFarmSeedReturnResource() {
 		return FarmSeedReturnResource;
 	}
 	Dictionary<ResourcesEnum, TileObjectPrefabsEnum> FarmSeedsTileObject = new Dictionary<ResourcesEnum, TileObjectPrefabsEnum>() {
-		{ ResourcesEnum.WheatSeeds,		TileObjectPrefabsEnum.WheatFarm },
-		{ ResourcesEnum.PotatoSeeds,	TileObjectPrefabsEnum.PotatoFarm },
-		{ ResourcesEnum.CottonSeeds,	TileObjectPrefabsEnum.CottonFarm }
+		{ ResourcesEnum.WheatSeeds,TileObjectPrefabsEnum.WheatFarm },
+		{ ResourcesEnum.Potatoes,TileObjectPrefabsEnum.PotatoFarm },
+		{ ResourcesEnum.CottonSeeds,TileObjectPrefabsEnum.CottonFarm }
 	};
 	public Dictionary<ResourcesEnum,TileObjectPrefabsEnum> GetFarmSeedsTileObject() {
 		return FarmSeedsTileObject;
