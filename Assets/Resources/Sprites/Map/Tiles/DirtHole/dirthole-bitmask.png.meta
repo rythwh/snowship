@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: b89daf4fdfb0d2c4d9facd664dae59ef
-timeCreated: 1495477224
+timeCreated: 1512734167
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -354,6 +354,53 @@ TextureImporter:
     21300694: dirtwater-bitmask_44
     21300696: dirtwater-bitmask_45
     21300698: dirtwater-bitmask_46
+    21300700: dirthole-bitmask_0
+    21300702: dirthole-bitmask_1
+    21300704: dirthole-bitmask_2
+    21300706: dirthole-bitmask_3
+    21300708: dirthole-bitmask_4
+    21300710: dirthole-bitmask_5
+    21300712: dirthole-bitmask_6
+    21300714: dirthole-bitmask_7
+    21300716: dirthole-bitmask_8
+    21300718: dirthole-bitmask_9
+    21300720: dirthole-bitmask_10
+    21300722: dirthole-bitmask_11
+    21300724: dirthole-bitmask_12
+    21300726: dirthole-bitmask_13
+    21300728: dirthole-bitmask_14
+    21300730: dirthole-bitmask_15
+    21300732: dirthole-bitmask_16
+    21300734: dirthole-bitmask_17
+    21300736: dirthole-bitmask_18
+    21300738: dirthole-bitmask_19
+    21300740: dirthole-bitmask_20
+    21300742: dirthole-bitmask_21
+    21300744: dirthole-bitmask_22
+    21300746: dirthole-bitmask_23
+    21300748: dirthole-bitmask_24
+    21300750: dirthole-bitmask_25
+    21300752: dirthole-bitmask_26
+    21300754: dirthole-bitmask_27
+    21300756: dirthole-bitmask_28
+    21300758: dirthole-bitmask_29
+    21300760: dirthole-bitmask_30
+    21300762: dirthole-bitmask_31
+    21300764: dirthole-bitmask_32
+    21300766: dirthole-bitmask_33
+    21300768: dirthole-bitmask_34
+    21300770: dirthole-bitmask_35
+    21300772: dirthole-bitmask_36
+    21300774: dirthole-bitmask_37
+    21300776: dirthole-bitmask_38
+    21300778: dirthole-bitmask_39
+    21300780: dirthole-bitmask_40
+    21300782: dirthole-bitmask_41
+    21300784: dirthole-bitmask_42
+    21300786: dirthole-bitmask_43
+    21300788: dirthole-bitmask_44
+    21300790: dirthole-bitmask_45
+    21300792: dirthole-bitmask_46
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -362,6 +409,8 @@ TextureImporter:
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
@@ -377,10 +426,13 @@ TextureImporter:
   textureFormat: 1
   maxTextureSize: 2048
   textureSettings:
+    serializedVersion: 2
     filterMode: 0
     aniso: -1
     mipBias: -1
-    wrapMode: 1
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -420,7 +472,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: dirtwater-bitmask_0
+      name: dirthole-bitmask_0
       rect:
         serializedVersion: 2
         x: 2
@@ -431,9 +483,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_1
+      name: dirthole-bitmask_1
       rect:
         serializedVersion: 2
         x: 37
@@ -444,9 +497,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_2
+      name: dirthole-bitmask_2
       rect:
         serializedVersion: 2
         x: 72
@@ -457,9 +511,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_3
+      name: dirthole-bitmask_3
       rect:
         serializedVersion: 2
         x: 107
@@ -470,9 +525,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_4
+      name: dirthole-bitmask_4
       rect:
         serializedVersion: 2
         x: 142
@@ -483,9 +539,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_5
+      name: dirthole-bitmask_5
       rect:
         serializedVersion: 2
         x: 177
@@ -496,9 +553,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_6
+      name: dirthole-bitmask_6
       rect:
         serializedVersion: 2
         x: 212
@@ -509,9 +567,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_7
+      name: dirthole-bitmask_7
       rect:
         serializedVersion: 2
         x: 2
@@ -522,9 +581,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_8
+      name: dirthole-bitmask_8
       rect:
         serializedVersion: 2
         x: 37
@@ -535,9 +595,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_9
+      name: dirthole-bitmask_9
       rect:
         serializedVersion: 2
         x: 72
@@ -548,9 +609,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_10
+      name: dirthole-bitmask_10
       rect:
         serializedVersion: 2
         x: 107
@@ -561,9 +623,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_11
+      name: dirthole-bitmask_11
       rect:
         serializedVersion: 2
         x: 142
@@ -574,9 +637,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_12
+      name: dirthole-bitmask_12
       rect:
         serializedVersion: 2
         x: 177
@@ -587,9 +651,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_13
+      name: dirthole-bitmask_13
       rect:
         serializedVersion: 2
         x: 212
@@ -600,9 +665,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_14
+      name: dirthole-bitmask_14
       rect:
         serializedVersion: 2
         x: 2
@@ -613,9 +679,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_15
+      name: dirthole-bitmask_15
       rect:
         serializedVersion: 2
         x: 37
@@ -626,9 +693,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_16
+      name: dirthole-bitmask_16
       rect:
         serializedVersion: 2
         x: 72
@@ -639,9 +707,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_17
+      name: dirthole-bitmask_17
       rect:
         serializedVersion: 2
         x: 107
@@ -652,9 +721,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_18
+      name: dirthole-bitmask_18
       rect:
         serializedVersion: 2
         x: 142
@@ -665,9 +735,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_19
+      name: dirthole-bitmask_19
       rect:
         serializedVersion: 2
         x: 177
@@ -678,9 +749,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_20
+      name: dirthole-bitmask_20
       rect:
         serializedVersion: 2
         x: 212
@@ -691,9 +763,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_21
+      name: dirthole-bitmask_21
       rect:
         serializedVersion: 2
         x: 2
@@ -704,9 +777,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_22
+      name: dirthole-bitmask_22
       rect:
         serializedVersion: 2
         x: 37
@@ -717,9 +791,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_23
+      name: dirthole-bitmask_23
       rect:
         serializedVersion: 2
         x: 72
@@ -730,9 +805,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_24
+      name: dirthole-bitmask_24
       rect:
         serializedVersion: 2
         x: 107
@@ -743,9 +819,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_25
+      name: dirthole-bitmask_25
       rect:
         serializedVersion: 2
         x: 142
@@ -756,9 +833,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_26
+      name: dirthole-bitmask_26
       rect:
         serializedVersion: 2
         x: 177
@@ -769,9 +847,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_27
+      name: dirthole-bitmask_27
       rect:
         serializedVersion: 2
         x: 212
@@ -782,9 +861,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_28
+      name: dirthole-bitmask_28
       rect:
         serializedVersion: 2
         x: 2
@@ -795,9 +875,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_29
+      name: dirthole-bitmask_29
       rect:
         serializedVersion: 2
         x: 37
@@ -808,9 +889,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_30
+      name: dirthole-bitmask_30
       rect:
         serializedVersion: 2
         x: 72
@@ -821,9 +903,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_31
+      name: dirthole-bitmask_31
       rect:
         serializedVersion: 2
         x: 107
@@ -834,9 +917,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_32
+      name: dirthole-bitmask_32
       rect:
         serializedVersion: 2
         x: 142
@@ -847,9 +931,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_33
+      name: dirthole-bitmask_33
       rect:
         serializedVersion: 2
         x: 177
@@ -860,9 +945,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_34
+      name: dirthole-bitmask_34
       rect:
         serializedVersion: 2
         x: 212
@@ -873,9 +959,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_35
+      name: dirthole-bitmask_35
       rect:
         serializedVersion: 2
         x: 2
@@ -886,9 +973,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_36
+      name: dirthole-bitmask_36
       rect:
         serializedVersion: 2
         x: 37
@@ -899,9 +987,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_37
+      name: dirthole-bitmask_37
       rect:
         serializedVersion: 2
         x: 72
@@ -912,9 +1001,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_38
+      name: dirthole-bitmask_38
       rect:
         serializedVersion: 2
         x: 107
@@ -925,9 +1015,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_39
+      name: dirthole-bitmask_39
       rect:
         serializedVersion: 2
         x: 142
@@ -938,9 +1029,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_40
+      name: dirthole-bitmask_40
       rect:
         serializedVersion: 2
         x: 177
@@ -951,9 +1043,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_41
+      name: dirthole-bitmask_41
       rect:
         serializedVersion: 2
         x: 212
@@ -964,9 +1057,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_42
+      name: dirthole-bitmask_42
       rect:
         serializedVersion: 2
         x: 2
@@ -977,9 +1071,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_43
+      name: dirthole-bitmask_43
       rect:
         serializedVersion: 2
         x: 37
@@ -990,9 +1085,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_44
+      name: dirthole-bitmask_44
       rect:
         serializedVersion: 2
         x: 72
@@ -1003,9 +1099,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_45
+      name: dirthole-bitmask_45
       rect:
         serializedVersion: 2
         x: 107
@@ -1016,9 +1113,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: dirtwater-bitmask_46
+      name: dirthole-bitmask_46
       rect:
         serializedVersion: 2
         x: 142
@@ -1029,8 +1127,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     outline: []
+    physicsShape: []
   spritePackingTag: 
   userData: 
   assetBundleName: 

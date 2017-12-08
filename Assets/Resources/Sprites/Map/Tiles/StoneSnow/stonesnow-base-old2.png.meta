@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 381ac9d46b0925443b24831dda80d1e8
-timeCreated: 1495438044
+timeCreated: 1512734296
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -12,6 +12,10 @@ TextureImporter:
     21300010: stonesnow-base_1
     21300012: stonesnow-base_2
     21300014: stonesnow-base_3
+    21300016: stonesnow-base-old2_0
+    21300018: stonesnow-base-old2_1
+    21300020: stonesnow-base-old2_2
+    21300022: stonesnow-base-old2_3
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -20,6 +24,8 @@ TextureImporter:
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
@@ -35,10 +41,13 @@ TextureImporter:
   textureFormat: 1
   maxTextureSize: 2048
   textureSettings:
+    serializedVersion: 2
     filterMode: 0
     aniso: -1
     mipBias: -1
-    wrapMode: 1
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -78,7 +87,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: stonesnow-base_0
+      name: stonesnow-base-old2_0
       rect:
         serializedVersion: 2
         x: 1
@@ -89,9 +98,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stonesnow-base_1
+      name: stonesnow-base-old2_1
       rect:
         serializedVersion: 2
         x: 1
@@ -102,9 +112,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stonesnow-base_2
+      name: stonesnow-base-old2_2
       rect:
         serializedVersion: 2
         x: 1
@@ -115,9 +126,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stonesnow-base_3
+      name: stonesnow-base-old2_3
       rect:
         serializedVersion: 2
         x: 1
@@ -128,8 +140,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     outline: []
+    physicsShape: []
   spritePackingTag: 
   userData: 
   assetBundleName: 

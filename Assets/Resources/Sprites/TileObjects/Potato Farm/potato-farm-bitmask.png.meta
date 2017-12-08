@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: bc2d4b59e88970340a5235b0c4cfb385
-timeCreated: 1506482290
+timeCreated: 1512733973
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -22,6 +22,16 @@ TextureImporter:
     21300030: cotton-farm-bitmask_7
     21300032: cotton-farm-bitmask_8
     21300034: cotton-farm-bitmask_9
+    21300036: potato-farm-bitmask_0
+    21300038: potato-farm-bitmask_1
+    21300040: potato-farm-bitmask_2
+    21300042: potato-farm-bitmask_3
+    21300044: potato-farm-bitmask_4
+    21300046: potato-farm-bitmask_5
+    21300048: potato-farm-bitmask_6
+    21300050: potato-farm-bitmask_7
+    21300052: potato-farm-bitmask_8
+    21300054: potato-farm-bitmask_9
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -93,7 +103,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cotton-farm-bitmask_0
+      name: potato-farm-bitmask_0
       rect:
         serializedVersion: 2
         x: 1
@@ -107,7 +117,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_1
+      name: potato-farm-bitmask_1
       rect:
         serializedVersion: 2
         x: 1
@@ -121,7 +131,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_2
+      name: potato-farm-bitmask_2
       rect:
         serializedVersion: 2
         x: 1
@@ -135,7 +145,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_3
+      name: potato-farm-bitmask_3
       rect:
         serializedVersion: 2
         x: 1
@@ -149,7 +159,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_4
+      name: potato-farm-bitmask_4
       rect:
         serializedVersion: 2
         x: 1
@@ -163,7 +173,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_5
+      name: potato-farm-bitmask_5
       rect:
         serializedVersion: 2
         x: 1
@@ -177,7 +187,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_6
+      name: potato-farm-bitmask_6
       rect:
         serializedVersion: 2
         x: 1
@@ -191,7 +201,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_7
+      name: potato-farm-bitmask_7
       rect:
         serializedVersion: 2
         x: 1
@@ -205,7 +215,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_8
+      name: potato-farm-bitmask_8
       rect:
         serializedVersion: 2
         x: 1
@@ -219,7 +229,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cotton-farm-bitmask_9
+      name: potato-farm-bitmask_9
       rect:
         serializedVersion: 2
         x: 1
