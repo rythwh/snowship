@@ -53,8 +53,6 @@ Materials:
 Seeds:
 	WheatSeeds/
 		10`
-	PotatoSeeds/
-		5`
 	CottonSeeds/
 		5`
 	TreeSeeds/

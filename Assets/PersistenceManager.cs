@@ -109,6 +109,7 @@ public class PersistenceManager : MonoBehaviour {
 		planetData += "/PlanetSize," + uiM.planet.mapData.mapSize;
 		planetData += "/PlanetDistance," + uiM.planetDistance;
 		planetData += "/PlanetTempRange," + uiM.temperatureRange;
+		planetData += "/PlanetWindDirection," + uiM.planet.mapData.primaryWindDirection;
 		file.WriteLine(planetData);
 		/*
 		foreach (UIManager.PlanetTile planetTile in uiM.planetTiles) {
@@ -118,11 +119,13 @@ public class PersistenceManager : MonoBehaviour {
 
 		// Save the tile data
 		string tileMapData = "Tiles";
+		tileMapData += "/ColonyName," + uiM.colonyName;
 		tileMapData += "/MapSeed," + tileM.map.mapData.mapSeed;
 		tileMapData += "/MapSize," + tileM.map.mapData.mapSize;
 		tileMapData += "/EquatorOffset," + tileM.map.mapData.equatorOffset;
 		tileMapData += "/AverageTemperature," + tileM.map.mapData.averageTemperature;
 		tileMapData += "/AveragePrecipitation," + tileM.map.mapData.averagePrecipitation;
+		tileMapData += "/WindDirection," + tileM.map.mapData.primaryWindDirection;
 		tileMapData += "/TerrainTypeHeights";
 		foreach (KeyValuePair<TileManager.TileTypes, float> terrainTypeHeightsKVP in tileM.map.mapData.terrainTypeHeights) {
 			tileMapData += "," + terrainTypeHeightsKVP.Key + ":" + terrainTypeHeightsKVP.Value;
@@ -288,7 +291,7 @@ public class PersistenceManager : MonoBehaviour {
 	/*
 		"Farm/Position,x,y/SeedType,seedType/GrowTimer,growTimer/MaxGrowthTime,maxGrowthTime"
 
-		Example: "Farm/Position,35.0,45.0/SeedType,PotatoSeeds/GrowTimer,100.51/MaxGrowthTime,1440"
+		Example: "Farm/Position,35.0,45.0/SeedType,Potatoes/GrowTimer,100.51/MaxGrowthTime,1440"
 	*/
 	public string GetFarmDataString(ResourceManager.Farm farm) {
 		string farmData = "Farm";
@@ -575,7 +578,6 @@ public class PersistenceManager : MonoBehaviour {
 
 		// Planet Data
 		TileManager.MapData planetData = null;
-		TileManager.Map planet = null;
 
 		// Map Data
 		TileManager.MapData mapData = null;
@@ -609,6 +611,7 @@ public class PersistenceManager : MonoBehaviour {
 						float planetDistance = float.Parse(lineData[3].Split(',')[1]);
 						float planetTemperature = uiM.CalculatePlanetTemperature(planetDistance);
 						int temperatureRange = int.Parse(lineData[4].Split(',')[1]);
+						int windDirection = int.Parse(lineData[5].Split(',')[1]);
 						planetData = new TileManager.MapData(
 							planetSeed,
 							planetSize,
@@ -621,26 +624,29 @@ public class PersistenceManager : MonoBehaviour {
 							UIManager.StaticPlanetMapDataValues.averagePrecipitation,
 							UIManager.StaticPlanetMapDataValues.terrainTypeHeights,
 							UIManager.StaticPlanetMapDataValues.surroundingPlanetTileHeightDirections,
-							UIManager.StaticPlanetMapDataValues.preventEdgeTouching
+							UIManager.StaticPlanetMapDataValues.preventEdgeTouching,
+							windDirection
 						);
-						planet = new TileManager.Map(planetData, false);
-						foreach (TileManager.Tile tile in planet.tiles) {
+						uiM.planet = new TileManager.Map(planetData, false);
+						foreach (TileManager.Tile tile in uiM.planet.tiles) {
 							uiM.planetTiles.Add(new UIManager.PlanetTile(tile, uiM.planetPreviewPanel.transform, tile.position, planetData.mapSize, planetData.temperatureOffset));
 						}
 						uiM.mainMenu.SetActive(false);
 					} else if (sectionIndex == 3) { // Tile
 						if (innerSectionIndex == 0) {
-							int mapSeed = int.Parse(lineData[1].Split(',')[1]);
-							int mapSize = int.Parse(lineData[2].Split(',')[1]);
-							float equatorOffset = float.Parse(lineData[3].Split(',')[1]);
-							float averageTemperature = float.Parse(lineData[4].Split(',')[1]);
-							float averagePrecipitation = float.Parse(lineData[5].Split(',')[1]);
+							uiM.colonyName = lineData[1].Split(',')[1];
+							int mapSeed = int.Parse(lineData[2].Split(',')[1]);
+							int mapSize = int.Parse(lineData[3].Split(',')[1]);
+							float equatorOffset = float.Parse(lineData[4].Split(',')[1]);
+							float averageTemperature = float.Parse(lineData[5].Split(',')[1]);
+							float averagePrecipitation = float.Parse(lineData[6].Split(',')[1]);
+							float windDirection = float.Parse(lineData[7].Split(',')[1]);
 							Dictionary<TileManager.TileTypes, float> terrainTypeHeights = new Dictionary<TileManager.TileTypes, float>();
-							foreach (string terrainTypeHeightString in lineData[6].Split(',').Skip(1)) {
+							foreach (string terrainTypeHeightString in lineData[8].Split(',').Skip(1)) {
 								terrainTypeHeights.Add((TileManager.TileTypes)System.Enum.Parse(typeof(TileManager.TileTypes), terrainTypeHeightString.Split(':')[0]), float.Parse(terrainTypeHeightString.Split(':')[1]));
 							}
 							List<int> surroundingPlanetTileHeightDirections = new List<int>();
-							foreach (string surroundingPlanetTileHeightDirectionString in lineData[7].Split(',').Skip(1)) {
+							foreach (string surroundingPlanetTileHeightDirectionString in lineData[9].Split(',').Skip(1)) {
 								surroundingPlanetTileHeightDirections.Add(int.Parse(surroundingPlanetTileHeightDirectionString));
 							}
 							mapData = new TileManager.MapData(
@@ -655,7 +661,8 @@ public class PersistenceManager : MonoBehaviour {
 								averagePrecipitation,
 								terrainTypeHeights,
 								surroundingPlanetTileHeightDirections,
-								false
+								false,
+								uiM.planet.primaryWindDirection
 							);
 							tileM.map = new TileManager.Map(mapData, true);
 							if (fromMainMenu) {
@@ -896,7 +903,7 @@ public class PersistenceManager : MonoBehaviour {
 		tileM.map.Bitmasking(tileM.map.tiles);
 		resourceM.Bitmask(tileM.map.tiles);
 
-		uiM.ToggleLoadMenu(false);
+		uiM.SetLoadMenuActive(false, false);
 		if (!fromMainMenu) {
 			uiM.TogglePauseMenu();
 		}

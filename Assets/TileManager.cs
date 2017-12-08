@@ -167,7 +167,11 @@ public class TileManager:MonoBehaviour {
 	public PlantGroup GetPlantGroupByBiome(Biome biome, bool guaranteedTree) {
 		if (guaranteedTree) {
 			List<PlantGroupsEnum> biomePlantGroupsEnums = biome.vegetationChances.Keys.Where(group => group != PlantGroupsEnum.DeadTree).ToList();
-			return GetPlantGroupByEnum(biomePlantGroupsEnums[Random.Range(0,biomePlantGroupsEnums.Count)]);
+			if (biomePlantGroupsEnums.Count > 0) {
+				return GetPlantGroupByEnum(biomePlantGroupsEnums[Random.Range(0, biomePlantGroupsEnums.Count)]);
+			} else {
+				return null;
+			}
 		} else {
 			foreach (KeyValuePair<PlantGroupsEnum,float> kvp in biome.vegetationChances) {
 				PlantGroupsEnum plantGroup = kvp.Key;
@@ -868,7 +872,7 @@ public class TileManager:MonoBehaviour {
 
 		public int primaryWindDirection = -1;
 
-		public MapData(int mapSeed, int mapSize, bool actualMap, float equatorOffset, bool planetTemperature, int temperatureRange, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, List<int> surroundingPlanetTileHeightDirections, bool preventEdgeTouching) {
+		public MapData(int mapSeed, int mapSize, bool actualMap, float equatorOffset, bool planetTemperature, int temperatureRange, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, List<int> surroundingPlanetTileHeightDirections, bool preventEdgeTouching, int primaryWindDirection) {
 
 			if (mapSeed < 0) {
 				mapSeed = Random.Range(0,int.MaxValue);
@@ -889,6 +893,7 @@ public class TileManager:MonoBehaviour {
 			this.terrainTypeHeights = terrainTypeHeights;
 			this.surroundingPlanetTileHeightDirections = surroundingPlanetTileHeightDirections;
 			this.preventEdgeTouching = preventEdgeTouching;
+			this.primaryWindDirection = primaryWindDirection;
 		}
 	}
 
@@ -1001,9 +1006,9 @@ public class TileManager:MonoBehaviour {
 		public Dictionary<int, List<Tile>> sortedEdgeTiles = new Dictionary<int, List<Tile>>();
 
 		public IEnumerator CreateMap() {
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Tiles"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Map", "Creating Tiles"); yield return null; }
 			CreateTiles();
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Bitmasking"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Map", "Rendering"); yield return null; }
 			Bitmasking(tiles);
 
 			if (mapData.preventEdgeTouching) {
@@ -1011,84 +1016,83 @@ public class TileManager:MonoBehaviour {
 			}
 
 			if (mapData.actualMap) {
-				uiM.UpdateLoadingStateText("Setting Map Edges"); yield return null;
+				uiM.UpdateLoadingStateText("Map", "Determining Map Edges"); yield return null;
 				SetMapEdgeTiles();
-				uiM.UpdateLoadingStateText("Setting Sorted Map Edges"); yield return null;
+				uiM.UpdateLoadingStateText("Map", "Determining Sorted Map Edges"); yield return null;
 				SetSortedMapEdgeTiles();
-				uiM.UpdateLoadingStateText("Merging Terrain with Planet"); yield return null;
+				uiM.UpdateLoadingStateText("Terrain", "Merging Terrain with Planet"); yield return null;
 				SmoothHeightWithSurroundingPlanetTiles();
-				uiM.UpdateLoadingStateText("Bitmasking"); yield return null;
+				uiM.UpdateLoadingStateText("Terrain", "Rendering"); yield return null;
 				Bitmasking(tiles);
 			}
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Regions"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Tile Type"); yield return null; }
 			SetTileRegions(true);
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Reducing Terrain Noise"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", ("Reducing Terrain Noise - " + Mathf.RoundToInt(mapData.mapSize / 5f))); yield return null; }
 			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f),new List<TileTypes>() { TileTypes.GrassWater,TileTypes.Stone,TileTypes.Grass });
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", ("Reducing Terrain Noise - " + Mathf.RoundToInt(mapData.mapSize / 2f))); yield return null; }
 			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f),new List<TileTypes>() { TileTypes.GrassWater });
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Regions"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Walkability"); yield return null; }
 			SetTileRegions(false);
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Bitmasking"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Rendering"); yield return null; }
 			Bitmasking(tiles);
 
 			if (mapData.actualMap) {
-				uiM.UpdateLoadingStateText("Creating Drainage Basins"); yield return null;
+				uiM.UpdateLoadingStateText("Rivers", "Determining Drainage Basins"); yield return null;
 				DetermineDrainageBasins();
-				uiM.UpdateLoadingStateText("Creating Rivers"); yield return null;
+				uiM.UpdateLoadingStateText("Rivers", "Determining River Path"); yield return null;
 				CreateRivers();
-				uiM.UpdateLoadingStateText("Bitmasking"); yield return null;
+				uiM.UpdateLoadingStateText("Rivers", "Rendering"); yield return null;
 				Bitmasking(tiles);
 			}
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Calculating Temperature"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Calculating Temperature"); yield return null; }
 			CalculateTemperature();
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Calculating Precipitation"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Calculating Precipitation"); yield return null; }
 			CalculatePrecipitation();
 			mapData.primaryWindDirection = primaryWindDirection;
 
 			/*
 			foreach (Tile tile in tiles) {
 				tile.SetTileHeight(0.5f);
-				tile.precipitation = tile.position.x / mapData.mapSize;
+				tile.SetPrecipitation(tile.position.x / mapData.mapSize);
 				tile.temperature = ((1 - (tile.position.y / mapData.mapSize)) * 140) - 50;
 			}
 			*/
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Biomes"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Setting Biomes"); yield return null; }
 			SetBiomes();
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Bitmasking"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Rendering"); yield return null; }
 			Bitmasking(tiles);
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Creating Region Blocks"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Region Blocks", "Determining Region Blocks"); yield return null; }
 			CreateRegionBlocks();
 
 			if (mapData.actualMap) {
-				uiM.UpdateLoadingStateText("Creating Roofs"); yield return null;
+				uiM.UpdateLoadingStateText("Roofs", "Determining Roofs"); yield return null;
 				SetRoofs();
-				uiM.UpdateLoadingStateText("Bitmasking"); yield return null;
-				Bitmasking(tiles);
 
-				uiM.UpdateLoadingStateText("Creating Resource Veins"); yield return null;
+				uiM.UpdateLoadingStateText("Resources", "Creating Resource Veins"); yield return null;
 				SetResourceVeins();
-				uiM.UpdateLoadingStateText("Bitmasking"); yield return null;
+				uiM.UpdateLoadingStateText("Resources", "Rendering"); yield return null;
 				Bitmasking(tiles);
 
-				uiM.UpdateLoadingStateText("Determining Hourly Shadow Directions"); yield return null;
+				uiM.UpdateLoadingStateText("Lighting", "Determining Hourly Shadow Directions"); yield return null;
 				DetermineShadowDirectionsAtHour();
-				uiM.UpdateLoadingStateText("Determining Shadow Generating Tiles"); yield return null;
+				uiM.UpdateLoadingStateText("Lighting", "Calculating Shadows"); yield return null;
 				DetermineShadowTiles(tiles,false);
-				uiM.UpdateLoadingStateText("Creating Shadows"); yield return null;
+				uiM.UpdateLoadingStateText("Lighting", "Applying Shadows"); yield return null;
 				SetTileBrightness(timeM.GetTileBrightnessTime());
-				uiM.UpdateLoadingStateText("Determining Visible Region Blocks"); yield return null;
+				uiM.UpdateLoadingStateText("Lighting", "Determining Visible Region Blocks"); yield return null;
 				DetermineVisibleRegionBlocks();
 			}
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Bitmasking"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Lighting", "Rendering"); yield return null; }
 			Bitmasking(tiles);
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Completing"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Finalizing", string.Empty); yield return null; }
 			createdMap = true;
 		}
 
@@ -1929,7 +1933,7 @@ public class TileManager:MonoBehaviour {
 					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
 						tile.SetPrecipitation(0f);
 					} else {
-						tile.SetPrecipitation(0.1f);
+						tile.SetPrecipitation(mapData.averagePrecipitation);
 					}
 				}
 			}
@@ -2182,19 +2186,20 @@ public class TileManager:MonoBehaviour {
 
 		void BitmaskTile(Tile tile,bool includeDiagonalSurroundingTiles,bool customBitSumInputs,List<TileTypes> customCompareTileTypes,bool includeMapEdge) {
 			int sum = 0;
+			List<Tile> surroundingTilesToUse = (includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles);
 			if (customBitSumInputs) {
-				sum = BitSum(customCompareTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
+				sum = BitSum(customCompareTileTypes, surroundingTilesToUse, includeMapEdge);
 			} else {
 				if (RiversContainTile(tile).Key != null) {
-					sum = BitSum(tileM.WaterEquivalentTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),false);
+					sum = BitSum(tileM.WaterEquivalentTileTypes, surroundingTilesToUse, false);
 				} else if (tileM.WaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-					sum = BitSum(tileM.WaterEquivalentTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
+					sum = BitSum(tileM.WaterEquivalentTileTypes, surroundingTilesToUse, includeMapEdge);
 				} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-					sum = BitSum(tileM.StoneEquivalentTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
+					sum = BitSum(tileM.StoneEquivalentTileTypes, surroundingTilesToUse, includeMapEdge);
 				} else if (tileM.HoleTileTypes.Contains(tile.tileType.type)) {
-					sum = BitSum(tileM.HoleTileTypes,(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),false);
+					sum = BitSum(tileM.HoleTileTypes, surroundingTilesToUse, false);
 				} else {
-					sum = BitSum(new List<TileTypes>() { tile.tileType.type },(includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles),includeMapEdge);
+					sum = BitSum(new List<TileTypes>() { tile.tileType.type }, surroundingTilesToUse, includeMapEdge);
 				}
 			}
 			if ((sum < 16) || (bitmaskMap[sum] != 46)) {

@@ -80,10 +80,12 @@ public class JobManager:MonoBehaviour {
 			resourcesToBuild.AddRange(prefab.resourcesToBuild);
 
 			if (prefab.jobType == JobTypesEnum.PlantPlant) {
-				plant = new TileManager.Plant(tileM.GetPlantGroupByBiome(tile.biome,true),tile,false,true);
-				plant.obj.SetActive(false);
-				//this.prefab = resourceM.GetTileObjectPrefabByEnum(tileM.GetPlantPlantObjectPrefabs()[plant.group.type]);
-				resourcesToBuild.AddRange(tileM.GetPlantResources()[plant.group.type]);
+				TileManager.PlantGroup plantGroup = tileM.GetPlantGroupByBiome(tile.biome, true);
+				if (plantGroup != null) {
+					plant = new TileManager.Plant(plantGroup, tile, false, true);
+					plant.obj.SetActive(false);
+					resourcesToBuild.AddRange(tileM.GetPlantResources()[plant.group.type]);
+				}
 			}
 
 			this.rotationIndex = rotationIndex;
@@ -504,7 +506,7 @@ public class JobManager:MonoBehaviour {
 	}
 
 	public enum SelectionModifiersEnum { Outline, Walkable, OmitWalkable, Buildable, OmitBuildable, StoneTypes, OmitStoneTypes, AllWaterTypes, OmitAllWaterTypes, LiquidWaterTypes, OmitLiquidWaterTypes, OmitNonStoneAndWaterTypes,
-		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances, Farms, OmitFarms, ObjectsAtSameLayer, OmitNonCoastWater, OmitHoles, OmitPreviousDig
+		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances, Farms, OmitFarms, ObjectsAtSameLayer, OmitNonCoastWater, OmitHoles, OmitPreviousDig, OmitNoTreeOrDeadTreeBiomes
 	};
 	Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>> selectionModifierFunctions = new Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>>();
 
@@ -594,6 +596,11 @@ public class JobManager:MonoBehaviour {
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitPreviousDig, delegate (TileManager.Tile tile, List<TileManager.Tile> removeTiles) {
 			if (tile.dugPreviously) {
+				removeTiles.Add(tile);
+			}
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNoTreeOrDeadTreeBiomes, delegate (TileManager.Tile tile, List<TileManager.Tile> removeTiles) {
+			if (tile.biome.vegetationChances.Keys.Where(group => group != TileManager.PlantGroupsEnum.DeadTree).ToList().Count <= 0) {
 				removeTiles.Add(tile);
 			}
 		});
