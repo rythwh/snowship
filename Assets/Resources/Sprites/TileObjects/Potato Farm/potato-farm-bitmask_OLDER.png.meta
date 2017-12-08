@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 397ce6e3f8a3f854baeb6ba80d79b07c
-timeCreated: 1497932560
+timeCreated: 1512733989
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -12,6 +12,14 @@ TextureImporter:
     21300010: potato_5
     21300012: potato_6
     21300014: potato_7
+    21300016: potato-farm-bitmask_OLDER_0
+    21300018: potato-farm-bitmask_OLDER_1
+    21300020: potato-farm-bitmask_OLDER_2
+    21300022: potato-farm-bitmask_OLDER_3
+    21300024: potato-farm-bitmask_OLDER_4
+    21300026: potato-farm-bitmask_OLDER_5
+    21300028: potato-farm-bitmask_OLDER_6
+    21300030: potato-farm-bitmask_OLDER_7
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -20,6 +28,8 @@ TextureImporter:
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
@@ -35,10 +45,13 @@ TextureImporter:
   textureFormat: 1
   maxTextureSize: 2048
   textureSettings:
+    serializedVersion: 2
     filterMode: 0
     aniso: -1
     mipBias: -1
-    wrapMode: 1
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -78,7 +91,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: potato_0
+      name: potato-farm-bitmask_OLDER_0
       rect:
         serializedVersion: 2
         x: 1
@@ -89,9 +102,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: potato_1
+      name: potato-farm-bitmask_OLDER_1
       rect:
         serializedVersion: 2
         x: 1
@@ -102,9 +116,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: potato_2
+      name: potato-farm-bitmask_OLDER_2
       rect:
         serializedVersion: 2
         x: 1
@@ -115,9 +130,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: potato_3
+      name: potato-farm-bitmask_OLDER_3
       rect:
         serializedVersion: 2
         x: 1
@@ -128,9 +144,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: potato_4
+      name: potato-farm-bitmask_OLDER_4
       rect:
         serializedVersion: 2
         x: 1
@@ -141,9 +158,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: potato_5
+      name: potato-farm-bitmask_OLDER_5
       rect:
         serializedVersion: 2
         x: 1
@@ -154,9 +172,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: potato_6
+      name: potato-farm-bitmask_OLDER_6
       rect:
         serializedVersion: 2
         x: 1
@@ -167,9 +186,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: potato_7
+      name: potato-farm-bitmask_OLDER_7
       rect:
         serializedVersion: 2
         x: 1
@@ -180,8 +200,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     outline: []
+    physicsShape: []
   spritePackingTag: 
   userData: 
   assetBundleName: 

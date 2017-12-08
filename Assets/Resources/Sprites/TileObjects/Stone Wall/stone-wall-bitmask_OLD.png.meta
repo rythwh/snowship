@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: f03602c8e0b5c614488610c164fa56b0
-timeCreated: 1496033652
+timeCreated: 1512734035
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -52,6 +52,22 @@ TextureImporter:
     21300090: stone-wall-bitmask_13
     21300092: stone-wall-bitmask_14
     21300094: stone-wall-bitmask_15
+    21300096: stone-wall-bitmask_OLD_0
+    21300098: stone-wall-bitmask_OLD_1
+    21300100: stone-wall-bitmask_OLD_2
+    21300102: stone-wall-bitmask_OLD_3
+    21300104: stone-wall-bitmask_OLD_4
+    21300106: stone-wall-bitmask_OLD_5
+    21300108: stone-wall-bitmask_OLD_6
+    21300110: stone-wall-bitmask_OLD_7
+    21300112: stone-wall-bitmask_OLD_8
+    21300114: stone-wall-bitmask_OLD_9
+    21300116: stone-wall-bitmask_OLD_10
+    21300118: stone-wall-bitmask_OLD_11
+    21300120: stone-wall-bitmask_OLD_12
+    21300122: stone-wall-bitmask_OLD_13
+    21300124: stone-wall-bitmask_OLD_14
+    21300126: stone-wall-bitmask_OLD_15
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -60,6 +76,8 @@ TextureImporter:
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
@@ -75,10 +93,13 @@ TextureImporter:
   textureFormat: -3
   maxTextureSize: 2048
   textureSettings:
+    serializedVersion: 2
     filterMode: 0
     aniso: 16
     mipBias: -1
-    wrapMode: 1
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -118,7 +139,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: stone-wall-bitmask_0
+      name: stone-wall-bitmask_OLD_0
       rect:
         serializedVersion: 2
         x: 2
@@ -129,9 +150,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_1
+      name: stone-wall-bitmask_OLD_1
       rect:
         serializedVersion: 2
         x: 37
@@ -142,9 +164,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_2
+      name: stone-wall-bitmask_OLD_2
       rect:
         serializedVersion: 2
         x: 72
@@ -155,9 +178,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_3
+      name: stone-wall-bitmask_OLD_3
       rect:
         serializedVersion: 2
         x: 107
@@ -168,9 +192,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_4
+      name: stone-wall-bitmask_OLD_4
       rect:
         serializedVersion: 2
         x: 2
@@ -181,9 +206,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_5
+      name: stone-wall-bitmask_OLD_5
       rect:
         serializedVersion: 2
         x: 37
@@ -194,9 +220,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_6
+      name: stone-wall-bitmask_OLD_6
       rect:
         serializedVersion: 2
         x: 72
@@ -207,9 +234,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_7
+      name: stone-wall-bitmask_OLD_7
       rect:
         serializedVersion: 2
         x: 107
@@ -220,9 +248,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_8
+      name: stone-wall-bitmask_OLD_8
       rect:
         serializedVersion: 2
         x: 2
@@ -233,9 +262,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_9
+      name: stone-wall-bitmask_OLD_9
       rect:
         serializedVersion: 2
         x: 37
@@ -246,9 +276,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_10
+      name: stone-wall-bitmask_OLD_10
       rect:
         serializedVersion: 2
         x: 72
@@ -259,9 +290,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_11
+      name: stone-wall-bitmask_OLD_11
       rect:
         serializedVersion: 2
         x: 107
@@ -272,9 +304,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_12
+      name: stone-wall-bitmask_OLD_12
       rect:
         serializedVersion: 2
         x: 2
@@ -285,9 +318,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_13
+      name: stone-wall-bitmask_OLD_13
       rect:
         serializedVersion: 2
         x: 37
@@ -298,9 +332,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_14
+      name: stone-wall-bitmask_OLD_14
       rect:
         serializedVersion: 2
         x: 72
@@ -311,9 +346,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: stone-wall-bitmask_15
+      name: stone-wall-bitmask_OLD_15
       rect:
         serializedVersion: 2
         x: 107
@@ -324,8 +360,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     outline: []
+    physicsShape: []
   spritePackingTag: 
   userData: 
   assetBundleName: 

@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 488433763a197d8439616c4fa9c6598a
-timeCreated: 1497932566
+timeCreated: 1512734056
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -12,6 +12,14 @@ TextureImporter:
     21300010: wheat_5
     21300012: wheat_6
     21300014: wheat_7
+    21300016: wheat-farm-bitmask_0
+    21300018: wheat-farm-bitmask_1
+    21300020: wheat-farm-bitmask_2
+    21300022: wheat-farm-bitmask_3
+    21300024: wheat-farm-bitmask_4
+    21300026: wheat-farm-bitmask_5
+    21300028: wheat-farm-bitmask_6
+    21300030: wheat-farm-bitmask_7
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -20,6 +28,8 @@ TextureImporter:
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
@@ -35,10 +45,13 @@ TextureImporter:
   textureFormat: 1
   maxTextureSize: 2048
   textureSettings:
+    serializedVersion: 2
     filterMode: 0
     aniso: -1
     mipBias: -1
-    wrapMode: 1
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -78,7 +91,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: wheat_0
+      name: wheat-farm-bitmask_0
       rect:
         serializedVersion: 2
         x: 1
@@ -89,9 +102,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wheat_1
+      name: wheat-farm-bitmask_1
       rect:
         serializedVersion: 2
         x: 1
@@ -102,9 +116,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wheat_2
+      name: wheat-farm-bitmask_2
       rect:
         serializedVersion: 2
         x: 1
@@ -115,9 +130,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wheat_3
+      name: wheat-farm-bitmask_3
       rect:
         serializedVersion: 2
         x: 1
@@ -128,9 +144,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wheat_4
+      name: wheat-farm-bitmask_4
       rect:
         serializedVersion: 2
         x: 1
@@ -141,9 +158,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wheat_5
+      name: wheat-farm-bitmask_5
       rect:
         serializedVersion: 2
         x: 1
@@ -154,9 +172,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wheat_6
+      name: wheat-farm-bitmask_6
       rect:
         serializedVersion: 2
         x: 1
@@ -167,9 +186,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wheat_7
+      name: wheat-farm-bitmask_7
       rect:
         serializedVersion: 2
         x: 1
@@ -180,8 +200,10 @@ TextureImporter:
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+      physicsShape: []
       tessellationDetail: 0
     outline: []
+    physicsShape: []
   spritePackingTag: 
   userData: 
   assetBundleName: 

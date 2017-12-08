@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 7e9abd7ad22a8eb48b43331f5e45656b
-timeCreated: 1505162476
+timeCreated: 1512733870
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -130,6 +130,53 @@ TextureImporter:
     21300246: brick-wall-bitmask_44
     21300248: brick-wall-bitmask_45
     21300250: brick-wall-bitmask_46
+    21300252: brick-floor-bitmask_0
+    21300254: brick-floor-bitmask_1
+    21300256: brick-floor-bitmask_2
+    21300258: brick-floor-bitmask_3
+    21300260: brick-floor-bitmask_4
+    21300262: brick-floor-bitmask_5
+    21300264: brick-floor-bitmask_6
+    21300266: brick-floor-bitmask_7
+    21300268: brick-floor-bitmask_8
+    21300270: brick-floor-bitmask_9
+    21300272: brick-floor-bitmask_10
+    21300274: brick-floor-bitmask_11
+    21300276: brick-floor-bitmask_12
+    21300278: brick-floor-bitmask_13
+    21300280: brick-floor-bitmask_14
+    21300282: brick-floor-bitmask_15
+    21300284: brick-floor-bitmask_16
+    21300286: brick-floor-bitmask_17
+    21300288: brick-floor-bitmask_18
+    21300290: brick-floor-bitmask_19
+    21300292: brick-floor-bitmask_20
+    21300294: brick-floor-bitmask_21
+    21300296: brick-floor-bitmask_22
+    21300298: brick-floor-bitmask_23
+    21300300: brick-floor-bitmask_24
+    21300302: brick-floor-bitmask_25
+    21300304: brick-floor-bitmask_26
+    21300306: brick-floor-bitmask_27
+    21300308: brick-floor-bitmask_28
+    21300310: brick-floor-bitmask_29
+    21300312: brick-floor-bitmask_30
+    21300314: brick-floor-bitmask_31
+    21300316: brick-floor-bitmask_32
+    21300318: brick-floor-bitmask_33
+    21300320: brick-floor-bitmask_34
+    21300322: brick-floor-bitmask_35
+    21300324: brick-floor-bitmask_36
+    21300326: brick-floor-bitmask_37
+    21300328: brick-floor-bitmask_38
+    21300330: brick-floor-bitmask_39
+    21300332: brick-floor-bitmask_40
+    21300334: brick-floor-bitmask_41
+    21300336: brick-floor-bitmask_42
+    21300338: brick-floor-bitmask_43
+    21300340: brick-floor-bitmask_44
+    21300342: brick-floor-bitmask_45
+    21300344: brick-floor-bitmask_46
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -201,7 +248,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: brick-wall-bitmask_0
+      name: brick-floor-bitmask_0
       rect:
         serializedVersion: 2
         x: 2
@@ -215,7 +262,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_1
+      name: brick-floor-bitmask_1
       rect:
         serializedVersion: 2
         x: 37
@@ -229,7 +276,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_2
+      name: brick-floor-bitmask_2
       rect:
         serializedVersion: 2
         x: 72
@@ -243,7 +290,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_3
+      name: brick-floor-bitmask_3
       rect:
         serializedVersion: 2
         x: 107
@@ -257,7 +304,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_4
+      name: brick-floor-bitmask_4
       rect:
         serializedVersion: 2
         x: 142
@@ -271,7 +318,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_5
+      name: brick-floor-bitmask_5
       rect:
         serializedVersion: 2
         x: 177
@@ -285,7 +332,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_6
+      name: brick-floor-bitmask_6
       rect:
         serializedVersion: 2
         x: 212
@@ -299,7 +346,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_7
+      name: brick-floor-bitmask_7
       rect:
         serializedVersion: 2
         x: 2
@@ -313,7 +360,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_8
+      name: brick-floor-bitmask_8
       rect:
         serializedVersion: 2
         x: 37
@@ -327,7 +374,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_9
+      name: brick-floor-bitmask_9
       rect:
         serializedVersion: 2
         x: 72
@@ -341,7 +388,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_10
+      name: brick-floor-bitmask_10
       rect:
         serializedVersion: 2
         x: 107
@@ -355,7 +402,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_11
+      name: brick-floor-bitmask_11
       rect:
         serializedVersion: 2
         x: 142
@@ -369,7 +416,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_12
+      name: brick-floor-bitmask_12
       rect:
         serializedVersion: 2
         x: 177
@@ -383,7 +430,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_13
+      name: brick-floor-bitmask_13
       rect:
         serializedVersion: 2
         x: 212
@@ -397,7 +444,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_14
+      name: brick-floor-bitmask_14
       rect:
         serializedVersion: 2
         x: 2
@@ -411,7 +458,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_15
+      name: brick-floor-bitmask_15
       rect:
         serializedVersion: 2
         x: 37
@@ -425,7 +472,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_16
+      name: brick-floor-bitmask_16
       rect:
         serializedVersion: 2
         x: 72
@@ -439,7 +486,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_17
+      name: brick-floor-bitmask_17
       rect:
         serializedVersion: 2
         x: 107
@@ -453,7 +500,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_18
+      name: brick-floor-bitmask_18
       rect:
         serializedVersion: 2
         x: 142
@@ -467,7 +514,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_19
+      name: brick-floor-bitmask_19
       rect:
         serializedVersion: 2
         x: 177
@@ -481,7 +528,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_20
+      name: brick-floor-bitmask_20
       rect:
         serializedVersion: 2
         x: 212
@@ -495,7 +542,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_21
+      name: brick-floor-bitmask_21
       rect:
         serializedVersion: 2
         x: 2
@@ -509,7 +556,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_22
+      name: brick-floor-bitmask_22
       rect:
         serializedVersion: 2
         x: 37
@@ -523,7 +570,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_23
+      name: brick-floor-bitmask_23
       rect:
         serializedVersion: 2
         x: 72
@@ -537,7 +584,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_24
+      name: brick-floor-bitmask_24
       rect:
         serializedVersion: 2
         x: 107
@@ -551,7 +598,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_25
+      name: brick-floor-bitmask_25
       rect:
         serializedVersion: 2
         x: 142
@@ -565,7 +612,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_26
+      name: brick-floor-bitmask_26
       rect:
         serializedVersion: 2
         x: 177
@@ -579,7 +626,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_27
+      name: brick-floor-bitmask_27
       rect:
         serializedVersion: 2
         x: 212
@@ -593,7 +640,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_28
+      name: brick-floor-bitmask_28
       rect:
         serializedVersion: 2
         x: 2
@@ -607,7 +654,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_29
+      name: brick-floor-bitmask_29
       rect:
         serializedVersion: 2
         x: 37
@@ -621,7 +668,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_30
+      name: brick-floor-bitmask_30
       rect:
         serializedVersion: 2
         x: 72
@@ -635,7 +682,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_31
+      name: brick-floor-bitmask_31
       rect:
         serializedVersion: 2
         x: 107
@@ -649,7 +696,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_32
+      name: brick-floor-bitmask_32
       rect:
         serializedVersion: 2
         x: 142
@@ -663,7 +710,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_33
+      name: brick-floor-bitmask_33
       rect:
         serializedVersion: 2
         x: 177
@@ -677,7 +724,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_34
+      name: brick-floor-bitmask_34
       rect:
         serializedVersion: 2
         x: 212
@@ -691,7 +738,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_35
+      name: brick-floor-bitmask_35
       rect:
         serializedVersion: 2
         x: 2
@@ -705,7 +752,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_36
+      name: brick-floor-bitmask_36
       rect:
         serializedVersion: 2
         x: 37
@@ -719,7 +766,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_37
+      name: brick-floor-bitmask_37
       rect:
         serializedVersion: 2
         x: 72
@@ -733,7 +780,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_38
+      name: brick-floor-bitmask_38
       rect:
         serializedVersion: 2
         x: 107
@@ -747,7 +794,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_39
+      name: brick-floor-bitmask_39
       rect:
         serializedVersion: 2
         x: 142
@@ -761,7 +808,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_40
+      name: brick-floor-bitmask_40
       rect:
         serializedVersion: 2
         x: 177
@@ -775,7 +822,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_41
+      name: brick-floor-bitmask_41
       rect:
         serializedVersion: 2
         x: 212
@@ -789,7 +836,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_42
+      name: brick-floor-bitmask_42
       rect:
         serializedVersion: 2
         x: 2
@@ -803,7 +850,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_43
+      name: brick-floor-bitmask_43
       rect:
         serializedVersion: 2
         x: 37
@@ -817,7 +864,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_44
+      name: brick-floor-bitmask_44
       rect:
         serializedVersion: 2
         x: 72
@@ -831,7 +878,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_45
+      name: brick-floor-bitmask_45
       rect:
         serializedVersion: 2
         x: 107
@@ -845,7 +892,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: brick-wall-bitmask_46
+      name: brick-floor-bitmask_46
       rect:
         serializedVersion: 2
         x: 142
