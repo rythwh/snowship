@@ -359,7 +359,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.changeinvamt, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 2) {
-				ResourceManager.Resource resource = resourceM.resources.Find(r => r.name == parameters[0]);
+				ResourceManager.Resource resource = resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
 				if (resource != null) {
 					if (colonistM.selectedColonist != null || uiM.selectedContainer != null) {
 						if (colonistM.selectedColonist != null) {
@@ -392,7 +392,7 @@ public class DebugManager : MonoBehaviour {
 				bool allColonists = false;
 				if (bool.TryParse(parameters[2], out allColonists)) {
 					if (allColonists) {
-						ResourceManager.Resource resource = resourceM.resources.Find(r => r.name == parameters[0]);
+						ResourceManager.Resource resource = resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
 						if (resource != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
@@ -413,7 +413,7 @@ public class DebugManager : MonoBehaviour {
 				bool allColonists = false;
 				if (bool.TryParse(parameters[2], out allColonists)) {
 					if (allColonists) {
-						ResourceManager.Resource resource = resourceM.resources.Find(r => r.name == parameters[0]);
+						ResourceManager.Resource resource = resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
 						if (resource != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
@@ -433,7 +433,7 @@ public class DebugManager : MonoBehaviour {
 				bool allContainers = false;
 				if (bool.TryParse(parameters[3], out allContainers)) {
 					if (allContainers) {
-						ResourceManager.Resource resource = resourceM.resources.Find(r => r.name == parameters[0]);
+						ResourceManager.Resource resource = resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
 						if (resource != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {

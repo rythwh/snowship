@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization;
 using System.IO;
 using System.Linq;
 
@@ -795,11 +793,19 @@ public class PersistenceManager : MonoBehaviour {
 						if (lineData[14] != "None") {
 							List<string> jobDataSplit = lineData[14].Split('~').ToList();
 							job = LoadJob(jobDataSplit);
+							if (job.prefab.jobType == JobManager.JobTypesEnum.CreateResource) {
+								ResourceManager.ManufacturingTileObject mto = resourceM.manufacturingTileObjectInstances.Find(findMTO => findMTO.parentObject.tile == job.tile);
+								mto.jobBacklog.Add(job);
+							}
 						}
 						JobManager.Job storedJob = null;
 						if (lineData[15] != "None") {
 							List<string> jobDataSplit = lineData[15].Split('~').ToList();
 							storedJob = LoadJob(jobDataSplit);
+							if (storedJob.prefab.jobType == JobManager.JobTypesEnum.CreateResource) {
+								ResourceManager.ManufacturingTileObject mto = resourceM.manufacturingTileObjectInstances.Find(findMTO => findMTO.parentObject.tile == storedJob.tile);
+								mto.jobBacklog.Add(storedJob);
+							}
 						}
 						List<ColonistManager.SkillInstance> skills = new List<ColonistManager.SkillInstance>();
 						foreach (string skillDataString in lineData[16].Split(',').Skip(1)) {
@@ -888,7 +894,12 @@ public class PersistenceManager : MonoBehaviour {
 							*/
 						}
 					} else if (sectionIndex == 11) { // Job
-						jobM.AddExistingJob(LoadJob(lineData));
+						JobManager.Job job = LoadJob(lineData);
+						jobM.AddExistingJob(job);
+						if (job.prefab.jobType == JobManager.JobTypesEnum.CreateResource) {
+							ResourceManager.ManufacturingTileObject mto = resourceM.manufacturingTileObjectInstances.Find(findMTO => findMTO.parentObject.tile == job.tile);
+							mto.jobBacklog.Add(job);
+						}
 					}
 					innerSectionIndex += 1;
 				}
@@ -967,7 +978,7 @@ public class PersistenceManager : MonoBehaviour {
 			job.plant = new TileManager.Plant(tileM.GetPlantGroupByBiome(jobTile.biome, true), jobTile, false, true);
 		}
 		if (jobDataSplit[10] != "None") {
-			job.createResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[10]));
+			job.createResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[10].Split(',')[1]));
 		}
 		if (jobDataSplit[11] != "None") {
 			ResourceManager.TileObjectPrefabsEnum activeTileObjectPrefab = (ResourceManager.TileObjectPrefabsEnum)System.Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), jobDataSplit[11].Split(',')[3]);

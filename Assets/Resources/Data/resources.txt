@@ -19,10 +19,24 @@ Natural:
 		2/
 		0/
 		10`
-	Firewood/
+	Wood/
 		3/
 		0/
-		20`
+		15/
+		Processing/
+		SplittingBlock/
+		0/
+		Log/
+		0.25`
+	Firewood/
+		4/
+		0/
+		25/
+		Processing/
+		SplittingBlock/
+		0/
+		Wood/
+		0.5`
 	Snow/
 		1`
 	Sand/
@@ -34,6 +48,7 @@ Materials:
 		0/
 		0/
 		Furnaces/
+		None/
 		30/
 		Clay/
 		2`
@@ -42,13 +57,21 @@ Materials:
 		0/
 		0/
 		Furnaces/
+		None/
 		30/
 		Sand/
 		2`
 	Cotton/
 		10`
 	Cloth/
-		15
+		15/
+		0/
+		0/
+		Processing/
+		CottonGin/
+		0/
+		Cotton/
+		4
 ~
 Seeds:
 	WheatSeeds/
