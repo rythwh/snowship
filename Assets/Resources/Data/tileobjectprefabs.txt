@@ -6,7 +6,7 @@
 			WoodenWall/
 			20/
 			5/
-			Log/
+			Wood/
 			true/
 			Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -48,7 +48,7 @@
 			WoodenFence/
 			15/
 			3/
-			Log/
+			Wood/
 			true/
 			Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -64,7 +64,7 @@
 			WoodenDoor/
 			15/
 			2/
-			Log/
+			Wood/
 			true/
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -80,7 +80,7 @@
 			WoodenFloor/
 			15/
 			2/
-			Log/
+			Wood/
 			true/
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -112,7 +112,7 @@
 			Basket/
 			10/
 			1/
-			Log/
+			Wood/
 			true/
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -127,7 +127,7 @@
 			WoodenChest/
 			20/
 			3/
-			Log/
+			Wood/
 			true/
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -144,7 +144,7 @@
 			WoodenBed/
 			20/
 			4,2/
-			Log,Cloth/
+			Wood,Cloth/
 			true/
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -160,7 +160,7 @@
 			Torch/
 			20/
 			2/
-			Log/
+			Wood/
 			true/
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -176,7 +176,7 @@
 			WoodenLamp/
 			20/
 			1,1/
-			Log,Glass/
+			Wood,Glass/
 			true/
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -212,7 +212,21 @@
 			CottonGin/
 			30/
 			6,2/
-			Log,Stone/
+			Wood,Stone/
+			true/
+			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
+			Build/
+			0.7/
+			true/
+			0.5/
+			2/
+			true/
+			0.5,0.5
+		<Object>
+			SplittingBlock/
+			10/
+			1/
+			Stone/
 			true/
 			Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs/
 			Build/
@@ -221,7 +235,7 @@
 			0.5/
 			2/
 			true/
-			0.5,0.5
+			0.35,0.35
 <Group>
 	Farm
 	<SubGroup>

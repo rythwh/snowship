@@ -114,7 +114,9 @@ public class JobManager:MonoBehaviour {
 			}
 			*/
 			resourcesToBuild.AddRange(createResource.requiredResources);
-			resourcesToBuild.Add(new ResourceManager.ResourceAmount(manufacturingTileObject.mto.fuelResource, manufacturingTileObject.mto.fuelResourcesRequired));
+			if (manufacturingTileObject.mto.fuelResource != null) {
+				resourcesToBuild.Add(new ResourceManager.ResourceAmount(manufacturingTileObject.mto.fuelResource, manufacturingTileObject.mto.fuelResourcesRequired));
+			}
 			activeTileObject = manufacturingTileObject;
 		}
 
@@ -362,6 +364,7 @@ public class JobManager:MonoBehaviour {
 				if (colonist.storedJob.containerPickups.Count <= 0) {
 					//print("Setting stored job on " + name);
 					colonist.SetJob(new ColonistJob(colonist, colonist.storedJob, colonist.storedJob.colonistResources, null, colonist.jobM, pathM));
+					colonist.storedJob = null;
 				} else {
 					//print("Setting next pickup resources job on " + name + " -- " + colonist.storedJob.containerPickups.Count + " more left");
 					colonist.SetJob(new ColonistJob(colonist, new Job(colonist.storedJob.containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),0), colonist.storedJob.colonistResources, colonist.storedJob.containerPickups, colonist.jobM, pathM),false);
@@ -372,7 +375,7 @@ public class JobManager:MonoBehaviour {
 			foreach (ResourceManager.ResourceAmount resourceAmount in job.resourcesToBuild) {
 				colonist.inventory.ChangeResourceAmount(resourceAmount.resource,-resourceAmount.amount);
 			}
-			colonist.inventory.ChangeResourceAmount(job.createResource,1);
+			colonist.inventory.ChangeResourceAmount(job.createResource,job.createResource.amountCreated);
 			job.activeTileObject.mto.jobBacklog.Remove(job);
 		});
 		finishJobFunctions.Add(JobTypesEnum.EmptyInventory,delegate (ColonistManager.Colonist colonist,Job job) {
@@ -425,6 +428,7 @@ public class JobManager:MonoBehaviour {
 						break;
 					}
 					foodNeed.value -= ra.resource.nutrition;
+					colonist.inventory.ChangeResourceAmount(ra.resource, -1);
 				}
 				if (stopEating) {
 					break;

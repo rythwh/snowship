@@ -186,60 +186,68 @@ public class TileManager:MonoBehaviour {
 	public enum TileTypes { Dirt, DirtWater, Mud, DirtGrass, DirtThinGrass, DirtDryGrass, DirtHole, Grass, GrassWater, ThickGrass, ColdGrass, ColdGrassWater, DryGrass, DryGrassWater, Sand, SandWater,
 		SandHole, Snow, SnowIce, SnowStone, SnowHole, Stone, StoneIce, StoneWater, StoneThinGrass, StoneSand, StoneSnow, StoneHole, Granite, Limestone, Marble, Sandstone, Slate, Clay, ClayWater
 	};
+
 	List<TileTypes> WaterEquivalentTileTypes = new List<TileTypes>() {
 		TileTypes.GrassWater, TileTypes.SnowIce, TileTypes.StoneIce, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.ClayWater
 	};
+	public List<TileTypes> GetWaterEquivalentTileTypes() {
+		return WaterEquivalentTileTypes;
+	}
+
 	List<TileTypes> LiquidWaterEquivalentTileTypes = new List<TileTypes>() {
 		TileTypes.GrassWater, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.ClayWater
 	};
+	public List<TileTypes> GetLiquidWaterEquivalentTileTypes() {
+		return LiquidWaterEquivalentTileTypes;
+	}
+
 	List<TileTypes> StoneEquivalentTileTypes = new List<TileTypes>() {
 		TileTypes.Stone, TileTypes.Granite, TileTypes.Limestone, TileTypes.Marble, TileTypes.Sandstone, TileTypes.Slate
 	};
+	public List<TileTypes> GetStoneEquivalentTileTypes() {
+		return StoneEquivalentTileTypes;
+	}
+
 	List<TileTypes> PlantableTileTypes = new List<TileTypes>() {
 		TileTypes.Dirt, TileTypes.Mud, TileTypes.DirtGrass, TileTypes.DirtThinGrass, TileTypes.DirtDryGrass, TileTypes.Grass, TileTypes.ThickGrass,
 		TileTypes.DryGrass, TileTypes.ColdGrass, TileTypes.Sand, TileTypes.Snow, TileTypes.SnowStone, TileTypes.StoneThinGrass, TileTypes.StoneSand, TileTypes.StoneSnow
 	};
+	public List<TileTypes> GetPlantableTileTypes() {
+		return PlantableTileTypes;
+	}
+
 	List<TileTypes> BitmaskingTileTypes = new List<TileTypes>() {
 		TileTypes.GrassWater, TileTypes.SnowIce, TileTypes.StoneIce, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.Stone,
 		TileTypes.DirtHole, TileTypes.StoneHole, TileTypes.SnowHole, TileTypes.SandHole, TileTypes.ClayWater
 	};
-	List<TileTypes> HoleTileTypes = new List<TileTypes>() {
-		TileTypes.DirtHole, TileTypes.StoneHole, TileTypes.SandHole, TileTypes.SnowHole
-	};
-	List<TileTypes> ResourceTileTypes = new List<TileTypes>() {
-		TileTypes.Clay, TileTypes.ClayWater
-	};
-	Dictionary<TileTypes,TileTypes> GroundToWaterResourceMap = new Dictionary<TileTypes,TileTypes>() {
-		{ TileTypes.Clay, TileTypes.ClayWater }
-	};
-	Dictionary<TileTypes, TileTypes> WaterToGroundResourceMap = new Dictionary<TileTypes, TileTypes>() {
-		{ TileTypes.ClayWater, TileTypes.Clay }
-	};
-
-	public List<TileTypes> GetWaterEquivalentTileTypes() {
-		return WaterEquivalentTileTypes;
-	}
-	public List<TileTypes> GetLiquidWaterEquivalentTileTypes() {
-		return LiquidWaterEquivalentTileTypes;
-	}
-	public List<TileTypes> GetStoneEquivalentTileTypes() {
-		return StoneEquivalentTileTypes;
-	}
-	public List<TileTypes> GetPlantableTileTypes() {
-		return PlantableTileTypes;
-	}
 	public List<TileTypes> GetBitmaskingTileTypes() {
 		return BitmaskingTileTypes;
 	}
+
+	List<TileTypes> HoleTileTypes = new List<TileTypes>() {
+		TileTypes.DirtHole, TileTypes.StoneHole, TileTypes.SandHole, TileTypes.SnowHole
+	};
 	public List<TileTypes> GetHoleTileTypes() {
 		return HoleTileTypes;
 	}
+
+	List<TileTypes> ResourceTileTypes = new List<TileTypes>() {
+		TileTypes.Clay, TileTypes.ClayWater
+	};
 	public List<TileTypes> GetResourceTileTypes() {
 		return ResourceTileTypes;
 	}
-	public Dictionary<TileTypes,TileTypes> GetGroundToWaterResourceMap() {
+
+	Dictionary<TileTypes,TileTypes> GroundToWaterResourceMap = new Dictionary<TileTypes,TileTypes>() {
+		{ TileTypes.Clay, TileTypes.ClayWater }
+	};
+	public Dictionary<TileTypes, TileTypes> GetGroundToWaterResourceMap() {
 		return GroundToWaterResourceMap;
 	}
+
+	Dictionary<TileTypes, TileTypes> WaterToGroundResourceMap = new Dictionary<TileTypes, TileTypes>() {
+		{ TileTypes.ClayWater, TileTypes.Clay }
+	};
 	public Dictionary<TileTypes, TileTypes> GetWaterToGroundResourceMap() {
 		return WaterToGroundResourceMap;
 	}

@@ -508,23 +508,20 @@ public class ColonistManager : MonoBehaviour {
 				if (need.prefab.criticalValueAction && need.value >= need.prefab.criticalValue) {
 					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * timeM.deltaTime);
 					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,true,true) > 0) {
-						if (need.colonist.job != null) {
-							need.colonist.ReturnJob();
-						}
+						need.colonist.ReturnJob();
 						GetFood(need,true,true);
 					}
 				}
 				if (need.prefab.maximumValueAction && need.value >= need.prefab.maximumValue) {
 					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,false,true) > 0) {
-						if (need.colonist.job != null) {
-							need.colonist.ReturnJob();
-						}
+						need.colonist.ReturnJob();
 						GetFood(need,true,false);
 					}
 				}
 				if (need.prefab.minimumValueAction && need.value >= need.prefab.minimumValue) {
 					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,false,false) > 0) {
 						if (timeM.minuteChanged && Random.Range(0f,1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
+							need.colonist.ReturnJob();
 							GetFood(need,false,false);
 						}
 					}
@@ -919,7 +916,7 @@ public class ColonistManager : MonoBehaviour {
 			}
 
 			if (job.activeTileObject != null) {
-				job.activeTileObject.SetActiveSprite(true);
+				job.activeTileObject.SetActiveSprite(true,job);
 			}
 
 			job.jobProgress -= 1 * timeM.deltaTime;
@@ -927,7 +924,7 @@ public class ColonistManager : MonoBehaviour {
 			if (job.jobProgress <= 0 || Mathf.Approximately(job.jobProgress,0)) {
 				job.jobProgress = 0;
 				if (job.activeTileObject != null) {
-					job.activeTileObject.SetActiveSprite(false);
+					job.activeTileObject.SetActiveSprite(false,job);
 				}
 				FinishJob();
 				return;
@@ -965,10 +962,12 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void ReturnJob() {
-			jobM.AddExistingJob(job);
-			job.jobUIElement.Remove(uiM);
-			job.jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,0.25f);
-			job = null;
+			if (job != null) {
+				jobM.AddExistingJob(job);
+				job.jobUIElement.Remove(uiM);
+				job.jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.25f);
+				job = null;
+			}
 		}
 
 		public void MoveToClosestWalkableTile(bool careIfOvertileIsWalkable) {
