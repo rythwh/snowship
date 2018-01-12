@@ -81,10 +81,16 @@ public class JobManager:MonoBehaviour {
 
 			if (prefab.jobType == JobTypesEnum.PlantPlant) {
 				TileManager.PlantGroup plantGroup = tileM.GetPlantGroupByBiome(tile.biome, true);
+				if (prefab.type == ResourceManager.TileObjectPrefabsEnum.PlantAppleTree) {
+					plantGroup = tileM.GetPlantGroupByEnum(TileManager.PlantGroupsEnum.WideTree);
+				} else if (prefab.type == ResourceManager.TileObjectPrefabsEnum.PlantBerryBush) {
+					plantGroup = tileM.GetPlantGroupByEnum(TileManager.PlantGroupsEnum.Shrub);
+				}
 				if (plantGroup != null) {
-					plant = new TileManager.Plant(plantGroup, tile, false, true);
+					plant = new TileManager.Plant(plantGroup, tile, false, true, tileM.map.smallPlants,false,(resourcesToBuild.Count > 0 ? resourceM.GetResourceByEnum(tileM.GetSeedToHarvestResource()[resourcesToBuild[0].resource.type]) : null),resourceM);
+					tileM.map.smallPlants.Remove(plant);
 					plant.obj.SetActive(false);
-					resourcesToBuild.AddRange(tileM.GetPlantResources()[plant.group.type]);
+					resourcesToBuild.Add(new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(tileM.GetPlantSeeds()[plant.group.type]),1));
 				}
 			}
 
@@ -99,7 +105,7 @@ public class JobManager:MonoBehaviour {
 			if (!resourceM.GetBitmaskingTileObjects().Contains(prefab.type) && prefab.bitmaskSprites.Count > 0) {
 				jPSR.sprite = prefab.bitmaskSprites[rotationIndex];
 			}
-			jPSR.sortingOrder = 2 + prefab.layer; // Job Preview Sprite
+			jPSR.sortingOrder = 5 + prefab.layer; // Job Preview Sprite
 			jPSR.color = new Color(1f,1f,1f,0.25f);
 
 			jobProgress = prefab.timeToBuild;
@@ -123,7 +129,7 @@ public class JobManager:MonoBehaviour {
 		public void SetColonist(ColonistManager.Colonist colonist, ResourceManager resourceM, ColonistManager colonistM, JobManager jobM, PathManager pathM) {
 			this.colonist = colonist;
 			if (prefab.jobType != JobTypesEnum.PickupResources && containerPickups != null && containerPickups.Count > 0) {
-				print(containerPickups[0].resourcesToPickup.Count);
+				//print(containerPickups[0].resourcesToPickup.Count);
 				colonist.storedJob = this;
 				colonist.SetJob(new ColonistJob(colonist,new Job(containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),0),null,null,jobM,pathM));
 			}
@@ -252,7 +258,7 @@ public class JobManager:MonoBehaviour {
 					uiM.SetSelectedColonistInformation();
 					uiM.SetSelectedContainerInfo();
 				} else {
-					print("Target container is null but it shouldn't be...");
+					//print("Target container is null but it shouldn't be...");
 				}
 			}
 			colonist.resourceM.RemoveTileObjectInstance(instance);
@@ -287,6 +293,7 @@ public class JobManager:MonoBehaviour {
 		finishJobFunctions.Add(JobTypesEnum.PlantPlant,delegate (ColonistManager.Colonist colonist,Job job) {
 			job.plant.obj.SetActive(true);
 			job.tile.SetPlant(false,job.plant);
+			tileM.map.smallPlants.Add(job.plant);
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(tileM.GetPlantSeeds()[job.tile.plant.group.type]),-1);
 			tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 		});
@@ -294,6 +301,12 @@ public class JobManager:MonoBehaviour {
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),job.tile.tileType.type.ToString())),Random.Range(4,7));
 			job.tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Dirt),true,true,true,false);
 			tileM.map.RemoveTileBrightnessEffect(job.tile);
+			foreach (ResourceManager.LightSource lightSource in resourceM.lightSources) {
+				if (Vector2.Distance(job.tile.obj.transform.position, lightSource.parentTile.obj.transform.position) <= lightSource.parentObject.prefab.maxLightDistance) {
+					lightSource.RemoveTileBrightnesses();
+					lightSource.SetTileBrightnesses();
+				}
+			}
 		});
 		finishJobFunctions.Add(JobTypesEnum.Dig, delegate (ColonistManager.Colonist colonist, Job job) {
 			job.tile.dugPreviously = true;
@@ -391,7 +404,7 @@ public class JobManager:MonoBehaviour {
 						containerOnTile.inventory.ChangeResourceAmount(inventoryResourceAmount.resource,amount);
 						removeResourceAmounts.Add(new ResourceManager.ResourceAmount(inventoryResourceAmount.resource,amount));
 					} else {
-						print("No space left in container");
+						//print("No space left in container");
 					}
 				}
 				foreach (ResourceManager.ResourceAmount removeResourceAmount in removeResourceAmounts) {
@@ -413,30 +426,42 @@ public class JobManager:MonoBehaviour {
 		finishJobFunctions.Add(JobTypesEnum.Eat,delegate (ColonistManager.Colonist colonist,Job job) {
 			List<ResourceManager.ResourceAmount> resourcesToEat = colonist.inventory.resources.Where(r => r.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods).OrderBy(r => r.resource.nutrition).ToList();
 			ColonistManager.NeedInstance foodNeed = colonist.needs.Find(need => need.prefab.type == ColonistManager.NeedsEnum.Food);
-			/*
-			if (resourcesToEat.Count > 0) {
-				ResourceManager.ResourceAmount resourceToEat = resourcesToEat[0];
-				colonist.inventory.ChangeResourceAmount(resourceToEat.resource,-1);
-				foodNeed.value -= resourceToEat.resource.nutrition;
-			}
-			*/
+			float startingFoodNeedValue = foodNeed.value;
 			foreach (ResourceManager.ResourceAmount ra in resourcesToEat) {
 				bool stopEating = false;
 				for (int i = 0; i < ra.amount; i++) {
-					if (foodNeed.value - ra.resource.nutrition < 0) {
+					if (foodNeed.value <= 0) {
 						stopEating = true;
 						break;
 					}
 					foodNeed.value -= ra.resource.nutrition;
 					colonist.inventory.ChangeResourceAmount(ra.resource, -1);
+					if (ra.resource.type == ResourceManager.ResourcesEnum.Apple || ra.resource.type == ResourceManager.ResourcesEnum.BakedApple) {
+						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.AppleSeeds), Random.Range(1, 5));
+					}
 				}
 				if (stopEating) {
 					break;
 				}
 			}
+			float amountEaten = startingFoodNeedValue - foodNeed.value;
+			if (amountEaten >= 15 && foodNeed.value <= -10) {
+				colonist.AddHappinessModifier(ColonistManager.HappinessModifiersEnum.Stuffed);
+			} else if (amountEaten >= 15) {
+				colonist.AddHappinessModifier(ColonistManager.HappinessModifiersEnum.Full);
+			}
+			if (foodNeed.value < 0) {
+				foodNeed.value = 0;
+			}
 		});
 		finishJobFunctions.Add(JobTypesEnum.Sleep,delegate (ColonistManager.Colonist colonist,Job job) {
-			print("Sleeping");
+			ResourceManager.SleepSpot targetSleepSpot = resourceM.sleepSpots.Find(sleepSpot => sleepSpot.parentObject.tile == job.tile);
+			if (targetSleepSpot != null) {
+				targetSleepSpot.StopSleeping();
+				if (targetSleepSpot.parentObject.prefab.restComfortAmount >= 10) {
+					colonist.AddHappinessModifier(ColonistManager.HappinessModifiersEnum.Rested);
+				}
+			}
 		});
 	}
 
@@ -1025,7 +1050,7 @@ public class JobManager:MonoBehaviour {
 	}
 
 	public void UpdateSingleColonistJobs(ColonistManager.Colonist colonist) {
-		List<Job> sortedJobs = jobs.Where(job => (job.tile.region == colonist.overTile.region) || (job.prefab.jobType == JobTypesEnum.Mine && job.tile.horizontalSurroundingTiles.Find(nTile => nTile != null && nTile.region == colonist.overTile.region) != null)).OrderBy(job => CalculateJobCost(colonist,job,null)).ToList();
+		List<Job> sortedJobs = jobs.Where(job => (job.tile.region == colonist.overTile.region) || (job.tile.region != colonist.overTile.region && job.tile.horizontalSurroundingTiles.Find(nTile => nTile != null && nTile.region == colonist.overTile.region) != null)).OrderBy(job => CalculateJobCost(colonist,job,null)).ToList();
 		List<ColonistJob> validJobs = new List<ColonistJob>();
 		foreach (Job job in sortedJobs) {
 			if (job.resourcesToBuild.Count > 0) {
@@ -1066,6 +1091,13 @@ public class JobManager:MonoBehaviour {
 		foreach (ColonistManager.Colonist colonist in availableColonists) {
 			UpdateSingleColonistJobs(colonist);
 		}
+	}
+
+	public int GetColonistJobsCountForColonist(ColonistManager.Colonist colonist) {
+		if (colonistJobs.ContainsKey(colonist)) {
+			return colonistJobs[colonist].Count;
+		}
+		return 0;
 	}
 
 	public void GiveJobsToColonists() {

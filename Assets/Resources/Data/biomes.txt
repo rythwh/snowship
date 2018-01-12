@@ -30,14 +30,14 @@ PolarWetlands/
 CoolDesert/
 	StoneSnow,StoneWater,StoneHole/
 	Stone/
-	0.05/
-	DeadTree/
+	0.01,0.05/
+	ThinTree,DeadTree/
 	#953735`
 TemperateDesert/
 	Dirt,DirtWater,DirtHole/
 	Dirt/
-	0.1/
-	DeadTree/
+	0.01,0.1/
+	WideTree,DeadTree/
 	#77574A`
 Steppe/
 	DirtDryGrass,DirtWater,DirtHole/

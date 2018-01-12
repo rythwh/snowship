@@ -80,6 +80,8 @@ Seeds:
 		5`
 	TreeSeeds/
 		5`
+	AppleSeeds/
+		10`
 	ShrubSeeds/
 		5`
 	CactusSeeds/
@@ -90,18 +92,30 @@ RawFoods:
 		15
 ~
 Foods:
-	Potatoes/
+	Potato/
 		10/
-		5`
-	BakedPotatoes/
+		10`
+	BakedPotato/
 		15/
-		8`
+		25/
+		0/
+		Furnaces/
+		None/
+		50/
+		Potato/
+		1`
 	Berries/
 		3/
 		1`
-	Apples/
+	Apple/
 		5/
-		3`
-	BakedApples/
+		10`
+	BakedApple/
 		10/
-		5
+		15/
+		0/
+		Furnaces/
+		None/
+		20/
+		Apple/
+		1

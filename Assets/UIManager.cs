@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System;
 using System.Text.RegularExpressions;
 using System.Linq;
@@ -51,6 +52,9 @@ public class UIManager : MonoBehaviour {
 		return colourMap[colourKey];
 	}
 
+	public int screenWidth = 0;
+	public int screenHeight = 0;
+
 	private TileManager tileM;
 	private JobManager jobM;
 	private ResourceManager resourceM;
@@ -59,11 +63,17 @@ public class UIManager : MonoBehaviour {
 	private TimeManager timeM;
 	private PersistenceManager persistenceM;
 
+	public GameObject canvas;
+
 	public GameObject mainMenu;
+	private GameObject mainMenuBackground;
 	private GameObject mainMenuButtonsPanel;
 	private GameObject snowshipLogo;
+	private GameObject darkBackground;
 
 	private GameObject loadGamePanel;
+
+	private GameObject settingsPanel;
 
 	private GameObject mapSelectionPanel;
 	private GameObject mapPanelExitButton;
@@ -135,6 +145,8 @@ public class UIManager : MonoBehaviour {
 	private GameObject cancelButton;
 
 	private GameObject selectedMTOIndicator;
+	private GameObject mtoNoFuelPanelObj;
+	private GameObject mtoFuelPanelObj;
 	private MTOPanel selectedMTOFuelPanel;
 	private MTOPanel selectedMTONoFuelPanel;
 	public MTOPanel selectedMTOPanel;
@@ -145,7 +157,12 @@ public class UIManager : MonoBehaviour {
 
 	private GameObject pauseSavePanel;
 
+	public SettingsState settingsState;
+
 	void Awake() {
+
+		screenWidth = Screen.width;
+		screenHeight = Screen.height;
 
 		tileM = GetComponent<TileManager>();
 		jobM = GetComponent<JobManager>();
@@ -155,27 +172,38 @@ public class UIManager : MonoBehaviour {
 		timeM = GetComponent<TimeManager>();
 		persistenceM = GetComponent<PersistenceManager>();
 
-		SetMenuBackground();
-
-		GameObject canvas = GameObject.Find("Canvas");
+		canvas = GameObject.Find("Canvas");
 
 		mainMenu = GameObject.Find("MainMenu");
-		mainMenuButtonsPanel = mainMenu.transform.Find("MainMenuButtons-Panel").gameObject;
+
+		mainMenuBackground = GameObject.Find("MainMenuBackground-Image");
 		snowshipLogo = mainMenu.transform.Find("SnowshipLogo-Image").gameObject;
+		SetMainMenuBackground();
+
+		darkBackground = mainMenu.transform.Find("DarkBackground-Image").gameObject;
+
+		mainMenuButtonsPanel = mainMenu.transform.Find("MainMenuButtons-Panel").gameObject;
 
 		loadGamePanel = canvas.transform.Find("LoadGame-Panel").gameObject;
 		loadGamePanel.transform.Find("LoadGamePanelClose-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(false); });
 
+		settingsPanel = canvas.transform.Find("Settings-Panel").gameObject;
+		settingsPanel.transform.Find("SettingsCancel-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleSettingsMenu(); });
+		settingsPanel.transform.Find("SettingsApply-Button").GetComponent<Button>().onClick.AddListener(delegate { ApplySettings(false); });
+		settingsPanel.transform.Find("SettingsAccept-Button").GetComponent<Button>().onClick.AddListener(delegate { ApplySettings(true); });
 
 		mapSelectionPanel = mainMenu.transform.Find("Map-Panel").gameObject;
 		mapPanelExitButton = mapSelectionPanel.transform.Find("Exit-Button").gameObject;
 		mapPanelExitButton.GetComponent<Button>().onClick.AddListener(delegate { ToggleNewGameMM(); });
 
 		mainMenuButtonsPanel.transform.Find("New-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleNewGameMM(); });
+
 		mainMenuButtonsPanel.transform.Find("Continue-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleMainMenuContinue(); });
+		mainMenuButtonsPanel.transform.Find("Continue-Button").GetComponent<HoverToggleScript>().Initialize(mainMenu.transform.Find("MainMenuButtons-Panel/Continue-Button/LoadFilePanelParent-Panel").gameObject);
+
 		mainMenuButtonsPanel.transform.Find("Load-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(true); });
-		mainMenuButtonsPanel.transform.Find("Settings-Button").GetComponent<Button>().onClick.AddListener(delegate { });
-		mainMenuButtonsPanel.transform.Find("Exit-Button").GetComponent<Button>().onClick.AddListener(delegate { });
+		mainMenuButtonsPanel.transform.Find("Settings-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleSettingsMenu(); });
+		mainMenuButtonsPanel.transform.Find("Exit-Button").GetComponent<Button>().onClick.AddListener(delegate { ExitToDesktop(); });
 
 		planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
 
@@ -245,6 +273,7 @@ public class UIManager : MonoBehaviour {
 		selectedColonistHappinessModifiersPanel = selectedColonistInformationPanel.transform.Find("HappinessModifier-Panel").gameObject;
 		selectedColonistHappinessModifiersButton = selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessModifiers-Button").gameObject;
 		selectedColonistHappinessModifiersButton.GetComponent<Button>().onClick.AddListener(delegate { selectedColonistHappinessModifiersPanel.SetActive(!selectedColonistHappinessModifiersPanel.activeSelf); });
+		selectedColonistHappinessModifiersPanel.SetActive(false);
 
 		dateTimeInformationPanel = GameObject.Find("DateTimeInformation-Panel");
 
@@ -273,6 +302,9 @@ public class UIManager : MonoBehaviour {
 		cancelButton = GameObject.Find("Cancel-Button");
 		cancelButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Cancel)); });
 
+		mtoNoFuelPanelObj = GameObject.Find("SelectedManufacturingTileObjectNoFuel-Panel");
+		mtoFuelPanelObj = GameObject.Find("SelectedManufacturingTileObjectFuel-Panel");
+
 		pauseMenu = GameObject.Find("PauseMenu-BackgroundPanel");
 		pauseMenuButtons = pauseMenu.transform.Find("ButtonsList-Panel").gameObject;
 		pauseLabel = pauseMenu.transform.Find("PausedLabel-Text").gameObject;
@@ -286,7 +318,14 @@ public class UIManager : MonoBehaviour {
 
 		pauseMenuButtons.transform.Find("PauseLoad-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleLoadMenu(false); });
 
+		pauseMenuButtons.transform.Find("PauseSettings-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleSettingsMenu(); });
+
+		pauseMenuButtons.transform.Find("PauseExitToMainMenu-Button").GetComponent<Button>().onClick.AddListener(delegate { ExitToMenu(); });
+
+		pauseMenuButtons.transform.Find("PauseExitToDesktop-Button").GetComponent<Button>().onClick.AddListener(delegate { ExitToDesktop(); });
+
 		ToggleLoadMenu(false);
+		ToggleSettingsMenu();
 
 		TogglePauseMenu();
 
@@ -305,13 +344,9 @@ public class UIManager : MonoBehaviour {
 		SetJobElements();
 		InitializeProfessionsList();
 		InitializeResourcesList();
-		/*
-		InitializeSelectedManufacturingTileObjectPanel(selectedMTOFuelPanel, true);
-		InitializeSelectedManufacturingTileObjectPanel(selectedMTONoFuelPanel, false);
-		*/
 
-		selectedMTOFuelPanel = new MTOPanel(GameObject.Find("SelectedManufacturingTileObjectFuel-Panel"), true, resourceM);
-		selectedMTONoFuelPanel = new MTOPanel(GameObject.Find("SelectedManufacturingTileObjectNoFuel-Panel"), false, resourceM);
+		selectedMTOFuelPanel = new MTOPanel(mtoFuelPanelObj, true, resourceM);
+		selectedMTONoFuelPanel = new MTOPanel(mtoNoFuelPanelObj, false, resourceM);
 
 		ToggleLoadingScreen(false);
 	}
@@ -354,12 +389,12 @@ public class UIManager : MonoBehaviour {
 				UpdateSelectedContainerInfo();
 			}
 			if (selectedMTO != null) {
-				selectedMTOPanel.Update(selectedMTO,this);
+				selectedMTOPanel.Update(selectedMTO, this);
 				if (Input.GetMouseButtonDown(1)) {
 					SetSelectedManufacturingTileObject(null);
 				}
 			}
-			if (Input.GetMouseButtonDown(0)) {
+			if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
 				ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == newMouseOverTile);
 				if (container != null) {
 					SetSelectedManufacturingTileObject(null);
@@ -377,10 +412,26 @@ public class UIManager : MonoBehaviour {
 			if (resourcesList.activeSelf) {
 				UpdateResourcesList();
 			}
+			UpdateButtonRequiredResourceItems();
 		} else {
 			playButton.GetComponent<Button>().interactable = (selectedPlanetTile != null);
 			if (Input.GetMouseButtonDown(1) && selectedPlanetTile != null && !tileM.generating) {
 				SetSelectedPlanetTile(null);
+			}
+			UpdateMainMenuBackground();
+		}
+	}
+
+	private void UpdateButtonRequiredResourceItems() {
+		foreach (GameObject buttonRequiredResourceItem in buttonRequiredResourceItems) {
+			if (buttonRequiredResourceItem.activeSelf) {
+				ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), buttonRequiredResourceItem.transform.Find("ResourceName-Text").GetComponent<Text>().text.Replace(" ", string.Empty)));
+				buttonRequiredResourceItem.transform.Find("AvailableAmount-Text").GetComponent<Text>().text = "Have " + resource.worldTotalAmount;
+				if (int.Parse(buttonRequiredResourceItem.transform.Find("RequiredAmount-Text").GetComponent<Text>().text.Split(' ')[1]) > resource.worldTotalAmount) {
+					buttonRequiredResourceItem.GetComponent<Image>().color = colourMap[Colours.LightRed];
+				} else {
+					buttonRequiredResourceItem.GetComponent<Image>().color = colourMap[Colours.LightGreen];
+				}
 			}
 		}
 	}
@@ -406,6 +457,7 @@ public class UIManager : MonoBehaviour {
 			snowshipLogo.SetActive(true);
 			PreviewMainMenuContinueFile();
 		}
+		darkBackground.SetActive(!snowshipLogo.activeSelf);
 	}
 
 	void ToggleNewGameMM() {
@@ -417,7 +469,7 @@ public class UIManager : MonoBehaviour {
 	}
 
 	void ExitToDesktop() {
-
+		Application.Quit();
 	}
 
 	private bool createdPlanet = false;
@@ -708,29 +760,43 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
+	public void GameToMainMenuTransition() {
+		ToggleGameUI(false);
+		ToggleLoadingScreen(false);
+		mainMenu.SetActive(true);
+	}
+
 	public void UpdateMapSizeText() {
 		mapSize = Mathf.RoundToInt(mapSizeSlider.value * 50);
 		mapSizeText.text = mapSize.ToString();
 	}
 
-	void SetMenuBackground() {
+	void SetMainMenuBackground() {
 
-		GameObject menuBackground = GameObject.Find("MainMenuBackground-Image");
+		Vector2 screenResolution = new Vector2(screenWidth, screenHeight);
+		float targetNewSize = Mathf.Max(screenResolution.x, screenResolution.y);
 
 		List<Sprite> backgroundImages = Resources.LoadAll<Sprite>(@"UI/Backgrounds/SingleMap").ToList();
-		menuBackground.GetComponent<Image>().sprite = backgroundImages[UnityEngine.Random.Range(0, backgroundImages.Count)];
+		mainMenuBackground.GetComponent<Image>().sprite = backgroundImages[UnityEngine.Random.Range(0, backgroundImages.Count)];
 
-		Vector2 menuBackgroundSize = new Vector2(menuBackground.GetComponent<Image>().sprite.texture.width, menuBackground.GetComponent<Image>().sprite.texture.height);
+		Vector2 menuBackgroundSize = new Vector2(mainMenuBackground.GetComponent<Image>().sprite.texture.width, mainMenuBackground.GetComponent<Image>().sprite.texture.height);
+		float menuBackgroundTargetSize = Mathf.Max(menuBackgroundSize.x, menuBackgroundSize.y);
+		float menuBackgroundRatio = menuBackgroundTargetSize / targetNewSize;
+		Vector2 newMenuBackgroundSize = menuBackgroundSize / menuBackgroundRatio;
+		mainMenuBackground.GetComponent<RectTransform>().sizeDelta = newMenuBackgroundSize * 1.5f;
+		originalBackgroundPosition = mainMenuBackground.GetComponent<RectTransform>().position;
 
-		Vector2 screenResolution = new Vector2(Screen.currentResolution.width, Screen.currentResolution.height);
+		Vector2 logoSize = new Vector2(snowshipLogo.GetComponent<Image>().sprite.texture.width, snowshipLogo.GetComponent<Image>().sprite.texture.height);
+		float logoTargetSize = Mathf.Max(logoSize.x, logoSize.y);
+		float logoRatio = logoTargetSize / targetNewSize;
+		Vector2 newLogoSize = logoSize / logoRatio;
+		snowshipLogo.GetComponent<RectTransform>().sizeDelta = newLogoSize * 1.05f;
+	}
 
-		float targetSize = Mathf.Max(menuBackgroundSize.x, menuBackgroundSize.y);
-		float targetNewSize = Mathf.Max(screenResolution.x, screenResolution.x);
-
-		float ratio = targetSize / targetNewSize;
-
-		Vector2 newMenuBackgroundSize = menuBackgroundSize / ratio;
-		menuBackground.GetComponent<RectTransform>().sizeDelta = newMenuBackgroundSize;
+	private Vector3 originalBackgroundPosition;
+	private float movementMultiplier = 25f;
+	void UpdateMainMenuBackground() {
+		mainMenuBackground.GetComponent<RectTransform>().position = originalBackgroundPosition + new Vector3((-Input.mousePosition.x) / (screenWidth / movementMultiplier), (-Input.mousePosition.y) / (screenHeight / movementMultiplier)) + (new Vector3(screenWidth, screenHeight) / movementMultiplier / 2);
 	}
 
 	public void UpdateLoadingStateText(string primaryText, string secondaryText) {
@@ -793,6 +859,8 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
+	private List<GameObject> buttonRequiredResourceItems = new List<GameObject>();
+
 	public Dictionary<GameObject, Dictionary<GameObject, Dictionary<GameObject, List<GameObject>>>> CreateBuildMenuButtons() {
 
 		Dictionary<GameObject, Dictionary<GameObject, Dictionary<GameObject, List<GameObject>>>> menus = new Dictionary<GameObject, Dictionary<GameObject, Dictionary<GameObject, List<GameObject>>>>();
@@ -833,12 +901,14 @@ public class UIManager : MonoBehaviour {
 					}
 					prefabButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(prefab); });
 					GameObject requiredResourcesPanel = prefabButton.transform.Find("RequiredResources-Panel").gameObject;
+					prefabButton.GetComponent<HoverToggleScript>().Initialize(requiredResourcesPanel);
 					foreach (ResourceManager.ResourceAmount requiredResource in prefab.resourcesToBuild) {
-						GameObject requiredResourcesItem = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/RequiredResource-Panel"), requiredResourcesPanel.transform, false);
-						requiredResourcesItem.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = requiredResource.resource.image;
-						requiredResourcesItem.transform.Find("ResourceName-Text").GetComponent<Text>().text = requiredResource.resource.name;
-						requiredResourcesItem.transform.Find("RequiredAmount-Text").GetComponent<Text>().text = "Need " + requiredResource.amount;
-						requiredResourcesItem.transform.Find("AvailableAmount-Text").GetComponent<Text>().text = "Have " + requiredResource.resource.worldTotalAmount;
+						GameObject requiredResourceItem = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/RequiredResource-Panel"), requiredResourcesPanel.transform, false);
+						requiredResourceItem.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = requiredResource.resource.image;
+						requiredResourceItem.transform.Find("ResourceName-Text").GetComponent<Text>().text = requiredResource.resource.name;
+						requiredResourceItem.transform.Find("RequiredAmount-Text").GetComponent<Text>().text = "Need " + requiredResource.amount;
+						requiredResourceItem.transform.Find("AvailableAmount-Text").GetComponent<Text>().text = "Have " + requiredResource.resource.worldTotalAmount;
+						buttonRequiredResourceItems.Add(requiredResourceItem);
 					}
 					prefabButtons.Add(prefabButton);
 				}
@@ -895,12 +965,14 @@ public class UIManager : MonoBehaviour {
 				}
 				prefabButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(prefab); });
 				GameObject requiredResourcesPanel = prefabButton.transform.Find("RequiredResources-Panel").gameObject;
+				prefabButton.GetComponent<HoverToggleScript>().Initialize(requiredResourcesPanel);
 				foreach (ResourceManager.ResourceAmount requiredResource in prefab.resourcesToBuild) {
-					GameObject requiredResourcesItem = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/RequiredResource-Panel"), requiredResourcesPanel.transform, false);
-					requiredResourcesItem.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = requiredResource.resource.image;
-					requiredResourcesItem.transform.Find("ResourceName-Text").GetComponent<Text>().text = requiredResource.resource.name;
-					requiredResourcesItem.transform.Find("RequiredAmount-Text").GetComponent<Text>().text = "Need " + requiredResource.amount;
-					requiredResourcesItem.transform.Find("AvailableAmount-Text").GetComponent<Text>().text = "Have " + requiredResource.resource.worldTotalAmount;
+					GameObject requiredResourceItem = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/RequiredResource-Panel"), requiredResourcesPanel.transform, false);
+					requiredResourceItem.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = requiredResource.resource.image;
+					requiredResourceItem.transform.Find("ResourceName-Text").GetComponent<Text>().text = requiredResource.resource.name;
+					requiredResourceItem.transform.Find("RequiredAmount-Text").GetComponent<Text>().text = "Need " + requiredResource.amount;
+					requiredResourceItem.transform.Find("AvailableAmount-Text").GetComponent<Text>().text = "Have " + requiredResource.resource.worldTotalAmount;
+					buttonRequiredResourceItems.Add(requiredResourceItem);
 				}
 				prefabButtons.Add(prefabButton);
 			}
@@ -1113,7 +1185,8 @@ public class UIManager : MonoBehaviour {
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ReservedResourceInfoElement-Panel"), parent, false);
 
 			obj.transform.Find("Name").GetComponent<Text>().text = resourceAmount.resource.name;
-			// ADD RESOURCE IMAGE
+
+			obj.transform.Find("Image").GetComponent<Image>().sprite = resourceAmount.resource.image;
 
 			Update();
 		}
@@ -1163,23 +1236,38 @@ public class UIManager : MonoBehaviour {
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/HappinessModifierElement-Panel"), parent, false);
 
+
+
 			obj.transform.Find("HappinessModifierName-Text").GetComponent<Text>().text = happinessModifierInstance.prefab.name;
+			if (happinessModifierInstance.prefab.effectAmount > 0) {
+				obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGreen];
+			} else if (happinessModifierInstance.prefab.effectAmount < 0) {
+				obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightRed];
+			} else {
+				obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGrey220];
+			}
 
 			Update();
 		}
 
-		public void Update() {
-			obj.transform.Find("HappinessModifierTime-Text").GetComponent<Text>().text = happinessModifierInstance.timer + "s (" + happinessModifierInstance.prefab.effectLengthSeconds + "s)";
+		public bool Update() {
+			if (!happinessModifierInstance.colonist.happinessModifiers.Contains(happinessModifierInstance)) {
+				Destroy(obj);
+				return false;
+			}
+			if (happinessModifierInstance.prefab.infinite) {
+				obj.transform.Find("HappinessModifierTime-Text").GetComponent<Text>().text = "Until Not";
+			} else {
+				obj.transform.Find("HappinessModifierTime-Text").GetComponent<Text>().text = Mathf.RoundToInt(happinessModifierInstance.timer) + "s (" + Mathf.RoundToInt(happinessModifierInstance.prefab.effectLengthSeconds) + "s)";
+			}
 			if (happinessModifierInstance.prefab.effectAmount > 0) {
 				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = "+" + happinessModifierInstance.prefab.effectAmount;
-				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().color = uiM.colourMap[Colours.LightGreen];
 			} else if (happinessModifierInstance.prefab.effectAmount < 0) {
-				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = "-" + happinessModifierInstance.prefab.effectAmount;
-				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().color = uiM.colourMap[Colours.LightRed];
+				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = happinessModifierInstance.prefab.effectAmount.ToString();
 			} else {
 				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = happinessModifierInstance.prefab.effectAmount.ToString();
-				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().color = uiM.colourMap[Colours.DarkGrey50];
 			}
+			return true;
 		}
 	}
 
@@ -1225,6 +1313,10 @@ public class UIManager : MonoBehaviour {
 				Destroy(inventoryElement.obj);
 			}
 			inventoryElements.Clear();
+			foreach (HappinessModifierElement happinessModifierElement in happinessModifierElements) {
+				Destroy(happinessModifierElement.obj);
+			}
+			happinessModifierElements.Clear();
 
 			foreach (ColonistManager.SkillInstance skill in colonistM.selectedColonist.skills) {
 				skillElements.Add(new SkillElement(colonistM.selectedColonist, skill, selectedColonistInformationPanel.transform.Find("SkillsList-Panel"), this));
@@ -1237,6 +1329,9 @@ public class UIManager : MonoBehaviour {
 			}
 			foreach (ResourceManager.ResourceAmount ra in colonistM.selectedColonist.inventory.resources) {
 				inventoryElements.Add(new InventoryElement(colonistM.selectedColonist, ra, selectedColonistInformationPanel.transform.Find("Inventory-Panel/Inventory-ScrollPanel/InventoryList-Panel"), this));
+			}
+			foreach (ColonistManager.HappinessModifierInstance hmi in colonistM.selectedColonist.happinessModifiers) {
+				happinessModifierElements.Add(new HappinessModifierElement(hmi, selectedColonistInformationPanel.transform.Find("HappinessModifier-Panel/HappinessModifier-ScrollPanel/HappinessModifierList-Panel"), this));
 			}
 		} else {
 			selectedColonistInformationPanel.SetActive(false);
@@ -1283,6 +1378,7 @@ public class UIManager : MonoBehaviour {
 		{1,-50 },{2,-65 },{3,-70 }
 	};
 
+	private List<HappinessModifierElement> removeHME = new List<HappinessModifierElement>();
 	public void UpdateSelectedColonistInformation() {
 		if (colonistM.selectedColonist != null) {
 
@@ -1311,10 +1407,13 @@ public class UIManager : MonoBehaviour {
 			Text happinessModifierAmountText = selectedColonistHappinessModifiersButton.transform.Find("HappinessModifiersAmount-Text").GetComponent<Text>();
 			if (happinessModifiersSum > 0) {
 				happinessModifierAmountText.text = "+" + happinessModifiersSum + "%";
+				happinessModifierAmountText.color = colourMap[Colours.LightGreen];
 			} else if (happinessModifiersSum < 0) {
-				happinessModifierAmountText.text = "-" + happinessModifiersSum + "%";
+				happinessModifierAmountText.text = happinessModifiersSum + "%";
+				happinessModifierAmountText.color = colourMap[Colours.LightRed];
 			} else {
 				happinessModifierAmountText.text = happinessModifiersSum + "%";
+				happinessModifierAmountText.color = colourMap[Colours.LightGrey200];
 			}
 			selectedColonistHappinessModifiersButton.GetComponent<RectTransform>().sizeDelta = new Vector2(happinessModifierButtonSizeMap[happinessLength], 20);
 			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<RectTransform>().offsetMax = new Vector2(happinessModifierValueHorizontalPositionMap[happinessLength], 0);
@@ -1330,6 +1429,19 @@ public class UIManager : MonoBehaviour {
 			foreach (InventoryElement inventoryElement in inventoryElements) {
 				inventoryElement.Update();
 			}
+			foreach (HappinessModifierElement happinessModifierElement in happinessModifierElements) {
+				bool keep = happinessModifierElement.Update();
+				if (!keep) {
+					removeHME.Add(happinessModifierElement);
+				}
+			}
+			if (removeHME.Count > 0) {
+				foreach (HappinessModifierElement happinessModifierElement in removeHME) {
+					Destroy(happinessModifierElement.obj);
+					happinessModifierElements.Remove(happinessModifierElement);
+				}
+				removeHME.Clear();
+			}
 		}
 	}
 
@@ -1338,7 +1450,7 @@ public class UIManager : MonoBehaviour {
 		public ColonistManager.Colonist colonist;
 		public GameObject obj;
 
-		public ColonistElement(ColonistManager.Colonist colonist, Transform transform) {
+		public ColonistElement(ColonistManager.Colonist colonist, Transform transform, UIManager uiM) {
 			this.colonist = colonist;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ColonistInfoElement-Panel"), transform, false);
@@ -1349,11 +1461,11 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("Name").GetComponent<Text>().text = colonist.name;
 			obj.GetComponent<Button>().onClick.AddListener(delegate { colonist.colonistM.SetSelectedColonist(colonist); });
 
-			Update();
+			Update(uiM);
 		}
 
-		public void Update() {
-
+		public void Update(UIManager uiM) {
+			obj.GetComponent<Image>().color = Color.Lerp(uiM.colourMap[Colours.LightRed], uiM.colourMap[Colours.LightGreen], colonist.health);
 		}
 
 		public void DestroyObject() {
@@ -1375,14 +1487,14 @@ public class UIManager : MonoBehaviour {
 		RemoveColonistElements();
 		if (colonistList.activeSelf) {
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-				colonistElements.Add(new ColonistElement(colonist, colonistList.transform.Find("ColonistList-Panel")));
+				colonistElements.Add(new ColonistElement(colonist, colonistList.transform.Find("ColonistList-Panel"), this));
 			}
 		}
 	}
 
 	public void UpdateColonistElements() {
 		foreach (ColonistElement colonistElement in colonistElements) {
-			colonistElement.Update();
+			colonistElement.Update(this);
 		}
 	}
 
@@ -1408,13 +1520,13 @@ public class UIManager : MonoBehaviour {
 			});
 
 			if (colonist != null) {
-				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, 107);
+				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, 93);
 				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().minValue = 0;
 				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().maxValue = job.colonistBuildTime;
 				if (colonist.job.started) {
-					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightBlue];
+					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGreen];
 				} else {
-					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightOrange];
+					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightYellow];
 				}
 
 				colonistObj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ColonistInfoElement-Panel"), obj.transform, false);
@@ -1422,7 +1534,7 @@ public class UIManager : MonoBehaviour {
 				colonistObj.transform.Find("BodySprite").GetComponent<Image>().sprite = colonist.moveSprites[0];
 				colonistObj.transform.Find("Name").GetComponent<Text>().text = colonist.name;
 				colonistObj.GetComponent<Button>().onClick.AddListener(delegate { colonist.colonistM.SetSelectedColonist(colonist); });
-				colonistObj.GetComponent<Image>().color = uiM.colourMap[Colours.LightBlue];
+				colonistObj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGreen];
 				colonistObj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, colonistObj.GetComponent<RectTransform>().sizeDelta.y);
 				colonistObj.GetComponent<Outline>().enabled = false;
 			}
@@ -1471,7 +1583,10 @@ public class UIManager : MonoBehaviour {
 			foreach (ColonistManager.Colonist jobColonist in orderedColonists.Where(colonist => !colonist.job.started)) {
 				jobElements.Add(new JobElement(jobColonist.job, jobColonist, jobList.transform.Find("JobList-Panel"), this, cameraM));
 			}
-			foreach (JobManager.Job job in jobM.jobs) {
+			foreach (JobManager.Job job in jobM.jobs.Where(j => j.started).OrderBy(j => (j.jobProgress / j.colonistBuildTime))) {
+				jobElements.Add(new JobElement(job, null, jobList.transform.Find("JobList-Panel"), this, cameraM));
+			}
+			foreach (JobManager.Job job in jobM.jobs.Where(j => !j.started)) {
 				jobElements.Add(new JobElement(job, null, jobList.transform.Find("JobList-Panel"), this, cameraM));
 			}
 		} else {
@@ -1489,7 +1604,7 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void UpdateDateTimeInformation(int minute, int hour, int day, int month, int year, bool isDay) {
-		dateTimeInformationPanel.transform.Find("DateTimeInformation-Time-Text").GetComponent<Text>().text = timeM.Get12HourTime() + ":" + (minute < 10 ? ("0" + minute) : minute.ToString()) + (hour < 13 ? "AM" : "PM") + " (" + (isDay ? "D" : "N") + ")";
+		dateTimeInformationPanel.transform.Find("DateTimeInformation-Time-Text").GetComponent<Text>().text = timeM.Get12HourTime() + ":" + (minute < 10 ? ("0" + minute) : minute.ToString()) + (hour < 12 || hour > 23 ? "AM" : "PM") + " (" + (isDay ? "D" : "N") + ")";
 		dateTimeInformationPanel.transform.Find("DateTimeInformation-Speed-Text").GetComponent<Text>().text = (timeM.GetTimeModifier() > 0 ? new string('>', timeM.GetTimeModifier()) : "-");
 		dateTimeInformationPanel.transform.Find("DateTimeInformation-Date-Text").GetComponent<Text>().text = "D" + day + " M" + month + " Y" + year;
 	}
@@ -1796,6 +1911,10 @@ public class UIManager : MonoBehaviour {
 
 	private List<ProfessionElement> professionElements = new List<ProfessionElement>();
 	public void InitializeProfessionsList() {
+		foreach (ProfessionElement professionElement in professionElements) {
+			Destroy(professionElement.obj);
+		}
+		professionElements.Clear();
 		foreach (ColonistManager.Profession profession in colonistM.professions) {
 			professionElements.Add(new ProfessionElement(profession, professionsList.transform, this));
 		}
@@ -2076,6 +2195,10 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void InitializeResourcesList() {
+		foreach (ResourceInstanceElement rie in resourceInstanceElements) {
+			Destroy(rie.obj);
+		}
+		resourceInstanceElements.Clear();
 		Transform resourcesListParent = resourcesList.transform.Find("ResourcesList-Panel");
 		foreach (ResourceManager.Resource resource in resourceM.resources) {
 			ResourceInstanceElement newRIE = new ResourceInstanceElement(resource, resourcesListParent, this);
@@ -2128,6 +2251,8 @@ public class UIManager : MonoBehaviour {
 
 	public class MTOPanel {
 
+		private ResourceManager resourceM;
+
 		public GameObject obj;
 		private bool fuel;
 
@@ -2144,29 +2269,19 @@ public class UIManager : MonoBehaviour {
 		private GameObject activeValueText = null; // Independent of fuel/no-fuel panel
 
 		public MTOPanel(GameObject obj, bool fuel, ResourceManager resourceM) {
+			this.resourceM = resourceM;
+
 			this.obj = obj;
 			this.fuel = fuel;
 
-			Initialize(resourceM);
+			Initialize();
 
 			obj.SetActive(false);
 		}
 
-		private void Initialize(ResourceManager resourceM) {
+		private void Initialize() {
 			selectResourcePanel = obj.transform.Find("SelectResource-Panel").gameObject;
 			selectResourceList = selectResourcePanel.transform.Find("SelectResource-ScrollPanel/SelectResourceList-Panel").gameObject;
-
-			foreach (ResourceManager.ResourcesEnum resourceEnum in resourceM.GetManufacturableResources()) {
-				ResourceManager.Resource resource = resourceM.GetResourceByEnum(resourceEnum);
-
-				GameObject selectResourceButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/SelectManufacturedResource-Panel"), selectResourceList.transform, false);
-				selectResourceButton.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = resource.image;
-				selectResourceButton.transform.Find("ResourceName-Text").GetComponent<Text>().text = resource.name;
-				//selectResourceButton.transform.Find("ResourceManufactureTileObjectSubGroupName-Text").GetComponent<Text>().text = resource.manufacturingTileObjectSubGroup.name;
-				selectResourceButton.transform.Find("RequiredEnergy-Text").GetComponent<Text>().text = resource.requiredEnergy.ToString();
-
-				selectResourceListElements.Add(selectResourceButton, resource);
-			}
 
 			obj.transform.Find("SelectResource-Button").GetComponent<Button>().onClick.AddListener(delegate {
 				selectResourcePanel.SetActive(!selectResourcePanel.activeSelf);
@@ -2206,6 +2321,11 @@ public class UIManager : MonoBehaviour {
 		}
 
 		public void Select(ResourceManager.ManufacturingTileObject selectedMTO, GameObject selectedMTOIndicator) {
+			foreach (KeyValuePair<GameObject, ResourceManager.Resource> selectResourceListElementKVP in selectResourceListElements) {
+				Destroy(selectResourceListElementKVP.Key);
+			}
+			selectResourceListElements.Clear();
+
 			obj.SetActive(true);
 
 			selectedMTOIndicator.SetActive(true);
@@ -2214,6 +2334,20 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("SelectedManufacturingTileObjectName-Text").GetComponent<Text>().text = selectedMTO.parentObject.prefab.name;
 
 			obj.transform.Find("SelectedManufacturingTileObjectSprite-Image").GetComponent<Image>().sprite = selectedMTO.parentObject.obj.GetComponent<SpriteRenderer>().sprite;
+
+			foreach (ResourceManager.ResourcesEnum resourceEnum in resourceM.GetManufacturableResources()) {
+				ResourceManager.Resource resource = resourceM.GetResourceByEnum(resourceEnum);
+
+				if (resource.manufacturingTileObjects.Contains(selectedMTO.parentObject.prefab) || (resource.manufacturingTileObjects.Count <= 0 && resource.manufacturingTileObjectSubGroups.Contains(selectedMTO.parentObject.prefab.tileObjectPrefabSubGroup))) {
+					GameObject selectResourceButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/SelectManufacturedResource-Panel"), selectResourceList.transform, false);
+					selectResourceButton.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = resource.image;
+					selectResourceButton.transform.Find("ResourceName-Text").GetComponent<Text>().text = resource.name;
+					//selectResourceButton.transform.Find("ResourceManufactureTileObjectSubGroupName-Text").GetComponent<Text>().text = resource.manufacturingTileObjectSubGroup.name;
+					selectResourceButton.transform.Find("RequiredEnergy-Text").GetComponent<Text>().text = resource.requiredEnergy.ToString();
+
+					selectResourceListElements.Add(selectResourceButton, resource);
+				}
+			}
 
 			foreach (KeyValuePair<GameObject, ResourceManager.Resource> selectResourceButtonKVP in selectResourceListElements) {
 				selectResourceButtonKVP.Key.GetComponent<Button>().onClick.AddListener(delegate {
@@ -2252,8 +2386,10 @@ public class UIManager : MonoBehaviour {
 			if (selectedMTO.createResource != null) {
 				selectedMTO.createResource.UpdateDesiredAmountText();
 				obj.transform.Find("SelectResource-Button/SelectedResourceImage-Image").GetComponent<Image>().sprite = selectedMTO.createResource.image;
+				obj.transform.Find("CreateResourceAmount-Text").GetComponent<Text>().text = "Creates " + selectedMTO.createResource.amountCreated + " " + selectedMTO.createResource.name;
 			} else {
 				obj.transform.Find("SelectResource-Button/SelectedResourceImage-Image").GetComponent<Image>().sprite = Resources.Load<Sprite>(@"UI/NoSelectedResourceImage");
+				obj.transform.Find("CreateResourceAmount-Text").GetComponent<Text>().text = "No Resource Selected";
 			}
 		}
 
@@ -2417,16 +2553,16 @@ public class UIManager : MonoBehaviour {
 			selectedMTOPanel.Deselect(selectedMTOIndicator);
 		}
 
-		if (selectedMTO != null) { 
+		if (selectedMTO != null) {
 			if (resourceM.GetManufacturingTileObjectsFuel().Contains(selectedMTO.parentObject.prefab.type)) {
 				selectedMTOPanel = selectedMTOFuelPanel;
 			} else {
 				selectedMTOPanel = selectedMTONoFuelPanel;
 			}
-			selectedMTOPanel.Select(selectedMTO,selectedMTOIndicator);
+			selectedMTOPanel.Select(selectedMTO, selectedMTOIndicator);
 		}
 
-		
+
 
 		/*
 		SetSelectedManufacturingTileObjectPanel();
@@ -2458,23 +2594,23 @@ public class UIManager : MonoBehaviour {
 
 
 
-	
+
 
 	public void TogglePauseMenu() {
 		pauseMenu.SetActive(!pauseMenu.activeSelf);
 		timeM.SetPaused(pauseMenu.activeSelf);
 	}
 
-	public void TogglePauseMenuButtons() {
-		pauseMenuButtons.SetActive(!pauseMenuButtons.activeSelf);
+	public void TogglePauseMenuButtons(bool state) {
+		pauseMenuButtons.SetActive(state);
 		pauseLabel.SetActive(pauseMenuButtons.activeSelf);
 	}
 
 	private string saveFileName;
 	public void ToggleSaveMenu() {
 		pauseSavePanel.SetActive(!pauseSavePanel.activeSelf);
+		TogglePauseMenuButtons(!pauseSavePanel.activeSelf);
 		if (pauseSavePanel.activeSelf) {
-			TogglePauseMenuButtons();
 			saveFileName = persistenceM.GenerateSaveFileName();
 			pauseSavePanel.transform.Find("SaveFileName-Text").GetComponent<Text>().text = saveFileName;
 			pauseSavePanel.transform.Find("PauseSavePanelSave-Button").GetComponent<Button>().onClick.RemoveAllListeners();
@@ -2483,7 +2619,6 @@ public class UIManager : MonoBehaviour {
 				ToggleSaveMenu();
 			});
 		} else {
-			TogglePauseMenuButtons();
 			saveFileName = string.Empty;
 		}
 	}
@@ -2532,7 +2667,9 @@ public class UIManager : MonoBehaviour {
 			if (string.IsNullOrEmpty(www.error)) {
 				Texture2D texture = new Texture2D(35, 63, TextureFormat.RGB24, false);
 				www.LoadImageIntoTexture(texture);
-				loadFilePanel.transform.Find("SavePreview-Image").GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(new Vector2(0, 0), new Vector2(texture.width, texture.height)), new Vector2(0, 0));
+				if (loadFilePanel != null && loadFilePanel.transform.Find("SavePreview-Image") != null) {
+					loadFilePanel.transform.Find("SavePreview-Image").GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(new Vector2(0, 0), new Vector2(texture.width, texture.height)), new Vector2(0, 0));
+				}
 			}
 		}
 	}
@@ -2548,7 +2685,7 @@ public class UIManager : MonoBehaviour {
 			selectedLoadFile.loadFilePanel.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
 			loadGamePanel.transform.Find("LoadGamePanelLoad-Button").GetComponent<Button>().onClick.RemoveAllListeners();
 			loadGamePanel.transform.Find("LoadGamePanelLoad-Button").GetComponent<Button>().onClick.AddListener(delegate {
-				persistenceM.LoadGame(selectedLoadFile.fileName,fromMainMenu);
+				persistenceM.LoadGame(selectedLoadFile.fileName, fromMainMenu);
 			});
 		}
 	}
@@ -2559,11 +2696,18 @@ public class UIManager : MonoBehaviour {
 			Destroy(continueLoadFile.loadFilePanel);
 			continueLoadFile = null;
 		}
-		List<string> saveFiles = Directory.GetFiles(persistenceM.GenerateSavePath("")).ToList().OrderBy(fileName => SaveFileDateTimeSum(fileName)).Reverse().ToList();
+		List<string> saveFiles = new List<string>();
+		try {
+			saveFiles = Directory.GetFiles(persistenceM.GenerateSavePath("")).ToList().OrderBy(fileName => SaveFileDateTimeSum(fileName)).Reverse().ToList();
+		} catch (DirectoryNotFoundException) {
+			return;
+		}
 		if (saveFiles.Count > 0) {
 			continueLoadFile = new LoadFile(saveFiles[0], mainMenu.transform.Find("MainMenuButtons-Panel/Continue-Button/LoadFilePanelParent-Panel"), true, this);
 			continueLoadFile.loadFilePanel.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
 			Destroy(continueLoadFile.loadFilePanel.GetComponent<Button>());
+		} else {
+			Destroy(continueLoadFile.loadFilePanel);
 		}
 	}
 
@@ -2588,13 +2732,18 @@ public class UIManager : MonoBehaviour {
 	public void ToggleLoadMenu(bool fromMainMenu) {
 		loadGamePanel.SetActive(!loadGamePanel.activeSelf);
 		ToggleMainMenuButtons(loadGamePanel);
+		TogglePauseMenuButtons(!loadGamePanel.activeSelf);
 		foreach (LoadFile loadFile in loadFiles) {
 			Destroy(loadFile.loadFilePanel);
 		}
 		loadFiles.Clear();
 		if (loadGamePanel.activeSelf) {
-			TogglePauseMenuButtons();
-			List<string> saveFiles = Directory.GetFiles(persistenceM.GenerateSavePath("")).ToList().OrderBy(fileName => SaveFileDateTimeSum(fileName)).Reverse().ToList();
+			List<string> saveFiles;
+			try {
+				saveFiles = Directory.GetFiles(persistenceM.GenerateSavePath("")).ToList().OrderBy(fileName => SaveFileDateTimeSum(fileName)).Reverse().ToList();
+			} catch (DirectoryNotFoundException) {
+				return;
+			}
 			foreach (string fileName in saveFiles) {
 				if (fileName.Split('.')[1] == "snowship") {
 					LoadFile loadFile = new LoadFile(fileName, loadGamePanel.transform.Find("LoadFilesList-ScrollPanel/LoadFilesList-Panel"), fromMainMenu, this);
@@ -2602,8 +2751,7 @@ public class UIManager : MonoBehaviour {
 				}
 			}
 		} else {
-			TogglePauseMenuButtons();
-			SetSelectedLoadFile(null,false);
+			SetSelectedLoadFile(null, false);
 		}
 	}
 
@@ -2619,11 +2767,89 @@ public class UIManager : MonoBehaviour {
 		return saveDT;
 	}
 
-	public void ToggleSettingsMenu() {
+	public enum UIScaleMode {
+		ConstantPixelSize,
+		ScaleWithScreenSize
+	};
 
+	public class SettingsState {
+		private UIManager uiM;
+
+		public Resolution resolution;
+		public int resolutionWidth;
+		public int resolutionHeight;
+		public int refreshRate;
+		public bool fullscreen;
+		public CanvasScaler.ScaleMode scaleMode;
+
+		public SettingsState(UIManager uiM) {
+			this.uiM = uiM;
+
+			resolution = Screen.currentResolution;
+			resolutionWidth = Screen.currentResolution.width;
+			resolutionHeight = Screen.currentResolution.height;
+			refreshRate = Screen.currentResolution.refreshRate;
+			fullscreen = true;
+			scaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+		}
+
+		public void SetSettings() {
+			Screen.SetResolution(resolutionWidth, resolutionHeight, fullscreen);
+
+			uiM.canvas.GetComponent<CanvasScaler>().uiScaleMode = scaleMode;
+		}
+	}
+
+	public void ToggleSettingsMenu() {
+		settingsPanel.SetActive(!settingsPanel.activeSelf);
+		ToggleMainMenuButtons(settingsPanel);
+		TogglePauseMenuButtons(!settingsPanel.activeSelf);
+		if (settingsPanel.activeSelf) {
+			GameObject resolutionSettingsPanel = settingsPanel.transform.Find("SettingsList-ScrollPanel/SettingsList-Panel/ResolutionSettings-Panel").gameObject;
+			Slider resolutionSlider = resolutionSettingsPanel.transform.Find("Resolution-Slider").GetComponent<Slider>();
+			resolutionSlider.minValue = 0;
+			resolutionSlider.maxValue = Screen.resolutions.Length - 1;
+			resolutionSlider.onValueChanged.AddListener(delegate {
+				Resolution r = Screen.resolutions[Mathf.RoundToInt(resolutionSlider.value)];
+				settingsState.resolution = r;
+				settingsState.resolutionWidth = r.width;
+				settingsState.resolutionHeight = r.height;
+				settingsState.refreshRate = r.refreshRate;
+				resolutionSettingsPanel.transform.Find("ResolutionValue-Text").GetComponent<Text>().text = settingsState.resolutionWidth + " × " + settingsState.resolutionHeight + " @ " + r.refreshRate + "hz";
+			});
+			resolutionSlider.value = Screen.resolutions.ToList().IndexOf(settingsState.resolution);
+
+			GameObject fullscreenSettingsPanel = settingsPanel.transform.Find("SettingsList-ScrollPanel/SettingsList-Panel/FullscreenSettings-Panel").gameObject;
+			Toggle fullscreenToggle = fullscreenSettingsPanel.transform.Find("Fullscreen-Toggle").GetComponent<Toggle>();
+			fullscreenToggle.onValueChanged.AddListener(delegate { settingsState.fullscreen = fullscreenToggle.isOn; });
+			fullscreenToggle.isOn = settingsState.fullscreen;
+
+			GameObject UIScaleModeSettingsPanel = settingsPanel.transform.Find("SettingsList-ScrollPanel/SettingsList-Panel/UIScaleModeSettings-Panel").gameObject;
+			Toggle UIScaleModeToggle = UIScaleModeSettingsPanel.transform.Find("UIScaleMode-Toggle").GetComponent<Toggle>();
+			UIScaleModeToggle.onValueChanged.AddListener(delegate {
+				if (UIScaleModeToggle.isOn) {
+					settingsState.scaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+				} else {
+					settingsState.scaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+				}
+			});
+			if (settingsState.scaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize) {
+				UIScaleModeToggle.isOn = true;
+			} else if (settingsState.scaleMode == CanvasScaler.ScaleMode.ConstantPixelSize) {
+				UIScaleModeToggle.isOn = false;
+			}
+		}
+	}
+
+	public void ApplySettings(bool closeAfterApplying) {
+		if (closeAfterApplying) {
+			ToggleSettingsMenu();
+		}
+		settingsState.SetSettings();
+		persistenceM.SaveSettings();
 	}
 
 	public void ExitToMenu() {
-
+		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
 }

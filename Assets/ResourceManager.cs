@@ -40,14 +40,14 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourcesEnum {
 		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Log, Wood, Firewood, Snow, Sand,
-		Brick, Glass, Cotton, Cloth, 
-		WheatSeeds, CottonSeeds, TreeSeeds, ShrubSeeds, CactusSeeds,
+		Brick, Glass, Cotton, Cloth,
+		WheatSeeds, CottonSeeds, TreeSeeds, AppleSeeds, ShrubSeeds, CactusSeeds,
 		Wheat,
-		Potatoes, BakedPotatoes, Berries, Apples, BakedApples
+		Potato, BakedPotato, Berries, Apple, BakedApple
 	};
 
 	List<ResourcesEnum> ManufacturableResources = new List<ResourcesEnum>() {
-		ResourcesEnum.Wood, ResourcesEnum.Firewood, ResourcesEnum.Brick, ResourcesEnum.Glass, ResourcesEnum.Cloth
+		ResourcesEnum.Wood, ResourcesEnum.Firewood, ResourcesEnum.Brick, ResourcesEnum.Glass, ResourcesEnum.Cloth, ResourcesEnum.BakedPotato, ResourcesEnum.BakedApple
 	};
 	public List<ResourcesEnum> GetManufacturableResources() {
 		return ManufacturableResources;
@@ -83,12 +83,12 @@ public class ResourceManager : MonoBehaviour {
 		public ResourceGroup(List<string> resourceGroupData, UIManager uiM) {
 			GetScriptReferences();
 
-			type = (ResourceGroupsEnum)System.Enum.Parse(typeof(ResourceGroupsEnum),resourceGroupData[0]);
+			type = (ResourceGroupsEnum)System.Enum.Parse(typeof(ResourceGroupsEnum), resourceGroupData[0]);
 			name = uiM.SplitByCapitals(type.ToString());
 
 			List<string> resourceData = resourceGroupData[1].Split('`').ToList();
 			foreach (string resourceString in resourceData) {
-				Resource resource = new Resource(resourceString.Split('/').ToList(),this,uiM);
+				Resource resource = new Resource(resourceString.Split('/').ToList(), this, uiM);
 				resourceTypes.Add(resource.type);
 				resources.Add(resource);
 				resourceM.resources.Add(resource);
@@ -154,12 +154,12 @@ public class ResourceManager : MonoBehaviour {
 
 		public UIManager.ResourceInstanceElement resourceListElement;
 
-		public Resource(List<string> resourceData,ResourceGroup resourceGroup, UIManager uiM) {
+		public Resource(List<string> resourceData, ResourceGroup resourceGroup, UIManager uiM) {
 			GetScriptReferences();
 
 			this.resourceData = resourceData;
 
-			type = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceData[0]);
+			type = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum), resourceData[0]);
 			name = uiM.SplitByCapitals(type.ToString());
 
 			image = Resources.Load<Sprite>(@"Sprites/Resources/" + name + "/" + name.Replace(' ', '-') + "-base");
@@ -190,15 +190,15 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	public void CreateResources() {
-		List<string> resourceGroupsDataString = UnityEngine.Resources.Load<TextAsset>(@"Data/resources").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('~').ToList();
+		List<string> resourceGroupsDataString = UnityEngine.Resources.Load<TextAsset>(@"Data/resources").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('~').ToList();
 		foreach (string resourceGroupDataString in resourceGroupsDataString) {
 			List<string> resourceGroupData = resourceGroupDataString.Split(':').ToList();
-			ResourceGroup resourceGroup = new ResourceGroup(resourceGroupData,uiM);
+			ResourceGroup resourceGroup = new ResourceGroup(resourceGroupData, uiM);
 			resourceGroups.Add(resourceGroup);
 		}
 		tileM.SetPlantResources();
 	}
-	
+
 	public void SetManufacturableResourcesData() {
 		foreach (Resource resource in resources) {
 			if (ManufacturableResources.Contains(resource.type)) {
@@ -222,22 +222,15 @@ public class ResourceManager : MonoBehaviour {
 				resource.requiredEnergy = int.Parse(resource.resourceData[6]);
 				int index = 0;
 				foreach (string resourceNameString in resource.resourceData[7].Split(',')) {
-					Resource requiredResource = GetResourceByEnum((ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum),resourceNameString));
+					Resource requiredResource = GetResourceByEnum((ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum), resourceNameString));
 					float requiredResourceAmountPerManufacturableResource = float.Parse(resource.resourceData[8].Split(',')[index]);
 					if (requiredResourceAmountPerManufacturableResource < 1 && requiredResourceAmountPerManufacturableResource > 0) {
 						resource.amountCreated = Mathf.RoundToInt(1f / requiredResourceAmountPerManufacturableResource);
 						resource.requiredResources.Add(new ResourceAmount(requiredResource, 1));
-						foreach (ResourceAmount ra in resource.requiredResources) {
-							print(resource.name + " " + resource.amountCreated + " " + ra.resource.name + " " + ra.amount);
-						}
 					} else {
 						resource.amountCreated = 1;
 						resource.requiredResources.Add(new ResourceAmount(requiredResource, Mathf.RoundToInt(requiredResourceAmountPerManufacturableResource)));
-						foreach (ResourceAmount ra in resource.requiredResources) {
-							print(resource.name + " " + resource.amountCreated + " " + ra.resource.name + " " + ra.amount);
-						}
 					}
-					
 					index += 1;
 				}
 			}
@@ -251,7 +244,7 @@ public class ResourceManager : MonoBehaviour {
 	public class ResourceAmount {
 		public Resource resource;
 		public int amount;
-		public ResourceAmount(Resource resource,int amount) {
+		public ResourceAmount(Resource resource, int amount) {
 			this.resource = resource;
 			this.amount = amount;
 		}
@@ -261,7 +254,7 @@ public class ResourceManager : MonoBehaviour {
 		public List<ResourceAmount> resources = new List<ResourceAmount>();
 		public ColonistManager.Colonist colonist;
 
-		public ReservedResources(List<ResourceAmount> resourcesToReserve,ColonistManager.Colonist colonistReservingResources) {
+		public ReservedResources(List<ResourceAmount> resourcesToReserve, ColonistManager.Colonist colonistReservingResources) {
 			resources.AddRange(resourcesToReserve);
 			colonist = colonistReservingResources;
 		}
@@ -336,11 +329,31 @@ public class ResourceManager : MonoBehaviour {
 			job.SetCreateResourceData(resource, manufacturingTileObject);
 			jobM.CreateJob(job);
 			manufacturingTileObject.mto.jobBacklog.Add(job);
+			/*
 			string output = "CreateResource: ";
 			foreach (ResourceAmount ra in job.resourcesToBuild) {
 				output += ra.resource.name + " " + ra.amount + " - ";
 			}
 			print(output);
+			*/
+		}
+	}
+
+	public List<SleepSpot> sleepSpots = new List<SleepSpot>();
+	public class SleepSpot {
+		public TileObjectInstance parentObject;
+		public ColonistManager.Colonist occupyingColonist;
+
+		public SleepSpot(TileObjectInstance parentObject) {
+			this.parentObject = parentObject;
+		}
+
+		public void StartSleeping(ColonistManager.Colonist colonist) {
+			occupyingColonist = colonist;
+		}
+
+		public void StopSleeping() {
+			occupyingColonist = null;
 		}
 	}
 
@@ -370,7 +383,7 @@ public class ResourceManager : MonoBehaviour {
 		StoneFurnace,
 		CottonGin, SplittingBlock,
 		RemoveLayer1, RemoveLayer2, RemoveAll,
-		ChopPlant, PlantPlant, Mine, Dig,
+		ChopPlant, PlantPlant, PlantAppleTree, PlantBerryBush, Mine, Dig,
 		WheatFarm, PotatoFarm, CottonFarm, HarvestFarm,
 		CreateResource, PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep,
 		PlantTree, PlantShrub, PlantCactus
@@ -415,6 +428,17 @@ public class ResourceManager : MonoBehaviour {
 	List<TileObjectPrefabsEnum> LightSourceTileObjects = new List<TileObjectPrefabsEnum>() {
 		TileObjectPrefabsEnum.WoodenLamp, TileObjectPrefabsEnum.Torch
 	};
+
+	List<TileObjectPrefabsEnum> SleepSpotTileObjects = new List<TileObjectPrefabsEnum>() {
+		TileObjectPrefabsEnum.WoodenBed
+	};
+
+	List<TileObjectPrefabsEnum> LightBlockingTileObjects = new List<TileObjectPrefabsEnum>() {
+		TileObjectPrefabsEnum.BrickWall, TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall, TileObjectPrefabsEnum.WoodenDoor
+	};
+	public List<TileObjectPrefabsEnum> GetLightBlockingTileObjects () {
+		return LightBlockingTileObjects;
+	}
 
 	public List<TileObjectPrefabGroup> tileObjectPrefabGroups = new List<TileObjectPrefabGroup>();
 	public List<TileObjectPrefab> tileObjectPrefabs = new List<TileObjectPrefab>();
@@ -545,6 +569,8 @@ public class ResourceManager : MonoBehaviour {
 		public int maxLightDistance;
 		public Color lightColour;
 
+		public float restComfortAmount;
+
 		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup) {
 
 			GetScriptReferences();
@@ -604,6 +630,9 @@ public class ResourceManager : MonoBehaviour {
 				maxLightDistance = int.Parse(properties[13]);
 				lightColour = uiM.HexToColor(properties[14]);
 			}
+			if (resourceM.SleepSpotTileObjects.Contains(type)) {
+				restComfortAmount = int.Parse(properties[13]);
+			}
 
 			resourceM.tileObjectPrefabs.Add(this);
 		}
@@ -616,7 +645,7 @@ public class ResourceManager : MonoBehaviour {
 		if (tileObjectInstances.ContainsKey(prefab)) {
 			return tileObjectInstances[prefab];
 		}
-		print("Tried accessing a tile object instance which isn't already in the list...");
+		//print("Tried accessing a tile object instance which isn't already in the list...");
 		return null;
 	}
 
@@ -653,10 +682,14 @@ public class ResourceManager : MonoBehaviour {
 				targetLightSource.RemoveTileBrightnesses();
 				lightSources.Remove(targetLightSource);
 			}
+			if (SleepSpotTileObjects.Contains(tileObjectInstance.prefab.type)) {
+				SleepSpot targetSleepSpot = sleepSpots.Find(sleepSpot => sleepSpot.parentObject == tileObjectInstance);
+				sleepSpots.Remove(targetSleepSpot);
+			}
 			tileObjectInstances[tileObjectInstance.prefab].Remove(tileObjectInstance);
 			uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Update,tileObjectInstance.prefab);
 		} else {
-			print("Tried removing a tile object instance which isn't in the list...");
+			//print("Tried removing a tile object instance which isn't in the list...");
 		}
 		if (tileObjectInstances[tileObjectInstance.prefab].Count <= 0) {
 			tileObjectInstances.Remove(tileObjectInstance.prefab);
@@ -706,7 +739,19 @@ public class ResourceManager : MonoBehaviour {
 				resourceM.manufacturingTileObjectInstances.Add(new ManufacturingTileObject(this));
 			}
 			if (resourceM.LightSourceTileObjects.Contains(prefab.type)) {
-				resourceM.lightSources.Add(new LightSource(tile, this));
+				resourceM.lightSources.Add(new LightSource(this));
+			}
+			if (resourceM.SleepSpotTileObjects.Contains(prefab.type)) {
+				resourceM.sleepSpots.Add(new SleepSpot(this));
+			}
+
+			if (resourceM.LightBlockingTileObjects.Contains(prefab.type)) {
+				foreach (LightSource lightSource in resourceM.lightSources) {
+					if (lightSource.litTiles.Contains(tile)) {
+						lightSource.RemoveTileBrightnesses();
+						lightSource.SetTileBrightnesses();
+					}
+				}
 			}
 
 			SetColour(tile.sr.color);
@@ -785,10 +830,10 @@ public class ResourceManager : MonoBehaviour {
 
 		public List<TileManager.Tile> litTiles = new List<TileManager.Tile>();
 
-		public LightSource(TileManager.Tile parentTile, TileObjectInstance parentObject) {
+		public LightSource(TileObjectInstance parentObject) {
 			GetScriptReferences();
 
-			this.parentTile = parentTile;
+			parentTile = parentObject.tile;
 			this.parentObject = parentObject;
 
 			SetTileBrightnesses();
@@ -804,12 +849,12 @@ public class ResourceManager : MonoBehaviour {
 						Vector3 lightVector = parentObject.obj.transform.position;
 						while ((parentObject.obj.transform.position - lightVector).magnitude <= distance) {
 							if (tileM.map.GetTileFromPosition(lightVector) != parentTile) {
-								if (!tileM.map.GetTileFromPosition(lightVector).walkable) {
+								if (tileM.map.TileBlocksLight(tileM.map.GetTileFromPosition(lightVector))) {
 									lightTile = false;
 									break;
 								}
 							}
-							lightVector += (tile.obj.transform.position - parentObject.obj.transform.position).normalized * 0.5f;
+							lightVector += (tile.obj.transform.position - parentObject.obj.transform.position).normalized * 0.1f;
 						}
 						if (lightTile) {
 							tile.AddLightSourceBrightness(this, intensityAtTile);
@@ -820,6 +865,7 @@ public class ResourceManager : MonoBehaviour {
 					}
 				}
 			}
+			tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 		}
 
 		public void RemoveTileBrightnesses() {
@@ -827,13 +873,14 @@ public class ResourceManager : MonoBehaviour {
 				tile.RemoveLightSourceBrightness(this);
 			}
 			litTiles.Clear();
+			parentTile.RemoveLightSourceBrightness(this);
 			tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 		}
 	}
 
 	Dictionary<ResourcesEnum, int> FarmGrowTimes = new Dictionary<ResourcesEnum, int>() {
 		{ ResourcesEnum.WheatSeeds,5760 },
-		{ ResourcesEnum.Potatoes,2880 },
+		{ ResourcesEnum.Potato,2880 },
 		{ ResourcesEnum.CottonSeeds,5760 }
 	};
 	public Dictionary<ResourcesEnum,int> GetFarmGrowTimes() {
@@ -841,7 +888,7 @@ public class ResourceManager : MonoBehaviour {
 	}
 	Dictionary<ResourcesEnum,ResourcesEnum> FarmSeedReturnResource = new Dictionary<ResourcesEnum,ResourcesEnum>() {
 		{ ResourcesEnum.WheatSeeds,ResourcesEnum.Wheat },
-		{ ResourcesEnum.Potatoes,ResourcesEnum.Potatoes },
+		{ ResourcesEnum.Potato,ResourcesEnum.Potato },
 		{ ResourcesEnum.CottonSeeds,ResourcesEnum.Cotton }
 	};
 	public Dictionary<ResourcesEnum,ResourcesEnum> GetFarmSeedReturnResource() {
@@ -849,7 +896,7 @@ public class ResourceManager : MonoBehaviour {
 	}
 	Dictionary<ResourcesEnum, TileObjectPrefabsEnum> FarmSeedsTileObject = new Dictionary<ResourcesEnum, TileObjectPrefabsEnum>() {
 		{ ResourcesEnum.WheatSeeds,TileObjectPrefabsEnum.WheatFarm },
-		{ ResourcesEnum.Potatoes,TileObjectPrefabsEnum.PotatoFarm },
+		{ ResourcesEnum.Potato,TileObjectPrefabsEnum.PotatoFarm },
 		{ ResourcesEnum.CottonSeeds,TileObjectPrefabsEnum.CottonFarm }
 	};
 	public Dictionary<ResourcesEnum,TileObjectPrefabsEnum> GetFarmSeedsTileObject() {
@@ -1003,7 +1050,7 @@ public class ResourceManager : MonoBehaviour {
 		}
 
 		public bool ReserveResources(List<ResourceAmount> resourcesToReserve, ColonistManager.Colonist colonistReservingResources) {
-			print(colonistReservingResources.name + " is trying to reserve " + resourcesToReserve.Count + " resources");
+			//print(colonistReservingResources.name + " is trying to reserve " + resourcesToReserve.Count + " resources");
 			bool allResourcesFound = true;
 			foreach (ResourceAmount raReserve in resourcesToReserve) {
 				ResourceAmount raInventory = resources.Find(ra => ra.resource == raReserve.resource);
@@ -1011,7 +1058,7 @@ public class ResourceManager : MonoBehaviour {
 					allResourcesFound = false;
 				}
 			}
-			print("All Resources Found: " + allResourcesFound);
+			//print("All Resources Found: " + allResourcesFound);
 			if (allResourcesFound) {
 				foreach (ResourceAmount raReserve in resourcesToReserve) {
 					ResourceAmount raInventory = resources.Find(ra => ra.resource == raReserve.resource);
@@ -1025,12 +1072,12 @@ public class ResourceManager : MonoBehaviour {
 		}
 
 		public List<ReservedResources> TakeReservedResources(ColonistManager.Colonist colonistReservingResources) {
-			print(colonistReservingResources.name + " is taking reserved resources");
+			//print(colonistReservingResources.name + " is taking reserved resources");
 			List<ReservedResources> reservedResourcesByColonist = new List<ReservedResources>();
 			foreach (ReservedResources rr in reservedResources) {
 				if (rr.colonist == colonistReservingResources) {
 					reservedResourcesByColonist.Add(rr);
-					print("Found " + rr.resources.Count + " for " + colonistReservingResources.name);
+					//print("Found " + rr.resources.Count + " for " + colonistReservingResources.name);
 				}
 			}
 			foreach (ReservedResources rr in reservedResourcesByColonist) {
@@ -1039,6 +1086,24 @@ public class ResourceManager : MonoBehaviour {
 			uiM.SetSelectedColonistInformation();
 			uiM.SetSelectedContainerInfo();
 			return reservedResourcesByColonist;
+		}
+
+		public void ReleaseReservedResources(ColonistManager.Colonist colonist) {
+			List<ReservedResources> reservedResourcesToRemove = new List<ReservedResources>();
+			foreach (ReservedResources rr in reservedResources) {
+				if (rr.colonist == colonist) {
+					foreach (ResourceAmount ra in rr.resources) {
+						ChangeResourceAmount(ra.resource, ra.amount);
+					}
+					reservedResourcesToRemove.Add(rr);
+				}
+			}
+			foreach (ReservedResources rrRemove in reservedResourcesToRemove) {
+				reservedResources.Remove(rrRemove);
+			}
+			reservedResourcesToRemove.Clear();
+			uiM.SetSelectedColonistInformation();
+			uiM.SetSelectedContainerInfo();
 		}
 	}
 
