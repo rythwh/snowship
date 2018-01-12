@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.IO;
 using System.Linq;
 
@@ -25,6 +26,8 @@ public class PersistenceManager : MonoBehaviour {
 	private UIManager uiM; // Save the planet data
 	private ResourceManager resourceM; // Save the object data
 
+	private string settingsFilePath;
+
 	void Awake() {
 		gameVersion = 1;
 		saveVersion = 1;
@@ -36,16 +39,54 @@ public class PersistenceManager : MonoBehaviour {
 		timeM = GetComponent<TimeManager>();
 		uiM = GetComponent<UIManager>();
 		resourceM = GetComponent<ResourceManager>();
+
+		settingsFilePath = Application.persistentDataPath + "/Settings/settings.snowship";
+		uiM.settingsState = new UIManager.SettingsState(uiM);
+		if (!LoadSettings()) {
+			SaveSettings();
+		}
+		uiM.settingsState.SetSettings();
 	}
 
 	public void SaveSettings() {
-		string settingsFilePath = Application.persistentDataPath + "/Settings/settings.txt";
-		FileStream settingsFile = new FileStream(settingsFilePath, FileMode.OpenOrCreate);
-		File.WriteAllText(@settingsFilePath, string.Empty);
+		Directory.CreateDirectory(Application.persistentDataPath + "/Settings/");
+		FileStream createFile = File.Create(settingsFilePath);
+		createFile.Close();
+		File.WriteAllText(settingsFilePath, string.Empty);
+		StreamWriter file = new StreamWriter(settingsFilePath);
+
+		file.WriteLine(uiM.settingsState.resolutionWidth + "," + uiM.settingsState.resolutionHeight);
+		file.WriteLine(uiM.settingsState.fullscreen);
+		file.WriteLine(uiM.settingsState.scaleMode.ToString());
+
+		file.Close();
 	}
 
-	public void LoadSettings() {
-
+	public bool LoadSettings() {
+		Directory.CreateDirectory(Application.persistentDataPath + "/Settings/");
+		FileStream createFile = File.Create(settingsFilePath);
+		createFile.Close();
+		StreamReader file = new StreamReader(settingsFilePath);
+		List<string> lines = file.ReadToEnd().Split('\n').ToList();
+		for (int i = 0; i < lines.Count; i++) {
+			string line = lines[i];
+			if (!string.IsNullOrEmpty(line)) {
+				switch (i) {
+					case 0:
+						uiM.settingsState.resolutionWidth = int.Parse(line.Split(',')[0]);
+						uiM.settingsState.resolutionHeight = int.Parse(line.Split(',')[1]);
+						break;
+					case 1:
+						uiM.settingsState.fullscreen = bool.Parse(line);
+						break;
+					case 2:
+						uiM.settingsState.scaleMode = (CanvasScaler.ScaleMode)System.Enum.Parse(typeof(CanvasScaler.ScaleMode), line);
+						break;
+				}
+			}
+		}
+		file.Close();
+		return true;
 	}
 
 	/* https://stackoverflow.com/questions/13266496/easily-write-a-whole-class-instance-to-xml-file-and-read-back-in */
@@ -229,7 +270,7 @@ public class PersistenceManager : MonoBehaviour {
 		*/
 		tileData += tile.tileType.type + "," + tile.sr.sprite.name;
 		if (tile.plant != null) {
-			tileData += "/" + tile.plant.group.type + "," + tile.plant.obj.GetComponent<SpriteRenderer>().sprite.name + "," + tile.plant.small;
+			tileData += "/" + tile.plant.group.type + "," + tile.plant.obj.GetComponent<SpriteRenderer>().sprite.name + "," + tile.plant.small + "," + tile.plant.growthProgress + "," + (tile.plant.harvestResource != null ? tile.plant.harvestResource.type.ToString() : "None");
 		} else {
 			tileData += "/None";
 		}
@@ -289,7 +330,7 @@ public class PersistenceManager : MonoBehaviour {
 	/*
 		"Farm/Position,x,y/SeedType,seedType/GrowTimer,growTimer/MaxGrowthTime,maxGrowthTime"
 
-		Example: "Farm/Position,35.0,45.0/SeedType,Potatoes/GrowTimer,100.51/MaxGrowthTime,1440"
+		Example: "Farm/Position,35.0,45.0/SeedType,Potato/GrowTimer,100.51/MaxGrowthTime,1440"
 	*/
 	public string GetFarmDataString(ResourceManager.Farm farm) {
 		string farmData = "Farm";
@@ -492,7 +533,7 @@ public class PersistenceManager : MonoBehaviour {
 			jobData += "/None";
 		}
 		if (job.plant != null) {
-			jobData += "/Plant," + job.plant.group.type;
+			jobData += "/Plant," + job.plant.group.type + "," + (job.plant.harvestResource != null ? job.plant.harvestResource.type.ToString() : "None,");
 		} else {
 			jobData += "/None";
 		}
@@ -510,7 +551,7 @@ public class PersistenceManager : MonoBehaviour {
 		return jobData;
 	}
 
-	public void LoadGame(string fileName, bool fromMainMenu) {
+	public void ResetGameState(bool fromMainMenu, bool destroyPlanet) {
 		tileM.generated = false;
 
 		if (!fromMainMenu) {
@@ -519,13 +560,16 @@ public class PersistenceManager : MonoBehaviour {
 			uiM.SetSelectedManufacturingTileObject(null);
 		}
 
-		foreach (UIManager.PlanetTile planetTile in uiM.planetTiles) {
-			Destroy(planetTile.obj);
+		if (destroyPlanet) {
+			foreach (UIManager.PlanetTile planetTile in uiM.planetTiles) {
+				Destroy(planetTile.obj);
+			}
 		}
 
 		if (tileM.map != null) {
 			foreach (TileManager.Tile tile in tileM.map.tiles) {
 				if (tile.plant != null) {
+					tileM.map.smallPlants.Remove(tile.plant);
 					Destroy(tile.plant.obj);
 					tile.plant = null;
 				}
@@ -561,6 +605,10 @@ public class PersistenceManager : MonoBehaviour {
 		}
 		jobM.jobs.Clear();
 		uiM.RemoveJobElements();
+	}
+
+	public void LoadGame(string fileName, bool fromMainMenu) {
+		ResetGameState(fromMainMenu,true);
 
 		List<string> lines = new StreamReader(fileName).ReadToEnd().Split('\n').ToList();
 
@@ -693,14 +741,29 @@ public class PersistenceManager : MonoBehaviour {
 							} else {
 								TileManager.PlantGroup savedPlantGroup = tileM.GetPlantGroupByEnum((TileManager.PlantGroupsEnum)System.Enum.Parse(typeof(TileManager.PlantGroupsEnum), lineData[1].Split(',')[0]));
 								bool savedPlantSmall = bool.Parse(lineData[1].Split(',')[2]);
-								Sprite plantSprite = null;
-								if (savedPlantSmall) {
-									plantSprite = savedPlantGroup.smallPlants.Find(findPlantSprite => findPlantSprite.name == lineData[1].Split(',')[1]);
-								} else {
-									plantSprite = savedPlantGroup.fullPlants.Find(findPlantSprite => findPlantSprite.name == lineData[1].Split(',')[1]);
+								ResourceManager.Resource harvestResource = null;
+								if (lineData[1].Split(',')[4] != "None") {
+									harvestResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), lineData[1].Split(',')[4]));
 								}
-								TileManager.Plant savedPlant = new TileManager.Plant(savedPlantGroup, tile, false, savedPlantSmall);
+								TileManager.Plant savedPlant = new TileManager.Plant(savedPlantGroup, tile, false, savedPlantSmall, tileM.map.smallPlants, false, harvestResource, resourceM) {
+									growthProgress = float.Parse(lineData[1].Split(',')[3]),
+									
+								};
 								tile.SetPlant(false, savedPlant);
+								Sprite plantSprite = null;
+								if (harvestResource != null) {
+									if (savedPlantGroup.harvestResourceSprites.ContainsKey(harvestResource.type)) {
+										if (savedPlantGroup.harvestResourceSprites[harvestResource.type].ContainsKey(savedPlantSmall)) {
+											plantSprite = savedPlantGroup.harvestResourceSprites[harvestResource.type][savedPlantSmall].Find(findPlantSprite => findPlantSprite.name == lineData[1].Split(',')[1]);
+										}
+									}
+								} else {
+									if (savedPlantSmall) {
+										plantSprite = savedPlantGroup.smallPlants.Find(findPlantSprite => findPlantSprite.name == lineData[1].Split(',')[1]);
+									} else {
+										plantSprite = savedPlantGroup.fullPlants.Find(findPlantSprite => findPlantSprite.name == lineData[1].Split(',')[1]);
+									}
+								}
 								tile.plant.obj.GetComponent<SpriteRenderer>().sprite = plantSprite;
 							}
 							if (fromMainMenu && lineIndex == sectionEnd - 1) {
@@ -908,6 +971,8 @@ public class PersistenceManager : MonoBehaviour {
 			sectionIndex += 1;
 		}
 
+		tileM.map.SetTileRegions(false);
+		tileM.map.CreateRegionBlocks();
 		tileM.map.DetermineShadowTiles(tileM.map.tiles, false);
 		tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 		tileM.map.DetermineVisibleRegionBlocks();
@@ -975,7 +1040,7 @@ public class PersistenceManager : MonoBehaviour {
 		};
 
 		if (jobDataSplit[9] != "None") {
-			job.plant = new TileManager.Plant(tileM.GetPlantGroupByBiome(jobTile.biome, true), jobTile, false, true);
+			job.plant = new TileManager.Plant(tileM.GetPlantGroupByEnum((TileManager.PlantGroupsEnum)System.Enum.Parse(typeof(TileManager.PlantGroupsEnum),jobDataSplit[9].Split(',')[1])), jobTile, false, true, tileM.map.smallPlants,false,(jobDataSplit[9].Split(',')[2] != "None" ? resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[9].Split(',')[2])) : null), resourceM);
 		}
 		if (jobDataSplit[10] != "None") {
 			job.createResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[10].Split(',')[1]));

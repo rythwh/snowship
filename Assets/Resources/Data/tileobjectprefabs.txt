@@ -153,7 +153,8 @@
 			0.5/
 			2/
 			true/
-			1.0,0.8
+			1.0,0.8/
+			10
 	<SubGroup>
 		Lights
 		<Object>
@@ -258,7 +259,7 @@
 			PotatoFarm/
 			15/
 			1/
-			Potatoes/
+			Potato/
 			true/
 			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs/
 			PlantFarm/
@@ -321,6 +322,34 @@
 			10/
 			0/
 			/
+			true/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes/
+			PlantPlant/
+			0.0/
+			true/
+			1.0/
+			0/
+			false/
+			0.0,0.0
+		<Object>
+			PlantAppleTree/
+			10/
+			1/
+			AppleSeeds/
+			true/
+			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes/
+			PlantPlant/
+			0.0/
+			true/
+			1.0/
+			0/
+			false/
+			0.0,0.0
+		<Object>
+			PlantBerryBush/
+			10/
+			1/
+			Berries/
 			true/
 			Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes/
 			PlantPlant/

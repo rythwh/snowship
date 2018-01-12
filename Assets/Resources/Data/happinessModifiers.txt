@@ -1,0 +1,37 @@
+Death,Food,Rest,Inventory~
+WitnessDeath/
+	Death/
+	-30/
+	4320`
+Stuffed/
+	Food/
+	20/
+	720`
+Full/
+	Food/
+	10/
+	360`
+Hungry/
+	Food/
+	-10/
+	-1`
+Starving/
+	Food/
+	-20/
+	-1`
+Rested/
+	Rest/
+	20/
+	720`
+Tired/
+	Rest/
+	-10/
+	-1`
+Exhausted/
+	Rest/
+	-20/
+	-1`
+Overencumbered/
+	Inventory/
+	-10/
+	-1

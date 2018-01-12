@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 488433763a197d8439616c4fa9c6598a
-timeCreated: 1515569935
+guid: bfca7685311fb53498b66bf9a0060da6
+timeCreated: 1512734056
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -20,8 +20,6 @@ TextureImporter:
     21300026: wheat-farm-bitmask_5
     21300028: wheat-farm-bitmask_6
     21300030: wheat-farm-bitmask_7
-    21300032: wheat-farm-bitmask_8
-    21300034: wheat-farm-bitmask_9
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -97,7 +95,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1
-        y: 316
+        y: 246
         width: 32
         height: 32
       alignment: 0
@@ -111,7 +109,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1
-        y: 281
+        y: 211
         width: 32
         height: 32
       alignment: 0
@@ -125,7 +123,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1
-        y: 246
+        y: 176
         width: 32
         height: 32
       alignment: 0
@@ -139,7 +137,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1
-        y: 211
+        y: 141
         width: 32
         height: 32
       alignment: 0
@@ -153,7 +151,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1
-        y: 176
+        y: 106
         width: 32
         height: 32
       alignment: 0
@@ -167,7 +165,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1
-        y: 141
+        y: 71
         width: 32
         height: 32
       alignment: 0
@@ -181,34 +179,6 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1
-        y: 106
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: wheat-farm-bitmask_7
-      rect:
-        serializedVersion: 2
-        x: 1
-        y: 71
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: wheat-farm-bitmask_8
-      rect:
-        serializedVersion: 2
-        x: 1
         y: 36
         width: 32
         height: 32
@@ -219,7 +189,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: wheat-farm-bitmask_9
+      name: wheat-farm-bitmask_7
       rect:
         serializedVersion: 2
         x: 1

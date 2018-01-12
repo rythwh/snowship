@@ -11,6 +11,7 @@ public class TileManager:MonoBehaviour {
 	private ColonistManager colonistM;
 	private DebugManager debugM;
 	private PersistenceManager persistenceM;
+	private TimeManager timeM;
 
 	void Awake() {
 		uiM = GetComponent<UIManager>();
@@ -19,6 +20,7 @@ public class TileManager:MonoBehaviour {
 		colonistM = GetComponent<ColonistManager>();
 		debugM = GetComponent<DebugManager>();
 		persistenceM = GetComponent<PersistenceManager>();
+		timeM = GetComponent<TimeManager>();
 	}
 
 	void Start() {
@@ -93,6 +95,14 @@ public class TileManager:MonoBehaviour {
 		return plantResources;
 	}
 
+	private Dictionary<ResourceManager.ResourcesEnum, ResourceManager.ResourcesEnum> seedToHarvestResource = new Dictionary<ResourceManager.ResourcesEnum, ResourceManager.ResourcesEnum>() {
+		{ ResourceManager.ResourcesEnum.AppleSeeds,ResourceManager.ResourcesEnum.Apple },
+		{ ResourceManager.ResourcesEnum.Berries,ResourceManager.ResourcesEnum.Berries }
+	};
+	public Dictionary<ResourceManager.ResourcesEnum, ResourceManager.ResourcesEnum> GetSeedToHarvestResource() {
+		return seedToHarvestResource;
+	}
+
 	public List<PlantGroup> plantGroups = new List<PlantGroup>();
 
 	public class PlantGroup {
@@ -104,12 +114,29 @@ public class TileManager:MonoBehaviour {
 
 		public List<ResourceManager.ResourceAmount> returnResources = new List<ResourceManager.ResourceAmount>();
 
-		public PlantGroup(PlantGroupsEnum type,List<ResourceManager.ResourceAmount> returnResources) {
+		public Dictionary<ResourceManager.ResourcesEnum, Dictionary<bool,List<Sprite>>> harvestResourceSprites = new Dictionary<ResourceManager.ResourcesEnum, Dictionary<bool,List<Sprite>>>();
+
+		public PlantGroup(PlantGroupsEnum type,List<ResourceManager.ResourceAmount> returnResources,ResourceManager resourceM) {
 			this.type = type;
 			name = type.ToString();
 
 			smallPlants = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + name + "/" + name + "-small").ToList();
 			fullPlants = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + name + "/" + name + "-full").ToList();
+
+			foreach (ResourceManager.Resource resource in resourceM.resources) {
+				Dictionary<bool, List<Sprite>> foundSpriteSizes = new Dictionary<bool, List<Sprite>>();
+				List<Sprite> smallResourceSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + name + "/" + resource.type.ToString() + "/" + name + "-small-" + resource.type.ToString().ToLower()).ToList();
+				if (smallResourceSprites != null && smallResourceSprites.Count > 0) {
+					foundSpriteSizes.Add(true, smallResourceSprites);
+				}
+				List<Sprite> fullResourceSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + name + "/" + resource.type.ToString() + "/" + name + "-full-" + resource.type.ToString().ToLower()).ToList();
+				if (fullResourceSprites != null && fullResourceSprites.Count > 0) {
+					foundSpriteSizes.Add(false, fullResourceSprites);
+				}
+				if (foundSpriteSizes.Count > 0) {
+					harvestResourceSprites.Add(resource.type, foundSpriteSizes);
+				}
+			}
 
 			this.returnResources = returnResources;
 		}
@@ -117,7 +144,7 @@ public class TileManager:MonoBehaviour {
 
 	public void CreatePlantGroups() {
 		foreach (PlantGroupsEnum plantGroup in System.Enum.GetValues(typeof(PlantGroupsEnum))) {
-			plantGroups.Add(new PlantGroup(plantGroup,(plantResources.ContainsKey(plantGroup) ? plantResources[plantGroup] : new List<ResourceManager.ResourceAmount>())));
+			plantGroups.Add(new PlantGroup(plantGroup,(plantResources.ContainsKey(plantGroup) ? plantResources[plantGroup] : new List<ResourceManager.ResourceAmount>()),resourceM));
 		}
 		foreach (PlantGroup plantGroup in plantGroups) {
 			plantGroup.name = uiM.SplitByCapitals(plantGroup.name);
@@ -135,7 +162,11 @@ public class TileManager:MonoBehaviour {
 
 		public bool small;
 
-		public Plant(PlantGroup group, Tile tile, bool randomSmall, bool smallValue) {
+		public float growthProgress = 0;
+
+		public ResourceManager.Resource harvestResource;
+
+		public Plant(PlantGroup group, Tile tile, bool randomSmall, bool smallValue, List<Plant> smallPlants, bool giveHarvestResource, ResourceManager.Resource specificHarvestResource, ResourceManager resourceM) {
 			this.group = group;
 			this.tile = tile;
 			
@@ -144,11 +175,39 @@ public class TileManager:MonoBehaviour {
 			SpriteRenderer pSR = obj.GetComponent<SpriteRenderer>();
 
 			small = (randomSmall ? Random.Range(0f,1f) < 0.1f : smallValue);
-			pSR.sprite = (small ? group.smallPlants[Random.Range(0,group.smallPlants.Count)] : group.fullPlants[Random.Range(0,group.fullPlants.Count)]);
+
+			harvestResource = null;
+			if (giveHarvestResource) {
+				if (group.type == PlantGroupsEnum.WideTree && !small) {
+					if (Random.Range(0f, 1f) <= 0.05f) {
+						harvestResource = resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Apple);
+					}
+				} else if (group.type == PlantGroupsEnum.Shrub && !small) {
+					if (Random.Range(0f, 1f) <= 0.05f) {
+						harvestResource = resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Berries);
+					}
+				}
+			}
+			if (specificHarvestResource != null) {
+				harvestResource = specificHarvestResource;
+			}
+
+			pSR.sprite = (small ? group.smallPlants[Random.Range(0, group.smallPlants.Count)] : group.fullPlants[Random.Range(0, group.fullPlants.Count)]);
+			if (harvestResource != null) {
+				if (group.harvestResourceSprites.ContainsKey(harvestResource.type)) {
+					if (group.harvestResourceSprites[harvestResource.type].ContainsKey(small)) {
+						pSR.sprite = group.harvestResourceSprites[harvestResource.type][small][Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
+					}
+				}
+			}
 			pSR.sortingOrder = 1; // Plant Sprite
 
 			obj.name = "Plant: " + pSR.sprite.name;
 			obj.transform.parent = tile.obj.transform;
+
+			if (small) {
+				smallPlants.Add(this);
+			}
 		}
 
 		public List<ResourceManager.ResourceAmount> GetResources() {
@@ -160,7 +219,33 @@ public class TileManager:MonoBehaviour {
 				}
 				resourcesToReturn.Add(new ResourceManager.ResourceAmount(resourceAmount.resource,amount));
 			}
+			if (harvestResource != null) {
+				int randomRangeAmount = 1;
+				if (harvestResource.type == ResourceManager.ResourcesEnum.Apple) {
+					randomRangeAmount = Random.Range(1, 6);
+				} else if (harvestResource.type == ResourceManager.ResourcesEnum.Berries) {
+					randomRangeAmount = Random.Range(5, 20);
+				}
+				int amount = Mathf.Clamp(randomRangeAmount, 1, int.MaxValue);
+				if (small && amount > 0) {
+					amount = Mathf.CeilToInt(amount / 2f);
+				}
+				resourcesToReturn.Add(new ResourceManager.ResourceAmount(harvestResource, amount));
+			}
 			return resourcesToReturn;
+		}
+
+		public void Grow(List<Plant> smallPlants) {
+			small = false;
+			obj.GetComponent<SpriteRenderer>().sprite = group.fullPlants[Random.Range(0, group.fullPlants.Count)];
+			if (harvestResource != null) {
+				if (group.harvestResourceSprites.ContainsKey(harvestResource.type)) {
+					if (group.harvestResourceSprites[harvestResource.type].ContainsKey(small)) {
+						obj.GetComponent<SpriteRenderer>().sprite = group.harvestResourceSprites[harvestResource.type][small][Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
+					}
+				}
+			}
+			smallPlants.Remove(this);
 		}
 	}
 
@@ -182,6 +267,8 @@ public class TileManager:MonoBehaviour {
 		}
 		return null;
 	}
+
+
 
 	public enum TileTypes { Dirt, DirtWater, Mud, DirtGrass, DirtThinGrass, DirtDryGrass, DirtHole, Grass, GrassWater, ThickGrass, ColdGrass, ColdGrassWater, DryGrass, DryGrassWater, Sand, SandWater,
 		SandHole, Snow, SnowIce, SnowStone, SnowHole, Stone, StoneIce, StoneWater, StoneThinGrass, StoneSand, StoneSnow, StoneHole, Granite, Limestone, Marble, Sandstone, Slate, Clay, ClayWater
@@ -525,6 +612,7 @@ public class TileManager:MonoBehaviour {
 				map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList());
 			}
 			if (plant != null && !tileM.PlantableTileTypes.Contains(tileType.type)) {
+				map.smallPlants.Remove(plant);
 				Destroy(plant.obj);
 				plant = null;
 			}
@@ -682,6 +770,7 @@ public class TileManager:MonoBehaviour {
 
 		public void SetPlant(bool removePlant, Plant specificPlant) {
 			if (plant != null) {
+				map.smallPlants.Remove(plant);
 				Destroy(plant.obj);
 				plant = null;
 			}
@@ -689,7 +778,7 @@ public class TileManager:MonoBehaviour {
 				if (specificPlant == null) {
 					PlantGroup biomePlantGroup = tileM.GetPlantGroupByBiome(biome,false);
 					if (biomePlantGroup != null) {
-						plant = new Plant(biomePlantGroup,this,true,false);
+						plant = new Plant(biomePlantGroup,this,true,false,map.smallPlants,true,null,tileM.resourceM);
 					}
 				} else {
 					plant = specificPlant;
@@ -859,6 +948,7 @@ public class TileManager:MonoBehaviour {
 	void Update() {
 		if (generated) {
 			map.DetermineVisibleRegionBlocks();
+			map.GrowPlants();
 		}
 	}
 
@@ -1286,7 +1376,7 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 
-		void SetTileRegions(bool splitByTileType) {
+		public void SetTileRegions(bool splitByTileType) {
 			regions.Clear();
 
 			EstablishInitialRegions(splitByTileType);
@@ -1369,7 +1459,7 @@ public class TileManager:MonoBehaviour {
 
 		private int regionBlockSize = 10;
 		public List<RegionBlock> squareRegionBlocks = new List<RegionBlock>();
-		void CreateRegionBlocks() {
+		public void CreateRegionBlocks() {
 
 			regionBlocks.Clear();
 			squareRegionBlocks.Clear();
@@ -1986,6 +2076,9 @@ public class TileManager:MonoBehaviour {
 						foreach (PrecipitationRange.TemperatureRange temperatureRange in precipitationRange.temperatureRanges) {
 							if (tile.temperature >= temperatureRange.min && tile.temperature < temperatureRange.max) {
 								tile.SetBiome(temperatureRange.biome);
+								if (tile.plant != null && tile.plant.small) {
+									tile.plant.growthProgress = Random.Range(0f, 5760f);
+								}
 								next = true;
 								break;
 							}
@@ -2308,20 +2401,30 @@ public class TileManager:MonoBehaviour {
 			return new Color(r,g,b,1f);
 		}
 
+		public bool TileBlocksLight(Tile tile) {
+			if (tile.GetAllObjectInstances().Find(toi => resourceM.GetLightBlockingTileObjects().Contains(toi.prefab.type)) != null) {
+				return true;
+			}
+			if (tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) {
+				return true;
+			}
+			return false;
+		}
+
 		public bool TileCanShadowTiles(Tile tile) {
-			return (!tile.walkable && tile.surroundingTiles.Find(nTile => nTile != null && nTile.walkable) != null) || (tile.roof && !tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type));
+			return (TileBlocksLight(tile) && tile.surroundingTiles.Find(nTile => nTile != null && !TileBlocksLight(nTile)) != null) || (tile.roof && !tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type));
 		}
 
 		public bool TileCanBeShadowed(Tile tile) {
-			return (tile.tileType.walkable && tile.GetAllObjectInstances().Find(instance => !instance.prefab.walkable) != null ? true : tile.walkable);
+			return (!TileBlocksLight(tile) && tile.GetAllObjectInstances().Find(instance => !resourceM.GetLightBlockingTileObjects().Contains(instance.prefab.type)) != null ? true : !TileBlocksLight(tile));
 		}
 
 		private Dictionary<int, Vector2> shadowDirectionAtHour = new Dictionary<int, Vector2>();
 		private void DetermineShadowDirectionsAtHour() {
 			for (int h = 0; h < 24; h++) {
-				float hShadow = -Mathf.Abs(mapData.equatorOffset) * (-(h / 12f) + 1);
-				float vShadow = -(mapData.equatorOffset / 144f) * Mathf.Pow(h - 12, 2) + mapData.equatorOffset;
-				shadowDirectionAtHour.Add(h, new Vector2(hShadow, vShadow).normalized);
+				float hShadow = (2f * ((h - 12f) / 24f)) * (1f - Mathf.Pow(mapData.equatorOffset, 2f));
+				float vShadow = Mathf.Pow(2f * ((h - 12f) / 24f), 2f) * mapData.equatorOffset + (mapData.equatorOffset / 2f);
+				shadowDirectionAtHour.Add(h, new Vector2(hShadow, vShadow) * 5f);
 			}
 		}
 
@@ -2341,15 +2444,15 @@ public class TileManager:MonoBehaviour {
 					float oppositeTileMaxHeight = 0;
 					float oppositeDistance = 0;
 					Tile oppositeTile = tile;
-					while (oppositeTile != null && !oppositeTile.walkable) {
+					while (oppositeTile != null && !TileBlocksLight(oppositeTile)) {
 						if (oppositeTile.height >= oppositeTileMaxHeight) {
 							oppositeTileMaxHeight = oppositeTile.height;
 						}
 						Tile newOppositeTile = oppositeTile;
 						int sameCounter = 0;
 						while (newOppositeTile == oppositeTile) {
-							oppositeDistance += 0.25f;
-							newOppositeTile = GetTileFromPosition(tilePosition + ((-hourDirection.normalized) * oppositeDistance));
+							oppositeDistance += 0.1f;
+							newOppositeTile = GetTileFromPosition(tilePosition + ((-hourDirection) * oppositeDistance));
 							if (newOppositeTile == oppositeTile) {
 								if (sameCounter >= 4) {
 									break;
@@ -2368,14 +2471,14 @@ public class TileManager:MonoBehaviour {
 					float maxDistance = hourDirection.magnitude * heightModifer * 5f + (Mathf.Pow(h - 12,2) / 6f);
 
 					List<Tile> shadowTiles = new List<Tile>();
-					for (float distance = 0; distance <= maxDistance; distance += 0.25f) {
-						Vector2 nextTilePosition = tilePosition + (hourDirection.normalized * distance);
+					for (float distance = 0; distance <= maxDistance; distance += 0.1f) {
+						Vector2 nextTilePosition = tilePosition + (hourDirection * distance);
 						if (nextTilePosition.x < 0 || nextTilePosition.x >= mapData.mapSize || nextTilePosition.y < 0 || nextTilePosition.y >= mapData.mapSize) {
 							break;
 						}
 						Tile shadowTile = GetTileFromPosition(nextTilePosition);
 						if (shadowTiles.Contains(shadowTile)) {
-							distance += 0.25f;
+							distance += 0.1f;
 							continue;
 						}
 						if (shadowTile != tile) {
@@ -2452,6 +2555,26 @@ public class TileManager:MonoBehaviour {
 			tile.blockingShadowsFrom.Clear();
 
 			DetermineShadowTiles(tilesToRecalculateShadowsFor.Distinct().ToList(),true);
+		}
+
+		public List<Plant> smallPlants = new List<Plant>();
+
+		public void GrowPlants() {
+			if (!timeM.GetPaused() && timeM.minuteChanged) {
+				List<Plant> growPlants = new List<Plant>();
+				foreach (Plant plant in smallPlants) {
+					plant.growthProgress += 1 * timeM.deltaTime;
+					if (plant.growthProgress > 5760) { // 5760 = 4 in-game days in seconds
+						if (Random.Range(0, 100) < (0.01 * (plant.growthProgress / 5760))) {
+							growPlants.Add(plant);
+						}
+					}
+				}
+				foreach (Plant plant in growPlants) {
+					plant.Grow(smallPlants);
+				}
+				growPlants.Clear();
+			}
 		}
 
 		public Tile GetTileFromPosition(Vector2 position) {

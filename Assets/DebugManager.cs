@@ -70,8 +70,8 @@ public class DebugManager : MonoBehaviour {
 				togglesuncycle_Update();
 			}
 			if (Input.GetMouseButtonDown(0)) {
-				Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
-				TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
+				//Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
+				//TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
 
 				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Log", "10", "true", "true" });
 				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Glass", "10", "true", "true" });
@@ -801,7 +801,7 @@ public class DebugManager : MonoBehaviour {
 					if (bool.TryParse(parameters[1], out small)) {
 						if (selectedTiles.Count > 0) {
 							foreach (TileManager.Tile tile in selectedTiles) {
-								tile.SetPlant(false, new TileManager.Plant(plantGroup, tile, false, small));
+								tile.SetPlant(false, new TileManager.Plant(plantGroup, tile, false, small, tileM.map.smallPlants,true,null,resourceM));
 								tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 								if (tile.plant != null) {
 									counter += 1;
