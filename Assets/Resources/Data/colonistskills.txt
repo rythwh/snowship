@@ -10,4 +10,6 @@ Digging/
 	Dig,0.1`
 Forestry/
 	ChopPlant,0.1;
-	PlantPlant,0.1
+	PlantPlant,0.1`
+Crafting/
+	CreateResource,0.1

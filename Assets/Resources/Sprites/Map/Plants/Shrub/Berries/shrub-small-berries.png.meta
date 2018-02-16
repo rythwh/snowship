@@ -1,13 +1,19 @@
 fileFormatVersion: 2
-guid: 37c7d3cc088422c4396982a5db94791a
-timeCreated: 1516214991
+guid: b3582b0cef5511645a0a54d3c2b0657c
+timeCreated: 1518759414
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: cactus-small_0
-    21300002: cactus-small_1
-    21300004: cactus-small_2
-    21300006: cactus-small_3
+    21300000: shrubs-small_0
+    21300002: shrubs-small_1
+    21300004: shrubs-small_2
+    21300006: shrubs-small_3
+    21300008: shrubs-small_4
+    21300010: shrubs-small_5
+    21300012: shrub-small_0
+    21300014: shrub-small_1
+    21300016: shrub-small-berries_0
+    21300018: shrub-small-berries_1
   externalObjects: {}
   serializedVersion: 4
   mipmaps:
@@ -84,7 +90,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cactus-small_0
+      name: shrub-small-berries_0
       rect:
         serializedVersion: 2
         x: 0
@@ -98,7 +104,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cactus-small_1
+      name: shrub-small-berries_1
       rect:
         serializedVersion: 2
         x: 0

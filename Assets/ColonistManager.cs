@@ -234,7 +234,7 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	public enum SkillTypeEnum { Building, Mining, Digging, Farming, Forestry };
+	public enum SkillTypeEnum { Building, Mining, Digging, Farming, Forestry, Crafting };
 
 	public class SkillPrefab {
 
@@ -266,11 +266,15 @@ public class ColonistManager : MonoBehaviour {
 		public float currentExperience;
 		public float nextLevelExperience;
 
-		public SkillInstance(Colonist colonist, SkillPrefab prefab, int startingLevel) {
+		public SkillInstance(Colonist colonist, SkillPrefab prefab, bool randomStartingLevel, int startingLevel) {
 			this.colonist = colonist;
 			this.prefab = prefab;
 
-			level = startingLevel;
+			if (randomStartingLevel) {
+				level = Random.Range((colonist.profession.primarySkill != null && colonist.profession.primarySkill.type == prefab.type ? Mathf.RoundToInt(colonist.profession.skillRandomMaxValues[prefab] / 2f) : 0), colonist.profession.skillRandomMaxValues[prefab]);
+			} else {
+				level = startingLevel;
+			}
 
 			currentExperience = Random.Range(0,100);
 			nextLevelExperience = 100 + (10 * level);
@@ -301,7 +305,7 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	public enum ProfessionTypeEnum { Nothing, Builder, Miner, Farmer, Forester };
+	public enum ProfessionTypeEnum { Nothing, Builder, Miner, Farmer, Forester, Maker };
 
 	public List<Profession> professions = new List<Profession>();
 
@@ -380,12 +384,25 @@ public class ColonistManager : MonoBehaviour {
 
 	public enum NeedsEnum { Food, Clothing, Shelter, Rest, Temperature, Safety, Social, Esteem, Relaxation };
 
-	public Dictionary<NeedsEnum,System.Action<NeedInstance>> needsValueFunctions = new Dictionary<NeedsEnum,System.Action<NeedInstance>>();
+	public Dictionary<NeedsEnum, System.Func<NeedInstance, bool>> needsValueFunctions = new Dictionary<NeedsEnum, System.Func<NeedInstance, bool>>();
 
-	private Dictionary<NeedsEnum,JobManager.JobTypesEnum> needToJobMap = new Dictionary<NeedsEnum,JobManager.JobTypesEnum>() {
-		{NeedsEnum.Food,JobManager.JobTypesEnum.Eat },
-		{ NeedsEnum.Rest,JobManager.JobTypesEnum.Sleep}
+	private List<JobManager.JobTypesEnum> needRelatedJobs = new List<JobManager.JobTypesEnum>() {
+		JobManager.JobTypesEnum.CollectFood, JobManager.JobTypesEnum.Eat, JobManager.JobTypesEnum.Sleep
 	};
+
+	private Dictionary<JobManager.JobTypesEnum, NeedsEnum> jobToNeedMap = new Dictionary<JobManager.JobTypesEnum, NeedsEnum>() {
+		{ JobManager.JobTypesEnum.CollectFood, NeedsEnum.Food },
+		{ JobManager.JobTypesEnum.Eat, NeedsEnum.Food },
+		{ JobManager.JobTypesEnum.Sleep, NeedsEnum.Rest }
+	};
+
+	private Dictionary<NeedsEnum, List<JobManager.JobTypesEnum>> needToJobsMap = new Dictionary<NeedsEnum, List<JobManager.JobTypesEnum>>() {
+		{ NeedsEnum.Food, new List<JobManager.JobTypesEnum>() { JobManager.JobTypesEnum.CollectFood, JobManager.JobTypesEnum.Eat } },
+		{ NeedsEnum.Rest, new List<JobManager.JobTypesEnum>() { JobManager.JobTypesEnum.Sleep } }
+	};
+	public Dictionary<NeedsEnum, List<JobManager.JobTypesEnum>> GetNeedToJobsMap() {
+		return needToJobsMap;
+	}
 
 	public Dictionary<NeedsEnum,System.Func<NeedInstance,float>> needsValueSpecialIncreases = new Dictionary<NeedsEnum,System.Func<NeedInstance,float>>();
 
@@ -414,7 +431,7 @@ public class ColonistManager : MonoBehaviour {
 	}
 
 	public void CalculateNeedValue(NeedInstance need) {
-		if (needToJobMap.ContainsKey(need.prefab.type) && need.colonist.job != null && need.colonist.job.prefab.jobType == needToJobMap[need.prefab.type]) {
+		if (needToJobsMap.ContainsKey(need.prefab.type) && need.colonist.job != null && needToJobsMap[need.prefab.type].Contains(need.colonist.job.prefab.jobType)) {
 			return;
 		}
 		float needIncreaseAmount = need.prefab.baseIncreaseRate;
@@ -463,7 +480,7 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	void GetFood(NeedInstance need, bool takeFromOtherColonists, bool eatAnything) {
+	public bool GetFood(NeedInstance need, bool takeFromOtherColonists, bool eatAnything) {
 		if (need.colonist.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) == null) {
 			KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>> closestFood = FindClosestFood(need.colonist, need.value, takeFromOtherColonists, eatAnything);
 
@@ -474,7 +491,7 @@ public class ColonistManager : MonoBehaviour {
 					container.inventory.ReserveResources(resourcesToReserve, need.colonist);
 					JobManager.Job job = new JobManager.Job(container.parentObject.tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.CollectFood), 0);
 					need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, job, null, null, jobM, pathM));
-					return;
+					return true;
 				} else if (closestFood.Key.human != null) {
 					Human human = closestFood.Key.human;
 					//print("Take from other human.");
@@ -482,8 +499,9 @@ public class ColonistManager : MonoBehaviour {
 			}
 		} else {
 			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(need.colonist.overTile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat), 0), null, null, jobM, pathM));
-			return;
+			return true;
 		}
+		return false;
 	}
 
 	public int FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum resourceGroup, Colonist colonist, bool worldTotal, bool includeOtherColonists) {
@@ -528,19 +546,21 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	public void GetSleep(NeedInstance need, bool sleepAnywhere) {
+	public bool GetSleep(NeedInstance need, bool sleepAnywhere) {
 		if (resourceM.sleepSpots.Count > 0) {
 			List<ResourceManager.SleepSpot> validSleepSpots = resourceM.sleepSpots.Where(sleepSpot => sleepSpot.occupyingColonist == null && sleepSpot.parentObject.tile.region == need.colonist.overTile.region).ToList();
 			if (validSleepSpots.Count > 0) {
 				ResourceManager.SleepSpot chosenSleepSpot = validSleepSpots.OrderByDescending(sleepSpot => sleepSpot.parentObject.prefab.restComfortAmount / (pathM.RegionBlockDistance(need.colonist.overTile.regionBlock, sleepSpot.parentObject.tile.regionBlock, true, true, false) + 1)).ToList()[0];
 				chosenSleepSpot.StartSleeping(need.colonist);
 				need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(chosenSleepSpot.parentObject.tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Sleep), 0), null, null, jobM, pathM));
-				return;
+				return true;
 			}
 		}
 		if (sleepAnywhere) {
 			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(need.colonist.overTile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Sleep), 0), null, null, jobM, pathM));
+			return true;
 		}
+		return false;
 	}
 
 	public void InitializeNeedsValueFunctions() {
@@ -551,40 +571,46 @@ public class ColonistManager : MonoBehaviour {
 					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,false,false) > 0) { // true, true
 						if (timeM.minuteChanged) {
 							need.colonist.ReturnJob();
-							GetFood(need, false, false); // true, true
+							return GetFood(need, false, false); // true, true
 							//print(need.colonist.name + " Food Critical");
 						}
 					}
+					return false;
 				}
 				if (need.prefab.maximumValueAction && need.value >= need.prefab.maximumValue) {
 					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,false,false) > 0) { // false, true
 						if (timeM.minuteChanged && Random.Range(0f, 1f) < ((need.value - need.prefab.maximumValue) / (need.prefab.criticalValue - need.prefab.maximumValue))) {
 							need.colonist.ReturnJob();
-							GetFood(need, false, false); // true, false
+							return GetFood(need, false, false); // true, false
 							//print(need.colonist.name + " Food Maximum");
 						}
 					}
+					return false;
 				}
-				if (need.colonist.job == null) {
-					if (need.prefab.minimumValueAction && need.value >= need.prefab.minimumValue) {
+				if (need.prefab.minimumValueAction && need.value >= need.prefab.minimumValue) {
+					if (need.colonist.job == null) {
 						if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods, need.colonist, false, false) > 0) {
 							if (timeM.minuteChanged && Random.Range(0f, 1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
 								need.colonist.ReturnJob();
-								GetFood(need, false, false);
+								return GetFood(need, false, false);
 							}
 						}
 					}
+					return false;
 				}
 			}
+			return false;
 		});
 		needsValueFunctions.Add(NeedsEnum.Rest,delegate (NeedInstance need) {
 			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Sleep)) {
 				if (need.prefab.criticalValueAction && need.value >= need.prefab.criticalValue) {
+					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * timeM.deltaTime);
 					if (timeM.minuteChanged) {
 						need.colonist.ReturnJob();
 						GetSleep(need, true);
 						//print(need.colonist.name + " Rest Critical");
 					}
+					return false;
 				}
 				if (need.prefab.maximumValueAction && need.value >= need.prefab.maximumValue) {
 					if (timeM.minuteChanged && Random.Range(0f, 1f) < ((need.value - need.prefab.maximumValue) / (need.prefab.criticalValue - need.prefab.maximumValue))) {
@@ -592,37 +618,48 @@ public class ColonistManager : MonoBehaviour {
 						GetSleep(need, true);
 						//print(need.colonist.name + " Rest Maximum");
 					}
+					return false;
 				}
-				if (need.colonist.job == null) {
-					if (need.prefab.minimumValueAction && need.value >= need.prefab.minimumValue) {
+				if (need.prefab.minimumValueAction && need.value >= need.prefab.minimumValue) {
+					if (need.colonist.job == null) {
 						if (timeM.minuteChanged && Random.Range(0f, 1f) < ((need.value - need.prefab.minimumValue) / (need.prefab.maximumValue - need.prefab.minimumValue))) {
 							need.colonist.ReturnJob();
 							GetSleep(need, false);
 						}
+						
 					}
+					return false;
 				}
 			}
+			return false;
 		});
 		needsValueFunctions.Add(NeedsEnum.Clothing,delegate (NeedInstance need) {
 			need.value = 0; // Value set to 0 while need not being used
+			return false;
 		});
 		needsValueFunctions.Add(NeedsEnum.Shelter,delegate (NeedInstance need) {
 			need.value = 0; // Value set to 0 while need not being used
+			return false;
 		});
 		needsValueFunctions.Add(NeedsEnum.Temperature,delegate (NeedInstance need) {
 			need.value = 0; // Value set to 0 while need not being used
+			return false;
 		});
 		needsValueFunctions.Add(NeedsEnum.Safety,delegate (NeedInstance need) {
 			need.value = 0; // Value set to 0 while need not being used
+			return false;
 		});
 		needsValueFunctions.Add(NeedsEnum.Social,delegate (NeedInstance need) {
 			need.value = 0; // Value set to 0 while need not being used
+			return false;
 		});
 		needsValueFunctions.Add(NeedsEnum.Esteem,delegate (NeedInstance need) {
 			need.value = 0; // Value set to 0 while need not being used
+			return false;
 		});
 		needsValueFunctions.Add(NeedsEnum.Relaxation,delegate (NeedInstance need) {
 			need.value = 0; // Value set to 0 while need not being used
+			return false;
 		});
 	}
 
@@ -716,6 +753,10 @@ public class ColonistManager : MonoBehaviour {
 				}
 			}
 		}
+	}
+
+	public NeedPrefab GetNeedPrefabFromEnum(NeedsEnum needsEnumValue) {
+		return needPrefabs.Find(needPrefab => needPrefab.type == needsEnumValue);
 	}
 
 	public NeedPrefab GetNeedPrefabFromString(string needTypeString) {
@@ -853,6 +894,7 @@ public class ColonistManager : MonoBehaviour {
 		// Job
 		public JobManager.Job job;
 		public JobManager.Job storedJob;
+		public JobManager.Job needJob;
 
 		// Profession
 		public Profession profession;
@@ -881,7 +923,7 @@ public class ColonistManager : MonoBehaviour {
 			profession.colonistsInProfession.Add(this);
 
 			foreach (SkillPrefab skillPrefab in colonistM.skillPrefabs) {
-				skills.Add(new SkillInstance(this,skillPrefab,Random.Range((profession.primarySkill != null && profession.primarySkill.type == skillPrefab.type ? Mathf.RoundToInt(profession.skillRandomMaxValues[skillPrefab]/2f) : 0),profession.skillRandomMaxValues[skillPrefab])));
+				skills.Add(new SkillInstance(this,skillPrefab,true,0));
 			}
 
 			foreach (NeedPrefab needPrefab in colonistM.needPrefabs) {
@@ -961,14 +1003,84 @@ public class ColonistManager : MonoBehaviour {
 		private void UpdateNeeds() {
 			foreach (NeedInstance need in needs) {
 				colonistM.CalculateNeedValue(need);
-				colonistM.needsValueFunctions[need.prefab.type](need);
+				bool checkNeed = false;
+				if (need.colonist.job == null) {
+					checkNeed = true;
+				} else {
+					if (colonistM.needRelatedJobs.Contains(need.colonist.job.prefab.jobType)) {
+						if (colonistM.jobToNeedMap.ContainsKey(need.colonist.job.prefab.jobType)) {
+							if (need.prefab.priority < colonistM.GetNeedPrefabFromEnum(colonistM.jobToNeedMap[need.colonist.job.prefab.jobType]).priority) {
+								checkNeed = true;
+							}
+						} else {
+							checkNeed = true;
+						}
+					} else {
+						checkNeed = true;
+					}
+					/*
+					if (colonistM.needToJobsMap.ContainsKey(need.prefab.type)) {
+						if (colonistM.needRelatedJobs.Contains(need.colonist.job.prefab.jobType)) {
+							if (colonistM.jobToNeedMap.ContainsKey(need.colonist.job.prefab.jobType)) {
+								if (colonistM.GetNeedPrefabFromEnum(colonistM.jobToNeedMap[need.colonist.job.prefab.jobType]).priority < need.prefab.priority) {
+									// If the colonist has a job, it is a need-related job, 
+									checkNeed = true;
+								} else {
+									checkNeed = true;
+								}
+							} else {
+								checkNeed = true;
+							}
+						} else {
+							// If the colonist has a job, the checked need has related jobs, 
+							checkNeed = true;
+						}
+					} else {
+						// If the colonist has a job and the checked need is NOT related to jobs, check the need
+						checkNeed = true;
+					}
+					*/
+				}
+				/*
+				// The colonist's job is null
+				if (need.colonist.job == null || (
+					// The colonist's job isn't null AND
+					need.colonist.job != null && (
+						// The need-to-job map contains the key of the checked need AND
+						colonistM.needToJobsMap.ContainsKey(need.prefab.type) && (
+							// The list of jobs related to the checked need doesn't contain the colonist's current job OR (THIS HAS AN ISSUE)
+							//(!colonistM.needToJobsMap[need.prefab.type].Contains(need.colonist.job.prefab.jobType)) ||
+							// The colonist's current job is NOT a need-related job OR
+							(!colonistM.needRelatedJobs.Contains(need.colonist.job.prefab.jobType)) ||
+							(
+								// The list of jobs related to the checked need contains the colonist's current job AND
+								//colonistM.needToJobsMap[need.prefab.type].Contains(need.colonist.job.prefab.jobType) &&
+								// The colonist's current job is a need-related job AND
+								colonistM.needRelatedJobs.Contains(need.colonist.job.prefab.jobType) &&
+								// The job-to-need map contains the colonist's current job AND
+								colonistM.jobToNeedMap.ContainsKey(need.colonist.job.prefab.jobType) &&
+								// The need related to the colonist's job has a lower priority than the checked need
+								colonistM.GetNeedPrefabFromEnum(colonistM.jobToNeedMap[need.colonist.job.prefab.jobType]).priority < need.prefab.priority
+							)
+						)
+					)
+				)) {
+				*//*
+				if (checkNeed) {
+					print(need.colonist.name + " " + need.prefab.type);
+					if (colonistM.needsValueFunctions[need.prefab.type](need)) {
+						break;
+					}
+				}*//* else {
+					print(need.colonist.name + " " + (need.colonist.job != null ? need.colonist.job.prefab.jobType.ToString() : "None") + " " + need.prefab.type);
+				}*/
 			}
 
-			if (needs.Find(need => need.prefab.type == NeedsEnum.Food).value >= colonistM.GetNeedPrefabFromString(NeedsEnum.Food.ToString()).maximumValue) {
+			if (needs.Find(need => need.prefab.type == NeedsEnum.Food).value >= colonistM.GetNeedPrefabFromEnum(NeedsEnum.Food).maximumValue) {
 				if (happinessModifiers.Find(hm => hm.prefab.type == HappinessModifiersEnum.Starving) == null) {
 					AddHappinessModifier(HappinessModifiersEnum.Starving);
 				}
-			} else if (needs.Find(need => need.prefab.type == NeedsEnum.Food).value >= (1 * 1440 * colonistM.GetNeedPrefabFromString(NeedsEnum.Food.ToString()).baseIncreaseRate)) {
+			} else if (needs.Find(need => need.prefab.type == NeedsEnum.Food).value >= (1 * 1440 * colonistM.GetNeedPrefabFromEnum(NeedsEnum.Food).baseIncreaseRate)) {
 				if (happinessModifiers.Find(hm => hm.prefab.type == HappinessModifiersEnum.Hungry) == null) {
 					AddHappinessModifier(HappinessModifiersEnum.Hungry);
 				}
@@ -976,11 +1088,11 @@ public class ColonistManager : MonoBehaviour {
 				RemoveHappinessModifier(HappinessModifiersEnum.Starving);
 				RemoveHappinessModifier(HappinessModifiersEnum.Hungry);
 			}
-			if (needs.Find(need => need.prefab.type == NeedsEnum.Rest).value >= colonistM.GetNeedPrefabFromString(NeedsEnum.Rest.ToString()).maximumValue) {
+			if (needs.Find(need => need.prefab.type == NeedsEnum.Rest).value >= colonistM.GetNeedPrefabFromEnum(NeedsEnum.Rest).maximumValue) {
 				if (happinessModifiers.Find(hm => hm.prefab.type == HappinessModifiersEnum.Exhausted) == null) {
 					AddHappinessModifier(HappinessModifiersEnum.Exhausted);
 				}
-			} else if (needs.Find(need => need.prefab.type == NeedsEnum.Rest).value >= (1 * 1440 * colonistM.GetNeedPrefabFromString(NeedsEnum.Rest.ToString()).baseIncreaseRate)) {
+			} else if (needs.Find(need => need.prefab.type == NeedsEnum.Rest).value >= (1 * 1440 * colonistM.GetNeedPrefabFromEnum(NeedsEnum.Rest).baseIncreaseRate)) {
 				if (happinessModifiers.Find(hm => hm.prefab.type == HappinessModifiersEnum.Tired) == null) {
 					AddHappinessModifier(HappinessModifiersEnum.Tired);
 				}
@@ -1167,7 +1279,27 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void ReturnJob() {
+			foreach (ResourceManager.Container container in resourceM.containers) {
+				container.inventory.ReleaseReservedResources(this);
+			}
 			if (storedJob != null) {
+				if (colonistM.jobToNeedMap.ContainsKey(storedJob.prefab.jobType)) {
+					storedJob.Remove();
+					if (storedJob.jobUIElement != null) {
+						storedJob.jobUIElement.Remove(uiM);
+					}
+					storedJob = null;
+					if (job != null) {
+						if (colonistM.jobToNeedMap.ContainsKey(job.prefab.jobType)) {
+							job.Remove();
+							if (job.jobUIElement != null) {
+								job.jobUIElement.Remove(uiM);
+							}
+						}
+						job = null;
+					}
+					return;
+				}
 				jobM.AddExistingJob(storedJob);
 				if (storedJob.jobUIElement != null) {
 					storedJob.jobUIElement.Remove(uiM);
@@ -1183,8 +1315,17 @@ public class ColonistManager : MonoBehaviour {
 					if (job.jobPreview != null) {
 						job.jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.25f);
 					}
+					job = null;
 				}
 			} else if (job != null) {
+				if (colonistM.jobToNeedMap.ContainsKey(job.prefab.jobType)) {
+					job.Remove();
+					if (job.jobUIElement != null) {
+						job.jobUIElement.Remove(uiM);
+					}
+					job = null;
+					return;
+				}
 				jobM.AddExistingJob(job);
 				if (job.jobUIElement != null) {
 					job.jobUIElement.Remove(uiM);
@@ -1225,9 +1366,8 @@ public class ColonistManager : MonoBehaviour {
 
 		public void PlayerMoveToTile(TileManager.Tile tile) {
 			playerMoved = true;
+			ReturnJob();
 			if (job != null) {
-				jobM.AddExistingJob(job);
-				job = null;
 				MoveToTile(tile,false);
 			} else {
 				MoveToTile(tile,false);

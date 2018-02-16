@@ -1,10 +1,14 @@
 # README #
 
+### Release ###
+
+* [Development Changelog](https://docs.google.com/document/d/1T2idGSMZVB-Pm8pucB4PCetMq1kNHIdmBIWKOwsd_2I/edit?usp=sharing)
+
 ### What is this repository for? ###
 
 * Snowship is a colony survival management simulation game developed by Ryan White.
-* Current Development Version: Snowship Alpha R1 (Late 2017)
-* Current Release Version: Snowship B51 (March 5, 2016)
+* Current Development Version: Snowship Alpha R1.1 (January 16, 2018)
+* Current Release Version: Snowship Alpha R1 (January 12, 2018)
 
 ### How do I get set up? ###
 

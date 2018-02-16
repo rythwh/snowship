@@ -45,7 +45,7 @@ public class CameraManager : MonoBehaviour {
 	}
 
 	void Update() {
-		if (tileM.generated && !uiM.pauseMenu.activeSelf) {
+		if (tileM.generated && !uiM.pauseMenu.activeSelf && !debugM.debugMode) {
 			cameraGO.transform.Translate(new Vector2(Input.GetAxis("Horizontal"),Input.GetAxis("Vertical")) * cameraComponent.orthographicSize * Time.deltaTime);
 			cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x,0,tileM.map.mapData.mapSize),Mathf.Clamp(cameraGO.transform.position.y,0,tileM.map.mapData.mapSize));
 

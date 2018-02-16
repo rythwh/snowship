@@ -581,10 +581,12 @@ public class UIManager : MonoBehaviour {
 			GameObject.Find("SelectedPlanetTileTemperature-Panel").transform.Find("TemperatureValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedPlanetTile.averageTemperature) + "°C";
 			GameObject.Find("SelectedPlanetTilePrecipitation-Panel").transform.Find("PrecipitationValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedPlanetTile.averagePrecipitation * 100) + "%";
 			GameObject.Find("SelectedPlanetTileAltitude-Panel").transform.Find("AltitudeValue-Text").GetComponent<Text>().text = Mathf.RoundToInt((selectedPlanetTile.tile.height - selectedPlanetTile.terrainTypeHeights[TileManager.TileTypes.GrassWater]) * 10000f) + "m";
+			GameObject.Find("SelectedPlanetTileCoordinates-Text").GetComponent<Text>().text = "(" + Mathf.FloorToInt(selectedPlanetTile.position.x) + "," + Mathf.FloorToInt(selectedPlanetTile.position.y) + ")";
 		} else {
 			GameObject.Find("SelectedPlanetTileTemperature-Panel").transform.Find("TemperatureValue-Text").GetComponent<Text>().text = "";
 			GameObject.Find("SelectedPlanetTilePrecipitation-Panel").transform.Find("PrecipitationValue-Text").GetComponent<Text>().text = "";
 			GameObject.Find("SelectedPlanetTileAltitude-Panel").transform.Find("AltitudeValue-Text").GetComponent<Text>().text = "";
+			GameObject.Find("SelectedPlanetTileCoordinates-Text").GetComponent<Text>().text = string.Empty;
 		}
 	}
 
@@ -2597,6 +2599,15 @@ public class UIManager : MonoBehaviour {
 
 
 	public void TogglePauseMenu() {
+		if (pauseSavePanel.activeSelf) {
+			ToggleSaveMenu();
+		}
+		if (loadGamePanel.activeSelf) {
+			ToggleLoadMenu(false);
+		}
+		if (settingsPanel.activeSelf) {
+			ToggleSettingsMenu();
+		}
 		pauseMenu.SetActive(!pauseMenu.activeSelf);
 		timeM.SetPaused(pauseMenu.activeSelf);
 	}
