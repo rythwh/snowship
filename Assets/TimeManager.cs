@@ -39,7 +39,7 @@ public class TimeManager : MonoBehaviour {
 
 	void Update() {
 		if (tileM.generated) {
-			if (Input.GetKeyDown(KeyCode.Alpha1) && !uiM.pauseMenu.activeSelf) {
+			if (Input.GetKeyDown(KeyCode.Alpha1) && !uiM.pauseMenu.activeSelf && !debugM.debugMode) {
 				if (timeModifier > 0) {
 					timeModifier -= 1;
 					if (timeModifier <= 0) {
@@ -47,7 +47,7 @@ public class TimeManager : MonoBehaviour {
 					}
 				}
 			}
-			if (Input.GetKeyDown(KeyCode.Alpha2) && !uiM.pauseMenu.activeSelf) {
+			if (Input.GetKeyDown(KeyCode.Alpha2) && !uiM.pauseMenu.activeSelf && !debugM.debugMode) {
 				timeModifier += 1;
 			}
 			timeModifier = Mathf.Clamp(timeModifier, 0, 5);
@@ -55,7 +55,7 @@ public class TimeManager : MonoBehaviour {
 				TogglePause();
 			}
 			pauseTimeModifier = Mathf.Clamp(pauseTimeModifier, 0, 5);
-			if (Input.GetKeyDown(KeyCode.Space) && !uiM.pauseMenu.activeSelf) {
+			if (Input.GetKeyDown(KeyCode.Space) && !uiM.pauseMenu.activeSelf && !debugM.debugMode) {
 				TogglePause();
 			}
 			deltaTime = Time.deltaTime * timeModifier;

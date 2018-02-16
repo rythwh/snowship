@@ -330,29 +330,29 @@ public class JobManager:MonoBehaviour {
 						break;
 					}
 				}
-				if (setToWater) {
-					foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
-						if (nTile != null && tileM.GetHoleTileTypes().Contains(nTile.tileType.type)) {
-							List<TileManager.Tile> frontier = new List<TileManager.Tile>() { nTile };
-							List<TileManager.Tile> checkedTiles = new List<TileManager.Tile>() { };
-							TileManager.Tile currentTile = nTile;
-
-							while (frontier.Count > 0) {
-								currentTile = frontier[0];
-								frontier.RemoveAt(0);
-								checkedTiles.Add(currentTile);
-								currentTile.SetTileType(job.tile.tileType, true, true, true, true);
-								foreach (TileManager.Tile nTile2 in currentTile.horizontalSurroundingTiles) {
-									if (nTile2 != null && tileM.GetHoleTileTypes().Contains(nTile2.tileType.type) && !checkedTiles.Contains(nTile2)) {
-										frontier.Add(nTile2);
-									}
+			} else if (tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) {
+				setToWater = true;
+			}
+			if (setToWater) {
+				foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
+					if (nTile != null && tileM.GetHoleTileTypes().Contains(nTile.tileType.type)) {
+						List<TileManager.Tile> frontier = new List<TileManager.Tile>() { nTile };
+						List<TileManager.Tile> checkedTiles = new List<TileManager.Tile>() { };
+						TileManager.Tile currentTile = nTile;
+						while (frontier.Count > 0) {
+							currentTile = frontier[0];
+							frontier.RemoveAt(0);
+							checkedTiles.Add(currentTile);
+							currentTile.SetTileType(job.tile.tileType, true, true, true, true);
+							foreach (TileManager.Tile nTile2 in currentTile.horizontalSurroundingTiles) {
+								if (nTile2 != null && tileM.GetHoleTileTypes().Contains(nTile2.tileType.type) && !checkedTiles.Contains(nTile2)) {
+									frontier.Add(nTile2);
 								}
 							}
 						}
 					}
 				}
-			}
-			if (!setToWater) {
+			} else {
 				job.tile.SetTileType(job.tile.biome.holeType, true, true, true, false);
 			}
 		});
@@ -460,6 +460,11 @@ public class JobManager:MonoBehaviour {
 				targetSleepSpot.StopSleeping();
 				if (targetSleepSpot.parentObject.prefab.restComfortAmount >= 10) {
 					colonist.AddHappinessModifier(ColonistManager.HappinessModifiersEnum.Rested);
+				}
+			}
+			foreach (ResourceManager.SleepSpot sleepSpot in resourceM.sleepSpots) {
+				if (sleepSpot.occupyingColonist == colonist) {
+					sleepSpot.StopSleeping();
 				}
 			}
 		});
@@ -993,7 +998,7 @@ public class JobManager:MonoBehaviour {
 		if (job.prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type != ResourceManager.TileObjectPrefabGroupsEnum.None) {
 			ColonistManager.Profession jobTypeProfession = colonistM.professions.Find(profession => profession.primarySkill == colonist.GetSkillFromJobType(job.prefab.jobType).prefab);
 			if (jobTypeProfession != null && jobTypeProfession == colonist.profession) {
-				cost -= 30 + (colonist.GetSkillFromJobType(job.prefab.jobType).level * 5f);
+				cost -= tileM.map.mapData.mapSize + (colonist.GetSkillFromJobType(job.prefab.jobType).level * 5f);
 			} else {
 				cost -= colonist.GetSkillFromJobType(job.prefab.jobType).level * 5f;
 			}

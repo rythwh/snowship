@@ -1,13 +1,19 @@
 fileFormatVersion: 2
-guid: 37c7d3cc088422c4396982a5db94791a
-timeCreated: 1516214991
+guid: 6c14b229ea53b71499c43a42e3719349
+timeCreated: 1518759498
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: cactus-small_0
-    21300002: cactus-small_1
-    21300004: cactus-small_2
-    21300006: cactus-small_3
+    21300000: wideTrees-small_0
+    21300002: wideTrees-small_1
+    21300004: wideTrees-small_2
+    21300006: wideTrees-small_3
+    21300008: wideTrees-small_4
+    21300010: wideTrees-small_5
+    21300012: wideTree-small_0
+    21300014: wideTree-small_1
+    21300016: wideTree-small-apple_0
+    21300018: wideTree-small-apple_1
   externalObjects: {}
   serializedVersion: 4
   mipmaps:
@@ -84,7 +90,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cactus-small_0
+      name: wideTree-small-apple_0
       rect:
         serializedVersion: 2
         x: 0
@@ -98,7 +104,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: cactus-small_1
+      name: wideTree-small-apple_1
       rect:
         serializedVersion: 2
         x: 0

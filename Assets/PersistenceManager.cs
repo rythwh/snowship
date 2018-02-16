@@ -270,6 +270,7 @@ public class PersistenceManager : MonoBehaviour {
 		*/
 		tileData += tile.tileType.type + "," + tile.sr.sprite.name;
 		if (tile.plant != null) {
+			//print(tile.obj.transform.position);
 			tileData += "/" + tile.plant.group.type + "," + tile.plant.obj.GetComponent<SpriteRenderer>().sprite.name + "," + tile.plant.small + "," + tile.plant.growthProgress + "," + (tile.plant.harvestResource != null ? tile.plant.harvestResource.type.ToString() : "None");
 		} else {
 			tileData += "/None";
@@ -764,7 +765,10 @@ public class PersistenceManager : MonoBehaviour {
 										plantSprite = savedPlantGroup.fullPlants.Find(findPlantSprite => findPlantSprite.name == lineData[1].Split(',')[1]);
 									}
 								}
-								tile.plant.obj.GetComponent<SpriteRenderer>().sprite = plantSprite;
+								if (plantSprite != null) {
+									tile.plant.obj.GetComponent<SpriteRenderer>().sprite = plantSprite;
+								}
+								
 							}
 							if (fromMainMenu && lineIndex == sectionEnd - 1) {
 								uiM.MainMenuToGameTransition(true);
@@ -870,13 +874,14 @@ public class PersistenceManager : MonoBehaviour {
 								mto.jobBacklog.Add(storedJob);
 							}
 						}
+
 						List<ColonistManager.SkillInstance> skills = new List<ColonistManager.SkillInstance>();
 						foreach (string skillDataString in lineData[16].Split(',').Skip(1)) {
 							ColonistManager.SkillPrefab skillPrefab = colonistM.GetSkillPrefabFromString(skillDataString.Split(':')[1]);
 							int level = int.Parse(skillDataString.Split(':')[2]);
 							float nextLevelExperience = float.Parse(skillDataString.Split(':')[3]);
 							float currentExperience = float.Parse(skillDataString.Split(':')[4]);
-							ColonistManager.SkillInstance skill = new ColonistManager.SkillInstance(colonist, skillPrefab, level) {
+							ColonistManager.SkillInstance skill = new ColonistManager.SkillInstance(colonist, skillPrefab, false, level) {
 								colonist = colonist,
 								prefab = skillPrefab,
 								level = level,
@@ -885,17 +890,32 @@ public class PersistenceManager : MonoBehaviour {
 							};
 							skills.Add(skill);
 						}
+						foreach (ColonistManager.SkillPrefab skillPrefab in colonistM.skillPrefabs.Where(sP => skills.Find(skill => skill.prefab == sP) == null)) {
+							ColonistManager.SkillInstance skill = new ColonistManager.SkillInstance(colonist, skillPrefab, true, 0);
+							skills.Add(skill);
+						}
+
 						List<ColonistManager.TraitInstance> traits = new List<ColonistManager.TraitInstance>();
 						foreach (string traitDataString in lineData[17].Split(',').Skip(1)) {
 							ColonistManager.TraitPrefab traitPrefab = colonistM.GetTraitPrefabFromString(traitDataString.Split(':')[1]);
 							traits.Add(new ColonistManager.TraitInstance(colonist, traitPrefab));
 						}
+						foreach (ColonistManager.TraitPrefab traitPrefab in colonistM.traitPrefabs.Where(tP => traits.Find(trait => trait.prefab == tP) == null)) {
+							ColonistManager.TraitInstance trait = new ColonistManager.TraitInstance(colonist, traitPrefab);
+							traits.Add(trait);
+						}
+
 						List<ColonistManager.NeedInstance> needs = new List<ColonistManager.NeedInstance>();
 						foreach (string needDataString in lineData[18].Split(',').Skip(1)) {
 							ColonistManager.NeedPrefab needPrefab = colonistM.GetNeedPrefabFromString(needDataString.Split(':')[1]);
 							float value = float.Parse(needDataString.Split(':')[2]);
 							needs.Add(new ColonistManager.NeedInstance(colonist, needPrefab) { value = value });
 						}
+						foreach (ColonistManager.NeedPrefab needPrefab in colonistM.needPrefabs.Where(nP => needs.Find(need => need.prefab == nP) == null)) {
+							ColonistManager.NeedInstance need = new ColonistManager.NeedInstance(colonist, needPrefab);
+							needs.Add(need);
+						}
+						needs.OrderBy(need => need.prefab.priority);
 						float baseHappiness = float.Parse(lineData[19].Split(',')[1]);
 						float effectiveHappiness = float.Parse(lineData[20].Split(',')[1]);
 						List<ColonistManager.HappinessModifierInstance> happinessModifiers = new List<ColonistManager.HappinessModifierInstance>();
