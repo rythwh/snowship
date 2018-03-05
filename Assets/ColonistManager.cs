@@ -572,7 +572,6 @@ public class ColonistManager : MonoBehaviour {
 						if (timeM.minuteChanged) {
 							need.colonist.ReturnJob();
 							return GetFood(need, false, false); // true, true
-							//print(need.colonist.name + " Food Critical");
 						}
 					}
 					return false;
@@ -582,7 +581,6 @@ public class ColonistManager : MonoBehaviour {
 						if (timeM.minuteChanged && Random.Range(0f, 1f) < ((need.value - need.prefab.maximumValue) / (need.prefab.criticalValue - need.prefab.maximumValue))) {
 							need.colonist.ReturnJob();
 							return GetFood(need, false, false); // true, false
-							//print(need.colonist.name + " Food Maximum");
 						}
 					}
 					return false;
@@ -608,7 +606,6 @@ public class ColonistManager : MonoBehaviour {
 					if (timeM.minuteChanged) {
 						need.colonist.ReturnJob();
 						GetSleep(need, true);
-						//print(need.colonist.name + " Rest Critical");
 					}
 					return false;
 				}
@@ -616,7 +613,6 @@ public class ColonistManager : MonoBehaviour {
 					if (timeM.minuteChanged && Random.Range(0f, 1f) < ((need.value - need.prefab.maximumValue) / (need.prefab.criticalValue - need.prefab.maximumValue))) {
 						need.colonist.ReturnJob();
 						GetSleep(need, true);
-						//print(need.colonist.name + " Rest Maximum");
 					}
 					return false;
 				}
@@ -1018,62 +1014,12 @@ public class ColonistManager : MonoBehaviour {
 					} else {
 						checkNeed = true;
 					}
-					/*
-					if (colonistM.needToJobsMap.ContainsKey(need.prefab.type)) {
-						if (colonistM.needRelatedJobs.Contains(need.colonist.job.prefab.jobType)) {
-							if (colonistM.jobToNeedMap.ContainsKey(need.colonist.job.prefab.jobType)) {
-								if (colonistM.GetNeedPrefabFromEnum(colonistM.jobToNeedMap[need.colonist.job.prefab.jobType]).priority < need.prefab.priority) {
-									// If the colonist has a job, it is a need-related job, 
-									checkNeed = true;
-								} else {
-									checkNeed = true;
-								}
-							} else {
-								checkNeed = true;
-							}
-						} else {
-							// If the colonist has a job, the checked need has related jobs, 
-							checkNeed = true;
-						}
-					} else {
-						// If the colonist has a job and the checked need is NOT related to jobs, check the need
-						checkNeed = true;
-					}
-					*/
 				}
-				/*
-				// The colonist's job is null
-				if (need.colonist.job == null || (
-					// The colonist's job isn't null AND
-					need.colonist.job != null && (
-						// The need-to-job map contains the key of the checked need AND
-						colonistM.needToJobsMap.ContainsKey(need.prefab.type) && (
-							// The list of jobs related to the checked need doesn't contain the colonist's current job OR (THIS HAS AN ISSUE)
-							//(!colonistM.needToJobsMap[need.prefab.type].Contains(need.colonist.job.prefab.jobType)) ||
-							// The colonist's current job is NOT a need-related job OR
-							(!colonistM.needRelatedJobs.Contains(need.colonist.job.prefab.jobType)) ||
-							(
-								// The list of jobs related to the checked need contains the colonist's current job AND
-								//colonistM.needToJobsMap[need.prefab.type].Contains(need.colonist.job.prefab.jobType) &&
-								// The colonist's current job is a need-related job AND
-								colonistM.needRelatedJobs.Contains(need.colonist.job.prefab.jobType) &&
-								// The job-to-need map contains the colonist's current job AND
-								colonistM.jobToNeedMap.ContainsKey(need.colonist.job.prefab.jobType) &&
-								// The need related to the colonist's job has a lower priority than the checked need
-								colonistM.GetNeedPrefabFromEnum(colonistM.jobToNeedMap[need.colonist.job.prefab.jobType]).priority < need.prefab.priority
-							)
-						)
-					)
-				)) {
-				*//*
 				if (checkNeed) {
-					print(need.colonist.name + " " + need.prefab.type);
 					if (colonistM.needsValueFunctions[need.prefab.type](need)) {
 						break;
 					}
-				}*//* else {
-					print(need.colonist.name + " " + (need.colonist.job != null ? need.colonist.job.prefab.jobType.ToString() : "None") + " " + need.prefab.type);
-				}*/
+				}
 			}
 
 			if (needs.Find(need => need.prefab.type == NeedsEnum.Food).value >= colonistM.GetNeedPrefabFromEnum(NeedsEnum.Food).maximumValue) {
@@ -1116,19 +1062,8 @@ public class ColonistManager : MonoBehaviour {
 					i -= 1;
 				}
 			}
-			//baseHappiness = Mathf.Clamp(Mathf.RoundToInt(needs.Sum(need => (need.prefab.clampValue-need.value) / (need.prefab.priority + 1))),0,100);
-			/*
-			float allNeedsAverage = needs.Average(need => need.value);
-
-			int numNeeds = needs.Count;
-			int numNeedsMin = needs.Count(need => need.value >= need.prefab.minimumValue && need.value < need.prefab.maximumValue);
-			int numNeedsMax = needs.Count(need => need.value >= need.prefab.maximumValue && need.value < need.prefab.criticalValue);
-			int numNeedsCritical = needs.Count(need => need.value >= need.prefab.criticalValue);
-			*/
 
 			baseHappiness = Mathf.Clamp(Mathf.RoundToInt(100 - (needs.Sum(need => (need.value / (need.prefab.priority + 1))))), 0, 100);
-
-			//baseHappiness = Mathf.Clamp(Mathf.RoundToInt(needs.Average(need => (need.prefab.clampValue - (need.value / (need.prefab.priority + 1))))), 0, 100);
 
 			happinessModifiersSum = happinessModifiers.Sum(hM => hM.prefab.effectAmount);
 
@@ -1167,11 +1102,6 @@ public class ColonistManager : MonoBehaviour {
 		public void SetJob(JobManager.ColonistJob colonistJob, bool reserveResourcesInContainerPickups = true) {
 			job = colonistJob.job;
 			job.colonistResources = colonistJob.colonistResources;
-			/*
-			if (colonistJob.containerPickups != null) {
-				print("CONTAINER PICKUPS: " + colonistJob.containerPickups.Count);
-			}
-			*/
 			job.containerPickups = colonistJob.containerPickups;
 			if (reserveResourcesInContainerPickups && (job.containerPickups != null && job.containerPickups.Count > 0)) {
 				foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
@@ -1432,10 +1362,8 @@ public class ColonistManager : MonoBehaviour {
 				this.inventory = inventory;
 
 				if (storedJob != null) {
-				//print("StoredJob: " + name + storedJob.prefab.type);
 					SetJob(new JobManager.ColonistJob(this, storedJob, storedJob.colonistResources, storedJob.containerPickups, jobM, pathM));
 				} else if (job != null) {
-					//print("Job: " + name + job.prefab.type);
 					SetJob(new JobManager.ColonistJob(this, job, job.colonistResources, job.containerPickups, jobM, pathM));
 				}
 
