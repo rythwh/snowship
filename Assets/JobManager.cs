@@ -476,6 +476,7 @@ public class JobManager:MonoBehaviour {
 		if (newSelectedPrefab != selectedPrefab) {
 			if (newSelectedPrefab != null) {
 				selectedPrefab = newSelectedPrefab;
+				rotationIndex = 0;
 				if (selectedPrefabPreview.activeSelf) {
 					selectedPrefabPreview.GetComponent<SpriteRenderer>().sprite = selectedPrefab.baseSprite;
 				}
@@ -731,7 +732,6 @@ public class JobManager:MonoBehaviour {
 							CancelJobsInSelectionArea(selectionArea);
 						}
 						firstTile = null;
-						rotationIndex = 0;
 					}
 				}
 			}
