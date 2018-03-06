@@ -501,14 +501,18 @@ public class JobManager:MonoBehaviour {
 	public void UpdateSelectedPrefabInfo() {
 		if (selectedPrefab != null) {
 			if (enableSelectionPreview) {
+				bool canRotate = (!resourceM.GetBitmaskingTileObjects().Contains(selectedPrefab.type) && selectedPrefab.bitmaskSprites.Count > 0);
 				if (!selectedPrefabPreview.activeSelf) {
 					selectedPrefabPreview.SetActive(true);
 					selectedPrefabPreview.GetComponent<SpriteRenderer>().sprite = selectedPrefab.baseSprite;
+					if (canRotate) {
+						selectedPrefabPreview.GetComponent<SpriteRenderer>().sprite = selectedPrefab.bitmaskSprites[rotationIndex];
+					}
 					uiM.SelectionSizeCanvasSetActive(false);
 				}
 				SelectedPrefabPreview();
 				if (Input.GetKeyDown(KeyCode.R)) {
-					if (!resourceM.GetBitmaskingTileObjects().Contains(selectedPrefab.type) && selectedPrefab.bitmaskSprites.Count > 0) {
+					if (canRotate) {
 						rotationIndex += 1;
 						if (rotationIndex >= selectedPrefab.bitmaskSprites.Count) {
 							rotationIndex = 0;
