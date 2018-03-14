@@ -960,17 +960,38 @@ public class TileManager:MonoBehaviour {
 		public float equatorOffset;
 		public bool planetTemperature;
 		public int temperatureRange;
+		public float planetDistance;
 		public float temperatureOffset;
 		public float averageTemperature;
 		public float averagePrecipitation;
 		public Dictionary<TileTypes,float> terrainTypeHeights;
 		public List<int> surroundingPlanetTileHeightDirections;
+		public Vector2 planetTilePosition;
 
 		public bool preventEdgeTouching;
 
 		public int primaryWindDirection = -1;
 
-		public MapData(int mapSeed, int mapSize, bool actualMap, float equatorOffset, bool planetTemperature, int temperatureRange, float temperatureOffset, float averageTemperature, float averagePrecipitation, Dictionary<TileTypes,float> terrainTypeHeights, List<int> surroundingPlanetTileHeightDirections, bool preventEdgeTouching, int primaryWindDirection) {
+		public string mapRegenerationCode = string.Empty;
+
+		public MapData(
+			MapData planetMapData,
+			int mapSeed,
+			int mapSize,
+			bool actualMap,
+			float equatorOffset,
+			bool planetTemperature,
+			int temperatureRange,
+			float planetDistance,
+			float temperatureOffset,
+			float averageTemperature,
+			float averagePrecipitation,
+			Dictionary<TileTypes,float> terrainTypeHeights,
+			List<int> surroundingPlanetTileHeightDirections,
+			bool preventEdgeTouching,
+			int primaryWindDirection,
+			Vector2 planetTilePosition
+			) {
 
 			if (mapSeed < 0) {
 				mapSeed = Random.Range(0,int.MaxValue);
@@ -985,6 +1006,7 @@ public class TileManager:MonoBehaviour {
 			this.equatorOffset = equatorOffset;
 			this.planetTemperature = planetTemperature;
 			this.temperatureRange = temperatureRange;
+			this.planetDistance = planetDistance;
 			this.temperatureOffset = temperatureOffset;
 			this.averageTemperature = averageTemperature;
 			this.averagePrecipitation = averagePrecipitation;
@@ -992,6 +1014,11 @@ public class TileManager:MonoBehaviour {
 			this.surroundingPlanetTileHeightDirections = surroundingPlanetTileHeightDirections;
 			this.preventEdgeTouching = preventEdgeTouching;
 			this.primaryWindDirection = primaryWindDirection;
+			this.planetTilePosition = planetTilePosition;
+
+			if (planetMapData != null) {
+				mapRegenerationCode = planetMapData.mapSeed + "~" + planetMapData.mapSize + "~" + planetMapData.temperatureRange + "~" + planetMapData.planetDistance + "~" + planetMapData.primaryWindDirection + "~" + planetTilePosition.x + "~" + planetTilePosition.y + "~" + mapSize + "~" + mapSeed;
+			}
 		}
 	}
 

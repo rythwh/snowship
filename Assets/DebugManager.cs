@@ -116,8 +116,10 @@ public class DebugManager : MonoBehaviour {
 	private enum Commands {
 		help,                   // help (commandName)						-- without (commandName): lists all commands. with (commandName), shows syntax/description of the specified command
 		clear,					// clear									-- clear the console
-		selectcolonist,         // selectcolonist <name>					-- sets the selected colonist to the first colonist named <name>
-		sethealth,              // sethealth <amount>						-- sets the health of the selected colonist to <amount>
+		selectcolonist,			// selectcolonist <name>					-- sets the selected colonist to the first colonist named <name>
+		spawncolonists,			// spawncolonists <numToSpawn>				-- spawns <numToSpawn> colonists to join the colony
+		spawntraders,			// spawntraders <numToSpawn>				-- spawns <numToSpawn> traders
+		sethealth,				// sethealth <amount>						-- sets the health of the selected colonist to <amount>
 		setneed,                // setneed <name> <amount>					-- sets the need named <name> on the selected colonist to <amount>
 		changeinvamt,           // changeinvamt <resourceName> <amount> (allColonists) (allContainers)
 		//																	-- adds the amount of the resource named <resourceName> to <amount> to a selected colonist, container,
@@ -166,6 +168,8 @@ public class DebugManager : MonoBehaviour {
 		{Commands.help,"help (commandName) -- without (commandName): lists all commands. with (commandName), shows syntax/description of the specified command" },
 		{Commands.clear,"clear -- clear the console" },
 		{Commands.selectcolonist,"selectcolonist <name> -- sets the selected colonist to the first colonist named <name>" },
+		{Commands.spawncolonists,"spawncolonists <numToSpawn> -- spawns <numToSpawn> colonists to join the colony" },
+		{Commands.spawntraders,"spawntraders <numToSpawn> -- spawns <numToSpawn> traders" },
 		{Commands.sethealth,"sethealth <amount> -- sets the health of the selected colonist to <amount> (value between 0 (0%) -> 1 (100%))" },
 		{Commands.setneed,"setneed <name> <amount> -- sets the need named <name> on the selected colonist to <amount> (value between 0 (0%) -> 100 (100%))" },
 		{Commands.changeinvamt,"changeinvamt <resourceName> <amount> (allColonists) (allContainers) -- adds the amount of the resource named <resourceName> to <amount> to a selected colonist, container, or all colonists (allColonists = true), or all containers (allContainers = true)" },
@@ -300,8 +304,49 @@ public class DebugManager : MonoBehaviour {
 				ColonistManager.Colonist selectedColonist = colonistM.colonists.Find(colonist => colonist.name == parameters[0]);
 				if (selectedColonist != null) {
 					colonistM.SetSelectedColonist(selectedColonist);
+					if (colonistM.selectedColonist == selectedColonist) {
+						OutputToConsole("SUCCESS: Selected " + colonistM.selectedColonist.name + ".");
+					}
 				} else {
 					OutputToConsole("ERROR: Invalid colonist name: " + parameters[0]);
+				}
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
+		commandFunctions.Add(Commands.spawncolonists, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 1) {
+				int numberToSpawn = 1;
+				if (int.TryParse(parameters[0], out numberToSpawn)) {
+					int oldNumColonists = colonistM.colonists.Count;
+					colonistM.SpawnColonists(numberToSpawn);
+					if (oldNumColonists + numberToSpawn == colonistM.colonists.Count) {
+						OutputToConsole("SUCCESS: Spawned " + numberToSpawn + " colonists.");
+					} else {
+						OutputToConsole("ERROR: Unable to spawn colonists. Spawned " + (colonistM.colonists.Count - oldNumColonists) + " colonists.");
+					}
+				} else {
+					OutputToConsole("ERROR: Invalid number of colonists.");
+				}
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
+		commandFunctions.Add(Commands.spawntraders, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 1) {
+				int numberToSpawn = 1;
+				if (int.TryParse(parameters[0], out numberToSpawn)) {
+					int oldNumTraders = colonistM.traders.Count;
+					for (int i = 0; i < numberToSpawn; i++) {
+						colonistM.SpawnTrader();
+					}
+					if (oldNumTraders + numberToSpawn == colonistM.traders.Count) {
+						OutputToConsole("SUCCESS: Spawned " + numberToSpawn + " traders.");
+					} else {
+						OutputToConsole("ERROR: Unable to spawn traders. Spawned " + (colonistM.traders.Count - oldNumTraders) + " traders.");
+					}
+				} else {
+					OutputToConsole("ERROR: Invalid number of colonists.");
 				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
@@ -314,6 +359,11 @@ public class DebugManager : MonoBehaviour {
 					if (newHealth >= 0 && newHealth <= 1) {
 						if (colonistM.selectedColonist != null) {
 							colonistM.selectedColonist.health = newHealth;
+							if (colonistM.selectedColonist.health == newHealth) {
+								OutputToConsole("SUCCESS: " + colonistM.selectedColonist.name + "'s health is now " + colonistM.selectedColonist.health + ".");
+							} else {
+								OutputToConsole("ERROR: Unable to change " + colonistM.selectedColonist.name + "'s health.");
+							}
 						} else {
 							OutputToConsole("ERROR: No colonist selected.");
 						}
@@ -338,6 +388,11 @@ public class DebugManager : MonoBehaviour {
 							if (float.TryParse(parameters[1], out newNeedValue)) {
 								if (newNeedValue >= 0 && newNeedValue <= 100) {
 									needInstance.value = newNeedValue;
+									if (needInstance.value == newNeedValue) {
+										OutputToConsole("SUCCESS: " + needInstance.prefab.name + " now has value " + needInstance.value + ".");
+									} else {
+										OutputToConsole("ERROR: Unable to change " + needInstance.prefab.name + " need value.");
+									}
 								} else {
 									OutputToConsole("ERROR: Invalid range on need value (float from 0 to 100).");
 								}
@@ -366,6 +421,7 @@ public class DebugManager : MonoBehaviour {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
 								colonistM.selectedColonist.inventory.ChangeResourceAmount(resource, amount);
+								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to " + colonistM.selectedColonist + ".");
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
 							}
@@ -376,6 +432,7 @@ public class DebugManager : MonoBehaviour {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
 								uiM.selectedContainer.inventory.ChangeResourceAmount(resource, amount);
+								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to container.");
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
 							}
