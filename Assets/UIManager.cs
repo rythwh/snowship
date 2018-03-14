@@ -80,6 +80,8 @@ public class UIManager : MonoBehaviour {
 
 	public GameObject planetPreviewPanel;
 
+	private InputField planetSeedInputField;
+
 	public int planetTileSize = 0;
 	private Slider planetSizeSlider;
 	private Text planetSizeText;
@@ -101,9 +103,11 @@ public class UIManager : MonoBehaviour {
 	public int mapSize = 0;
 	private Slider mapSizeSlider;
 	private Text mapSizeText;
-	private Text mapSeedInput;
+	private InputField mapSeedInputField;
 
 	private GameObject playButton;
+
+	private GameObject loadMapCodeButton;
 
 	private Text loadingStateText;
 	private Text subLoadingStateText;
@@ -174,9 +178,13 @@ public class UIManager : MonoBehaviour {
 
 		canvas = GameObject.Find("Canvas");
 
-		mainMenu = GameObject.Find("MainMenu");
+		mainMenu = canvas.transform.Find("MainMenu").gameObject;
 
-		mainMenuBackground = GameObject.Find("MainMenuBackground-Image");
+		string gameVersionString = "Snowship " + persistenceM.GetGameVersionString(PersistenceManager.gameVersion);
+		string disclaimerText = "<size=14>" + gameVersionString + "</size>\nSnowship by Ryan White - flizzehh.itch.io/snowship\nThis game is a work in progress and subject to major changes.";
+		mainMenu.transform.Find("Disclaimer-Text").GetComponent<Text>().text = disclaimerText;
+
+		mainMenuBackground = mainMenu.transform.Find("MainMenuBackground-Image").gameObject;
 		snowshipLogo = mainMenu.transform.Find("SnowshipLogo-Image").gameObject;
 		SetMainMenuBackground();
 
@@ -205,25 +213,27 @@ public class UIManager : MonoBehaviour {
 		mainMenuButtonsPanel.transform.Find("Settings-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleSettingsMenu(); });
 		mainMenuButtonsPanel.transform.Find("Exit-Button").GetComponent<Button>().onClick.AddListener(delegate { ExitToDesktop(); });
 
-		planetPreviewPanel = GameObject.Find("PlanetPreview-Panel");
+		planetPreviewPanel = mapSelectionPanel.transform.Find("PlanetPreview-Panel/PlanetPreviewTiles-Panel").gameObject;
 
-		planetSizeSlider = GameObject.Find("PlanetSize-Slider").GetComponent<Slider>();
-		planetSizeText = GameObject.Find("PlanetSizeValue-Text").GetComponent<Text>();
+		planetSeedInputField = mapSelectionPanel.transform.Find("PlanetSettings-Panel/PlanetSeed-Panel/InputField").GetComponent<InputField>();
+
+		planetSizeSlider = mapSelectionPanel.transform.Find("PlanetSettings-Panel/PlanetSize-Panel/PlanetSize-Slider").GetComponent<Slider>();
+		planetSizeText = mapSelectionPanel.transform.Find("PlanetSettings-Panel/PlanetSize-Panel/PlanetSizeValue-Text").GetComponent<Text>();
 		planetSizeSlider.maxValue = planetTileSizes.Count - 1;
 		planetSizeSlider.minValue = 0;
 
-		planetDistanceSlider = GameObject.Find("PlanetDistance-Slider").GetComponent<Slider>();
-		planetDistanceText = GameObject.Find("PlanetDistanceValue-Text").GetComponent<Text>();
+		planetDistanceSlider = mapSelectionPanel.transform.Find("PlanetSettings-Panel/PlanetDistance-Panel/PlanetDistance-Slider").GetComponent<Slider>();
+		planetDistanceText = mapSelectionPanel.transform.Find("PlanetSettings-Panel/PlanetDistance-Panel/PlanetDistanceValue-Text").GetComponent<Text>();
 		planetDistanceSlider.maxValue = 7;
 		planetDistanceSlider.minValue = 1;
 
-		temperatureRangeSlider = GameObject.Find("TemperatureRange-Slider").GetComponent<Slider>();
-		temperatureRangeText = GameObject.Find("TemperatureRangeValue-Text").GetComponent<Text>();
+		temperatureRangeSlider = mapSelectionPanel.transform.Find("PlanetSettings-Panel/TemperatureRange-Panel/TemperatureRange-Slider").GetComponent<Slider>();
+		temperatureRangeText = mapSelectionPanel.transform.Find("PlanetSettings-Panel/TemperatureRange-Panel/TemperatureRangeValue-Text").GetComponent<Text>();
 		temperatureRangeSlider.maxValue = 10;
 		temperatureRangeSlider.minValue = 0;
 
-		windDirectionSlider = GameObject.Find("WindDirection-Slider").GetComponent<Slider>();
-		windDirectionText = GameObject.Find("WindDirectionValue-Text").GetComponent<Text>();
+		windDirectionSlider = mapSelectionPanel.transform.Find("PlanetSettings-Panel/WindDirection-Panel/WindDirection-Slider").GetComponent<Slider>();
+		windDirectionText = mapSelectionPanel.transform.Find("PlanetSettings-Panel/WindDirection-Panel/WindDirectionValue-Text").GetComponent<Text>();
 		windDirectionSlider.maxValue = 7;
 		windDirectionSlider.minValue = 0;
 
@@ -239,34 +249,39 @@ public class UIManager : MonoBehaviour {
 		windDirectionSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
 		windDirectionSlider.value = UnityEngine.Random.Range(0, 8); // 0 -> 7 (8 is exclusive)
 
-		GameObject.Find("ReloadPlanet-Button").GetComponent<Button>().onClick.AddListener(delegate { GeneratePlanet(); });
+		mapSelectionPanel.transform.Find("PlanetSettings-Panel/ReloadPlanet-Button").GetComponent<Button>().onClick.AddListener(delegate { GeneratePlanet(); });
 
-		mapSizeText = GameObject.Find("MapSizeValue-Text").GetComponent<Text>();
-		mapSizeSlider = GameObject.Find("MapSize-Slider").GetComponent<Slider>();
+		mapSizeText = mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/MapSize-Panel/MapSizeValue-Text").GetComponent<Text>();
+		mapSizeSlider = mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/MapSize-Panel/MapSize-Slider").GetComponent<Slider>();
 		mapSizeSlider.onValueChanged.AddListener(delegate { UpdateMapSizeText(); });
 		mapSizeSlider.value = 2;
 
-		mapSeedInput = GameObject.Find("MapSeedInput-Text").GetComponent<Text>();
+		mapSeedInputField = mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/MapSeed-Panel/MapSeed-InputField").GetComponent<InputField>();
 
-		playButton = GameObject.Find("Play-Button");
+		playButton = mapSelectionPanel.transform.Find("Play-Button").gameObject;
 		playButton.GetComponent<Button>().onClick.AddListener(delegate { PlayButton(); });
 
-		loadingStateText = GameObject.Find("LoadingState-Text").GetComponent<Text>();
-		subLoadingStateText = GameObject.Find("SubLoadingState-Text").GetComponent<Text>();
+		loadMapCodeButton = mapSelectionPanel.transform.Find("MapRegenerationCode-Panel/LoadMapCode-Button").gameObject;
+		loadMapCodeButton.GetComponent<Button>().onClick.AddListener(delegate { ParseMapRegenerationCode(mapSelectionPanel.transform.Find("MapRegenerationCode-Panel/InputField").GetComponent<InputField>().text); });
+
+		loadingStateText = canvas.transform.Find("LoadingScreen/LoadingState-Text").GetComponent<Text>();
+		subLoadingStateText = canvas.transform.Find("LoadingScreen/SubLoadingState-Text").GetComponent<Text>();
 		ToggleLoadingScreen(false);
 
-		gameUI = GameObject.Find("Game-BackgroundPanel");
+		gameUI = canvas.transform.Find("Game-BackgroundPanel").gameObject;
 
-		tileInformation = GameObject.Find("TileInformation-Panel");
+		gameUI.transform.Find("Disclaimer-Text").GetComponent<Text>().text = gameVersionString;
 
-		colonistListToggleButton = GameObject.Find("ColonistListToggle-Button");
-		colonistList = GameObject.Find("ColonistList-ScrollPanel");
+		tileInformation = gameUI.transform.Find("TileInformation-Panel").gameObject;
+
+		colonistListToggleButton = gameUI.transform.Find("ColonistListToggle-Button").gameObject;
+		colonistList = gameUI.transform.Find("RightList-Panel/ColonistList-ScrollPanel").gameObject;
 		colonistListToggleButton.GetComponent<Button>().onClick.AddListener(delegate { colonistList.SetActive(!colonistList.activeSelf); });
-		jobListToggleButton = GameObject.Find("JobListToggle-Button");
-		jobList = GameObject.Find("JobList-ScrollPanel");
+		jobListToggleButton = gameUI.transform.Find("JobListToggle-Button").gameObject;
+		jobList = gameUI.transform.Find("RightList-Panel/JobList-ScrollPanel").gameObject;
 		jobListToggleButton.GetComponent<Button>().onClick.AddListener(delegate { jobList.SetActive(!jobList.activeSelf); });
 
-		selectedColonistInformationPanel = GameObject.Find("SelectedColonistInfo-Panel");
+		selectedColonistInformationPanel = gameUI.transform.Find("SelectedColonistInfo-Panel").gameObject;
 
 		selectedColonistInventoryPanel = selectedColonistInformationPanel.transform.Find("ColonistInventory-Panel").gameObject;
 
@@ -275,37 +290,37 @@ public class UIManager : MonoBehaviour {
 		selectedColonistHappinessModifiersButton.GetComponent<Button>().onClick.AddListener(delegate { selectedColonistHappinessModifiersPanel.SetActive(!selectedColonistHappinessModifiersPanel.activeSelf); });
 		selectedColonistHappinessModifiersPanel.SetActive(false);
 
-		dateTimeInformationPanel = GameObject.Find("DateTimeInformation-Panel");
+		dateTimeInformationPanel = gameUI.transform.Find("DateTimeInformation-Panel").gameObject;
 
 		selectionSizeCanvas = GameObject.Find("SelectionSize-Canvas");
 		selectionSizeCanvas.GetComponent<Canvas>().sortingOrder = 100; // Selection Area Size Canvas
 		selectionSizePanel = selectionSizeCanvas.transform.Find("SelectionSize-Panel/Content-Panel").gameObject;
 
-		selectedContainerInventoryPanel = GameObject.Find("SelectedContainerInventory-Panel");
+		selectedContainerInventoryPanel = gameUI.transform.Find("SelectedContainerInventory-Panel").gameObject;
 
-		professionMenuButton = GameObject.Find("ProfessionsMenu-Button");
+		professionMenuButton = gameUI.transform.Find("AdminMenu-Panel/ProfessionsMenu-Button").gameObject;
 		professionsList = professionMenuButton.transform.Find("ProfessionsList-Panel").gameObject;
 		professionMenuButton.GetComponent<Button>().onClick.AddListener(delegate { SetProfessionsList(); });
 
-		objectsMenuButton = GameObject.Find("ObjectsMenu-Button");
+		objectsMenuButton = gameUI.transform.Find("AdminMenu-Panel/ObjectsMenu-Button").gameObject;
 		objectPrefabsList = objectsMenuButton.transform.Find("ObjectPrefabsList-ScrollPanel").gameObject;
 		objectsMenuButton.GetComponent<Button>().onClick.AddListener(delegate {
 			ToggleObjectPrefabsList(true);
 		});
 		objectPrefabsList.SetActive(false);
 
-		resourcesMenuButton = GameObject.Find("ResourcesMenu-Button");
+		resourcesMenuButton = gameUI.transform.Find("AdminMenu-Panel/ResourcesMenu-Button").gameObject;
 		resourcesList = resourcesMenuButton.transform.Find("ResourcesList-ScrollPanel").gameObject;
 		resourcesMenuButton.GetComponent<Button>().onClick.AddListener(delegate { SetResourcesList(); });
 		resourcesList.SetActive(false);
 
-		cancelButton = GameObject.Find("Cancel-Button");
+		cancelButton = gameUI.transform.Find("Cancel-Button").gameObject;
 		cancelButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Cancel)); });
 
-		mtoNoFuelPanelObj = GameObject.Find("SelectedManufacturingTileObjectNoFuel-Panel");
-		mtoFuelPanelObj = GameObject.Find("SelectedManufacturingTileObjectFuel-Panel");
+		mtoNoFuelPanelObj = gameUI.transform.Find("SelectedManufacturingTileObjectNoFuel-Panel").gameObject;
+		mtoFuelPanelObj = gameUI.transform.Find("SelectedManufacturingTileObjectFuel-Panel").gameObject;
 
-		pauseMenu = GameObject.Find("PauseMenu-BackgroundPanel");
+		pauseMenu = canvas.transform.Find("PauseMenu-BackgroundPanel").gameObject;
 		pauseMenuButtons = pauseMenu.transform.Find("ButtonsList-Panel").gameObject;
 		pauseLabel = pauseMenu.transform.Find("PausedLabel-Text").gameObject;
 
@@ -484,8 +499,10 @@ public class UIManager : MonoBehaviour {
 	public PlanetTile selectedPlanetTile;
 
 	public void SetSelectedPlanetTile(PlanetTile selectedPlanetTile) {
-		this.selectedPlanetTile = selectedPlanetTile;
-		SetSelectedPlanetTileInfo();
+		if (selectedPlanetTile == null || !tileM.GetWaterEquivalentTileTypes().Contains(selectedPlanetTile.tile.tileType.type)) {
+			this.selectedPlanetTile = selectedPlanetTile;
+			SetSelectedPlanetTileInfo();
+		}
 	}
 
 	public List<PlanetTile> planetTiles = new List<PlanetTile>();
@@ -578,15 +595,15 @@ public class UIManager : MonoBehaviour {
 
 	void SetSelectedPlanetTileInfo() {
 		if (selectedPlanetTile != null) {
-			GameObject.Find("SelectedPlanetTileTemperature-Panel").transform.Find("TemperatureValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedPlanetTile.averageTemperature) + "°C";
-			GameObject.Find("SelectedPlanetTilePrecipitation-Panel").transform.Find("PrecipitationValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedPlanetTile.averagePrecipitation * 100) + "%";
-			GameObject.Find("SelectedPlanetTileAltitude-Panel").transform.Find("AltitudeValue-Text").GetComponent<Text>().text = Mathf.RoundToInt((selectedPlanetTile.tile.height - selectedPlanetTile.terrainTypeHeights[TileManager.TileTypes.GrassWater]) * 10000f) + "m";
-			GameObject.Find("SelectedPlanetTileCoordinates-Text").GetComponent<Text>().text = "(" + Mathf.FloorToInt(selectedPlanetTile.position.x) + "," + Mathf.FloorToInt(selectedPlanetTile.position.y) + ")";
+			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTileTemperature-Panel/TemperatureValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedPlanetTile.averageTemperature) + "°C";
+			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTilePrecipitation-Panel/PrecipitationValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedPlanetTile.averagePrecipitation * 100) + "%";
+			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTileAltitude-Panel/AltitudeValue-Text").GetComponent<Text>().text = Mathf.RoundToInt((selectedPlanetTile.tile.height - selectedPlanetTile.terrainTypeHeights[TileManager.TileTypes.GrassWater]) * 10000f) + "m";
+			mapSelectionPanel.transform.Find("PlanetPreview-Panel/SelectedPlanetTileCoordinates-Text").GetComponent<Text>().text = "(" + Mathf.FloorToInt(selectedPlanetTile.position.x) + "," + Mathf.FloorToInt(selectedPlanetTile.position.y) + ")";
 		} else {
-			GameObject.Find("SelectedPlanetTileTemperature-Panel").transform.Find("TemperatureValue-Text").GetComponent<Text>().text = "";
-			GameObject.Find("SelectedPlanetTilePrecipitation-Panel").transform.Find("PrecipitationValue-Text").GetComponent<Text>().text = "";
-			GameObject.Find("SelectedPlanetTileAltitude-Panel").transform.Find("AltitudeValue-Text").GetComponent<Text>().text = "";
-			GameObject.Find("SelectedPlanetTileCoordinates-Text").GetComponent<Text>().text = string.Empty;
+			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTileTemperature-Panel/TemperatureValue-Text").GetComponent<Text>().text = "";
+			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTilePrecipitation-Panel/PrecipitationValue-Text").GetComponent<Text>().text = "";
+			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTileAltitude-Panel/AltitudeValue-Text").GetComponent<Text>().text = "";
+			mapSelectionPanel.transform.Find("PlanetPreview-Panel/SelectedPlanetTileCoordinates-Text").GetComponent<Text>().text = string.Empty;
 		}
 	}
 
@@ -627,6 +644,7 @@ public class UIManager : MonoBehaviour {
 			};
 		public static List<int> surroundingPlanetTileHeightDirections = null;
 		public static bool preventEdgeTouching = true;
+		public static Vector2 planetTilePosition = Vector2.zero;
 	}
 
 	public void GeneratePlanet() {
@@ -637,9 +655,7 @@ public class UIManager : MonoBehaviour {
 		}
 		planetTiles.Clear();
 
-		Text planetSeedInput = GameObject.Find("PlanetSeedInput-Text").GetComponent<Text>();
-		string planetSeedString = planetSeedInput.text;
-		int planetSeed = SeedParser(planetSeedString, GameObject.Find("PlanetSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
+		int planetSeed = SeedParser(planetSeedInputField.text, planetSeedInputField);
 		print("Planet Seed: " + planetSeed);
 
 		int planetSize = Mathf.FloorToInt(Mathf.FloorToInt(planetPreviewPanel.GetComponent<RectTransform>().sizeDelta.x) / planetTileSize);
@@ -652,19 +668,22 @@ public class UIManager : MonoBehaviour {
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
 
 		TileManager.MapData planetData = new TileManager.MapData(
+			null,
 			planetSeed,
 			planetSize,
 			StaticPlanetMapDataValues.actualMap,
 			StaticPlanetMapDataValues.equatorOffset,
 			StaticPlanetMapDataValues.planetTemperature,
 			temperatureRange,
+			planetDistance,
 			planetTemperature,
 			StaticPlanetMapDataValues.averageTemperature,
 			StaticPlanetMapDataValues.averagePrecipitation,
 			StaticPlanetMapDataValues.terrainTypeHeights,
 			StaticPlanetMapDataValues.surroundingPlanetTileHeightDirections,
 			StaticPlanetMapDataValues.preventEdgeTouching,
-			windDirection
+			windDirection,
+			StaticPlanetMapDataValues.planetTilePosition
 		);
 		planet = new TileManager.Map(planetData, false);
 		foreach (TileManager.Tile tile in planet.tiles) {
@@ -695,7 +714,7 @@ public class UIManager : MonoBehaviour {
 
 	public void UpdatePlanetInfo() {
 		planetTileSize = planetTileSizes[Mathf.RoundToInt(planetSizeSlider.value)];
-		planetSizeText.text = Mathf.FloorToInt(Mathf.FloorToInt(GameObject.Find("PlanetPreview-Panel").GetComponent<RectTransform>().sizeDelta.x) / planetTileSize).ToString();
+		planetSizeText.text = Mathf.FloorToInt(Mathf.FloorToInt(planetPreviewPanel.GetComponent<RectTransform>().sizeDelta.x) / planetTileSize).ToString();
 
 		planetDistance = (float)Math.Round(0.1f * (planetDistanceSlider.value + 6), 1);
 		planetDistanceText.text = planetDistance + " AU";
@@ -721,19 +740,95 @@ public class UIManager : MonoBehaviour {
 		return mapSeed;
 	}
 
+	public void ParseMapRegenerationCode(string mapRegenerationCode) {
+		int planetSeed = int.Parse(mapRegenerationCode.Split('~')[0]);
+		if (planetSeed.ToString().Length > planetSeedInputField.characterLimit) {
+			print("planetSeed too long: " + planetSeed);
+			return;
+		}
+		print("planetSeed: " + planetSeed);
+
+		int planetSize = int.Parse(mapRegenerationCode.Split('~')[1]);
+		int planetTileSize = Mathf.FloorToInt(Mathf.FloorToInt(planetPreviewPanel.GetComponent<RectTransform>().sizeDelta.x) / planetSize);
+		if (!planetTileSizes.Contains(planetTileSize)) {
+			print("planetTileSize/planetSize not valid: " + planetTileSize + "/" + planetSize);
+			return;
+		}
+		print("planetTileSize: " + planetTileSize);
+		print("planetSize: " + planetSize);
+
+
+		int planetTemperatureRange = int.Parse(mapRegenerationCode.Split('~')[2]);
+		planetTemperatureRange = Mathf.FloorToInt(planetTemperatureRange / 10f);
+		if (planetTemperatureRange < temperatureRangeSlider.minValue || planetTemperatureRange > temperatureRangeSlider.maxValue) {
+			print("planetTemperatureRange out of range: " + planetTemperatureRange);
+			return;
+		}
+		print("planetTemperatureRange: " + planetTemperatureRange);
+
+		float planetDistance = float.Parse(mapRegenerationCode.Split('~')[3]);
+		planetDistance = (10 * planetDistance) - 6;
+		if (planetDistance < planetDistanceSlider.minValue || planetDistance > planetDistanceSlider.maxValue) {
+			print("planetDistance out of range: " + planetDistance);
+			return;
+		}
+		print("planetDistance: " + planetDistance);
+
+		int planetPrimaryWindDirection = int.Parse(mapRegenerationCode.Split('~')[4]);
+		if (planetPrimaryWindDirection < windDirectionSlider.minValue || planetPrimaryWindDirection > windDirectionSlider.maxValue) {
+			print("planetPrimaryWindDirection out of range: " + planetPrimaryWindDirection);
+			return;
+		}
+		print("planetPrimaryWindDirection: " + planetPrimaryWindDirection);
+
+		Vector2 planetTilePosition = new Vector2(int.Parse(mapRegenerationCode.Split('~')[5]), int.Parse(mapRegenerationCode.Split('~')[6]));
+		if (planetTilePosition.x < 0 || planetTilePosition.y < 0 || planetTilePosition.x >= planetSize || planetTilePosition.y >= planetSize) {
+			print("planetTilePosition out of range: " + planetTilePosition);
+			return;
+		}
+		print("planetTilePosition: " + planetTilePosition);
+
+		int mapSize = int.Parse(mapRegenerationCode.Split('~')[7]);
+		mapSize = Mathf.FloorToInt(mapSize / 50f);
+		if (mapSize < mapSizeSlider.minValue || mapSize > mapSizeSlider.maxValue) {
+			print("mapSize out of range: " + mapSize);
+			return;
+		}
+		print("mapSize: " + mapSize);
+
+		int mapSeed = int.Parse(mapRegenerationCode.Split('~')[8]);
+		if (mapSeed.ToString().Length > mapSeedInputField.characterLimit) {
+			print("mapSeed too long: " + mapSeed);
+			return;
+		}
+		print("mapSeed: " + mapSeed);
+
+		planetSeedInputField.text = planetSeed.ToString();
+		planetSizeSlider.value = planetTileSizes.IndexOf(planetTileSize);
+		planetDistanceSlider.value = planetDistance;
+		temperatureRangeSlider.value = planetTemperatureRange;
+		windDirectionSlider.value = planetPrimaryWindDirection;
+		GeneratePlanet();
+
+		SetSelectedPlanetTile(planetTiles.Find(planetTile => planetTile.position == planetTilePosition));
+		mapSeedInputField.text = mapSeed.ToString();
+		mapSizeSlider.value = mapSize;
+	}
+
 	public void PlayButton() {
-		colonyName = GameObject.Find("ColonyName-Panel").transform.Find("InputField").GetComponent<InputField>().text;
+		colonyName = mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/ColonyName-Panel/InputField").GetComponent<InputField>().text;
 		if (string.IsNullOrEmpty(colonyName) || new Regex(@"\W+", RegexOptions.IgnorePatternWhitespace).Replace(colonyName, string.Empty).Length <= 0) {
 			colonyName = "Colony";
 		}
 		print(colonyName);
 
-		string mapSeedString = mapSeedInput.text;
-		int mapSeed = SeedParser(mapSeedString, GameObject.Find("MapSeed-Panel").transform.Find("InputField").GetComponent<InputField>());
+		string mapSeedString = mapSeedInputField.text;
+		int mapSeed = SeedParser(mapSeedString, mapSeedInputField);
 
 		MainMenuToGameTransition(false);
 
 		TileManager.MapData mapData = new TileManager.MapData(
+			planet.mapData,
 			mapSeed,
 			mapSize,
 			true,
@@ -741,14 +836,18 @@ public class UIManager : MonoBehaviour {
 			false,
 			0,
 			0,
+			0,
 			selectedPlanetTile.averageTemperature,
 			selectedPlanetTile.averagePrecipitation,
 			selectedPlanetTile.terrainTypeHeights,
 			selectedPlanetTile.surroundingPlanetTileHeightDirections,
 			false,
-			planet.mapData.primaryWindDirection
+			planet.mapData.primaryWindDirection,
+			selectedPlanetTile.position
 		);
 		tileM.Initialize(mapData);
+
+		pauseMenu.transform.Find("MapRegenerationCode-InputField").GetComponent<InputField>().text = tileM.map.mapData.mapRegenerationCode;
 	}
 
 	public void MainMenuToGameTransition(bool enableGameUIImmediately) {
@@ -867,7 +966,7 @@ public class UIManager : MonoBehaviour {
 
 		Dictionary<GameObject, Dictionary<GameObject, Dictionary<GameObject, List<GameObject>>>> menus = new Dictionary<GameObject, Dictionary<GameObject, Dictionary<GameObject, List<GameObject>>>>();
 
-		GameObject buildMenuButton = GameObject.Find("BuildMenu-Button");
+		GameObject buildMenuButton = gameUI.transform.Find("BuildMenu-Button").gameObject;
 		GameObject buildMenuPanel = buildMenuButton.transform.Find("Panel").gameObject;
 
 		Dictionary<GameObject, Dictionary<GameObject, List<GameObject>>> groupPanels = new Dictionary<GameObject, Dictionary<GameObject, List<GameObject>>>();
@@ -876,10 +975,10 @@ public class UIManager : MonoBehaviour {
 			if (group.type == ResourceManager.TileObjectPrefabGroupsEnum.None) {
 				continue;
 			} else if (group.type == ResourceManager.TileObjectPrefabGroupsEnum.Command) {
-				menus.Add(GameObject.Find("CommandMenu-Button"), CreateAdditionalMenuButtons(GameObject.Find("CommandMenu-Button"), group));
+				menus.Add(gameUI.transform.Find("CommandMenu-Button").gameObject, CreateAdditionalMenuButtons(gameUI.transform.Find("CommandMenu-Button").gameObject, group));
 				continue;
 			} else if (group.type == ResourceManager.TileObjectPrefabGroupsEnum.Farm) {
-				menus.Add(GameObject.Find("FarmMenu-Button"), CreateAdditionalMenuButtons(GameObject.Find("FarmMenu-Button"), group));
+				menus.Add(gameUI.transform.Find("FarmMenu-Button").gameObject, CreateAdditionalMenuButtons(gameUI.transform.Find("FarmMenu-Button").gameObject, group));
 				continue;
 			}
 
@@ -1286,11 +1385,11 @@ public class UIManager : MonoBehaviour {
 		if (colonistM.selectedColonist != null) {
 			selectedColonistInformationPanel.SetActive(true);
 
-			RectTransform rightListPanel = GameObject.Find("RightList-Panel").GetComponent<RectTransform>();
+			RectTransform rightListPanel = gameUI.transform.Find("RightList-Panel").GetComponent<RectTransform>();
 			Vector2 rightListSize = rightListPanel.offsetMin;
 			rightListPanel.offsetMin = new Vector2(rightListSize.x, 310);
 
-			selectedColonistInformationPanel.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonistM.selectedColonist.name;
+			selectedColonistInformationPanel.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonistM.selectedColonist.name + " (" + colonistM.selectedColonist.gender.ToString()[0] + ")";
 			selectedColonistInformationPanel.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = colonistM.selectedColonist.moveSprites[0];
 
 			selectedColonistInformationPanel.transform.Find("AffiliationName-Text").GetComponent<Text>().text = "Colonist of " + colonyName;
@@ -1338,7 +1437,7 @@ public class UIManager : MonoBehaviour {
 		} else {
 			selectedColonistInformationPanel.SetActive(false);
 
-			RectTransform rightListPanel = GameObject.Find("RightList-Panel").GetComponent<RectTransform>();
+			RectTransform rightListPanel = gameUI.transform.Find("RightList-Panel").GetComponent<RectTransform>();
 			Vector2 rightListSize = rightListPanel.offsetMin;
 			rightListPanel.offsetMin = new Vector2(rightListSize.x, 5);
 
@@ -1978,7 +2077,7 @@ public class UIManager : MonoBehaviour {
 			obj.GetComponent<Button>().onClick.AddListener(delegate {
 				objectInstancesList.SetActive(!objectInstancesList.activeSelf);
 				if (objectInstancesList.activeSelf) {
-					objectInstancesList.transform.SetParent(GameObject.Find("Canvas").transform);
+					objectInstancesList.transform.SetParent(uiM.canvas.transform);
 					foreach (ObjectPrefabElement objectPrefabElement in uiM.objectPrefabElements) {
 						if (objectPrefabElement != this) {
 							objectPrefabElement.objectInstancesList.SetActive(false);
@@ -2662,13 +2761,30 @@ public class UIManager : MonoBehaviour {
 			loadFilePanel.transform.Find("SaveDate-Text").GetComponent<Text>().text = saveDate;
 			loadFilePanel.transform.Find("SaveTime-Text").GetComponent<Text>().text = saveTime;
 
-			string imageFile = "file:" + fileName.Split('.')[0] + ".png";
+			bool compatible = false;
+			int gameVersion = -1;
+			int saveVersion = -1;
+			if (fileName.Split('-').Length == 6) {
+				gameVersion = int.Parse(fileName.Split('-')[4]);
+				saveVersion = int.Parse(fileName.Split('-')[5].Split('.')[0]);
+				if (saveVersion == PersistenceManager.saveVersion) {
+					compatible = true;
+				}
+			}
+
+			loadFilePanel.transform.Find("GameVersionValue-Text").GetComponent<Text>().text = uiM.persistenceM.GetGameVersionString(gameVersion);
+			loadFilePanel.transform.Find("SaveFileVersionValue-Text").GetComponent<Text>().text = (saveVersion == -1 ? "Unsupported" : saveVersion.ToString());
+
+			string imageFile = "file://" + fileName.Split('.')[0] + ".png";
 			WWW www = new WWW(imageFile);
 			if (string.IsNullOrEmpty(www.error)) {
 				uiM.StartCoroutine(LoadSaveFileImage(www));
 			}
 
-			loadFilePanel.GetComponent<Button>().onClick.AddListener(delegate { uiM.SetSelectedLoadFile(this, fromMainMenu); });
+			loadFilePanel.GetComponent<Button>().interactable = compatible;
+			if (compatible) {
+				loadFilePanel.GetComponent<Button>().onClick.AddListener(delegate { uiM.SetSelectedLoadFile(this, fromMainMenu); });
+			}
 		}
 
 		IEnumerator LoadSaveFileImage(WWW www) {

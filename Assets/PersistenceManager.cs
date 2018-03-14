@@ -7,15 +7,22 @@ using System.Linq;
 
 public class PersistenceManager : MonoBehaviour {
 
-	private int gameVersion;
-	private int saveVersion;
+	public const int gameVersion = 3;
+	public const int saveVersion = 2;
 
-	public int GetGameVersion() {
-		return gameVersion;
-	}
-
-	public int GetSaveVersion() {
-		return saveVersion;
+	private Dictionary<int, string> gameVersionStrings = new Dictionary<int, string>() {
+		{ 1, "Alpha R1" },
+		{ 2, "Alpha R1.1" },
+		{ 3, "Alpha R2" }
+	};
+	public string GetGameVersionString(int gameVersion) {
+		if (gameVersionStrings.ContainsKey(gameVersion)) {
+			return gameVersionStrings[gameVersion];
+		} else if (gameVersion == -1) {
+			return "Unsupported";
+		} else {
+			return "Unsupported " + gameVersion;
+		}
 	}
 
 	private CameraManager cameraM; // Save the camera zoom and position
@@ -29,8 +36,6 @@ public class PersistenceManager : MonoBehaviour {
 	private string settingsFilePath;
 
 	void Awake() {
-		gameVersion = 1;
-		saveVersion = 1;
 
 		cameraM = GetComponent<CameraManager>();
 		colonistM = GetComponent<ColonistManager>();
@@ -94,7 +99,7 @@ public class PersistenceManager : MonoBehaviour {
 	public string GenerateSaveFileName() {
 		System.DateTime now = System.DateTime.Now;
 		string dateTime = now.Year + "y" + now.Month + "m" + now.Day + "d" + now.Hour + "h" + now.Minute + "m" + now.Second + "s" + now.Millisecond + "m";
-		string fileName = "snowship-save-" + uiM.colonyName + "-" + dateTime + ".snowship";
+		string fileName = "snowship-save-" + uiM.colonyName + "-" + dateTime + "-" + gameVersion + "-" + saveVersion + ".snowship";
 		return fileName;
 	}
 
@@ -173,7 +178,9 @@ public class PersistenceManager : MonoBehaviour {
 		foreach (int surroundingPlanetTileHeightDirection in tileM.map.mapData.surroundingPlanetTileHeightDirections) {
 			tileMapData += "," + surroundingPlanetTileHeightDirection;
 		}
+		tileMapData += "/PlanetTilePosition," + tileM.map.mapData.planetTilePosition.x + "," + tileM.map.mapData.planetTilePosition.y;
 		file.WriteLine(tileMapData);
+
 		foreach (TileManager.Tile tile in tileM.map.tiles) {
 			file.WriteLine(GetTileDataString(tile));
 		}
@@ -387,10 +394,11 @@ public class PersistenceManager : MonoBehaviour {
 		string colonistData = "Colonist";
 		colonistData += "/Position," + colonist.obj.transform.position.x + "," + colonist.obj.transform.position.y;
 		colonistData += "/Name," + colonist.name;
-		colonistData += "/SkinIndex," + colonist.colonistLookIndexes[ColonistManager.ColonistLook.Skin];
-		colonistData += "/HairIndex," + colonist.colonistLookIndexes[ColonistManager.ColonistLook.Hair];
-		colonistData += "/ShirtIndex," + colonist.colonistLookIndexes[ColonistManager.ColonistLook.Shirt];
-		colonistData += "/PantsIndex," + colonist.colonistLookIndexes[ColonistManager.ColonistLook.Pants];
+		colonistData += "/Gender," + colonist.gender;
+		colonistData += "/SkinIndex," + colonist.humanLookIndices[ColonistManager.HumanLook.Skin];
+		colonistData += "/HairIndex," + colonist.humanLookIndices[ColonistManager.HumanLook.Hair];
+		colonistData += "/ShirtIndex," + colonist.humanLookIndices[ColonistManager.HumanLook.Shirt];
+		colonistData += "/PantsIndex," + colonist.humanLookIndices[ColonistManager.HumanLook.Pants];
 		colonistData += "/Health," + colonist.health;
 		colonistData += "/PlayerMoved," + colonist.playerMoved;
 		colonistData += "/Profession," + colonist.profession.type;
@@ -660,19 +668,22 @@ public class PersistenceManager : MonoBehaviour {
 						int temperatureRange = int.Parse(lineData[4].Split(',')[1]);
 						int windDirection = int.Parse(lineData[5].Split(',')[1]);
 						planetData = new TileManager.MapData(
+							null,
 							planetSeed,
 							planetSize,
 							UIManager.StaticPlanetMapDataValues.actualMap,
 							UIManager.StaticPlanetMapDataValues.equatorOffset,
 							UIManager.StaticPlanetMapDataValues.planetTemperature,
 							temperatureRange,
+							planetDistance,
 							planetTemperature,
 							UIManager.StaticPlanetMapDataValues.averageTemperature,
 							UIManager.StaticPlanetMapDataValues.averagePrecipitation,
 							UIManager.StaticPlanetMapDataValues.terrainTypeHeights,
 							UIManager.StaticPlanetMapDataValues.surroundingPlanetTileHeightDirections,
 							UIManager.StaticPlanetMapDataValues.preventEdgeTouching,
-							windDirection
+							windDirection,
+							UIManager.StaticPlanetMapDataValues.planetTilePosition
 						);
 						uiM.planet = new TileManager.Map(planetData, false);
 						foreach (TileManager.Tile tile in uiM.planet.tiles) {
@@ -696,7 +707,9 @@ public class PersistenceManager : MonoBehaviour {
 							foreach (string surroundingPlanetTileHeightDirectionString in lineData[9].Split(',').Skip(1)) {
 								surroundingPlanetTileHeightDirections.Add(int.Parse(surroundingPlanetTileHeightDirectionString));
 							}
+							Vector2 planetTilePosition = new Vector2(float.Parse(lineData[10].Split(',')[1]), float.Parse(lineData[10].Split(',')[2]));
 							mapData = new TileManager.MapData(
+								uiM.planet.mapData,
 								mapSeed,
 								mapSize,
 								true,
@@ -704,17 +717,20 @@ public class PersistenceManager : MonoBehaviour {
 								false,
 								0,
 								0,
+								0,
 								averageTemperature,
 								averagePrecipitation,
 								terrainTypeHeights,
 								surroundingPlanetTileHeightDirections,
 								false,
-								uiM.planet.primaryWindDirection
+								uiM.planet.primaryWindDirection,
+								planetTilePosition
 							);
 							tileM.map = new TileManager.Map(mapData, true);
 							if (fromMainMenu) {
 								uiM.InitializeGameUI();
 							}
+							uiM.pauseMenu.transform.Find("MapRegenerationCode-InputField").GetComponent<InputField>().text = mapData.mapRegenerationCode;
 						} else {
 							TileManager.Tile tile = tileM.map.tiles[innerSectionIndex - 1];
 
@@ -832,33 +848,35 @@ public class PersistenceManager : MonoBehaviour {
 
 						string name = lineData[2].Split(',')[1];
 
-						Dictionary<ColonistManager.ColonistLook, int> colonistLookIndexes = new Dictionary<ColonistManager.ColonistLook, int>() {
-							{ ColonistManager.ColonistLook.Skin, int.Parse(lineData[3].Split(',')[1]) },
-							{ ColonistManager.ColonistLook.Hair, int.Parse(lineData[4].Split(',')[1]) },
-							{ ColonistManager.ColonistLook.Shirt, int.Parse(lineData[5].Split(',')[1]) },
-							{ ColonistManager.ColonistLook.Pants, int.Parse(lineData[6].Split(',')[1]) },
+						ColonistManager.Gender gender = (ColonistManager.Gender)System.Enum.Parse(typeof(ColonistManager.Gender), lineData[3].Split(',')[1]);
+
+						Dictionary<ColonistManager.HumanLook, int> humanLookIndices = new Dictionary<ColonistManager.HumanLook, int>() {
+							{ ColonistManager.HumanLook.Skin, int.Parse(lineData[4].Split(',')[1]) },
+							{ ColonistManager.HumanLook.Hair, int.Parse(lineData[5].Split(',')[1]) },
+							{ ColonistManager.HumanLook.Shirt, int.Parse(lineData[6].Split(',')[1]) },
+							{ ColonistManager.HumanLook.Pants, int.Parse(lineData[7].Split(',')[1]) },
 						};
 
-						float health = float.Parse(lineData[7].Split(',')[1]);
+						float health = float.Parse(lineData[8].Split(',')[1]);
 
-						bool playerMoved = bool.Parse(lineData[8].Split(',')[1]);
+						bool playerMoved = bool.Parse(lineData[9].Split(',')[1]);
 
-						ColonistManager.Profession profession = colonistM.professions.Find(p => p.type.ToString() == lineData[9].Split(',')[1]);
-						ColonistManager.Profession oldProfession = colonistM.professions.Find(p => p.type.ToString() == lineData[10].Split(',')[1]);
+						ColonistManager.Profession profession = colonistM.professions.Find(p => p.type.ToString() == lineData[10].Split(',')[1]);
+						ColonistManager.Profession oldProfession = colonistM.professions.Find(p => p.type.ToString() == lineData[11].Split(',')[1]);
 
-						ColonistManager.Colonist colonist = new ColonistManager.Colonist(tile, colonistLookIndexes, profession, health);
+						ColonistManager.Colonist colonist = new ColonistManager.Colonist(tile, humanLookIndices, profession, health, gender);
 
-						ResourceManager.Inventory inventory = new ResourceManager.Inventory(colonist, null, int.Parse(lineData[11].Split(',')[1]));
-						foreach (string inventoryResourceString in lineData[12].Split(',').Skip(1)) {
+						ResourceManager.Inventory inventory = new ResourceManager.Inventory(colonist, null, int.Parse(lineData[12].Split(',')[1]));
+						foreach (string inventoryResourceString in lineData[13].Split(',').Skip(1)) {
 							ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), inventoryResourceString.Split(':')[1]));
 							int amount = int.Parse(inventoryResourceString.Split(':')[2]);
 							inventory.ChangeResourceAmount(resource, amount);
 						}
-						colonistReservedResourcesData.Add(colonist,lineData[13]);
+						colonistReservedResourcesData.Add(colonist,lineData[14]);
 
 						JobManager.Job job = null;
-						if (lineData[14] != "None") {
-							List<string> jobDataSplit = lineData[14].Split('~').ToList();
+						if (lineData[15] != "None") {
+							List<string> jobDataSplit = lineData[15].Split('~').ToList();
 							job = LoadJob(jobDataSplit);
 							if (job.prefab.jobType == JobManager.JobTypesEnum.CreateResource) {
 								ResourceManager.ManufacturingTileObject mto = resourceM.manufacturingTileObjectInstances.Find(findMTO => findMTO.parentObject.tile == job.tile);
@@ -866,8 +884,8 @@ public class PersistenceManager : MonoBehaviour {
 							}
 						}
 						JobManager.Job storedJob = null;
-						if (lineData[15] != "None") {
-							List<string> jobDataSplit = lineData[15].Split('~').ToList();
+						if (lineData[16] != "None") {
+							List<string> jobDataSplit = lineData[16].Split('~').ToList();
 							storedJob = LoadJob(jobDataSplit);
 							if (storedJob.prefab.jobType == JobManager.JobTypesEnum.CreateResource) {
 								ResourceManager.ManufacturingTileObject mto = resourceM.manufacturingTileObjectInstances.Find(findMTO => findMTO.parentObject.tile == storedJob.tile);
@@ -876,7 +894,7 @@ public class PersistenceManager : MonoBehaviour {
 						}
 
 						List<ColonistManager.SkillInstance> skills = new List<ColonistManager.SkillInstance>();
-						foreach (string skillDataString in lineData[16].Split(',').Skip(1)) {
+						foreach (string skillDataString in lineData[17].Split(',').Skip(1)) {
 							ColonistManager.SkillPrefab skillPrefab = colonistM.GetSkillPrefabFromString(skillDataString.Split(':')[1]);
 							int level = int.Parse(skillDataString.Split(':')[2]);
 							float nextLevelExperience = float.Parse(skillDataString.Split(':')[3]);
@@ -896,7 +914,7 @@ public class PersistenceManager : MonoBehaviour {
 						}
 
 						List<ColonistManager.TraitInstance> traits = new List<ColonistManager.TraitInstance>();
-						foreach (string traitDataString in lineData[17].Split(',').Skip(1)) {
+						foreach (string traitDataString in lineData[18].Split(',').Skip(1)) {
 							ColonistManager.TraitPrefab traitPrefab = colonistM.GetTraitPrefabFromString(traitDataString.Split(':')[1]);
 							traits.Add(new ColonistManager.TraitInstance(colonist, traitPrefab));
 						}
@@ -906,7 +924,7 @@ public class PersistenceManager : MonoBehaviour {
 						}
 
 						List<ColonistManager.NeedInstance> needs = new List<ColonistManager.NeedInstance>();
-						foreach (string needDataString in lineData[18].Split(',').Skip(1)) {
+						foreach (string needDataString in lineData[19].Split(',').Skip(1)) {
 							ColonistManager.NeedPrefab needPrefab = colonistM.GetNeedPrefabFromString(needDataString.Split(':')[1]);
 							float value = float.Parse(needDataString.Split(':')[2]);
 							needs.Add(new ColonistManager.NeedInstance(colonist, needPrefab) { value = value });
@@ -916,22 +934,22 @@ public class PersistenceManager : MonoBehaviour {
 							needs.Add(need);
 						}
 						needs.OrderBy(need => need.prefab.priority);
-						float baseHappiness = float.Parse(lineData[19].Split(',')[1]);
-						float effectiveHappiness = float.Parse(lineData[20].Split(',')[1]);
+						float baseHappiness = float.Parse(lineData[20].Split(',')[1]);
+						float effectiveHappiness = float.Parse(lineData[21].Split(',')[1]);
 						List<ColonistManager.HappinessModifierInstance> happinessModifiers = new List<ColonistManager.HappinessModifierInstance>();
-						foreach (string happinessModifierString in lineData[21].Split(',').Skip(1)) {
+						foreach (string happinessModifierString in lineData[22].Split(',').Skip(1)) {
 							ColonistManager.HappinessModifierPrefab happinessModifierPrefab = colonistM.GetHappinessModifierPrefabFromString(happinessModifierString.Split(':')[1]);
 							float timer = float.Parse(happinessModifierString.Split(':')[2]);
 							happinessModifiers.Add(new ColonistManager.HappinessModifierInstance(colonist, happinessModifierPrefab) { timer = timer });
 						}
 						TileManager.Tile pathEndTile = null;
-						if (lineData[22] != "None") {
-							pathEndTile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(lineData[22].Split(',')[1]), float.Parse(lineData[22].Split(',')[2])));
+						if (lineData[23] != "None") {
+							pathEndTile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(lineData[23].Split(',')[1]), float.Parse(lineData[23].Split(',')[2])));
 						}
 						colonist.LoadColonistData(
 							position,
 							name,
-							colonistLookIndexes,
+							humanLookIndices,
 							health,
 							profession,
 							oldProfession,
