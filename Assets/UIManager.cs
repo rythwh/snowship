@@ -148,6 +148,8 @@ public class UIManager : MonoBehaviour {
 
 	private GameObject cancelButton;
 
+	private GameObject prioritizeButton;
+
 	private GameObject selectedMTOIndicator;
 	private GameObject mtoNoFuelPanelObj;
 	private GameObject mtoFuelPanelObj;
@@ -316,6 +318,9 @@ public class UIManager : MonoBehaviour {
 
 		cancelButton = gameUI.transform.Find("Cancel-Button").gameObject;
 		cancelButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Cancel)); });
+
+		prioritizeButton = gameUI.transform.Find("Prioritize-Button").gameObject;
+		prioritizeButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Prioritize)); });
 
 		mtoNoFuelPanelObj = gameUI.transform.Find("SelectedManufacturingTileObjectNoFuel-Panel").gameObject;
 		mtoFuelPanelObj = gameUI.transform.Find("SelectedManufacturingTileObjectFuel-Panel").gameObject;
@@ -570,9 +575,9 @@ public class UIManager : MonoBehaviour {
 				foreach (TileManager.Tile nTile in tile.horizontalSurroundingTiles) {
 					if (nTile != null) {
 						if (tileM.GetWaterEquivalentTileTypes().Contains(nTile.tileType.type)) {
-							surroundingPlanetTileHeightDirections.Add(-1);
+							surroundingPlanetTileHeightDirections.Add(-2);
 						} else if (tileM.GetStoneEquivalentTileTypes().Contains(nTile.tileType.type)) {
-							surroundingPlanetTileHeightDirections.Add(1);
+							surroundingPlanetTileHeightDirections.Add(5);
 						} else {
 							surroundingPlanetTileHeightDirections.Add(0);
 						}
@@ -741,14 +746,15 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void ParseMapRegenerationCode(string mapRegenerationCode) {
-		int planetSeed = int.Parse(mapRegenerationCode.Split('~')[0]);
+		List<string> splitMRC = mapRegenerationCode.Split('~').ToList();
+		int planetSeed = int.Parse(splitMRC[0]);
 		if (planetSeed.ToString().Length > planetSeedInputField.characterLimit) {
 			print("planetSeed too long: " + planetSeed);
 			return;
 		}
 		print("planetSeed: " + planetSeed);
 
-		int planetSize = int.Parse(mapRegenerationCode.Split('~')[1]);
+		int planetSize = int.Parse(splitMRC[1]);
 		int planetTileSize = Mathf.FloorToInt(Mathf.FloorToInt(planetPreviewPanel.GetComponent<RectTransform>().sizeDelta.x) / planetSize);
 		if (!planetTileSizes.Contains(planetTileSize)) {
 			print("planetTileSize/planetSize not valid: " + planetTileSize + "/" + planetSize);
@@ -758,7 +764,7 @@ public class UIManager : MonoBehaviour {
 		print("planetSize: " + planetSize);
 
 
-		int planetTemperatureRange = int.Parse(mapRegenerationCode.Split('~')[2]);
+		int planetTemperatureRange = int.Parse(splitMRC[2]);
 		planetTemperatureRange = Mathf.FloorToInt(planetTemperatureRange / 10f);
 		if (planetTemperatureRange < temperatureRangeSlider.minValue || planetTemperatureRange > temperatureRangeSlider.maxValue) {
 			print("planetTemperatureRange out of range: " + planetTemperatureRange);
@@ -766,7 +772,7 @@ public class UIManager : MonoBehaviour {
 		}
 		print("planetTemperatureRange: " + planetTemperatureRange);
 
-		float planetDistance = float.Parse(mapRegenerationCode.Split('~')[3]);
+		float planetDistance = float.Parse(splitMRC[3]);
 		planetDistance = (10 * planetDistance) - 6;
 		if (planetDistance < planetDistanceSlider.minValue || planetDistance > planetDistanceSlider.maxValue) {
 			print("planetDistance out of range: " + planetDistance);
@@ -774,21 +780,21 @@ public class UIManager : MonoBehaviour {
 		}
 		print("planetDistance: " + planetDistance);
 
-		int planetPrimaryWindDirection = int.Parse(mapRegenerationCode.Split('~')[4]);
+		int planetPrimaryWindDirection = int.Parse(splitMRC[4]);
 		if (planetPrimaryWindDirection < windDirectionSlider.minValue || planetPrimaryWindDirection > windDirectionSlider.maxValue) {
 			print("planetPrimaryWindDirection out of range: " + planetPrimaryWindDirection);
 			return;
 		}
 		print("planetPrimaryWindDirection: " + planetPrimaryWindDirection);
 
-		Vector2 planetTilePosition = new Vector2(int.Parse(mapRegenerationCode.Split('~')[5]), int.Parse(mapRegenerationCode.Split('~')[6]));
+		Vector2 planetTilePosition = new Vector2(int.Parse(splitMRC[5]), int.Parse(splitMRC[6]));
 		if (planetTilePosition.x < 0 || planetTilePosition.y < 0 || planetTilePosition.x >= planetSize || planetTilePosition.y >= planetSize) {
 			print("planetTilePosition out of range: " + planetTilePosition);
 			return;
 		}
 		print("planetTilePosition: " + planetTilePosition);
 
-		int mapSize = int.Parse(mapRegenerationCode.Split('~')[7]);
+		int mapSize = int.Parse(splitMRC[7]);
 		mapSize = Mathf.FloorToInt(mapSize / 50f);
 		if (mapSize < mapSizeSlider.minValue || mapSize > mapSizeSlider.maxValue) {
 			print("mapSize out of range: " + mapSize);
@@ -796,7 +802,7 @@ public class UIManager : MonoBehaviour {
 		}
 		print("mapSize: " + mapSize);
 
-		int mapSeed = int.Parse(mapRegenerationCode.Split('~')[8]);
+		int mapSeed = int.Parse(splitMRC[8]);
 		if (mapSeed.ToString().Length > mapSeedInputField.characterLimit) {
 			print("mapSeed too long: " + mapSeed);
 			return;
@@ -1116,7 +1122,19 @@ public class UIManager : MonoBehaviour {
 				}
 				plantObjectElements[0].GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
 				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "Plant";
-				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.group.name;
+				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.name;
+
+				if (mouseOverTile.plant.group.maxIntegrity > 0) {
+					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
+					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = mouseOverTile.plant.group.maxIntegrity;
+					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().value = mouseOverTile.plant.integrity;
+					plantObjectElements[1].transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(colourMap[Colours.LightRed], colourMap[Colours.LightGreen], mouseOverTile.plant.integrity / mouseOverTile.plant.group.maxIntegrity);
+				} else {
+					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
+					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = 1;
+					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().value = 1;
+					plantObjectElements[1].transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = colourMap[Colours.LightGrey220];
+				}
 			} else {
 				foreach (GameObject plantObjectElement in plantObjectElements) {
 					plantObjectElement.SetActive(false);
@@ -1138,6 +1156,19 @@ public class UIManager : MonoBehaviour {
 					GameObject tileObjectDataObject = tileObjectElements[tileObject.prefab.layer][1];
 					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "L" + tileObject.prefab.layer;
 					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
+
+					if (tileObject.prefab.maxIntegrity > 0) {
+						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
+						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = tileObject.prefab.maxIntegrity;
+						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().value = tileObject.integrity;
+						tileObjectDataObject.transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(colourMap[Colours.LightRed], colourMap[Colours.LightGreen], tileObject.integrity / tileObject.prefab.maxIntegrity);
+					} else {
+						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
+						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = 1;
+						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().value = 1;
+						tileObjectDataObject.transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = colourMap[Colours.LightGrey220];
+					}
+
 					tileObjectDataObject.SetActive(true);
 				}
 			}
@@ -1613,12 +1644,31 @@ public class UIManager : MonoBehaviour {
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/JobInfoElement-Panel"), parent, false);
 
 			obj.transform.Find("JobInfo/Image").GetComponent<Image>().sprite = job.prefab.baseSprite;
-			obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.prefab.name;
+			if (job.prefab.jobType == JobManager.JobTypesEnum.Mine ||
+				job.prefab.jobType == JobManager.JobTypesEnum.Dig) {
+				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.tile.tileType.name;
+			} else if (job.prefab.jobType == JobManager.JobTypesEnum.PlantPlant) {
+				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.plant.name;
+			} else if (job.prefab.jobType == JobManager.JobTypesEnum.ChopPlant) {
+				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.tile.plant.name;
+			} else if (job.prefab.jobType == JobManager.JobTypesEnum.PlantFarm) {
+				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.prefab.name;
+			} else if (job.prefab.jobType == JobManager.JobTypesEnum.HarvestFarm) {
+				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.tile.farm.name;
+			} else if (job.prefab.jobType == JobManager.JobTypesEnum.CreateResource) {
+				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.createResource.name;
+			} else {
+				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.prefab.name;
+			}
 			obj.transform.Find("JobInfo/Type").GetComponent<Text>().text = uiM.SplitByCapitals(job.prefab.jobType.ToString());
 			obj.GetComponent<Button>().onClick.AddListener(delegate {
 				cameraM.SetCameraPosition(job.tile.obj.transform.position);
 				cameraM.SetCameraZoom(5);
 			});
+
+			if (job.priority > 0) {
+				obj.transform.Find("JobInfo").GetComponent<Image>().color = uiM.colourMap[Colours.LightYellow];
+			}
 
 			if (colonist != null) {
 				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, 93);
@@ -1687,7 +1737,7 @@ public class UIManager : MonoBehaviour {
 			foreach (JobManager.Job job in jobM.jobs.Where(j => j.started).OrderBy(j => (j.jobProgress / j.colonistBuildTime))) {
 				jobElements.Add(new JobElement(job, null, jobList.transform.Find("JobList-Panel"), this, cameraM));
 			}
-			foreach (JobManager.Job job in jobM.jobs.Where(j => !j.started)) {
+			foreach (JobManager.Job job in jobM.jobs.Where(j => !j.started).OrderByDescending(j => j.priority)) {
 				jobElements.Add(new JobElement(job, null, jobList.transform.Find("JobList-Panel"), this, cameraM));
 			}
 		} else {
@@ -1734,6 +1784,7 @@ public class UIManager : MonoBehaviour {
 		selectedContainerIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), Vector2.zero, Quaternion.identity);
 		SpriteRenderer sCISR = selectedContainerIndicator.GetComponent<SpriteRenderer>();
 		sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
+		sCISR.name = "SelectedContainerIndicator";
 		sCISR.sortingOrder = 20; // Selected Container Indicator Sprite
 		sCISR.color = new Color(1f, 1f, 1f, 0.75f);
 		selectedContainerIndicator.transform.localScale = new Vector2(1f, 1f) * 1.2f;
@@ -2344,6 +2395,7 @@ public class UIManager : MonoBehaviour {
 		selectedMTOIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), Vector2.zero, Quaternion.identity);
 		SpriteRenderer sCISR = selectedMTOIndicator.GetComponent<SpriteRenderer>();
 		sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
+		sCISR.name = "SelectedMTOIndicator";
 		sCISR.sortingOrder = 20; // Selected MTO Indicator Sprite
 		sCISR.color = new Color(1f, 1f, 1f, 0.75f);
 		selectedMTOIndicator.transform.localScale = new Vector2(1f, 1f) * 1.2f;

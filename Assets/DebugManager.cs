@@ -852,13 +852,13 @@ public class DebugManager : MonoBehaviour {
 		commandFunctions.Add(Commands.changetileplant, delegate (Commands selectedCommand, List<string> parameters) {
 			int counter = 0;
 			if (parameters.Count == 2) {
-				TileManager.PlantGroup plantGroup = tileM.plantGroups.Find(pg => pg.type.ToString() == parameters[0]);
+				ResourceManager.PlantGroup plantGroup = resourceM.plantGroups.Find(pg => pg.type.ToString() == parameters[0]);
 				if (plantGroup != null) {
 					bool small = false;
 					if (bool.TryParse(parameters[1], out small)) {
 						if (selectedTiles.Count > 0) {
 							foreach (TileManager.Tile tile in selectedTiles) {
-								tile.SetPlant(false, new TileManager.Plant(plantGroup, tile, false, small, tileM.map.smallPlants,true,null,resourceM));
+								tile.SetPlant(false, new ResourceManager.Plant(plantGroup, tile, false, small, tileM.map.smallPlants,true,null,resourceM));
 								tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 								if (tile.plant != null) {
 									counter += 1;
@@ -898,7 +898,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.listtileplants, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.PlantGroup plantGroup in tileM.plantGroups) {
+				foreach (ResourceManager.PlantGroup plantGroup in resourceM.plantGroups) {
 					OutputToConsole(plantGroup.type.ToString());
 				}
 			} else {

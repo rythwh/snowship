@@ -1424,58 +1424,71 @@ public class ColonistManager : MonoBehaviour {
 		return (Gender)Random.Range(0, System.Enum.GetNames(typeof(Gender)).Length);
 	}
 
+	public void SpawnStartColonists(int amount) {
+		SpawnColonists(amount);
+
+		Vector2 averageColonistPosition = new Vector2(0, 0);
+		foreach (Colonist colonist in colonists) {
+			averageColonistPosition = new Vector2(averageColonistPosition.x + colonist.obj.transform.position.x, averageColonistPosition.y + colonist.obj.transform.position.y);
+		}
+		averageColonistPosition /= colonists.Count;
+		cameraM.SetCameraPosition(averageColonistPosition);
+
+		// TEMPORARY COLONIST TESTING STUFF
+		colonists[Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.WheatSeed), Random.Range(5, 11));
+		colonists[Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Potato), Random.Range(5, 11));
+		colonists[Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.CottonSeed), Random.Range(5, 11));
+	}
+
 	public void SpawnColonists(int amount) {
-		int mapSize = tileM.map.mapData.mapSize;
-		for (int i = 0;i < amount;i++) {
+		if (amount > 0) {
+			int mapSize = tileM.map.mapData.mapSize;
+			for (int i = 0; i < amount; i++) {
+				Gender gender = GetRandomGender();
 
-			Gender gender = GetRandomGender();
+				Dictionary<HumanLook, int> humanLookIndices = GetHumanLookIndices(gender);
 
-			Dictionary<HumanLook, int> humanLookIndices = GetHumanLookIndices(gender);
-
-			List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
-			if (walkableTilesByDistanceToCentre.Count <= 0) {
-				foreach (TileManager.Tile tile in tileM.map.tiles.Where(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f)) <= 4f)) {
-					tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Grass),true,true,true,true);
+				List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
+				if (walkableTilesByDistanceToCentre.Count <= 0) {
+					foreach (TileManager.Tile tile in tileM.map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
+						tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Grass), true, true, true, true);
+					}
+					tileM.map.Bitmasking(tileM.map.tiles);
+					walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 				}
-				tileM.map.Bitmasking(tileM.map.tiles);
-				walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position,new Vector2(mapSize / 2f,mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
-			}
 
-			List<TileManager.Tile> validSpawnTiles = new List<TileManager.Tile>();
-			TileManager.Tile currentTile = walkableTilesByDistanceToCentre[0];
-			float minimumDistance = Vector2.Distance(currentTile.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f));
-			foreach (TileManager.Tile tile in walkableTilesByDistanceToCentre) {
-				float distance = Vector2.Distance(currentTile.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f));
-				if (distance < minimumDistance) {
-					currentTile = tile;
-					minimumDistance = distance;
-				}
-			}
-			List<TileManager.Tile> frontier = new List<TileManager.Tile>() { currentTile };
-			List<TileManager.Tile> checkedTiles = new List<TileManager.Tile>();
-			while (frontier.Count > 0) {
-				currentTile = frontier[0];
-				frontier.RemoveAt(0);
-				checkedTiles.Add(currentTile);
-				validSpawnTiles.Add(currentTile);
-				if (validSpawnTiles.Count > 100) {
-					break;
-				}
-				foreach (TileManager.Tile nTile in currentTile.horizontalSurroundingTiles) {
-					if (walkableTilesByDistanceToCentre.Contains(nTile) && !checkedTiles.Contains(nTile)) {
-						frontier.Add(nTile);
+				List<TileManager.Tile> validSpawnTiles = new List<TileManager.Tile>();
+				TileManager.Tile currentTile = walkableTilesByDistanceToCentre[0];
+				float minimumDistance = Vector2.Distance(currentTile.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f));
+				foreach (TileManager.Tile tile in walkableTilesByDistanceToCentre) {
+					float distance = Vector2.Distance(currentTile.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f));
+					if (distance < minimumDistance) {
+						currentTile = tile;
+						minimumDistance = distance;
 					}
 				}
+				List<TileManager.Tile> frontier = new List<TileManager.Tile>() { currentTile };
+				List<TileManager.Tile> checkedTiles = new List<TileManager.Tile>();
+				while (frontier.Count > 0) {
+					currentTile = frontier[0];
+					frontier.RemoveAt(0);
+					checkedTiles.Add(currentTile);
+					validSpawnTiles.Add(currentTile);
+					if (validSpawnTiles.Count > 100) {
+						break;
+					}
+					foreach (TileManager.Tile nTile in currentTile.horizontalSurroundingTiles) {
+						if (walkableTilesByDistanceToCentre.Contains(nTile) && !checkedTiles.Contains(nTile)) {
+							frontier.Add(nTile);
+						}
+					}
+				}
+				TileManager.Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
+
+				Colonist colonist = new Colonist(colonistSpawnTile, humanLookIndices, professions[Random.Range(0, professions.Count)], 1, gender);
+				AddColonist(colonist);
 			}
-			TileManager.Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
-
-			Colonist colonist = new Colonist(colonistSpawnTile,humanLookIndices,professions[Random.Range(0,professions.Count)],1,gender);
-			AddColonist(colonist);
 		}
-
-		colonists[Random.Range(0,colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.WheatSeeds),Random.Range(5,11));
-		colonists[Random.Range(0,colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Potato),Random.Range(5,11));
-		colonists[Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.CottonSeeds), Random.Range(5, 11));
 	}
 
 	public void AddColonist(Colonist colonist) {
@@ -1547,7 +1560,7 @@ public class ColonistManager : MonoBehaviour {
 
 	void CreateColonistIndicator() {
 		selectedColonistIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),selectedColonist.obj.transform,false);
-		selectedColonistIndicator.name = "Selected Colonist Indicator";
+		selectedColonistIndicator.name = "SelectedColonistIndicator";
 		SpriteRenderer sCISR = selectedColonistIndicator.GetComponent<SpriteRenderer>();
 		sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
 		sCISR.sortingOrder = 20; // Selected Colonist Indicator Sprite

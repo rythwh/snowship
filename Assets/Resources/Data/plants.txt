@@ -1,0 +1,56 @@
+<PlantGroup>
+	<Type>Cactus
+	<SimpleName>Cactus
+	<Seed>CactusSeed
+	<PlantPlantObjectPrefab>PlantCactus
+	<ReturnResources>Cactus:3,CactusSeed:3
+	<MaxIntegrity>75
+<PlantGroup>
+	<Type>ColourfulShrub
+	<SimpleName>Shrub
+	<Seed>ShrubSeed
+	<PlantPlantObjectPrefab>PlantShrub
+	<ReturnResources>Log:2,ShrubSeed:2
+	<MaxIntegrity>50
+<PlantGroup>
+	<Type>ColourfulTree
+	<SimpleName>Tree
+	<Seed>TreeSeed
+	<PlantPlantObjectPrefab>PlantTree
+	<ReturnResources>Log:5,TreeSeed:3
+	<MaxIntegrity>100
+<PlantGroup>
+	<Type>DeadTree
+	<SimpleName>Dead Tree
+	<Seed>TreeSeed
+	<PlantPlantObjectPrefab>PlantTree
+	<ReturnResources>Log:3
+	<MaxIntegrity>25
+<PlantGroup>
+	<Type>Shrub
+	<SimpleName>Shrub
+	<Seed>ShrubSeed
+	<PlantPlantObjectPrefab>PlantShrub
+	<ReturnResources>Log:2,ShrubSeed:2
+	<MaxIntegrity>50
+<PlantGroup>
+	<Type>SnowTree
+	<SimpleName>Tree
+	<Seed>TreeSeed
+	<PlantPlantObjectPrefab>PlantTree
+	<ReturnResources>Log:5,TreeSeed:3
+	<MaxIntegrity>100
+<PlantGroup>
+	<Type>ThinTree
+	<SimpleName>Tree
+	<Seed>TreeSeed
+	<PlantPlantObjectPrefab>PlantTree
+	<ReturnResources>Log:5,TreeSeed:3
+	<MaxIntegrity>100
+<PlantGroup>
+	<Type>WideTree
+	<SimpleName>Tree
+	<Seed>TreeSeed
+	<PlantPlantObjectPrefab>PlantTree
+	<ReturnResources>Log:5,TreeSeed:4
+	<MaxIntegrity>125
