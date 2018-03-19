@@ -309,6 +309,7 @@ public class PersistenceManager : MonoBehaviour {
 		objectInstanceData += "/Position," + objectInstance.obj.transform.position.x + "," + objectInstance.obj.transform.position.y;
 		objectInstanceData += "/PrefabType," + objectInstance.prefab.type;
 		objectInstanceData += "/RotationIndex," + objectInstance.rotationIndex;
+		objectInstanceData += "/Integrity," + objectInstance.integrity;
 		return objectInstanceData;
 	}
 
@@ -556,6 +557,7 @@ public class PersistenceManager : MonoBehaviour {
 		} else {
 			jobData += "/None";
 		}
+		jobData += "/Priority," + job.priority;
 		jobData += "/";
 		return jobData;
 	}
@@ -756,13 +758,13 @@ public class PersistenceManager : MonoBehaviour {
 									tile.SetPlant(true, null);
 								}
 							} else {
-								TileManager.PlantGroup savedPlantGroup = tileM.GetPlantGroupByEnum((TileManager.PlantGroupsEnum)System.Enum.Parse(typeof(TileManager.PlantGroupsEnum), lineData[1].Split(',')[0]));
+								ResourceManager.PlantGroup savedPlantGroup = resourceM.GetPlantGroupByEnum((ResourceManager.PlantGroupsEnum)System.Enum.Parse(typeof(ResourceManager.PlantGroupsEnum), lineData[1].Split(',')[0]));
 								bool savedPlantSmall = bool.Parse(lineData[1].Split(',')[2]);
 								ResourceManager.Resource harvestResource = null;
 								if (lineData[1].Split(',')[4] != "None") {
 									harvestResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), lineData[1].Split(',')[4]));
 								}
-								TileManager.Plant savedPlant = new TileManager.Plant(savedPlantGroup, tile, false, savedPlantSmall, tileM.map.smallPlants, false, harvestResource, resourceM) {
+								ResourceManager.Plant savedPlant = new ResourceManager.Plant(savedPlantGroup, tile, false, savedPlantSmall, tileM.map.smallPlants, false, harvestResource, resourceM) {
 									growthProgress = float.Parse(lineData[1].Split(',')[3]),
 									
 								};
@@ -813,7 +815,9 @@ public class PersistenceManager : MonoBehaviour {
 						TileManager.Tile tile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(lineData[1].Split(',')[1]), float.Parse(lineData[1].Split(',')[2])));
 						ResourceManager.TileObjectPrefab tileObjectPrefab = resourceM.GetTileObjectPrefabByEnum((ResourceManager.TileObjectPrefabsEnum)System.Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), lineData[2].Split(',')[1]));
 						int rotationIndex = int.Parse(lineData[3].Split(',')[1]);
+						float integrity = int.Parse(lineData[4].Split(',')[1]);
 						tile.SetTileObject(tileObjectPrefab, rotationIndex);
+						tile.GetObjectInstanceAtLayer(tileObjectPrefab.layer).integrity = integrity;
 					} else if (sectionIndex == 7) { // Manufacturing Tile Object
 						TileManager.Tile tile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(lineData[1].Split(',')[1]), float.Parse(lineData[1].Split(',')[2])));
 						ResourceManager.ManufacturingTileObject mto = resourceM.manufacturingTileObjectInstances.Find(findMTO => findMTO.parentObject.tile == tile);
@@ -1078,7 +1082,7 @@ public class PersistenceManager : MonoBehaviour {
 		};
 
 		if (jobDataSplit[9] != "None") {
-			job.plant = new TileManager.Plant(tileM.GetPlantGroupByEnum((TileManager.PlantGroupsEnum)System.Enum.Parse(typeof(TileManager.PlantGroupsEnum),jobDataSplit[9].Split(',')[1])), jobTile, false, true, tileM.map.smallPlants,false,(jobDataSplit[9].Split(',')[2] != "None" ? resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[9].Split(',')[2])) : null), resourceM);
+			job.plant = new ResourceManager.Plant(resourceM.GetPlantGroupByEnum((ResourceManager.PlantGroupsEnum)System.Enum.Parse(typeof(ResourceManager.PlantGroupsEnum),jobDataSplit[9].Split(',')[1])), jobTile, false, true, tileM.map.smallPlants,false,(jobDataSplit[9].Split(',')[2] != "None" ? resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[9].Split(',')[2])) : null), resourceM);
 		}
 		if (jobDataSplit[10] != "None") {
 			job.createResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[10].Split(',')[1]));
@@ -1089,6 +1093,7 @@ public class PersistenceManager : MonoBehaviour {
 			ResourceManager.TileObjectInstance activeTileObject = activeTileObjectTile.objectInstances.Values.ToList().Find(oi => oi.tile == activeTileObjectTile && oi.prefab.type == activeTileObjectPrefab);
 			job.activeTileObject = activeTileObject;
 		}
+		job.priority = int.Parse(jobDataSplit[12].Split(',')[1]);
 		return job;
 	}
 }

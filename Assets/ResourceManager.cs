@@ -39,25 +39,25 @@ public class ResourceManager : MonoBehaviour {
 	};
 
 	public enum ResourcesEnum {
-		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Log, Wood, Firewood, Snow, Sand,
+		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Log, Wood, Firewood, Snow, Sand, Cactus,
 		Brick, Glass, Cotton, Cloth,
-		WheatSeeds, CottonSeeds, TreeSeeds, AppleSeeds, ShrubSeeds, CactusSeeds,
+		WheatSeed, CottonSeed, TreeSeed, AppleSeed, ShrubSeed, CactusSeed,
 		Wheat,
 		Potato, BakedPotato, Berries, Apple, BakedApple
 	};
 
-	List<ResourcesEnum> ManufacturableResources = new List<ResourcesEnum>() {
+	List<ResourcesEnum> manufacturableResources = new List<ResourcesEnum>() {
 		ResourcesEnum.Wood, ResourcesEnum.Firewood, ResourcesEnum.Brick, ResourcesEnum.Glass, ResourcesEnum.Cloth, ResourcesEnum.BakedPotato, ResourcesEnum.BakedApple
 	};
 	public List<ResourcesEnum> GetManufacturableResources() {
-		return ManufacturableResources;
+		return manufacturableResources;
 	}
 
-	List<ResourcesEnum> FuelResources = new List<ResourcesEnum>() {
+	List<ResourcesEnum> fuelResources = new List<ResourcesEnum>() {
 		ResourcesEnum.Log, ResourcesEnum.Wood, ResourcesEnum.Firewood
 	};
 	public List<ResourcesEnum> GetFuelResources() {
-		return FuelResources;
+		return fuelResources;
 	}
 
 	public List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
@@ -171,7 +171,7 @@ public class ResourceManager : MonoBehaviour {
 			if (resourceGroup.type == ResourceGroupsEnum.Foods) {
 				nutrition = int.Parse(resourceData[2]);
 			}
-			if (resourceM.FuelResources.Contains(type)) {
+			if (resourceM.fuelResources.Contains(type)) {
 				fuelEnergy = int.Parse(resourceData[3]);
 			}
 		}
@@ -190,18 +190,17 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	public void CreateResources() {
-		List<string> resourceGroupsDataString = UnityEngine.Resources.Load<TextAsset>(@"Data/resources").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('~').ToList();
+		List<string> resourceGroupsDataString = Resources.Load<TextAsset>(@"Data/resources").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('~').ToList();
 		foreach (string resourceGroupDataString in resourceGroupsDataString) {
 			List<string> resourceGroupData = resourceGroupDataString.Split(':').ToList();
 			ResourceGroup resourceGroup = new ResourceGroup(resourceGroupData, uiM);
 			resourceGroups.Add(resourceGroup);
 		}
-		tileM.SetPlantResources();
 	}
 
 	public void SetManufacturableResourcesData() {
 		foreach (Resource resource in resources) {
-			if (ManufacturableResources.Contains(resource.type)) {
+			if (manufacturableResources.Contains(resource.type)) {
 				if (uiM.RemoveNonAlphanumericChars(resource.resourceData[4].Split(',')[0]) != "None") {
 					foreach (string subGroupString in resource.resourceData[4].Split(',')) {
 						resource.manufacturingTileObjectSubGroups.Add(GetTileObjectPrefabSubGroupByEnum((TileObjectPrefabSubGroupsEnum)System.Enum.Parse(typeof(TileObjectPrefabSubGroupsEnum), subGroupString)));
@@ -385,7 +384,7 @@ public class ResourceManager : MonoBehaviour {
 		RemoveLayer1, RemoveLayer2, RemoveAll,
 		ChopPlant, PlantPlant, PlantAppleTree, PlantBerryBush, Mine, Dig,
 		WheatFarm, PotatoFarm, CottonFarm, HarvestFarm,
-		CreateResource, PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep,
+		CreateResource, PickupResources, EmptyInventory, Cancel, Prioritize, CollectFood, Eat, Sleep,
 		PlantTree, PlantShrub, PlantCactus
 	};
 
@@ -444,9 +443,9 @@ public class ResourceManager : MonoBehaviour {
 	public List<TileObjectPrefab> tileObjectPrefabs = new List<TileObjectPrefab>();
 
 	public void CreateTileObjectPrefabs() {
-		List <string> tileObjectPrefabGroupsData = Resources.Load<TextAsset>(@"Data/tileobjectprefabs").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split(new string[] { "<Group>" },System.StringSplitOptions.RemoveEmptyEntries).ToList();
+		List <string> tileObjectPrefabGroupsData = Resources.Load<TextAsset>(@"Data/tileobjectprefabs").text.Replace("\t",string.Empty).Split(new string[] { "<Group>" },System.StringSplitOptions.RemoveEmptyEntries).ToList();
 		foreach (string tileObjectPrefabGroupDataString in tileObjectPrefabGroupsData) {
-			tileObjectPrefabGroups.Add(new TileObjectPrefabGroup(tileObjectPrefabGroupDataString,uiM));
+			tileObjectPrefabGroups.Add(new TileObjectPrefabGroup(tileObjectPrefabGroupDataString,uiM,this));
 		}
 		uiM.CreateMenus();
 	}
@@ -472,14 +471,14 @@ public class ResourceManager : MonoBehaviour {
 
 		public List<TileObjectPrefabSubGroup> tileObjectPrefabSubGroups = new List<TileObjectPrefabSubGroup>();
 
-		public TileObjectPrefabGroup(string data, UIManager uiM) {
+		public TileObjectPrefabGroup(string data, UIManager uiM, ResourceManager resourceM) {
 			List<string> tileObjectPrefabSubGroupsData = data.Split(new string[] { "<SubGroup>" },System.StringSplitOptions.RemoveEmptyEntries).ToList();
 
 			type = (TileObjectPrefabGroupsEnum)System.Enum.Parse(typeof(TileObjectPrefabGroupsEnum),tileObjectPrefabSubGroupsData[0]);
 			name = uiM.SplitByCapitals(type.ToString());
 
 			foreach (string tileObjectPrefabSubGroupDataString in tileObjectPrefabSubGroupsData.Skip(1)) {
-				tileObjectPrefabSubGroups.Add(new TileObjectPrefabSubGroup(tileObjectPrefabSubGroupDataString,this,uiM));
+				tileObjectPrefabSubGroups.Add(new TileObjectPrefabSubGroup(tileObjectPrefabSubGroupDataString,this,uiM,resourceM));
 			}
 		}
 	}
@@ -491,16 +490,126 @@ public class ResourceManager : MonoBehaviour {
 		public TileObjectPrefabGroup tileObjectPrefabGroup;
 		public List<TileObjectPrefab> tileObjectPrefabs = new List<TileObjectPrefab>();
 
-		public TileObjectPrefabSubGroup(string data,TileObjectPrefabGroup tileObjectPrefabGroup, UIManager uiM) {
+		public TileObjectPrefabSubGroup(string data, TileObjectPrefabGroup tileObjectPrefabGroup, UIManager uiM, ResourceManager resourceM) {
 			this.tileObjectPrefabGroup = tileObjectPrefabGroup;
 
-			List<string> tileObjectPrefabsData = data.Split(new string[] { "<Object>" },System.StringSplitOptions.RemoveEmptyEntries).ToList();
+			List<string> tileObjectPrefabsData = data.Split(new string[] { "<Object>" }, System.StringSplitOptions.RemoveEmptyEntries).ToList();
 
-			type = (TileObjectPrefabSubGroupsEnum)System.Enum.Parse(typeof(TileObjectPrefabSubGroupsEnum),tileObjectPrefabsData[0]);
+			type = (TileObjectPrefabSubGroupsEnum)System.Enum.Parse(typeof(TileObjectPrefabSubGroupsEnum), tileObjectPrefabsData[0]);
 			name = uiM.SplitByCapitals(type.ToString());
 
 			foreach (string tileObjectPrefabDataString in tileObjectPrefabsData.Skip(1)) {
-				tileObjectPrefabs.Add(new TileObjectPrefab(tileObjectPrefabDataString,this));
+				TileObjectPrefabsEnum type = TileObjectPrefabsEnum.Cancel;
+				int timeToBuild = -1;
+				List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
+				List<JobManager.SelectionModifiersEnum> selectionModifiers = new List<JobManager.SelectionModifiersEnum>();
+				JobManager.JobTypesEnum jobType = JobManager.JobTypesEnum.Cancel;
+				float flammability = 0;
+				int maxIntegrity = 0;
+				bool walkable = true;
+				float walkSpeed = 1;
+				int layer = -1;
+				bool addToTileWhenBuilt = true;
+				Vector2 blockingAmount = new Vector2(0, 0);
+				int maxInventoryAmount = -1;
+				int maxLightDistance = -1;
+				Color lightColour = Color.black;
+				float restComfortAmount = -1;
+
+				List<string> singleTileObjectPrefabDataLineStringList = tileObjectPrefabDataString.Split('\n').ToList();
+				foreach (string singleTileObjectPrefabDataLineString in singleTileObjectPrefabDataLineStringList.Skip(1)) {
+					if (!string.IsNullOrEmpty(singleTileObjectPrefabDataLineString)) {
+
+						string label = singleTileObjectPrefabDataLineString.Split('>')[0].Replace("<", string.Empty);
+						string value = singleTileObjectPrefabDataLineString.Split('>')[1];
+
+						switch (label) {
+							case "Type":
+								type = (TileObjectPrefabsEnum)System.Enum.Parse(typeof(TileObjectPrefabsEnum), value);
+								break;
+							case "TimeToBuild":
+								timeToBuild = int.Parse(value);
+								break;
+							case "ResourcesToBuild":
+								foreach (string resourceToBuildString in value.Split(',')) {
+									string resourceName = resourceToBuildString.Split(':')[0];
+									Resource resource = resourceM.GetResourceByEnum((ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum), resourceName));
+									int amount = int.Parse(resourceToBuildString.Split(':')[1]);
+									resourcesToBuild.Add(new ResourceAmount(resource, amount));
+								}
+								break;
+							case "SelectionModifiers":
+								foreach (string selectionModifierString in value.Split(',')) {
+									string selectionModifierName = selectionModifierString.Split(':')[0];
+									JobManager.SelectionModifiersEnum selectionModifier = (JobManager.SelectionModifiersEnum)System.Enum.Parse(typeof(JobManager.SelectionModifiersEnum), selectionModifierName);
+									selectionModifiers.Add(selectionModifier);
+								}
+								break;
+							case "JobType":
+								jobType = (JobManager.JobTypesEnum)System.Enum.Parse(typeof(JobManager.JobTypesEnum), value);
+								break;
+							case "Flammability":
+								flammability = float.Parse(value);
+								break;
+							case "MaxIntegrity":
+								maxIntegrity = int.Parse(value);
+								break;
+							case "Walkable":
+								walkable = bool.Parse(value);
+								break;
+							case "WalkSpeed":
+								walkSpeed = float.Parse(value);
+								break;
+							case "Layer":
+								layer = int.Parse(value);
+								break;
+							case "AddToTileWhenBuilt":
+								addToTileWhenBuilt = bool.Parse(value);
+								break;
+							case "BlockingAmount":
+								List<string> blockingDirections = value.Split(',').ToList();
+								blockingAmount = new Vector2(float.Parse(blockingDirections[0]), float.Parse(blockingDirections[1]));
+								break;
+							case "MaxInventoryAmount":
+								maxInventoryAmount = int.Parse(value);
+								break;
+							case "MaxLightDistance":
+								maxLightDistance = int.Parse(value);
+								break;
+							case "LightColour":
+								lightColour = uiM.HexToColor(value);
+								break;
+							case "RestComfortAmount":
+								restComfortAmount = float.Parse(value);
+								break;
+							default:
+								print("Unknown tile object prefab label: \"" + singleTileObjectPrefabDataLineString + "\"");
+								break;
+						}
+					}
+				}
+
+				TileObjectPrefab newTOP = new TileObjectPrefab(
+					this,
+					type,
+					timeToBuild,
+					resourcesToBuild,
+					selectionModifiers,
+					jobType,
+					flammability,
+					maxIntegrity,
+					walkable,
+					walkSpeed,
+					layer,
+					addToTileWhenBuilt,
+					blockingAmount,
+					maxInventoryAmount,
+					maxLightDistance,
+					lightColour,
+					restComfortAmount
+				);
+				tileObjectPrefabs.Add(newTOP);
+				resourceM.tileObjectPrefabs.Add(newTOP);
 			}
 		}
 	}
@@ -555,6 +664,8 @@ public class ResourceManager : MonoBehaviour {
 
 		public float flammability;
 
+		public int maxIntegrity;
+
 		public bool walkable;
 		public float walkSpeed;
 
@@ -571,6 +682,74 @@ public class ResourceManager : MonoBehaviour {
 
 		public float restComfortAmount;
 
+		public TileObjectPrefab(
+			TileObjectPrefabSubGroup tileObjectPrefabSubGroup,
+			TileObjectPrefabsEnum type,
+			int timeToBuild,
+			List<ResourceAmount> resourcesToBuild,
+			List<JobManager.SelectionModifiersEnum> selectionModifiers,
+			JobManager.JobTypesEnum jobType,
+			float flammability,
+			int maxIntegrity,
+			bool walkable,
+			float walkSpeed,
+			int layer,
+			bool addToTileWhenBuilt,
+			Vector2 blockingAmount,
+			int maxInventoryAmount,
+			int maxLightDistance,
+			Color lightColour,
+			float restComfortAmount
+			) {
+
+			GetScriptReferences();
+
+			this.tileObjectPrefabSubGroup = tileObjectPrefabSubGroup;
+
+			this.type = type;
+			name = uiM.SplitByCapitals(type.ToString());
+
+			this.timeToBuild = timeToBuild;
+
+			this.resourcesToBuild = resourcesToBuild;
+
+			this.selectionModifiers = selectionModifiers;
+
+			this.jobType = jobType;
+
+			this.flammability = flammability;
+
+			this.maxIntegrity = maxIntegrity;
+
+			this.walkable = walkable;
+			this.walkSpeed = walkSpeed;
+
+			this.layer = layer;
+
+			this.addToTileWhenBuilt = addToTileWhenBuilt;
+
+			this.blockingAmount = blockingAmount;
+
+			this.maxInventoryAmount = maxInventoryAmount;
+
+			this.maxLightDistance = maxLightDistance;
+			this.lightColour = lightColour;
+
+			this.restComfortAmount = restComfortAmount;
+
+			baseSprite = Resources.Load<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-base");
+			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-bitmask").ToList();
+			activeSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-active").ToList();
+
+			if (baseSprite == null && bitmaskSprites.Count > 0) {
+				baseSprite = bitmaskSprites[0];
+			}
+			if (jobType == JobManager.JobTypesEnum.PlantFarm) {
+				baseSprite = bitmaskSprites[bitmaskSprites.Count - 1];
+			}
+		}
+
+		/*
 		public TileObjectPrefab(string data,TileObjectPrefabSubGroup tileObjectPrefabSubGroup) {
 
 			GetScriptReferences();
@@ -636,6 +815,7 @@ public class ResourceManager : MonoBehaviour {
 
 			resourceM.tileObjectPrefabs.Add(this);
 		}
+		*/
 	}
 
 	public Dictionary<TileObjectPrefab,List<TileObjectInstance>> tileObjectInstances = new Dictionary<TileObjectPrefab,List<TileObjectInstance>>();
@@ -719,7 +899,9 @@ public class ResourceManager : MonoBehaviour {
 
 		public ManufacturingTileObject mto;
 
-		public TileObjectInstance(TileObjectPrefab prefab, TileManager.Tile tile,int rotationIndex) {
+		public float integrity;
+
+		public TileObjectInstance(TileObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) {
 
 			GetScriptReferences();
 
@@ -755,6 +937,8 @@ public class ResourceManager : MonoBehaviour {
 			}
 
 			SetColour(tile.sr.color);
+
+			integrity = prefab.maxIntegrity;
 		}
 
 		public void FinishCreation() {
@@ -799,6 +983,246 @@ public class ResourceManager : MonoBehaviour {
 	};
 	public List<TileObjectPrefabsEnum> GetContainerTileObjectTypes() {
 		return ContainerTileObjectTypes;
+	}
+
+	public enum PlantGroupsEnum { Cactus, ColourfulShrub, ColourfulTree, DeadTree, Shrub, SnowTree, ThinTree, WideTree };
+
+	private Dictionary<ResourcesEnum, ResourcesEnum> seedToHarvestResource = new Dictionary<ResourcesEnum, ResourcesEnum>() {
+		{ ResourcesEnum.AppleSeed,ResourcesEnum.Apple },
+		{ ResourcesEnum.Berries,ResourcesEnum.Berries }
+	};
+	public Dictionary<ResourcesEnum, ResourcesEnum> GetSeedToHarvestResource() {
+		return seedToHarvestResource;
+	}
+
+	public List<PlantGroup> plantGroups = new List<PlantGroup>();
+
+	public class PlantGroup {
+		public PlantGroupsEnum type;
+		public string name;
+
+		public Resource seed;
+
+		public TileObjectPrefab plantPlantObjectPrefab;
+
+		public List<ResourceAmount> returnResources = new List<ResourceAmount>();
+
+		public List<Sprite> smallPlants = new List<Sprite>();
+		public List<Sprite> fullPlants = new List<Sprite>();
+
+		public Dictionary<ResourcesEnum, Dictionary<bool, List<Sprite>>> harvestResourceSprites = new Dictionary<ResourcesEnum, Dictionary<bool, List<Sprite>>>();
+
+		public float maxIntegrity;
+
+		public PlantGroup(PlantGroupsEnum type, string simpleName, Resource seed, TileObjectPrefab plantPlantObjectPrefab, List<ResourceAmount> returnResources, float maxIntegrity, ResourceManager resourceM) {
+			this.type = type;
+			name = simpleName;
+
+			this.seed = seed;
+
+			this.plantPlantObjectPrefab = plantPlantObjectPrefab;
+
+			this.returnResources = returnResources;
+
+			this.maxIntegrity = maxIntegrity;
+
+			string typeString = type.ToString();
+			smallPlants = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + typeString + "/" + typeString + "-small").ToList();
+			fullPlants = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + typeString + "/" + typeString + "-full").ToList();
+
+			foreach (Resource resource in resourceM.resources) {
+				Dictionary<bool, List<Sprite>> foundSpriteSizes = new Dictionary<bool, List<Sprite>>();
+				List<Sprite> smallResourceSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + typeString + "/" + resource.type.ToString() + "/" + typeString + "-small-" + resource.type.ToString().ToLower()).ToList();
+				if (smallResourceSprites != null && smallResourceSprites.Count > 0) {
+					foundSpriteSizes.Add(true, smallResourceSprites);
+				}
+				List<Sprite> fullResourceSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + typeString + "/" + resource.type.ToString() + "/" + typeString + "-full-" + resource.type.ToString().ToLower()).ToList();
+				if (fullResourceSprites != null && fullResourceSprites.Count > 0) {
+					foundSpriteSizes.Add(false, fullResourceSprites);
+				}
+				if (foundSpriteSizes.Count > 0) {
+					harvestResourceSprites.Add(resource.type, foundSpriteSizes);
+				}
+			}
+		}
+	}
+
+	public void CreatePlantGroups() {
+		List<string> plantDataStringList = Resources.Load<TextAsset>(@"Data/plants").text.Replace("\t", string.Empty).Split(new string[] { "<PlantGroup>" }, System.StringSplitOptions.RemoveEmptyEntries).ToList();
+		foreach (string singlePlantDataString in plantDataStringList) {
+
+			PlantGroupsEnum type = PlantGroupsEnum.Cactus;
+			string name = string.Empty;
+			Resource seed = null;
+			TileObjectPrefab plantPlantObjectPrefab = null;
+			List<ResourceAmount> returnResources = new List<ResourceAmount>();
+			float maxIntegrity = 0;
+
+			List<string> singlePlantDataLineStringList = singlePlantDataString.Split('\n').ToList();
+			foreach (string singlePlantDataLineString in singlePlantDataLineStringList.Skip(1)) {
+				if (!string.IsNullOrEmpty(singlePlantDataLineString)) {
+
+					string label = singlePlantDataLineString.Split('>')[0].Replace("<", string.Empty);
+					string value = singlePlantDataLineString.Split('>')[1];
+
+					switch (label) {
+						case "Type":
+							type = (PlantGroupsEnum)System.Enum.Parse(typeof(PlantGroupsEnum), value);
+							break;
+						case "SimpleName":
+							name = uiM.RemoveNonAlphanumericChars(value);
+							break;
+						case "Seed":
+							seed = GetResourceByEnum((ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum), value));
+							break;
+						case "PlantPlantObjectPrefab":
+							plantPlantObjectPrefab = GetTileObjectPrefabByEnum((TileObjectPrefabsEnum)System.Enum.Parse(typeof(TileObjectPrefabsEnum), value));
+							break;
+						case "ReturnResources":
+							foreach (string returnResourceAmountString in value.Split(',')) {
+								Resource resource = GetResourceByEnum((ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum), returnResourceAmountString.Split(':')[0]));
+								int amount = int.Parse(returnResourceAmountString.Split(':')[1]);
+								returnResources.Add(new ResourceAmount(resource, amount));
+							}
+							break;
+						case "MaxIntegrity":
+							maxIntegrity = float.Parse(value);
+							break;
+						default:
+							print("Unknown plant label: \"" + singlePlantDataLineString + "\"");
+							break;
+					}
+				}
+			}
+
+			plantGroups.Add(new PlantGroup(type, name, seed, plantPlantObjectPrefab, returnResources, maxIntegrity, this));
+		}
+	}
+
+	public PlantGroup GetPlantGroupByEnum(PlantGroupsEnum plantGroup) {
+		return plantGroups.Find(group => group.type == plantGroup);
+	}
+
+	public class Plant {
+		public string name;
+
+		public PlantGroup group;
+		public TileManager.Tile tile;
+		public GameObject obj;
+
+		public bool small;
+
+		public float growthProgress = 0;
+
+		public Resource harvestResource;
+
+		public float integrity;
+
+		public Plant(PlantGroup group, TileManager.Tile tile, bool randomSmall, bool smallValue, List<Plant> smallPlants, bool giveHarvestResource, ResourceManager.Resource specificHarvestResource, ResourceManager resourceM) {
+			name = group.name;
+
+			this.group = group;
+			this.tile = tile;
+
+			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), tile.obj.transform.position, Quaternion.identity);
+
+			SpriteRenderer pSR = obj.GetComponent<SpriteRenderer>();
+
+			small = (randomSmall ? Random.Range(0f, 1f) < 0.1f : smallValue);
+
+			harvestResource = null;
+			if (giveHarvestResource) {
+				if (group.type == PlantGroupsEnum.WideTree && !small) {
+					if (Random.Range(0f, 1f) <= 0.05f) {
+						harvestResource = resourceM.GetResourceByEnum(ResourcesEnum.Apple);
+					}
+				} else if (group.type == PlantGroupsEnum.Shrub && !small) {
+					if (Random.Range(0f, 1f) <= 0.05f) {
+						harvestResource = resourceM.GetResourceByEnum(ResourcesEnum.Berries);
+					}
+				}
+			}
+			if (specificHarvestResource != null) {
+				harvestResource = specificHarvestResource;
+			}
+
+			pSR.sprite = (small ? group.smallPlants[Random.Range(0, group.smallPlants.Count)] : group.fullPlants[Random.Range(0, group.fullPlants.Count)]);
+			if (harvestResource != null) {
+				name = harvestResource.name + " " + name;
+				if (group.harvestResourceSprites.ContainsKey(harvestResource.type)) {
+					if (group.harvestResourceSprites[harvestResource.type].ContainsKey(small)) {
+						pSR.sprite = group.harvestResourceSprites[harvestResource.type][small][Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
+					}
+				}
+			}
+			pSR.sortingOrder = 1; // Plant Sprite
+
+			obj.name = "Plant: " + name + " " + pSR.sprite.name;
+			obj.transform.parent = tile.obj.transform;
+
+			if (small) {
+				smallPlants.Add(this);
+			}
+
+			integrity = group.maxIntegrity;
+		}
+
+		public List<ResourceAmount> GetResources() {
+			List<ResourceAmount> resourcesToReturn = new List<ResourceAmount>();
+			foreach (ResourceAmount resourceAmount in group.returnResources) {
+				int amount = Mathf.Clamp(resourceAmount.amount + Random.Range(-2, 2), 1, int.MaxValue);
+				if (small && amount > 0) {
+					amount = Mathf.CeilToInt(amount / 2f);
+				}
+				resourcesToReturn.Add(new ResourceAmount(resourceAmount.resource, amount));
+			}
+			if (harvestResource != null) {
+				int randomRangeAmount = 1;
+				if (harvestResource.type == ResourcesEnum.Apple) {
+					randomRangeAmount = Random.Range(1, 6);
+				} else if (harvestResource.type == ResourcesEnum.Berries) {
+					randomRangeAmount = Random.Range(5, 20);
+				}
+				int amount = Mathf.Clamp(randomRangeAmount, 1, int.MaxValue);
+				if (small && amount > 0) {
+					amount = Mathf.CeilToInt(amount / 2f);
+				}
+				resourcesToReturn.Add(new ResourceAmount(harvestResource, amount));
+			}
+			return resourcesToReturn;
+		}
+
+		public void Grow(List<Plant> smallPlants) {
+			small = false;
+			obj.GetComponent<SpriteRenderer>().sprite = group.fullPlants[Random.Range(0, group.fullPlants.Count)];
+			if (harvestResource != null) {
+				if (group.harvestResourceSprites.ContainsKey(harvestResource.type)) {
+					if (group.harvestResourceSprites[harvestResource.type].ContainsKey(small)) {
+						obj.GetComponent<SpriteRenderer>().sprite = group.harvestResourceSprites[harvestResource.type][small][Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
+					}
+				}
+			}
+			smallPlants.Remove(this);
+		}
+	}
+
+	public PlantGroup GetPlantGroupByBiome(TileManager.Biome biome, bool guaranteedTree) {
+		if (guaranteedTree) {
+			List<PlantGroupsEnum> biomePlantGroupsEnums = biome.vegetationChances.Keys.Where(group => group != PlantGroupsEnum.DeadTree).ToList();
+			if (biomePlantGroupsEnums.Count > 0) {
+				return GetPlantGroupByEnum(biomePlantGroupsEnums[Random.Range(0, biomePlantGroupsEnums.Count)]);
+			} else {
+				return null;
+			}
+		} else {
+			foreach (KeyValuePair<PlantGroupsEnum, float> kvp in biome.vegetationChances) {
+				PlantGroupsEnum plantGroup = kvp.Key;
+				if (Random.Range(0f, 1f) < biome.vegetationChances[plantGroup]) {
+					return GetPlantGroupByEnum(plantGroup);
+				}
+			}
+		}
+		return null;
 	}
 
 	public class Container {
@@ -879,25 +1303,25 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	Dictionary<ResourcesEnum, int> FarmGrowTimes = new Dictionary<ResourcesEnum, int>() {
-		{ ResourcesEnum.WheatSeeds,5760 },
+		{ ResourcesEnum.WheatSeed,5760 },
 		{ ResourcesEnum.Potato,2880 },
-		{ ResourcesEnum.CottonSeeds,5760 }
+		{ ResourcesEnum.CottonSeed,5760 }
 	};
 	public Dictionary<ResourcesEnum,int> GetFarmGrowTimes() {
 		return FarmGrowTimes;
 	}
 	Dictionary<ResourcesEnum,ResourcesEnum> FarmSeedReturnResource = new Dictionary<ResourcesEnum,ResourcesEnum>() {
-		{ ResourcesEnum.WheatSeeds,ResourcesEnum.Wheat },
+		{ ResourcesEnum.WheatSeed,ResourcesEnum.Wheat },
 		{ ResourcesEnum.Potato,ResourcesEnum.Potato },
-		{ ResourcesEnum.CottonSeeds,ResourcesEnum.Cotton }
+		{ ResourcesEnum.CottonSeed,ResourcesEnum.Cotton }
 	};
 	public Dictionary<ResourcesEnum,ResourcesEnum> GetFarmSeedReturnResource() {
 		return FarmSeedReturnResource;
 	}
 	Dictionary<ResourcesEnum, TileObjectPrefabsEnum> FarmSeedsTileObject = new Dictionary<ResourcesEnum, TileObjectPrefabsEnum>() {
-		{ ResourcesEnum.WheatSeeds,TileObjectPrefabsEnum.WheatFarm },
+		{ ResourcesEnum.WheatSeed,TileObjectPrefabsEnum.WheatFarm },
 		{ ResourcesEnum.Potato,TileObjectPrefabsEnum.PotatoFarm },
-		{ ResourcesEnum.CottonSeeds,TileObjectPrefabsEnum.CottonFarm }
+		{ ResourcesEnum.CottonSeed,TileObjectPrefabsEnum.CottonFarm }
 	};
 	public Dictionary<ResourcesEnum,TileObjectPrefabsEnum> GetFarmSeedsTileObject() {
 		return FarmSeedsTileObject;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class TileManager:MonoBehaviour {
+public class TileManager : MonoBehaviour {
 
 	private UIManager uiM;
 	private CameraManager cameraM;
@@ -27,250 +27,8 @@ public class TileManager:MonoBehaviour {
 		PreInitialize();
 	}
 
-	public enum PlantGroupsEnum { Cactus, ColourfulShrub, ColourfulTree, DeadTree, Shrub, SnowTree, ThinTree, WideTree };
-
-	private Dictionary<PlantGroupsEnum,ResourceManager.ResourcesEnum> plantSeeds = new Dictionary<PlantGroupsEnum,ResourceManager.ResourcesEnum>() {
-		{ PlantGroupsEnum.ColourfulShrub,ResourceManager.ResourcesEnum.ShrubSeeds },
-		{ PlantGroupsEnum.ColourfulTree,ResourceManager.ResourcesEnum.TreeSeeds },
-		{ PlantGroupsEnum.DeadTree,ResourceManager.ResourcesEnum.TreeSeeds },
-		{ PlantGroupsEnum.Shrub,ResourceManager.ResourcesEnum.ShrubSeeds },
-		{ PlantGroupsEnum.SnowTree,ResourceManager.ResourcesEnum.TreeSeeds },
-		{ PlantGroupsEnum.ThinTree,ResourceManager.ResourcesEnum.TreeSeeds },
-		{ PlantGroupsEnum.WideTree,ResourceManager.ResourcesEnum.TreeSeeds },
-		{ PlantGroupsEnum.Cactus,ResourceManager.ResourcesEnum.CactusSeeds }
-	};
-	public Dictionary<PlantGroupsEnum,ResourceManager.ResourcesEnum> GetPlantSeeds() {
-		return plantSeeds;
-	}
-
-	private Dictionary<PlantGroupsEnum,ResourceManager.TileObjectPrefabsEnum> plantPlantObjectPrefabs = new Dictionary<PlantGroupsEnum,ResourceManager.TileObjectPrefabsEnum>() {
-		{ PlantGroupsEnum.ColourfulShrub,ResourceManager.TileObjectPrefabsEnum.PlantShrub },
-		{ PlantGroupsEnum.ColourfulTree,ResourceManager.TileObjectPrefabsEnum.PlantTree },
-		{ PlantGroupsEnum.DeadTree,ResourceManager.TileObjectPrefabsEnum.PlantTree },
-		{ PlantGroupsEnum.Shrub,ResourceManager.TileObjectPrefabsEnum.PlantShrub },
-		{ PlantGroupsEnum.SnowTree,ResourceManager.TileObjectPrefabsEnum.PlantTree },
-		{ PlantGroupsEnum.ThinTree,ResourceManager.TileObjectPrefabsEnum.PlantTree },
-		{ PlantGroupsEnum.WideTree,ResourceManager.TileObjectPrefabsEnum.PlantTree },
-		{ PlantGroupsEnum.Cactus,ResourceManager.TileObjectPrefabsEnum.PlantCactus }
-	};
-	public Dictionary<PlantGroupsEnum,ResourceManager.TileObjectPrefabsEnum> GetPlantPlantObjectPrefabs() {
-		return plantPlantObjectPrefabs;
-	}
-
-	private Dictionary<PlantGroupsEnum,List<ResourceManager.ResourceAmount>> plantResources = new Dictionary<PlantGroupsEnum,List<ResourceManager.ResourceAmount>>();
-	public void SetPlantResources() {
-		ResourceManager.Resource logResource = resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Log);
-		plantResources.Add(PlantGroupsEnum.ColourfulShrub,	new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(logResource,2),
-			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.ColourfulShrub]),2)
-		});
-		plantResources.Add(PlantGroupsEnum.ColourfulTree,	new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(logResource,5),
-			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.ColourfulTree]),3)
-		});
-		plantResources.Add(PlantGroupsEnum.DeadTree,		new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(logResource,3)
-		});
-		plantResources.Add(PlantGroupsEnum.Shrub,			new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(logResource,2),
-			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.Shrub]),2)
-		});
-		plantResources.Add(PlantGroupsEnum.SnowTree,		new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(logResource,5),
-			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.SnowTree]),3)
-		});
-		plantResources.Add(PlantGroupsEnum.ThinTree,		new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(logResource,5),
-			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.ThinTree]),3)
-		});
-		plantResources.Add(PlantGroupsEnum.WideTree,		new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(logResource,6),
-			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.WideTree]),3)
-		});
-		plantResources.Add(PlantGroupsEnum.Cactus,new List<ResourceManager.ResourceAmount>() {
-			new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(plantSeeds[PlantGroupsEnum.Cactus]),3)
-		});
-	}
-	public Dictionary<PlantGroupsEnum,List<ResourceManager.ResourceAmount>> GetPlantResources() {
-		return plantResources;
-	}
-
-	private Dictionary<ResourceManager.ResourcesEnum, ResourceManager.ResourcesEnum> seedToHarvestResource = new Dictionary<ResourceManager.ResourcesEnum, ResourceManager.ResourcesEnum>() {
-		{ ResourceManager.ResourcesEnum.AppleSeeds,ResourceManager.ResourcesEnum.Apple },
-		{ ResourceManager.ResourcesEnum.Berries,ResourceManager.ResourcesEnum.Berries }
-	};
-	public Dictionary<ResourceManager.ResourcesEnum, ResourceManager.ResourcesEnum> GetSeedToHarvestResource() {
-		return seedToHarvestResource;
-	}
-
-	public List<PlantGroup> plantGroups = new List<PlantGroup>();
-
-	public class PlantGroup {
-		public PlantGroupsEnum type;
-		public string name;
-
-		public List<Sprite> smallPlants = new List<Sprite>();
-		public List<Sprite> fullPlants = new List<Sprite>();
-
-		public List<ResourceManager.ResourceAmount> returnResources = new List<ResourceManager.ResourceAmount>();
-
-		public Dictionary<ResourceManager.ResourcesEnum, Dictionary<bool,List<Sprite>>> harvestResourceSprites = new Dictionary<ResourceManager.ResourcesEnum, Dictionary<bool,List<Sprite>>>();
-
-		public PlantGroup(PlantGroupsEnum type,List<ResourceManager.ResourceAmount> returnResources,ResourceManager resourceM) {
-			this.type = type;
-			name = type.ToString();
-
-			smallPlants = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + name + "/" + name + "-small").ToList();
-			fullPlants = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + name + "/" + name + "-full").ToList();
-
-			foreach (ResourceManager.Resource resource in resourceM.resources) {
-				Dictionary<bool, List<Sprite>> foundSpriteSizes = new Dictionary<bool, List<Sprite>>();
-				List<Sprite> smallResourceSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + name + "/" + resource.type.ToString() + "/" + name + "-small-" + resource.type.ToString().ToLower()).ToList();
-				if (smallResourceSprites != null && smallResourceSprites.Count > 0) {
-					foundSpriteSizes.Add(true, smallResourceSprites);
-				}
-				List<Sprite> fullResourceSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + name + "/" + resource.type.ToString() + "/" + name + "-full-" + resource.type.ToString().ToLower()).ToList();
-				if (fullResourceSprites != null && fullResourceSprites.Count > 0) {
-					foundSpriteSizes.Add(false, fullResourceSprites);
-				}
-				if (foundSpriteSizes.Count > 0) {
-					harvestResourceSprites.Add(resource.type, foundSpriteSizes);
-				}
-			}
-
-			this.returnResources = returnResources;
-		}
-	}
-
-	public void CreatePlantGroups() {
-		foreach (PlantGroupsEnum plantGroup in System.Enum.GetValues(typeof(PlantGroupsEnum))) {
-			plantGroups.Add(new PlantGroup(plantGroup,(plantResources.ContainsKey(plantGroup) ? plantResources[plantGroup] : new List<ResourceManager.ResourceAmount>()),resourceM));
-		}
-		foreach (PlantGroup plantGroup in plantGroups) {
-			plantGroup.name = uiM.SplitByCapitals(plantGroup.name);
-		}
-	}
-
-	public PlantGroup GetPlantGroupByEnum(PlantGroupsEnum plantGroup) {
-		return plantGroups.Find(group => group.type == plantGroup);
-	}
-
-	public class Plant {
-		public PlantGroup group;
-		public Tile tile;
-		public GameObject obj;
-
-		public bool small;
-
-		public float growthProgress = 0;
-
-		public ResourceManager.Resource harvestResource;
-
-		public Plant(PlantGroup group, Tile tile, bool randomSmall, bool smallValue, List<Plant> smallPlants, bool giveHarvestResource, ResourceManager.Resource specificHarvestResource, ResourceManager resourceM) {
-			this.group = group;
-			this.tile = tile;
-			
-			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform.position,Quaternion.identity);
-
-			SpriteRenderer pSR = obj.GetComponent<SpriteRenderer>();
-
-			small = (randomSmall ? Random.Range(0f,1f) < 0.1f : smallValue);
-
-			harvestResource = null;
-			if (giveHarvestResource) {
-				if (group.type == PlantGroupsEnum.WideTree && !small) {
-					if (Random.Range(0f, 1f) <= 0.05f) {
-						harvestResource = resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Apple);
-					}
-				} else if (group.type == PlantGroupsEnum.Shrub && !small) {
-					if (Random.Range(0f, 1f) <= 0.05f) {
-						harvestResource = resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Berries);
-					}
-				}
-			}
-			if (specificHarvestResource != null) {
-				harvestResource = specificHarvestResource;
-			}
-
-			pSR.sprite = (small ? group.smallPlants[Random.Range(0, group.smallPlants.Count)] : group.fullPlants[Random.Range(0, group.fullPlants.Count)]);
-			if (harvestResource != null) {
-				if (group.harvestResourceSprites.ContainsKey(harvestResource.type)) {
-					if (group.harvestResourceSprites[harvestResource.type].ContainsKey(small)) {
-						pSR.sprite = group.harvestResourceSprites[harvestResource.type][small][Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
-					}
-				}
-			}
-			pSR.sortingOrder = 1; // Plant Sprite
-
-			obj.name = "Plant: " + pSR.sprite.name;
-			obj.transform.parent = tile.obj.transform;
-
-			if (small) {
-				smallPlants.Add(this);
-			}
-		}
-
-		public List<ResourceManager.ResourceAmount> GetResources() {
-			List<ResourceManager.ResourceAmount> resourcesToReturn = new List<ResourceManager.ResourceAmount>();
-			foreach (ResourceManager.ResourceAmount resourceAmount in group.returnResources) {
-				int amount = Mathf.Clamp(resourceAmount.amount + Random.Range(-2,2),1,int.MaxValue);
-				if (small && amount > 0) {
-					amount = Mathf.CeilToInt(amount / 2f);
-				}
-				resourcesToReturn.Add(new ResourceManager.ResourceAmount(resourceAmount.resource,amount));
-			}
-			if (harvestResource != null) {
-				int randomRangeAmount = 1;
-				if (harvestResource.type == ResourceManager.ResourcesEnum.Apple) {
-					randomRangeAmount = Random.Range(1, 6);
-				} else if (harvestResource.type == ResourceManager.ResourcesEnum.Berries) {
-					randomRangeAmount = Random.Range(5, 20);
-				}
-				int amount = Mathf.Clamp(randomRangeAmount, 1, int.MaxValue);
-				if (small && amount > 0) {
-					amount = Mathf.CeilToInt(amount / 2f);
-				}
-				resourcesToReturn.Add(new ResourceManager.ResourceAmount(harvestResource, amount));
-			}
-			return resourcesToReturn;
-		}
-
-		public void Grow(List<Plant> smallPlants) {
-			small = false;
-			obj.GetComponent<SpriteRenderer>().sprite = group.fullPlants[Random.Range(0, group.fullPlants.Count)];
-			if (harvestResource != null) {
-				if (group.harvestResourceSprites.ContainsKey(harvestResource.type)) {
-					if (group.harvestResourceSprites[harvestResource.type].ContainsKey(small)) {
-						obj.GetComponent<SpriteRenderer>().sprite = group.harvestResourceSprites[harvestResource.type][small][Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
-					}
-				}
-			}
-			smallPlants.Remove(this);
-		}
-	}
-
-	public PlantGroup GetPlantGroupByBiome(Biome biome, bool guaranteedTree) {
-		if (guaranteedTree) {
-			List<PlantGroupsEnum> biomePlantGroupsEnums = biome.vegetationChances.Keys.Where(group => group != PlantGroupsEnum.DeadTree).ToList();
-			if (biomePlantGroupsEnums.Count > 0) {
-				return GetPlantGroupByEnum(biomePlantGroupsEnums[Random.Range(0, biomePlantGroupsEnums.Count)]);
-			} else {
-				return null;
-			}
-		} else {
-			foreach (KeyValuePair<PlantGroupsEnum,float> kvp in biome.vegetationChances) {
-				PlantGroupsEnum plantGroup = kvp.Key;
-				if (Random.Range(0f,1f) < biome.vegetationChances[plantGroup]) {
-					return GetPlantGroupByEnum(plantGroup);
-				}
-			}
-		}
-		return null;
-	}
-
-
-
-	public enum TileTypes { Dirt, DirtWater, Mud, DirtGrass, DirtThinGrass, DirtDryGrass, DirtHole, Grass, GrassWater, ThickGrass, ColdGrass, ColdGrassWater, DryGrass, DryGrassWater, Sand, SandWater,
+	public enum TileTypes {
+		Dirt, DirtWater, Mud, DirtGrass, DirtThinGrass, DirtDryGrass, DirtHole, Grass, GrassWater, ThickGrass, ColdGrass, ColdGrassWater, DryGrass, DryGrassWater, Sand, SandWater,
 		SandHole, Snow, SnowIce, SnowStone, SnowHole, Stone, StoneIce, StoneWater, StoneThinGrass, StoneSand, StoneSnow, StoneHole, Granite, Limestone, Marble, Sandstone, Slate, Clay, ClayWater
 	};
 
@@ -325,7 +83,7 @@ public class TileManager:MonoBehaviour {
 		return ResourceTileTypes;
 	}
 
-	Dictionary<TileTypes,TileTypes> GroundToWaterResourceMap = new Dictionary<TileTypes,TileTypes>() {
+	Dictionary<TileTypes, TileTypes> GroundToWaterResourceMap = new Dictionary<TileTypes, TileTypes>() {
 		{ TileTypes.Clay, TileTypes.ClayWater }
 	};
 	public Dictionary<TileTypes, TileTypes> GetGroundToWaterResourceMap() {
@@ -355,7 +113,7 @@ public class TileManager:MonoBehaviour {
 		public List<Sprite> riverSprites = new List<Sprite>();
 
 		public TileType(List<string> tileTypeData, TileManager tm) {
-			type = (TileTypes)System.Enum.Parse(typeof(TileTypes),tileTypeData[0]);
+			type = (TileTypes)System.Enum.Parse(typeof(TileTypes), tileTypeData[0]);
 			name = type.ToString();
 
 			walkSpeed = float.Parse(tileTypeData[1]);
@@ -373,10 +131,10 @@ public class TileManager:MonoBehaviour {
 	}
 
 	public void CreateTileTypes() {
-		List<string> stringTileTypes = Resources.Load<TextAsset>(@"Data/tiletypes").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('`').ToList();
+		List<string> stringTileTypes = Resources.Load<TextAsset>(@"Data/tiletypes").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
 		foreach (string stringTileType in stringTileTypes) {
 			List<string> stringTileTypeData = stringTileType.Split('/').ToList();
-			tileTypes.Add(new TileType(stringTileTypeData,this));
+			tileTypes.Add(new TileType(stringTileTypeData, this));
 		}
 		foreach (TileType tileType in tileTypes) {
 			tileType.name = uiM.SplitByCapitals(tileType.name);
@@ -385,6 +143,19 @@ public class TileManager:MonoBehaviour {
 
 	public TileType GetTileTypeByEnum(TileTypes find) {
 		return tileTypes.Find(tileType => tileType.type == find);
+	}
+
+	public Dictionary<TileTypes, System.Func<Tile, bool>> resourceVeinValidTileFunctions = new Dictionary<TileTypes, System.Func<Tile, bool>>();
+
+	public void InitializeResourceVeinValidTileFunctions() {
+		resourceVeinValidTileFunctions.Add(TileTypes.Clay, delegate (Tile tile) {
+			if (((WaterEquivalentTileTypes.Contains(tile.tileType.type) && tile.horizontalSurroundingTiles.Find(t => t != null && !WaterEquivalentTileTypes.Contains(t.tileType.type)) != null) || (!WaterEquivalentTileTypes.Contains(tile.tileType.type))) && (!StoneEquivalentTileTypes.Contains(tile.tileType.type))) {
+				if (tile.temperature >= -30 && tile.GetPrecipitation() > 0.2) {
+					return true;
+				}
+			}
+			return false;
+		});
 	}
 
 	public enum BiomeTypes {
@@ -400,7 +171,7 @@ public class TileManager:MonoBehaviour {
 		public BiomeTypes type;
 		public string name;
 
-		public Dictionary<PlantGroupsEnum,float> vegetationChances = new Dictionary<PlantGroupsEnum,float>();
+		public Dictionary<ResourceManager.PlantGroupsEnum, float> vegetationChances = new Dictionary<ResourceManager.PlantGroupsEnum, float>();
 
 		public Color colour;
 
@@ -411,12 +182,12 @@ public class TileManager:MonoBehaviour {
 		public ResourceManager.Resource groundResource;
 
 		public Biome(List<string> biomeData, TileManager tileM, ResourceManager resourceM, UIManager uiM) {
-			type = (BiomeTypes)System.Enum.Parse(typeof(BiomeTypes),biomeData[0]);
+			type = (BiomeTypes)System.Enum.Parse(typeof(BiomeTypes), biomeData[0]);
 			name = type.ToString();
 
 			List<string> tileTypeData = biomeData[1].Split(',').ToList();
-			tileType = tileM.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes),tileTypeData[0]));
-			waterType = tileM.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes),tileTypeData[1]));
+			tileType = tileM.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes), tileTypeData[0]));
+			waterType = tileM.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes), tileTypeData[1]));
 			holeType = tileM.GetTileTypeByEnum((TileTypes)System.Enum.Parse(typeof(TileTypes), tileTypeData[2]));
 
 			groundResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), biomeData[2]));
@@ -424,26 +195,20 @@ public class TileManager:MonoBehaviour {
 			if (float.Parse(biomeData[3].Split(',')[0]) != 0) {
 				int vegetationIndex = 0;
 				foreach (string vegetationChance in biomeData[3].Split(',').ToList()) {
-					vegetationChances.Add((PlantGroupsEnum)System.Enum.Parse(typeof(PlantGroupsEnum),biomeData[4].Split(',').ToList()[vegetationIndex]),float.Parse(vegetationChance));
+					vegetationChances.Add((ResourceManager.PlantGroupsEnum)System.Enum.Parse(typeof(ResourceManager.PlantGroupsEnum), biomeData[4].Split(',').ToList()[vegetationIndex]), float.Parse(vegetationChance));
 					vegetationIndex += 1;
 				}
 			}
 
-			/*
-			int r = int.Parse("" + biomeData[5][2] + biomeData[5][3],System.Globalization.NumberStyles.HexNumber);
-			int g = int.Parse("" + biomeData[5][4] + biomeData[5][5],System.Globalization.NumberStyles.HexNumber);
-			int b = int.Parse("" + biomeData[5][6] + biomeData[5][7],System.Globalization.NumberStyles.HexNumber);
-			colour = new Color(r,g,b,255f) / 255f;
-			*/
 			colour = uiM.HexToColor(biomeData[5]);
 		}
 	}
 
 	public void CreateBiomes() {
-		List<string> stringBiomeTypes = Resources.Load<TextAsset>(@"Data/biomes").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('`').ToList();
+		List<string> stringBiomeTypes = Resources.Load<TextAsset>(@"Data/biomes").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
 		foreach (string stringBiomeType in stringBiomeTypes) {
 			List<string> stringBiomeData = stringBiomeType.Split('/').ToList();
-			biomes.Add(new Biome(stringBiomeData,this,resourceM,uiM));
+			biomes.Add(new Biome(stringBiomeData, this, resourceM, uiM));
 		}
 		foreach (Biome biome in biomes) {
 			biome.name = uiM.SplitByCapitals(biome.name);
@@ -471,7 +236,7 @@ public class TileManager:MonoBehaviour {
 			}
 
 			foreach (string temperatureRangeString in precipitationRangeData[1].Split('`')) {
-				temperatureRanges.Add(new TemperatureRange(temperatureRangeString,this,tileM));
+				temperatureRanges.Add(new TemperatureRange(temperatureRangeString, this, tileM));
 			}
 		}
 
@@ -484,7 +249,7 @@ public class TileManager:MonoBehaviour {
 
 			public Biome biome;
 
-			public TemperatureRange(string dataString,PrecipitationRange precipitationRange, TileManager tileM) {
+			public TemperatureRange(string dataString, PrecipitationRange precipitationRange, TileManager tileM) {
 
 				this.precipitationRange = precipitationRange;
 
@@ -500,7 +265,7 @@ public class TileManager:MonoBehaviour {
 					max = int.MaxValue;
 				}
 
-				biome = tileM.biomes.Find(b => b.type == (BiomeTypes)System.Enum.Parse(typeof(BiomeTypes),temperatureRangeData[1]));
+				biome = tileM.biomes.Find(b => b.type == (BiomeTypes)System.Enum.Parse(typeof(BiomeTypes), temperatureRangeData[1]));
 			}
 		}
 	}
@@ -508,15 +273,15 @@ public class TileManager:MonoBehaviour {
 	public List<PrecipitationRange> biomeRanges = new List<PrecipitationRange>();
 
 	public void CreateBiomeRanges() {
-		List<string> biomeRangeStrings = Resources.Load<TextAsset>(@"Data/biomeRanges").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('~').ToList();
+		List<string> biomeRangeStrings = Resources.Load<TextAsset>(@"Data/biomeRanges").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('~').ToList();
 		foreach (string biomeRangeString in biomeRangeStrings) {
-			biomeRanges.Add(new PrecipitationRange(biomeRangeString,this));
+			biomeRanges.Add(new PrecipitationRange(biomeRangeString, this));
 		}
 	}
 
 	public enum TileResourceTypes { Copper, Silver, Gold, Iron, Steel, Diamond };
 
-	Dictionary<int,List<List<int>>> nonWalkableSurroundingTilesComparatorMap = new Dictionary<int,List<List<int>>>() {
+	Dictionary<int, List<List<int>>> nonWalkableSurroundingTilesComparatorMap = new Dictionary<int, List<List<int>>>() {
 		{0, new List<List<int>>() { new List<int>() { 4,1,5,2 },new List<int>() { 7,3,6,2 } } },
 		{1, new List<List<int>>() { new List<int>() { 4,0,7,3},new List<int>() { 5,2,6,3 } } },
 		{2, new List<List<int>>() { new List<int>() { 5,1,4,0 },new List<int>() { 6,3,7,0 } } },
@@ -549,7 +314,7 @@ public class TileManager:MonoBehaviour {
 		public Map.RegionBlock squareRegionBlock;
 
 		public Biome biome;
-		public Plant plant;
+		public ResourceManager.Plant plant;
 		public ResourceManager.Farm farm;
 
 		private float precipitation = 0;
@@ -561,20 +326,20 @@ public class TileManager:MonoBehaviour {
 		public bool roof = false;
 
 		public float brightness = 0;
-		public Dictionary<int,float> brightnessAtHour = new Dictionary<int,float>();
-		public Dictionary<int,Dictionary<Tile,float>> shadowsFrom = new Dictionary<int,Dictionary<Tile,float>>(); // Tiles that affect the shadow on this tile
-		public Dictionary<int,List<Tile>> shadowsTo = new Dictionary<int,List<Tile>>(); // Tiles that have shadows due to this tile
-		public Dictionary<int,List<Tile>> blockingShadowsFrom = new Dictionary<int,List<Tile>>(); // Tiles that have shadows that were cut short because this tile was in the way
+		public Dictionary<int, float> brightnessAtHour = new Dictionary<int, float>();
+		public Dictionary<int, Dictionary<Tile, float>> shadowsFrom = new Dictionary<int, Dictionary<Tile, float>>(); // Tiles that affect the shadow on this tile
+		public Dictionary<int, List<Tile>> shadowsTo = new Dictionary<int, List<Tile>>(); // Tiles that have shadows due to this tile
+		public Dictionary<int, List<Tile>> blockingShadowsFrom = new Dictionary<int, List<Tile>>(); // Tiles that have shadows that were cut short because this tile was in the way
 
 		public Dictionary<ResourceManager.LightSource, float> lightSourceBrightnesses = new Dictionary<ResourceManager.LightSource, float>();
 		public ResourceManager.LightSource primaryLightSource;
 		public float lightSourceBrightness;
 
-		public Dictionary<int,ResourceManager.TileObjectInstance> objectInstances = new Dictionary<int,ResourceManager.TileObjectInstance>();
+		public Dictionary<int, ResourceManager.TileObjectInstance> objectInstances = new Dictionary<int, ResourceManager.TileObjectInstance>();
 
 		public bool dugPreviously;
 
-		public Tile(Map map, Vector2 position,float height,TileManager tileM, TimeManager timeM, bool normalTile) {
+		public Tile(Map map, Vector2 position, float height, TileManager tileM, TimeManager timeM, bool normalTile) {
 
 			this.tileM = tileM;
 			this.timeM = timeM;
@@ -584,15 +349,15 @@ public class TileManager:MonoBehaviour {
 			this.position = position;
 
 			if (normalTile) {
-				obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),new Vector2(position.x + 0.5f,position.y + 0.5f),Quaternion.identity);
-				obj.transform.SetParent(GameObject.Find("TileParent").transform,true);
+				obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), new Vector2(position.x + 0.5f, position.y + 0.5f), Quaternion.identity);
+				obj.transform.SetParent(GameObject.Find("TileParent").transform, true);
 				obj.name = "Tile: " + position;
 
 				sr = obj.GetComponent<SpriteRenderer>();
 
 				SetTileHeight(height);
 
-				SetBrightness(1f,12);
+				SetBrightness(1f, 12);
 			}
 		}
 
@@ -601,7 +366,7 @@ public class TileManager:MonoBehaviour {
 			SetTileTypeBasedOnHeight();
 		}
 
-		public void SetTileType(TileType tileType,bool bitmask,bool resetRegion,bool removeFromOldRegion, bool setBiomeTileType) {
+		public void SetTileType(TileType tileType, bool bitmask, bool resetRegion, bool removeFromOldRegion, bool setBiomeTileType) {
 			TileType oldTileType = this.tileType;
 			this.tileType = tileType;
 			if (setBiomeTileType && biome != null) {
@@ -617,7 +382,7 @@ public class TileManager:MonoBehaviour {
 				plant = null;
 			}
 			if (resetRegion) {
-				ResetRegion(oldTileType,removeFromOldRegion);
+				ResetRegion(oldTileType, removeFromOldRegion);
 			}
 			SetWalkSpeed();
 		}
@@ -627,7 +392,7 @@ public class TileManager:MonoBehaviour {
 				bool setParentTileRegion = false;
 				if (!oldTileType.walkable && walkable) { // If a non-walkable tile became a walkable tile (splits two non-walkable regions)
 					setParentTileRegion = true;
-					
+
 					List<Tile> nonWalkableSurroundingTiles = new List<Tile>();
 					foreach (Tile tile in horizontalSurroundingTiles) {
 						if (tile != null && !tile.walkable) {
@@ -691,10 +456,10 @@ public class TileManager:MonoBehaviour {
 							}
 						}
 						foreach (List<Tile> nonWalkableTileGroup in nonWalkableTileGroups) {
-							Map.Region groupRegion = new Map.Region(nonWalkableTileGroup[0].tileType,map.currentRegionID);
+							Map.Region groupRegion = new Map.Region(nonWalkableTileGroup[0].tileType, map.currentRegionID);
 							map.currentRegionID += 1;
 							foreach (Tile tile in nonWalkableTileGroup) {
-								tile.ChangeRegion(groupRegion,false,false);
+								tile.ChangeRegion(groupRegion, false, false);
 							}
 							map.regions.Add(groupRegion);
 						}
@@ -711,18 +476,18 @@ public class TileManager:MonoBehaviour {
 					}
 					if (similarRegions.Count == 0) {
 						region.tiles.Remove(this);
-						ChangeRegion(new Map.Region(tileType,map.currentRegionID),false,false);
+						ChangeRegion(new Map.Region(tileType, map.currentRegionID), false, false);
 						map.currentRegionID += 1;
 					} else if (similarRegions.Count == 1) {
 						region.tiles.Remove(this);
-						ChangeRegion(similarRegions[0],false,false);
+						ChangeRegion(similarRegions[0], false, false);
 					} else {
 						region.tiles.Remove(this);
-						ChangeRegion(similarRegions.OrderByDescending(similarRegion => similarRegion.tiles.Count).ToList()[0],false,false);
+						ChangeRegion(similarRegions.OrderByDescending(similarRegion => similarRegion.tiles.Count).ToList()[0], false, false);
 						foreach (Map.Region similarRegion in similarRegions) {
 							if (similarRegion != region) {
 								foreach (Tile tile in similarRegion.tiles) {
-									tile.ChangeRegion(region,false,false);
+									tile.ChangeRegion(region, false, false);
 								}
 								similarRegion.tiles.Clear();
 								map.regions.Remove(similarRegion);
@@ -735,11 +500,11 @@ public class TileManager:MonoBehaviour {
 
 		public void SetTileTypeBasedOnHeight() {
 			if (height < map.mapData.terrainTypeHeights[TileTypes.GrassWater]) {
-				SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater),false,false,false,false);
+				SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater), false, false, false, false);
 			} else if (height > map.mapData.terrainTypeHeights[TileTypes.Stone]) {
-				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Stone),false,false,false,false);
+				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Stone), false, false, false, false);
 			} else {
-				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Grass),false,false,false,false);
+				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Grass), false, false, false, false);
 			}
 		}
 
@@ -750,7 +515,7 @@ public class TileManager:MonoBehaviour {
 				map.regions.Add(region);
 			}
 			if (changeTileTypeToRegionType) {
-				SetTileType(region.tileType,bitmask,false,false,true);
+				SetTileType(region.tileType, bitmask, false, false, true);
 			}
 		}
 
@@ -758,17 +523,17 @@ public class TileManager:MonoBehaviour {
 			this.biome = biome;
 			if (!tileM.StoneEquivalentTileTypes.Contains(tileType.type)) {
 				if (!tileM.WaterEquivalentTileTypes.Contains(tileType.type)) {
-					SetTileType(biome.tileType,false,false,false,false);
+					SetTileType(biome.tileType, false, false, false, false);
 				} else {
-					SetTileType(biome.waterType,false,false,false,false);
+					SetTileType(biome.waterType, false, false, false, false);
 				}
 			}
 			if (tileM.PlantableTileTypes.Contains(tileType.type)) {
-				SetPlant(false,null);
+				SetPlant(false, null);
 			}
 		}
 
-		public void SetPlant(bool removePlant, Plant specificPlant) {
+		public void SetPlant(bool removePlant, ResourceManager.Plant specificPlant) {
 			if (plant != null) {
 				map.smallPlants.Remove(plant);
 				Destroy(plant.obj);
@@ -776,9 +541,9 @@ public class TileManager:MonoBehaviour {
 			}
 			if (!removePlant) {
 				if (specificPlant == null) {
-					PlantGroup biomePlantGroup = tileM.GetPlantGroupByBiome(biome,false);
+					ResourceManager.PlantGroup biomePlantGroup = tileM.resourceM.GetPlantGroupByBiome(biome, false);
 					if (biomePlantGroup != null) {
-						plant = new Plant(biomePlantGroup,this,true,false,map.smallPlants,true,null,tileM.resourceM);
+						plant = new ResourceManager.Plant(biomePlantGroup, this, true, false, map.smallPlants, true, null, tileM.resourceM);
 					}
 				} else {
 					plant = specificPlant;
@@ -797,8 +562,8 @@ public class TileManager:MonoBehaviour {
 			PostChangeTileObject();
 		}
 
-		public void SetTileObject(ResourceManager.TileObjectPrefab tileObjectPrefab,int rotationIndex) {
-			bool farm = tileM.resourceM.GetTileObjectPrefabByEnum(tileObjectPrefab.type).tileObjectPrefabSubGroup.type == ResourceManager.TileObjectPrefabSubGroupsEnum.PlantFarm;
+		public void SetTileObject(ResourceManager.TileObjectPrefab tileObjectPrefab, int rotationIndex) {
+			bool farm = tileObjectPrefab.tileObjectPrefabSubGroup.type == ResourceManager.TileObjectPrefabSubGroupsEnum.PlantFarm;
 			if (objectInstances.ContainsKey(tileObjectPrefab.layer)) {
 				if (objectInstances[tileObjectPrefab.layer] != null) {
 					if (tileObjectPrefab != null) {
@@ -808,20 +573,20 @@ public class TileManager:MonoBehaviour {
 					}
 				} else {
 					if (farm) {
-						ResourceManager.Farm newFarm = new ResourceManager.Farm(tileObjectPrefab,this);
+						ResourceManager.Farm newFarm = new ResourceManager.Farm(tileObjectPrefab, this);
 						objectInstances[tileObjectPrefab.layer] = newFarm;
 						SetFarm(newFarm);
 					} else {
-						objectInstances[tileObjectPrefab.layer] = new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex);
+						objectInstances[tileObjectPrefab.layer] = new ResourceManager.TileObjectInstance(tileObjectPrefab, this, rotationIndex);
 					}
 				}
 			} else {
 				if (farm) {
-					ResourceManager.Farm newFarm = new ResourceManager.Farm(tileObjectPrefab,this);
-					objectInstances.Add(tileObjectPrefab.layer,newFarm);
+					ResourceManager.Farm newFarm = new ResourceManager.Farm(tileObjectPrefab, this);
+					objectInstances.Add(tileObjectPrefab.layer, newFarm);
 					SetFarm(newFarm);
 				} else {
-					objectInstances.Add(tileObjectPrefab.layer,new ResourceManager.TileObjectInstance(tileObjectPrefab,this,rotationIndex));
+					objectInstances.Add(tileObjectPrefab.layer, new ResourceManager.TileObjectInstance(tileObjectPrefab, this, rotationIndex));
 				}
 			}
 			tileM.resourceM.AddTileObjectInstance(objectInstances[tileObjectPrefab.layer]);
@@ -833,12 +598,12 @@ public class TileManager:MonoBehaviour {
 
 		public void PostChangeTileObject() {
 			walkable = tileType.walkable;
-			foreach (KeyValuePair<int,ResourceManager.TileObjectInstance> kvp in objectInstances) {
+			foreach (KeyValuePair<int, ResourceManager.TileObjectInstance> kvp in objectInstances) {
 				if (kvp.Value != null && !kvp.Value.prefab.walkable) {
 					walkable = false;
 					map.RecalculateRegionsAtTile(this);
 
-					map.DetermineShadowTiles(new List<Tile>() { this },true);
+					map.DetermineShadowTiles(new List<Tile>() { this }, true);
 
 					break;
 				}
@@ -855,7 +620,7 @@ public class TileManager:MonoBehaviour {
 
 		public List<ResourceManager.TileObjectInstance> GetAllObjectInstances() {
 			List<ResourceManager.TileObjectInstance> allObjectInstances = new List<ResourceManager.TileObjectInstance>();
-			foreach (KeyValuePair<int,ResourceManager.TileObjectInstance> kvp in objectInstances) {
+			foreach (KeyValuePair<int, ResourceManager.TileObjectInstance> kvp in objectInstances) {
 				if (kvp.Value != null) {
 					allObjectInstances.Add(kvp.Value);
 				}
@@ -869,7 +634,7 @@ public class TileManager:MonoBehaviour {
 				walkSpeed = 0.6f;
 			}
 			float minObjectWalkSpeed = float.MaxValue; // Arbitrary value
-			foreach (KeyValuePair<int,ResourceManager.TileObjectInstance> kvp in objectInstances) {
+			foreach (KeyValuePair<int, ResourceManager.TileObjectInstance> kvp in objectInstances) {
 				if (kvp.Value != null && kvp.Value.prefab.walkSpeed <= minObjectWalkSpeed) {
 					minObjectWalkSpeed = kvp.Value.prefab.walkSpeed;
 				}
@@ -964,7 +729,7 @@ public class TileManager:MonoBehaviour {
 		public float temperatureOffset;
 		public float averageTemperature;
 		public float averagePrecipitation;
-		public Dictionary<TileTypes,float> terrainTypeHeights;
+		public Dictionary<TileTypes, float> terrainTypeHeights;
 		public List<int> surroundingPlanetTileHeightDirections;
 		public Vector2 planetTilePosition;
 
@@ -986,7 +751,7 @@ public class TileManager:MonoBehaviour {
 			float temperatureOffset,
 			float averageTemperature,
 			float averagePrecipitation,
-			Dictionary<TileTypes,float> terrainTypeHeights,
+			Dictionary<TileTypes, float> terrainTypeHeights,
 			List<int> surroundingPlanetTileHeightDirections,
 			bool preventEdgeTouching,
 			int primaryWindDirection,
@@ -994,7 +759,7 @@ public class TileManager:MonoBehaviour {
 			) {
 
 			if (mapSeed < 0) {
-				mapSeed = Random.Range(0,int.MaxValue);
+				mapSeed = Random.Range(0, int.MaxValue);
 			}
 			Random.InitState(mapSeed);
 			this.mapSeed = mapSeed;
@@ -1026,11 +791,13 @@ public class TileManager:MonoBehaviour {
 		resourceM.CreateResources();
 		resourceM.CreateTileObjectPrefabs();
 		resourceM.SetManufacturableResourcesData();
+		resourceM.CreatePlantGroups();
 
-		CreatePlantGroups();
 		CreateTileTypes();
 		CreateBiomes();
 		CreateBiomeRanges();
+
+		InitializeResourceVeinValidTileFunctions();
 	}
 
 	public void Initialize(MapData mapData) {
@@ -1042,7 +809,7 @@ public class TileManager:MonoBehaviour {
 	public Map map;
 
 	public IEnumerator InitializeMap(MapData mapData) {
-		map = new Map(mapData,false);
+		map = new Map(mapData, false);
 
 		cameraM.SetCameraPosition(new Vector2(mapData.mapSize / 2f, mapData.mapSize / 2f));
 		cameraM.SetCameraZoom(20);
@@ -1057,7 +824,7 @@ public class TileManager:MonoBehaviour {
 
 		uiM.ToggleGameUI(true);
 
-		colonistM.SpawnColonists(3);
+		colonistM.SpawnStartColonists(3);
 
 		generated = true;
 		generating = false;
@@ -1155,9 +922,9 @@ public class TileManager:MonoBehaviour {
 			SetTileRegions(true);
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", ("Reducing Terrain Noise - " + Mathf.RoundToInt(mapData.mapSize / 5f))); yield return null; }
-			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f),new List<TileTypes>() { TileTypes.GrassWater,TileTypes.Stone,TileTypes.Grass });
+			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f), new List<TileTypes>() { TileTypes.GrassWater, TileTypes.Stone, TileTypes.Grass });
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", ("Reducing Terrain Noise - " + Mathf.RoundToInt(mapData.mapSize / 2f))); yield return null; }
-			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f),new List<TileTypes>() { TileTypes.GrassWater });
+			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypes>() { TileTypes.GrassWater });
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Walkability"); yield return null; }
 			SetTileRegions(false);
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Rendering"); yield return null; }
@@ -1207,7 +974,7 @@ public class TileManager:MonoBehaviour {
 				uiM.UpdateLoadingStateText("Lighting", "Determining Hourly Shadow Directions"); yield return null;
 				DetermineShadowDirectionsAtHour();
 				uiM.UpdateLoadingStateText("Lighting", "Calculating Shadows"); yield return null;
-				DetermineShadowTiles(tiles,false);
+				DetermineShadowTiles(tiles, false);
 				uiM.UpdateLoadingStateText("Lighting", "Applying Shadows"); yield return null;
 				SetTileBrightness(timeM.GetTileBrightnessTime());
 				uiM.UpdateLoadingStateText("Lighting", "Determining Visible Region Blocks"); yield return null;
@@ -1226,11 +993,11 @@ public class TileManager:MonoBehaviour {
 				List<Tile> innerTiles = new List<Tile>();
 				for (int x = 0; x < mapData.mapSize; x++) {
 
-					float height = Random.Range(0f,1f);
+					float height = Random.Range(0f, 1f);
 
-					Vector2 position = new Vector2(x,y);
+					Vector2 position = new Vector2(x, y);
 
-					Tile tile = new Tile(this,position,height,tileM,timeM,true);
+					Tile tile = new Tile(this, position, height, tileM, timeM, true);
 
 					innerTiles.Add(tile);
 					tiles.Add(tile);
@@ -1298,7 +1065,7 @@ public class TileManager:MonoBehaviour {
 
 		void GenerateTerrain() {
 			int lastSize = mapData.mapSize;
-			for (int halves = 0; halves < Mathf.CeilToInt(Mathf.Log(mapData.mapSize,2)); halves++) {
+			for (int halves = 0; halves < Mathf.CeilToInt(Mathf.Log(mapData.mapSize, 2)); halves++) {
 				int size = Mathf.CeilToInt(lastSize / 2f);
 				for (int sectionY = 0; sectionY < mapData.mapSize; sectionY += size) {
 					for (int sectionX = 0; sectionX < mapData.mapSize; sectionX += size) {
@@ -1310,7 +1077,7 @@ public class TileManager:MonoBehaviour {
 						}
 						sectionAverage /= (size * size);
 						float maxDeviationSize = -(((float)(size - mapData.mapSize)) / (4 * mapData.mapSize));
-						sectionAverage += Random.Range(-maxDeviationSize,maxDeviationSize);
+						sectionAverage += Random.Range(-maxDeviationSize, maxDeviationSize);
 						for (int y = sectionY; (y < sectionY + size && y < mapData.mapSize); y++) {
 							for (int x = sectionX; (x < sectionX + size && x < mapData.mapSize); x++) {
 								sortedTiles[y][x].height = sectionAverage;
@@ -1359,8 +1126,8 @@ public class TileManager:MonoBehaviour {
 
 		void PreventEdgeTouching() {
 			foreach (Tile tile in tiles) {
-				float edgeDistance = (mapData.mapSize - (Vector2.Distance(tile.obj.transform.position,new Vector2(mapData.mapSize / 2f,mapData.mapSize / 2f)))) / mapData.mapSize;
-				tile.SetTileHeight(tile.height * Mathf.Clamp(-Mathf.Pow(edgeDistance - 1.5f,10) + 1,0f,1f));
+				float edgeDistance = (mapData.mapSize - (Vector2.Distance(tile.obj.transform.position, new Vector2(mapData.mapSize / 2f, mapData.mapSize / 2f)))) / mapData.mapSize;
+				tile.SetTileHeight(tile.height * Mathf.Clamp(-Mathf.Pow(edgeDistance - 1.5f, 10) + 1, 0f, 1f));
 			}
 		}
 
@@ -1376,11 +1143,11 @@ public class TileManager:MonoBehaviour {
 
 			public Color colour;
 
-			public Region(TileType regionTileType,int regionID) {
+			public Region(TileType regionTileType, int regionID) {
 				tileType = regionTileType;
 				id = regionID;
 
-				colour = new Color(Random.Range(0f,1f),Random.Range(0f,1f),Random.Range(0f,1f),1f);
+				colour = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 			}
 
 			public void ColourRegion() {
@@ -1397,7 +1164,9 @@ public class TileManager:MonoBehaviour {
 				if (mapData.surroundingPlanetTileHeightDirections[i] != 0) {
 					foreach (Tile tile in tiles) {
 						float closestEdgeDistance = sortedEdgeTiles[i].Min(edgeTile => Vector2.Distance(edgeTile.obj.transform.position, tile.obj.transform.position)) / (mapData.mapSize);
-						tile.SetTileHeight(tile.height * Mathf.Clamp(mapData.surroundingPlanetTileHeightDirections[i] * Mathf.Pow(closestEdgeDistance - 1f, 10) + 1, 0f, 1f));
+						float heightMultiplier = mapData.surroundingPlanetTileHeightDirections[i] * Mathf.Pow(closestEdgeDistance - 1f, 10f) + 1f;
+						float newHeight = Mathf.Clamp(tile.height * heightMultiplier, 0f, 1f);
+						tile.SetTileHeight(newHeight);
 					}
 				}
 			}
@@ -1425,12 +1194,12 @@ public class TileManager:MonoBehaviour {
 					}
 				}
 				if (foundRegions.Count <= 0) { // If there weren't any tiles with the same region/tiletype found around them, make a new region for this tile
-					tile.ChangeRegion(new Region(tile.tileType,currentRegionID),false,false);
+					tile.ChangeRegion(new Region(tile.tileType, currentRegionID), false, false);
 					currentRegionID += 1;
 				} else if (foundRegions.Count == 1) { // If there was a single region found around them, give them that region
-					tile.ChangeRegion(foundRegions[0],false,false);
+					tile.ChangeRegion(foundRegions[0], false, false);
 				} else if (foundRegions.Count > 1) { // If there was more than one around found around them, give them the region with the lowest ID
-					tile.ChangeRegion(FindLowestRegion(foundRegions),false,false);
+					tile.ChangeRegion(FindLowestRegion(foundRegions), false, false);
 				}
 			}
 		}
@@ -1454,14 +1223,14 @@ public class TileManager:MonoBehaviour {
 						Region lowestRegion = FindLowestRegion(region.connectedRegions); // Find the lowest ID region from the connected regions
 						if (region != lowestRegion) { // If this region is not the lowest region
 							foreach (Tile tile in region.tiles) { // Set each tile's region in this region to the lowest region
-								tile.ChangeRegion(lowestRegion,false,false);
+								tile.ChangeRegion(lowestRegion, false, false);
 							}
 							region.tiles.Clear(); // Clear the tiles from this region
 						}
 						foreach (Region connectedRegion in region.connectedRegions) { // Set each tile's region in the connected regions that aren't the lowest region to the lowest region
 							if (connectedRegion != lowestRegion) {
 								foreach (Tile tile in connectedRegion.tiles) {
-									tile.ChangeRegion(lowestRegion,false,false);
+									tile.ChangeRegion(lowestRegion, false, false);
 								}
 								connectedRegion.tiles.Clear();
 							}
@@ -1476,10 +1245,10 @@ public class TileManager:MonoBehaviour {
 		public List<RegionBlock> regionBlocks = new List<RegionBlock>();
 
 		public class RegionBlock : Region {
-			public Vector2 averagePosition = new Vector2(0,0);
+			public Vector2 averagePosition = new Vector2(0, 0);
 			public List<RegionBlock> surroundingRegionBlocks = new List<RegionBlock>();
 			public List<RegionBlock> horizontalSurroundingRegionBlocks = new List<RegionBlock>();
-			public RegionBlock(TileType regionTileType,int regionID) : base(regionTileType,regionID) {
+			public RegionBlock(TileType regionTileType, int regionID) : base(regionTileType, regionID) {
 
 			}
 		}
@@ -1495,8 +1264,8 @@ public class TileManager:MonoBehaviour {
 			int regionIndex = 0;
 			for (int sectionY = 0; sectionY < mapData.mapSize; sectionY += size) {
 				for (int sectionX = 0; sectionX < mapData.mapSize; sectionX += size) {
-					RegionBlock regionBlock = new RegionBlock(tileM.GetTileTypeByEnum(TileTypes.Grass),regionIndex);
-					RegionBlock squareRegionBlock = new RegionBlock(tileM.GetTileTypeByEnum(TileTypes.Grass),regionIndex);
+					RegionBlock regionBlock = new RegionBlock(tileM.GetTileTypeByEnum(TileTypes.Grass), regionIndex);
+					RegionBlock squareRegionBlock = new RegionBlock(tileM.GetTileTypeByEnum(TileTypes.Grass), regionIndex);
 					for (int y = sectionY; (y < sectionY + size && y < mapData.mapSize); y++) {
 						for (int x = sectionX; (x < sectionX + size && x < mapData.mapSize); x++) {
 							regionBlock.tiles.Add(sortedTiles[y][x]);
@@ -1516,9 +1285,9 @@ public class TileManager:MonoBehaviour {
 							squareRegionBlock.surroundingRegionBlocks.Add(nTile.squareRegionBlock);
 						}
 					}
-					squareRegionBlock.averagePosition = new Vector2(squareRegionBlock.averagePosition.x + tile.obj.transform.position.x,squareRegionBlock.averagePosition.y + tile.obj.transform.position.y);
+					squareRegionBlock.averagePosition = new Vector2(squareRegionBlock.averagePosition.x + tile.obj.transform.position.x, squareRegionBlock.averagePosition.y + tile.obj.transform.position.y);
 				}
-				squareRegionBlock.averagePosition = new Vector2(squareRegionBlock.averagePosition.x / squareRegionBlock.tiles.Count,squareRegionBlock.averagePosition.y / squareRegionBlock.tiles.Count);
+				squareRegionBlock.averagePosition = new Vector2(squareRegionBlock.averagePosition.x / squareRegionBlock.tiles.Count, squareRegionBlock.averagePosition.y / squareRegionBlock.tiles.Count);
 			}
 			regionIndex += 1;
 			List<RegionBlock> removeRegionBlocks = new List<RegionBlock>();
@@ -1538,7 +1307,7 @@ public class TileManager:MonoBehaviour {
 					regionBlock.tiles.Clear();
 					foreach (Tile unwalkableTile in unwalkableTiles) {
 						if (unwalkableTile.regionBlock == null) {
-							RegionBlock unwalkableRegionBlock = new RegionBlock(tileM.GetTileTypeByEnum(TileTypes.Stone),regionIndex);
+							RegionBlock unwalkableRegionBlock = new RegionBlock(tileM.GetTileTypeByEnum(TileTypes.Stone), regionIndex);
 							regionIndex += 1;
 							Tile currentTile = unwalkableTile;
 							List<Tile> frontier = new List<Tile>() { currentTile };
@@ -1560,7 +1329,7 @@ public class TileManager:MonoBehaviour {
 					}
 					foreach (Tile walkableTile in walkableTiles) {
 						if (walkableTile.regionBlock == null) {
-							RegionBlock walkableRegionBlock = new RegionBlock(tileM.GetTileTypeByEnum(TileTypes.Grass),regionIndex);
+							RegionBlock walkableRegionBlock = new RegionBlock(tileM.GetTileTypeByEnum(TileTypes.Grass), regionIndex);
 							regionIndex += 1;
 							Tile currentTile = walkableTile;
 							List<Tile> frontier = new List<Tile>() { currentTile };
@@ -1603,9 +1372,9 @@ public class TileManager:MonoBehaviour {
 							regionBlock.surroundingRegionBlocks.Add(nTile.regionBlock);
 						}
 					}
-					regionBlock.averagePosition = new Vector2(regionBlock.averagePosition.x + tile.obj.transform.position.x,regionBlock.averagePosition.y + tile.obj.transform.position.y);
+					regionBlock.averagePosition = new Vector2(regionBlock.averagePosition.x + tile.obj.transform.position.x, regionBlock.averagePosition.y + tile.obj.transform.position.y);
 				}
-				regionBlock.averagePosition = new Vector2(regionBlock.averagePosition.x / regionBlock.tiles.Count,regionBlock.averagePosition.y / regionBlock.tiles.Count);
+				regionBlock.averagePosition = new Vector2(regionBlock.averagePosition.x / regionBlock.tiles.Count, regionBlock.averagePosition.y / regionBlock.tiles.Count);
 			}
 		}
 
@@ -1671,7 +1440,7 @@ public class TileManager:MonoBehaviour {
 						if (!removeTiles.Contains(startTile)) {
 							foreach (Tile endTile in horizontalGroups) {
 								if (!removeTiles.Contains(endTile) && startTile != endTile) {
-									if (pathM.PathExists(startTile,endTile,true,mapData.mapSize,PathManager.WalkableSetting.Walkable,PathManager.DirectionSetting.Horizontal)) {
+									if (pathM.PathExists(startTile, endTile, true, mapData.mapSize, PathManager.WalkableSetting.Walkable, PathManager.DirectionSetting.Horizontal)) {
 										removeTiles.Add(endTile);
 									}
 								}
@@ -1688,7 +1457,7 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 
-		void ReduceNoise(int removeRegionsBelowSize,List<TileTypes> typesToRemove) {
+		void ReduceNoise(int removeRegionsBelowSize, List<TileTypes> typesToRemove) {
 			foreach (Region region in regions) {
 				if (typesToRemove.Contains(region.tileType.type)) {
 					if (region.tiles.Count < removeRegionsBelowSize) {
@@ -1704,7 +1473,7 @@ public class TileManager:MonoBehaviour {
 						if (region.connectedRegions.Count > 0) {
 							Region lowestRegion = FindLowestRegion(region.connectedRegions);
 							foreach (Tile tile in region.tiles) { // Set each tile's region in this region to the lowest region
-								tile.ChangeRegion(lowestRegion,true,false);
+								tile.ChangeRegion(lowestRegion, true, false);
 							}
 							region.tiles.Clear(); // Clear the tiles from this region
 						}
@@ -1930,7 +1699,7 @@ public class TileManager:MonoBehaviour {
 			}
 		}
 
-		private Dictionary<int,int> oppositeDirectionTileMap = new Dictionary<int,int>() { { 0,2 },{ 1,3 },{ 2,0 },{ 3,1 },{ 4,6 },{ 5,7 },{ 6,4 },{ 7,5 } };
+		private Dictionary<int, int> oppositeDirectionTileMap = new Dictionary<int, int>() { { 0, 2 }, { 1, 3 }, { 2, 0 }, { 3, 1 }, { 4, 6 }, { 5, 7 }, { 6, 4 }, { 7, 5 } };
 		private Dictionary<int, List<float>> windStrengthMap = new Dictionary<int, List<float>>() {
 			{ 0,new List<float>(){ 1.0f,0.6f,0.1f,0.6f,0.8f,0.2f,0.2f,0.8f } },
 			{ 1,new List<float>(){ 0.6f,1.0f,0.6f,0.1f,0.8f,0.8f,0.2f,0.2f } },
@@ -2023,7 +1792,7 @@ public class TileManager:MonoBehaviour {
 				if (previousTile != null) {
 					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
 					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(),0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * (mapData.mapSize / 5f));
+						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * (mapData.mapSize / 5f));
 					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
 						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.25f);
 					} else {
@@ -2062,7 +1831,7 @@ public class TileManager:MonoBehaviour {
 					}
 				}
 			}
-			tile.SetPrecipitation(ChangePrecipitationByTemperature(tile.GetPrecipitation(),tile.temperature));
+			tile.SetPrecipitation(ChangePrecipitationByTemperature(tile.GetPrecipitation(), tile.temperature));
 			tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), 0f, 1f));
 		}
 
@@ -2184,7 +1953,7 @@ public class TileManager:MonoBehaviour {
 
 		public void SetResourceVeins() {
 			List<ResourceVeinData> stoneVeins = new List<ResourceVeinData>() {
-				
+
 			};
 			List<Tile> stoneTiles = new List<Tile>();
 			foreach (Tile tile in tiles) {
@@ -2192,7 +1961,11 @@ public class TileManager:MonoBehaviour {
 					stoneTiles.Add(tile);
 				}
 			}
-			// Place stone veins here, copy format of coast veins
+			if (stoneTiles.Count > 0) {
+				foreach (ResourceVeinData resourceVeinData in stoneVeins) {
+					PlaceResourceVeins(resourceVeinData, stoneTiles);
+				}
+			}
 
 			List<ResourceVeinData> coastVeins = new List<ResourceVeinData>() {
 				new ResourceVeinData(TileTypes.Clay,Mathf.RoundToInt(mapData.mapSize / 10f),5,10,5)
@@ -2205,105 +1978,109 @@ public class TileManager:MonoBehaviour {
 			}
 			if (coastTiles.Count > 0) {
 				foreach (ResourceVeinData resourceVeinData in coastVeins) {
-					List<Tile> previousVeinStartTiles = new List<Tile>();
-					for (int i = 0; i < resourceVeinData.numVeins; i++) {
-						List<Tile> validVeinStartTiles = coastTiles.Where(tile => !tileM.ResourceTileTypes.Contains(tile.tileType.type)).ToList();
-						foreach (Tile previousVeinStartTile in previousVeinStartTiles) {
-							List<Tile> removeTiles = new List<Tile>();
-							foreach (Tile validVeinStartTile in validVeinStartTiles) {
-								if (Vector2.Distance(validVeinStartTile.obj.transform.position, previousVeinStartTile.obj.transform.position) < resourceVeinData.veinDistance) {
-									removeTiles.Add(validVeinStartTile);
+					PlaceResourceVeins(resourceVeinData, coastTiles);
+				}
+			}
+		}
+
+		void PlaceResourceVeins(ResourceVeinData resourceVeinData, List<Tile> mediumTiles) {
+			List<Tile> previousVeinStartTiles = new List<Tile>();
+			for (int i = 0; i < resourceVeinData.numVeins; i++) {
+				List<Tile> validVeinStartTiles = mediumTiles.Where(tile => !tileM.ResourceTileTypes.Contains(tile.tileType.type) && tileM.resourceVeinValidTileFunctions[resourceVeinData.tileType](tile)).ToList();
+				foreach (Tile previousVeinStartTile in previousVeinStartTiles) {
+					List<Tile> removeTiles = new List<Tile>();
+					foreach (Tile validVeinStartTile in validVeinStartTiles) {
+						if (Vector2.Distance(validVeinStartTile.obj.transform.position, previousVeinStartTile.obj.transform.position) < resourceVeinData.veinDistance) {
+							removeTiles.Add(validVeinStartTile);
+						}
+					}
+					foreach (Tile removeTile in removeTiles) {
+						validVeinStartTiles.Remove(removeTile);
+					}
+				}
+				if (validVeinStartTiles.Count > 0) {
+
+					int veinSizeMax = resourceVeinData.veinSize + Random.Range(-resourceVeinData.veinSizeRange, resourceVeinData.veinSizeRange);
+
+					Tile veinStartTile = validVeinStartTiles[Random.Range(0, validVeinStartTiles.Count)];
+					previousVeinStartTiles.Add(veinStartTile);
+
+					List<Tile> frontier = new List<Tile>() { veinStartTile };
+					List<Tile> checkedTiles = new List<Tile>();
+					Tile currentTile = veinStartTile;
+
+					int veinSize = 0;
+
+					while (frontier.Count > 0) {
+						currentTile = frontier[Random.Range(0, frontier.Count)];
+						frontier.RemoveAt(0);
+						checkedTiles.Add(currentTile);
+
+						if (tileM.WaterEquivalentTileTypes.Contains(currentTile.tileType.type)) {
+							currentTile.SetTileType(tileM.GetTileTypeByEnum(tileM.GroundToWaterResourceMap[resourceVeinData.tileType]), true, false, false, false);
+						} else {
+							currentTile.SetTileType(tileM.GetTileTypeByEnum(resourceVeinData.tileType), true, false, false, false);
+						}
+
+						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+							if (nTile != null && !checkedTiles.Contains(nTile) && !tileM.ResourceTileTypes.Contains(nTile.tileType.type)) {
+								if (tileM.resourceVeinValidTileFunctions[resourceVeinData.tileType](nTile)) {
+									frontier.Add(nTile);
 								}
-							}
-							foreach (Tile removeTile in removeTiles) {
-								validVeinStartTiles.Remove(removeTile);
 							}
 						}
-						if (validVeinStartTiles.Count > 0) {
 
-							int veinSizeMax = resourceVeinData.veinSize + Random.Range(-resourceVeinData.veinSizeRange, resourceVeinData.veinSizeRange);
+						veinSize += 1;
 
-							Tile veinStartTile = validVeinStartTiles[Random.Range(0, validVeinStartTiles.Count)];
-							previousVeinStartTiles.Add(veinStartTile);
-
-							List<Tile> frontier = new List<Tile>() { veinStartTile };
-							List<Tile> checkedTiles = new List<Tile>();
-							Tile currentTile = veinStartTile;
-
-							int veinSize = 0;
-
-							while (frontier.Count > 0) {
-								currentTile = frontier[Random.Range(0, frontier.Count)];
-								frontier.RemoveAt(0);
-								checkedTiles.Add(currentTile);
-
-								if (tileM.WaterEquivalentTileTypes.Contains(currentTile.tileType.type)) {
-									currentTile.SetTileType(tileM.GetTileTypeByEnum(tileM.GroundToWaterResourceMap[resourceVeinData.tileType]),true,false,false,false);
-								} else {
-									currentTile.SetTileType(tileM.GetTileTypeByEnum(resourceVeinData.tileType),true,false,false,false);
-								}
-
-								foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
-									if (nTile != null && !checkedTiles.Contains(nTile) && !tileM.ResourceTileTypes.Contains(nTile.tileType.type)) {
-										if (((tileM.WaterEquivalentTileTypes.Contains(nTile.tileType.type) && nTile.horizontalSurroundingTiles.Find(t => t != null && !tileM.WaterEquivalentTileTypes.Contains(t.tileType.type)) != null) || (!tileM.WaterEquivalentTileTypes.Contains(nTile.tileType.type))) && (!tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type))) {
-											frontier.Add(nTile);
-										}
-									}
-								}
-
-								veinSize += 1;
-
-								if (veinSize >= veinSizeMax) {
-									break;
-								}
-							}
+						if (veinSize >= veinSizeMax) {
+							break;
 						}
 					}
 				}
 			}
 		}
 
-		Dictionary<int,int> bitmaskMap = new Dictionary<int,int>() {
+		Dictionary<int, int> bitmaskMap = new Dictionary<int, int>() {
 		{ 19,16 },{ 23,17 },{ 27,18 },{ 31,19 },{ 38,20 },{ 39,21 },{ 46,22 },
 		{ 47,23 },{ 55,24 },{ 63,25 },{ 76,26 },{ 77,27 },{ 78,28 },{ 79,29 },
 		{ 95,30 },{ 110,31 },{ 111,32 },{ 127,33 },{ 137,34 },{ 139,35 },{ 141,36 },
 		{ 143,37 },{ 155,38 },{ 159,39 },{ 175,40 },{ 191,41 },{ 205,42 },{ 207,43 },
 		{ 223,44 },{ 239,45 },{ 255,46 }
 	};
-		Dictionary<int,List<int>> diagonalCheckMap = new Dictionary<int,List<int>>() {
+		Dictionary<int, List<int>> diagonalCheckMap = new Dictionary<int, List<int>>() {
 		{4,new List<int>() {0,1 } },
 		{5,new List<int>() {1,2 } },
 		{6,new List<int>() {2,3 } },
 		{7,new List<int>() {3,0 } }
 	};
 
-		int BitSum(List<TileTypes> compareTileTypes,List<Tile> tilesToSum,bool includeMapEdge) {
+		int BitSum(List<TileTypes> compareTileTypes, List<Tile> tilesToSum, bool includeMapEdge) {
 			int sum = 0;
 			for (int i = 0; i < tilesToSum.Count; i++) {
 				if (tilesToSum[i] != null) {
 					if (compareTileTypes.Contains(tilesToSum[i].tileType.type)) {
 						bool ignoreTile = false;
 						if (compareTileTypes.Contains(tilesToSum[i].tileType.type) && diagonalCheckMap.ContainsKey(i)) {
-							List<Tile> surroundingHorizontalTiles = new List<Tile>() { tilesToSum[diagonalCheckMap[i][0]],tilesToSum[diagonalCheckMap[i][1]] };
+							List<Tile> surroundingHorizontalTiles = new List<Tile>() { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
 							List<Tile> similarTiles = surroundingHorizontalTiles.Where(tile => tile != null && compareTileTypes.Contains(tile.tileType.type)).ToList();
 							if (similarTiles.Count < 2) {
 								ignoreTile = true;
 							}
 						}
 						if (!ignoreTile) {
-							sum += Mathf.RoundToInt(Mathf.Pow(2,i));
+							sum += Mathf.RoundToInt(Mathf.Pow(2, i));
 						}
 					}
 				} else if (includeMapEdge) {
 					if (tilesToSum.Find(tile => tile != null && tilesToSum.IndexOf(tile) <= 3 && !compareTileTypes.Contains(tile.tileType.type)) == null) {
-						sum += Mathf.RoundToInt(Mathf.Pow(2,i));
+						sum += Mathf.RoundToInt(Mathf.Pow(2, i));
 					} else {
 						if (i <= 3) {
-							sum += Mathf.RoundToInt(Mathf.Pow(2,i));
+							sum += Mathf.RoundToInt(Mathf.Pow(2, i));
 						} else {
-							List<Tile> surroundingHorizontalTiles = new List<Tile>() { tilesToSum[diagonalCheckMap[i][0]],tilesToSum[diagonalCheckMap[i][1]] };
+							List<Tile> surroundingHorizontalTiles = new List<Tile>() { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
 							if (surroundingHorizontalTiles.Find(tile => tile != null && !compareTileTypes.Contains(tile.tileType.type)) == null) {
-								sum += Mathf.RoundToInt(Mathf.Pow(2,i));
+								sum += Mathf.RoundToInt(Mathf.Pow(2, i));
 							}
 						}
 					}
@@ -2312,7 +2089,7 @@ public class TileManager:MonoBehaviour {
 			return sum;
 		}
 
-		void BitmaskTile(Tile tile,bool includeDiagonalSurroundingTiles,bool customBitSumInputs,List<TileTypes> customCompareTileTypes,bool includeMapEdge) {
+		void BitmaskTile(Tile tile, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, List<TileTypes> customCompareTileTypes, bool includeMapEdge) {
 			int sum = 0;
 			List<Tile> surroundingTilesToUse = (includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles);
 			if (customBitSumInputs) {
@@ -2341,7 +2118,7 @@ public class TileManager:MonoBehaviour {
 				}
 			} else {
 				if (tile.tileType.baseSprites.Count > 0 && !tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
-					tile.sr.sprite = tile.tileType.baseSprites[Random.Range(0,tile.tileType.baseSprites.Count)];
+					tile.sr.sprite = tile.tileType.baseSprites[Random.Range(0, tile.tileType.baseSprites.Count)];
 				}
 			}
 		}
@@ -2350,10 +2127,10 @@ public class TileManager:MonoBehaviour {
 			foreach (Tile tile in tilesToBitmask) {
 				if (tile != null) {
 					if (tileM.BitmaskingTileTypes.Contains(tile.tileType.type)) {
-						BitmaskTile(tile,true,false,null,true);
+						BitmaskTile(tile, true, false, null, true);
 					} else {
 						if (!tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
-							tile.sr.sprite = tile.tileType.baseSprites[Random.Range(0,tile.tileType.baseSprites.Count)];
+							tile.sr.sprite = tile.tileType.baseSprites[Random.Range(0, tile.tileType.baseSprites.Count)];
 						}
 					}
 				}
@@ -2366,7 +2143,7 @@ public class TileManager:MonoBehaviour {
 				List<TileTypes> compareTileTypes = new List<TileTypes>();
 				compareTileTypes.AddRange(tileM.WaterEquivalentTileTypes);
 				compareTileTypes.AddRange(tileM.StoneEquivalentTileTypes);
-				BitmaskTile(river.startTile,false,true,compareTileTypes,false);
+				BitmaskTile(river.startTile, false, true, compareTileTypes, false);
 			}
 		}
 
@@ -2387,7 +2164,7 @@ public class TileManager:MonoBehaviour {
 					frontier.RemoveAt(0);
 					visibleRegionBlocks.Add(currentRegionBlock);
 					foreach (RegionBlock nBlock in currentRegionBlock.surroundingRegionBlocks) {
-						if (Vector2.Distance(currentRegionBlock.averagePosition,cameraM.cameraGO.transform.position) <= cameraM.cameraComponent.orthographicSize * ((float)Screen.width / Screen.height)) {
+						if (Vector2.Distance(currentRegionBlock.averagePosition, cameraM.cameraGO.transform.position) <= cameraM.cameraComponent.orthographicSize * ((float)Screen.width / Screen.height)) {
 							if (!checkedBlocks.Contains(nBlock)) {
 								frontier.Add(nBlock);
 								checkedBlocks.Add(nBlock);
@@ -2408,7 +2185,7 @@ public class TileManager:MonoBehaviour {
 			Color newColour = GetTileColourAtHour(time);
 			foreach (RegionBlock visibleRegionBlock in visibleRegionBlocks) {
 				foreach (Tile tile in visibleRegionBlock.tiles) {
-					tile.SetColour(newColour,Mathf.FloorToInt(time));
+					tile.SetColour(newColour, Mathf.FloorToInt(time));
 				}
 			}
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
@@ -2418,14 +2195,14 @@ public class TileManager:MonoBehaviour {
 		}
 
 		public float CalculateBrightnessLevelAtHour(float time) {
-			return ((-(1f / 144f)) * Mathf.Pow(((1 + (24 - (1 - time))) % 24) - 12,2) + 1.2f);
+			return ((-(1f / 144f)) * Mathf.Pow(((1 + (24 - (1 - time))) % 24) - 12, 2) + 1.2f);
 		}
 
 		public Color GetTileColourAtHour(float time) {
-			float r = Mathf.Clamp((Mathf.Pow(CalculateBrightnessLevelAtHour(0.4f * time + 7.2f),10)) / 5f,0f,1f);
-			float g = Mathf.Clamp((Mathf.Pow(CalculateBrightnessLevelAtHour(0.5f * time + 6),10)) / 5f - 0.2f,0f,1f);
-			float b = Mathf.Clamp((-1.5f * Mathf.Pow(Mathf.Cos((CalculateBrightnessLevelAtHour(2 * time + 12)) / 1.5f),3) + 1.65f * (CalculateBrightnessLevelAtHour(time) / 2f)) + 0.7f,0f,1f);
-			return new Color(r,g,b,1f);
+			float r = Mathf.Clamp((Mathf.Pow(CalculateBrightnessLevelAtHour(0.4f * time + 7.2f), 10)) / 5f, 0f, 1f);
+			float g = Mathf.Clamp((Mathf.Pow(CalculateBrightnessLevelAtHour(0.5f * time + 6), 10)) / 5f - 0.2f, 0f, 1f);
+			float b = Mathf.Clamp((-1.5f * Mathf.Pow(Mathf.Cos((CalculateBrightnessLevelAtHour(2 * time + 12)) / 1.5f), 3) + 1.65f * (CalculateBrightnessLevelAtHour(time) / 2f)) + 0.7f, 0f, 1f);
+			return new Color(r, g, b, 1f);
 		}
 
 		public bool TileBlocksLight(Tile tile) {
@@ -2495,7 +2272,7 @@ public class TileManager:MonoBehaviour {
 						}
 					}
 					float heightModifer = (1 + (oppositeTileMaxHeight - mapData.terrainTypeHeights[TileTypes.Stone]));
-					float maxDistance = hourDirection.magnitude * heightModifer * 5f + (Mathf.Pow(h - 12,2) / 6f);
+					float maxDistance = hourDirection.magnitude * heightModifer * 5f + (Mathf.Pow(h - 12, 2) / 6f);
 
 					List<Tile> shadowTiles = new List<Tile>();
 					for (float distance = 0; distance <= maxDistance; distance += 0.1f) {
@@ -2513,16 +2290,16 @@ public class TileManager:MonoBehaviour {
 							if (TileCanBeShadowed(shadowTile)) {
 								newBrightness = Mathf.Clamp((1 - (0.6f * CalculateBrightnessLevelAtHour(h)) + 0.3f) /* / (1 - ((distance - (maxDistance / 2f)) / (maxDistance <= 0 ? 1 : maxDistance))) */, 0, 1);
 								if (shadowTile.brightnessAtHour.ContainsKey(h)) {
-									shadowTile.brightnessAtHour[h] = Mathf.Min(shadowTile.brightnessAtHour[h],newBrightness);
+									shadowTile.brightnessAtHour[h] = Mathf.Min(shadowTile.brightnessAtHour[h], newBrightness);
 								} else {
-									shadowTile.brightnessAtHour.Add(h,newBrightness);
+									shadowTile.brightnessAtHour.Add(h, newBrightness);
 								}
 								shadowTiles.Add(shadowTile);
 							} else {
 								if (shadowTile.blockingShadowsFrom.ContainsKey(h)) {
 									shadowTile.blockingShadowsFrom[h].Add(tile);
 								} else {
-									shadowTile.blockingShadowsFrom.Add(h,new List<Tile>() { tile });
+									shadowTile.blockingShadowsFrom.Add(h, new List<Tile>() { tile });
 								}
 								shadowTile.blockingShadowsFrom[h] = shadowTile.blockingShadowsFrom[h].Distinct().ToList();
 							}
@@ -2530,17 +2307,17 @@ public class TileManager:MonoBehaviour {
 								if (shadowTile.shadowsFrom[h].ContainsKey(tile)) {
 									shadowTile.shadowsFrom[h][tile] = newBrightness;
 								} else {
-									shadowTile.shadowsFrom[h].Add(tile,newBrightness);
+									shadowTile.shadowsFrom[h].Add(tile, newBrightness);
 								}
 							} else {
-								shadowTile.shadowsFrom.Add(h,new Dictionary<Tile,float>() { { tile,newBrightness } });
+								shadowTile.shadowsFrom.Add(h, new Dictionary<Tile, float>() { { tile, newBrightness } });
 							}
 						}
 					}
 					if (tile.shadowsTo.ContainsKey(h)) {
 						tile.shadowsTo[h].AddRange(shadowTiles);
 					} else {
-						tile.shadowsTo.Add(h,shadowTiles);
+						tile.shadowsTo.Add(h, shadowTiles);
 					}
 					tile.shadowsTo[h] = tile.shadowsTo[h].Distinct().ToList();
 				}
@@ -2565,7 +2342,7 @@ public class TileManager:MonoBehaviour {
 						if (nTile.brightnessAtHour.ContainsKey(h)) {
 							nTile.brightnessAtHour[h] = darkestBrightnessAtHour;
 						}
-						nTile.SetBrightness(darkestBrightnessAtHour,12);
+						nTile.SetBrightness(darkestBrightnessAtHour, 12);
 					}
 				}
 				if (tile.shadowsFrom.ContainsKey(h)) {
@@ -2581,15 +2358,15 @@ public class TileManager:MonoBehaviour {
 			tile.shadowsTo.Clear();
 			tile.blockingShadowsFrom.Clear();
 
-			DetermineShadowTiles(tilesToRecalculateShadowsFor.Distinct().ToList(),true);
+			DetermineShadowTiles(tilesToRecalculateShadowsFor.Distinct().ToList(), true);
 		}
 
-		public List<Plant> smallPlants = new List<Plant>();
+		public List<ResourceManager.Plant> smallPlants = new List<ResourceManager.Plant>();
 
 		public void GrowPlants() {
 			if (!timeM.GetPaused() && timeM.minuteChanged) {
-				List<Plant> growPlants = new List<Plant>();
-				foreach (Plant plant in smallPlants) {
+				List<ResourceManager.Plant> growPlants = new List<ResourceManager.Plant>();
+				foreach (ResourceManager.Plant plant in smallPlants) {
 					plant.growthProgress += 1 * timeM.deltaTime;
 					if (plant.growthProgress > 5760) { // 5760 = 4 in-game days in seconds
 						if (Random.Range(0, 100) < (0.01 * (plant.growthProgress / 5760))) {
@@ -2597,7 +2374,7 @@ public class TileManager:MonoBehaviour {
 						}
 					}
 				}
-				foreach (Plant plant in growPlants) {
+				foreach (ResourceManager.Plant plant in growPlants) {
 					plant.Grow(smallPlants);
 				}
 				growPlants.Clear();
@@ -2605,7 +2382,7 @@ public class TileManager:MonoBehaviour {
 		}
 
 		public Tile GetTileFromPosition(Vector2 position) {
-			position = new Vector2(Mathf.Clamp(position.x,0,mapData.mapSize - 1),Mathf.Clamp(position.y,0,mapData.mapSize - 1));
+			position = new Vector2(Mathf.Clamp(position.x, 0, mapData.mapSize - 1), Mathf.Clamp(position.y, 0, mapData.mapSize - 1));
 			return sortedTiles[Mathf.FloorToInt(position.y)][Mathf.FloorToInt(position.x)];
 		}
 	}

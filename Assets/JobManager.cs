@@ -65,10 +65,12 @@ public class JobManager:MonoBehaviour {
 
 		public UIManager.JobElement jobUIElement;
 
-		public TileManager.Plant plant;
+		public ResourceManager.Plant plant;
 
 		public ResourceManager.Resource createResource;
 		public ResourceManager.TileObjectInstance activeTileObject;
+
+		public int priority;
 
 		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab,int rotationIndex) {
 
@@ -80,17 +82,17 @@ public class JobManager:MonoBehaviour {
 			resourcesToBuild.AddRange(prefab.resourcesToBuild);
 
 			if (prefab.jobType == JobTypesEnum.PlantPlant) {
-				TileManager.PlantGroup plantGroup = tileM.GetPlantGroupByBiome(tile.biome, true);
+				ResourceManager.PlantGroup plantGroup = resourceM.GetPlantGroupByBiome(tile.biome, true);
 				if (prefab.type == ResourceManager.TileObjectPrefabsEnum.PlantAppleTree) {
-					plantGroup = tileM.GetPlantGroupByEnum(TileManager.PlantGroupsEnum.WideTree);
+					plantGroup = resourceM.GetPlantGroupByEnum(ResourceManager.PlantGroupsEnum.WideTree);
 				} else if (prefab.type == ResourceManager.TileObjectPrefabsEnum.PlantBerryBush) {
-					plantGroup = tileM.GetPlantGroupByEnum(TileManager.PlantGroupsEnum.Shrub);
+					plantGroup = resourceM.GetPlantGroupByEnum(ResourceManager.PlantGroupsEnum.Shrub);
 				}
 				if (plantGroup != null) {
-					plant = new TileManager.Plant(plantGroup, tile, false, true, tileM.map.smallPlants,false,(resourcesToBuild.Count > 0 ? resourceM.GetResourceByEnum(tileM.GetSeedToHarvestResource()[resourcesToBuild[0].resource.type]) : null),resourceM);
+					plant = new ResourceManager.Plant(plantGroup, tile, false, true, tileM.map.smallPlants,false,(resourcesToBuild.Count > 0 ? resourceM.GetResourceByEnum(resourceM.GetSeedToHarvestResource()[resourcesToBuild[0].resource.type]) : null),resourceM);
 					tileM.map.smallPlants.Remove(plant);
 					plant.obj.SetActive(false);
-					resourcesToBuild.Add(new ResourceManager.ResourceAmount(resourceM.GetResourceByEnum(tileM.GetPlantSeeds()[plant.group.type]),1));
+					resourcesToBuild.Add(new ResourceManager.ResourceAmount(plant.group.seed,1));
 				}
 			}
 
@@ -135,6 +137,10 @@ public class JobManager:MonoBehaviour {
 			}
 		}
 
+		public void IncreasePriority() {
+			priority += 1;
+		}
+
 		public void Remove() {
 			Destroy(jobPreview);
 		}
@@ -143,7 +149,7 @@ public class JobManager:MonoBehaviour {
 	public enum JobTypesEnum {
 		Build, Remove,
 		ChopPlant, PlantPlant, Mine, Dig, PlantFarm, HarvestFarm,
-		CreateResource, PickupResources, EmptyInventory, Cancel, CollectFood, Eat, Sleep
+		CreateResource, PickupResources, EmptyInventory, Cancel, Prioritize, CollectFood, Eat, Sleep
 	};
 
 	public Dictionary<JobTypesEnum,System.Func<Job,string>> jobDescriptionFunctions = new Dictionary<JobTypesEnum,System.Func<Job,string>>();
@@ -294,7 +300,7 @@ public class JobManager:MonoBehaviour {
 			job.plant.obj.SetActive(true);
 			job.tile.SetPlant(false,job.plant);
 			tileM.map.smallPlants.Add(job.plant);
-			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(tileM.GetPlantSeeds()[job.tile.plant.group.type]),-1);
+			colonist.inventory.ChangeResourceAmount(job.plant.group.seed,-1);
 			tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
 		});
 		finishJobFunctions.Add(JobTypesEnum.Mine,delegate (ColonistManager.Colonist colonist,Job job) {
@@ -437,7 +443,7 @@ public class JobManager:MonoBehaviour {
 					foodNeed.value -= ra.resource.nutrition;
 					colonist.inventory.ChangeResourceAmount(ra.resource, -1);
 					if (ra.resource.type == ResourceManager.ResourcesEnum.Apple || ra.resource.type == ResourceManager.ResourcesEnum.BakedApple) {
-						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.AppleSeeds), Random.Range(1, 5));
+						colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.AppleSeed), Random.Range(1, 5));
 					}
 				}
 				if (stopEating) {
@@ -639,7 +645,7 @@ public class JobManager:MonoBehaviour {
 			}
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNoTreeOrDeadTreeBiomes, delegate (TileManager.Tile tile, List<TileManager.Tile> removeTiles) {
-			if (tile.biome.vegetationChances.Keys.Where(group => group != TileManager.PlantGroupsEnum.DeadTree).ToList().Count <= 0) {
+			if (tile.biome.vegetationChances.Keys.Where(group => group != ResourceManager.PlantGroupsEnum.DeadTree).ToList().Count <= 0) {
 				removeTiles.Add(tile);
 			}
 		});
@@ -730,10 +736,12 @@ public class JobManager:MonoBehaviour {
 					}
 
 					if (Input.GetMouseButtonUp(0)) {
-						if (selectedPrefab.jobType != JobTypesEnum.Cancel) {
-							CreateJobsInSelectionArea(selectedPrefab,selectionArea);
-						} else {
+						if (selectedPrefab.jobType == JobTypesEnum.Cancel) {
 							CancelJobsInSelectionArea(selectionArea);
+						} else if (selectedPrefab.jobType == JobTypesEnum.Prioritize) {
+							PrioritizeJobsInSelectionArea(selectionArea);
+						} else {
+							CreateJobsInSelectionArea(selectedPrefab, selectionArea);
 						}
 						firstTile = null;
 					}
@@ -850,6 +858,27 @@ public class JobManager:MonoBehaviour {
 		}
 
 		UpdateColonistJobs();
+	}
+
+	public void PrioritizeJobsInSelectionArea(List<TileManager.Tile> selectionArea) {
+		foreach (Job job in jobs) {
+			if (selectionArea.Contains(job.tile)) {
+				job.IncreasePriority();
+			}
+		}
+		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+			if (colonist.job != null) {
+				if (selectionArea.Contains(colonist.job.tile)) {
+					colonist.job.IncreasePriority();
+				}
+			}
+			if (colonist.storedJob != null) {
+				if (selectionArea.Contains(colonist.storedJob.tile)) {
+					colonist.job.IncreasePriority();
+				}
+			}
+		}
+		uiM.SetJobElements();
 	}
 
 	Dictionary<int,ResourceManager.TileObjectPrefabsEnum> RemoveLayerMap = new Dictionary<int,ResourceManager.TileObjectPrefabsEnum>() {
@@ -1084,7 +1113,7 @@ public class JobManager:MonoBehaviour {
 			}
 		}
 		if (validJobs.Count > 0) {
-			validJobs = validJobs.OrderBy(job => job.cost).ToList();
+			validJobs = validJobs.OrderByDescending(job => job.job.priority).ThenBy(job => job.cost).ToList();
 			if (colonistJobs.ContainsKey(colonist)) {
 				colonistJobs[colonist] = validJobs;
 			} else {

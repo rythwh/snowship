@@ -40,7 +40,9 @@ Natural:
 	Snow/
 		1`
 	Sand/
-		2
+		2`
+	Cactus/
+		3
 ~
 Materials:
 	Brick/
@@ -74,17 +76,17 @@ Materials:
 		4
 ~
 Seeds:
-	WheatSeeds/
+	WheatSeed/
 		10`
-	CottonSeeds/
+	CottonSeed/
 		5`
-	TreeSeeds/
+	TreeSeed/
 		5`
-	AppleSeeds/
+	AppleSeed/
 		10`
-	ShrubSeeds/
+	ShrubSeed/
 		5`
-	CactusSeeds/
+	CactusSeed/
 		10
 ~
 RawFoods:
