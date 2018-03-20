@@ -150,7 +150,7 @@ public class TileManager : MonoBehaviour {
 	public void InitializeResourceVeinValidTileFunctions() {
 		resourceVeinValidTileFunctions.Add(TileTypes.Clay, delegate (Tile tile) {
 			if (((WaterEquivalentTileTypes.Contains(tile.tileType.type) && tile.horizontalSurroundingTiles.Find(t => t != null && !WaterEquivalentTileTypes.Contains(t.tileType.type)) != null) || (!WaterEquivalentTileTypes.Contains(tile.tileType.type))) && (!StoneEquivalentTileTypes.Contains(tile.tileType.type))) {
-				if (tile.temperature >= -30 && tile.GetPrecipitation() > 0.2) {
+				if (tile.temperature >= -30) {
 					return true;
 				}
 			}

@@ -384,7 +384,7 @@ public class ResourceManager : MonoBehaviour {
 		RemoveLayer1, RemoveLayer2, RemoveAll,
 		ChopPlant, PlantPlant, PlantAppleTree, PlantBerryBush, Mine, Dig,
 		WheatFarm, PotatoFarm, CottonFarm, HarvestFarm,
-		CreateResource, PickupResources, EmptyInventory, Cancel, Prioritize, CollectFood, Eat, Sleep,
+		CreateResource, PickupResources, EmptyInventory, Cancel, IncreasePriority, DecreasePriority, CollectFood, Eat, Sleep,
 		PlantTree, PlantShrub, PlantCactus
 	};
 

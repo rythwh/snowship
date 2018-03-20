@@ -209,6 +209,7 @@
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.5,0.5
 			<MaxIntegrity>100
+			<MultiTilePositions>1,0
 		<Object>
 			<Type>SplittingBlock
 			<TimeToBuild>10
@@ -376,9 +377,15 @@
 			<Layer>0
 			<AddToTileWhenBuilt>false
 		<Object>
-			<Type>Prioritize
+			<Type>IncreasePriority
 			<TimeToBuild>0
-			<JobType>Prioritize
+			<JobType>IncreasePriority
+			<Layer>0
+			<AddToTileWhenBuilt>false
+		<Object>
+			<Type>DecreasePriority
+			<TimeToBuild>0
+			<JobType>DecreasePriority
 			<Layer>0
 			<AddToTileWhenBuilt>false
 		<Object>

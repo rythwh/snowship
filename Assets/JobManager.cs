@@ -37,6 +37,7 @@ public class JobManager:MonoBehaviour {
 		private ColonistManager colonistM;
 		private ResourceManager resourceM;
 		private TileManager tileM;
+		private UIManager uiM;
 
 		private void GetScriptReferences() {
 			GameObject GM = GameObject.Find("GM");
@@ -44,6 +45,7 @@ public class JobManager:MonoBehaviour {
 			colonistM = GM.GetComponent<ColonistManager>();
 			resourceM = GM.GetComponent<ResourceManager>();
 			tileM = GM.GetComponent<TileManager>();
+			uiM = GM.GetComponent<UIManager>();
 		}
 
 		public TileManager.Tile tile;
@@ -53,6 +55,7 @@ public class JobManager:MonoBehaviour {
 		public int rotationIndex;
 
 		public GameObject jobPreview;
+		public GameObject priorityIndicator;
 
 		public bool started;
 		public float jobProgress;
@@ -137,8 +140,21 @@ public class JobManager:MonoBehaviour {
 			}
 		}
 
-		public void IncreasePriority() {
-			priority += 1;
+		public void ChangePriority(int amount) {
+			priority += amount;
+			if (priorityIndicator == null && jobPreview != null) {
+				priorityIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), jobPreview.transform, false);
+				priorityIndicator.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/priorityIndicator");
+				priorityIndicator.GetComponent<SpriteRenderer>().sortingOrder = jobPreview.GetComponent<SpriteRenderer>().sortingOrder + 1; // Priority Indicator Sprite
+				if (priority == 1) {
+					priorityIndicator.GetComponent<SpriteRenderer>().color = uiM.GetColour(UIManager.Colours.LightYellow);
+				} else if (priority == -1) {
+					priorityIndicator.GetComponent<SpriteRenderer>().color = uiM.GetColour(UIManager.Colours.LightRed);
+				}
+			}
+			if (priority == 0) {
+				Destroy(priorityIndicator);
+			}
 		}
 
 		public void Remove() {
@@ -149,7 +165,7 @@ public class JobManager:MonoBehaviour {
 	public enum JobTypesEnum {
 		Build, Remove,
 		ChopPlant, PlantPlant, Mine, Dig, PlantFarm, HarvestFarm,
-		CreateResource, PickupResources, EmptyInventory, Cancel, Prioritize, CollectFood, Eat, Sleep
+		CreateResource, PickupResources, EmptyInventory, Cancel, IncreasePriority, DecreasePriority, CollectFood, Eat, Sleep
 	};
 
 	public Dictionary<JobTypesEnum,System.Func<Job,string>> jobDescriptionFunctions = new Dictionary<JobTypesEnum,System.Func<Job,string>>();
@@ -729,8 +745,6 @@ public class JobManager:MonoBehaviour {
 						selectionIndicator.name = "Selection Indicator";
 						SpriteRenderer sISR = selectionIndicator.GetComponent<SpriteRenderer>();
 						sISR.sprite = Resources.Load<Sprite>(@"UI/selectionIndicator");
-						//sISR.color = new Color(241f,196f,15f,255f) / 255f; // Yellow
-						//sISR.color = new Color(231f,76f,60f,255f) / 255f; // Red
 						sISR.sortingOrder = 20; // Selection Indicator Sprite
 						selectionIndicators.Add(selectionIndicator);
 					}
@@ -738,8 +752,10 @@ public class JobManager:MonoBehaviour {
 					if (Input.GetMouseButtonUp(0)) {
 						if (selectedPrefab.jobType == JobTypesEnum.Cancel) {
 							CancelJobsInSelectionArea(selectionArea);
-						} else if (selectedPrefab.jobType == JobTypesEnum.Prioritize) {
-							PrioritizeJobsInSelectionArea(selectionArea);
+						} else if (selectedPrefab.jobType == JobTypesEnum.IncreasePriority) {
+							ChangeJobPriorityInSelectionArea(selectionArea, 1);
+						} else if (selectedPrefab.jobType == JobTypesEnum.DecreasePriority) {
+							ChangeJobPriorityInSelectionArea(selectionArea, -1);
 						} else {
 							CreateJobsInSelectionArea(selectedPrefab, selectionArea);
 						}
@@ -765,7 +781,6 @@ public class JobManager:MonoBehaviour {
 			}
 		}
 		foreach (Job job in removeJobs) {
-			//print(job.prefab.jobType + " " + job.tile.obj.transform.position);
 			if (job.prefab.jobType == JobTypesEnum.CreateResource) {
 				job.activeTileObject.mto.jobBacklog.Remove(job);
 			}
@@ -817,67 +832,31 @@ public class JobManager:MonoBehaviour {
 				colonist.path.Clear();
 				colonist.MoveToClosestWalkableTile(false);
 			}
-
-			/*
-			if (colonist.storedJob == null) {
-				if (colonist.job != null && selectionArea.Contains(colonist.job.tile)) {
-					if (colonist.job.prefab.jobType == JobTypesEnum.CreateResource) {
-						colonist.job.activeTileObject.mto.jobBacklog.Remove(colonist.job);
-					}
-					colonist.job.jobUIElement.Remove(uiM);
-					colonist.job.Remove();
-					colonist.job = null;
-					colonist.path.Clear();
-					colonist.MoveToClosestWalkableTile(false);
-				}
-			} else {
-				if ((selectionArea.Contains(colonist.storedJob.tile)) || (!selectionArea.Contains(colonist.storedJob.tile) && colonist.job != null && selectionArea.Contains(colonist.job.tile))) {
-					//print(colonist.storedJob.prefab.jobType + " " + colonist.storedJob.tile.obj.transform.position);
-					if (colonist.storedJob.prefab.jobType == JobTypesEnum.CreateResource) {
-						colonist.storedJob.activeTileObject.mto.jobBacklog.Remove(colonist.storedJob);
-					}
-					if (colonist.storedJob.jobUIElement != null) {
-						colonist.storedJob.jobUIElement.Remove(uiM);
-					} else {
-						Debug.LogWarning("storedJob on Colonist " + colonist.name + " jobUIElement is null for job " + colonist.storedJob.prefab.type);
-					}
-					colonist.storedJob.Remove();
-					colonist.storedJob = null;
-					//print(colonist.job.prefab.jobType + " " + colonist.job.tile.obj.transform.position);
-					if (colonist.job.prefab.jobType == JobTypesEnum.CreateResource) {
-						colonist.job.activeTileObject.mto.jobBacklog.Remove(colonist.job);
-					}
-					colonist.job.jobUIElement.Remove(uiM);
-					colonist.job.Remove();
-					colonist.job = null;
-					colonist.path.Clear();
-					colonist.MoveToClosestWalkableTile(false);
-				}
-			}
-			*/
 		}
 
 		UpdateColonistJobs();
 	}
 
-	public void PrioritizeJobsInSelectionArea(List<TileManager.Tile> selectionArea) {
+	public void ChangeJobPriorityInSelectionArea(List<TileManager.Tile> selectionArea, int amount) {
 		foreach (Job job in jobs) {
 			if (selectionArea.Contains(job.tile)) {
-				job.IncreasePriority();
+				job.ChangePriority(amount);
 			}
 		}
 		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
 			if (colonist.job != null) {
 				if (selectionArea.Contains(colonist.job.tile)) {
-					colonist.job.IncreasePriority();
+					colonist.job.ChangePriority(amount);
 				}
 			}
 			if (colonist.storedJob != null) {
 				if (selectionArea.Contains(colonist.storedJob.tile)) {
-					colonist.job.IncreasePriority();
+					colonist.job.ChangePriority(amount);
 				}
 			}
 		}
+		UpdateColonistJobs();
+		UpdateAllColonistJobCosts();
 		uiM.SetJobElements();
 	}
 

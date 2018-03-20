@@ -148,7 +148,8 @@ public class UIManager : MonoBehaviour {
 
 	private GameObject cancelButton;
 
-	private GameObject prioritizeButton;
+	private GameObject priorityIncreaseButton;
+	private GameObject priorityDecreaseButton;
 
 	private GameObject selectedMTOIndicator;
 	private GameObject mtoNoFuelPanelObj;
@@ -319,8 +320,11 @@ public class UIManager : MonoBehaviour {
 		cancelButton = gameUI.transform.Find("Cancel-Button").gameObject;
 		cancelButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Cancel)); });
 
-		prioritizeButton = gameUI.transform.Find("Prioritize-Button").gameObject;
-		prioritizeButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Prioritize)); });
+		priorityIncreaseButton = gameUI.transform.Find("PriorityIncrease-Button").gameObject;
+		priorityIncreaseButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.IncreasePriority)); });
+
+		priorityDecreaseButton = gameUI.transform.Find("PriorityDecrease-Button").gameObject;
+		priorityDecreaseButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.DecreasePriority)); });
 
 		mtoNoFuelPanelObj = gameUI.transform.Find("SelectedManufacturingTileObjectNoFuel-Panel").gameObject;
 		mtoFuelPanelObj = gameUI.transform.Find("SelectedManufacturingTileObjectFuel-Panel").gameObject;
@@ -738,8 +742,10 @@ public class UIManager : MonoBehaviour {
 		}
 		int mapSeed = 0;
 		if (!int.TryParse(seedString, out mapSeed)) {
-			foreach (char c in seedString) {
-				mapSeed += c;
+			int seedCharacterIndex = 1;
+			foreach (char seedCharacter in seedString) {
+				mapSeed += seedCharacter * seedCharacterIndex;
+				seedCharacterIndex += 1;
 			}
 		}
 		return mapSeed;
