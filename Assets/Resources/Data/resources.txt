@@ -2,35 +2,45 @@
 	Natural
 	<Resource>
 		<Type>Dirt
-		<Price>1
+		<Weight>1
+		<Price>1:B
 	<Resource>
 		<Type>Stone
-		<Price>2
+		<Weight>1
+		<Price>2:B
 	<Resource>
 		<Type>Granite
-		<Price>5
+		<Weight>1
+		<Price>1:S
 	<Resource>
 		<Type>Limestone
-		<Price>3
+		<Weight>1
+		<Price>2:B
 	<Resource>
 		<Type>Marble
-		<Price>10
+		<Weight>1
+		<Price>1:G
 	<Resource>
 		<Type>Sandstone
-		<Price>3
+		<Weight>1
+		<Price>2:B
 	<Resource>
 		<Type>Slate
-		<Price>5
+		<Weight>1
+		<Price>5:B
 	<Resource>
 		<Type>Clay
-		<Price>5
+		<Weight>1
+		<Price>10:B
 	<Resource>
 		<Type>Log
-		<Price>2
+		<Weight>1
+		<Price>2:B
 		<FuelEnergy>10
 	<Resource>
 		<Type>Wood
-		<Price>3
+		<Weight>0.25
+		<Price>10:B
 		<FuelEnergy>15
 		<RequiredMTOSubGroups>Processing
 		<RequiredMTOs>SplittingBlock
@@ -38,7 +48,8 @@
 		<RequiredResources>Log:0.25
 	<Resource>
 		<Type>Firewood
-		<Price>4
+		<Weight>0.125
+		<Price>25:B
 		<FuelEnergy>25
 		<RequiredMTOSubGroups>Processing
 		<RequiredMTOs>SplittingBlock
@@ -46,39 +57,85 @@
 		<RequiredResources>Wood:0.5
 	<Resource>
 		<Type>Snow
-		<Price>1
+		<Weight>1
+		<Price>1:B
 	<Resource>
 		<Type>Sand
-		<Price>2
+		<Weight>1
+		<Price>2:B
 	<Resource>
 		<Type>Cactus
-		<Price>3
+		<Weight>0.25
+		<Price>4:B
 	<Resource>
 		<Type>Leaf
-		<Price>1
+		<Weight>0.02
+		<Price>1:B
 	<Resource>
 		<Type>Sap
-		<Price>1
+		<Weight>0.01
+		<Price>2:B
+<Group>
+	Ores
+	<Resource>
+		<Type>GoldOre
+		<Weight>10
+		<Price>5:G
+	<Resource>
+		<Type>SilverOre
+		<Weight>10
+		<Price>5:S
+	<Resource>
+		<Type>BronzeOre
+		<Weight>10
+		<Price>5:B
+<Group>
+	Metals
+	<Resource>
+		<Type>Gold
+		<Weight>1
+		<Price>10:G
+		<RequiredMTOSubGroups>Furnaces
+		<RequiredEnergy>50
+		<RequiredResources>GoldOre:1
+	<Resource>
+		<Type>Silver
+		<Weight>1
+		<Price>10:S
+		<RequiredMTOSubGroups>Furnaces
+		<RequiredEnergy>50
+		<RequiredResources>SilverOre:1
+	<Resource>
+		<Type>Bronze
+		<Weight>1
+		<Price>10:B
+		<RequiredMTOSubGroups>Furnaces
+		<RequiredEnergy>50
+		<RequiredResources>BronzeOre:1
 <Group>
 	Materials
 	<Resource>
 		<Type>Brick
-		<Price>10
+		<Weight>0.5
+		<Price>50:B
 		<RequiredMTOSubGroups>Furnaces
 		<RequiredEnergy>30
 		<RequiredResources>Clay:2
 	<Resource>
 		<Type>Glass
-		<Price>10
+		<Weight>0.5
+		<Price>5:S
 		<RequiredMTOSubGroups>Furnaces
 		<RequiredEnergy>30
 		<RequiredResources>Sand:2
 	<Resource>
 		<Type>Cotton
-		<Price>10
+		<Weight>0.05
+		<Price>25:B
 	<Resource>
 		<Type>Cloth
-		<Price>15
+		<Weight>0.2
+		<Price>2:S
 		<RequiredMTOSubGroups>Processing
 		<RequiredMTOs>CottonGin
 		<RequiredEnergy>0
@@ -87,52 +144,87 @@
 	Seeds
 	<Resource>
 		<Type>WheatSeed
-		<Price>10
+		<Weight>0.01
+		<Price>5:B
 	<Resource>
 		<Type>CottonSeed
-		<Price>5
+		<Weight>0.01
+		<Price>5:B
 	<Resource>
 		<Type>TreeSeed
-		<Price>5
+		<Weight>0.01
+		<Price>5:B
 	<Resource>
 		<Type>AppleSeed
-		<Price>10
+		<Weight>0.01
+		<Price>2:B
 	<Resource>
 		<Type>ShrubSeed
-		<Price>5
+		<Weight>0.01
+		<Price>1:B
 	<Resource>
 		<Type>CactusSeed
-		<Price>10
+		<Weight>0.01
+		<Price>1:B
 <Group>
 	RawFoods
 	<Resource>
 		<Type>Wheat
-		<Price>15
+		<Weight>0.25
+		<Price>2:S
 <Group>
 	Foods
 	<Resource>
 		<Type>Potato
-		<Price>10
+		<Weight>0.1
+		<Price>20:B
 		<Nutrition>10
 	<Resource>
 		<Type>BakedPotato
-		<Price>15
+		<Weight>0.1
+		<Price>50:B
 		<Nutrition>25
 		<RequiredMTOSubGroups>Furnaces
 		<RequiredEnergy>50
 		<RequiredResources>Potato:1
 	<Resource>
 		<Type>Berries
-		<Price>3
+		<Weight>0.01
+		<Price>5:B
 		<Nutrition>1
 	<Resource>
 		<Type>Apple
-		<Price>5
+		<Weight>0.1
+		<Price>30:B
 		<Nutrition>10
 	<Resource>
 		<Type>BakedApple
-		<Price>10
+		<Weight>0.1
+		<Price>45:B
 		<Nutrition>15
 		<RequiredMTOSubGroups>Furnaces
 		<RequiredEnergy>20
 		<RequiredResources>Apple:1
+<Group>
+	Coins
+	<Resource>
+		<Type>GoldCoin
+		<Weight>0.1
+		<Price>1:G
+		<RequiredMTOs>Anvil
+		<RequiredEnergy>0
+		<RequiredResources>Gold:1
+	<Resource>
+		<Type>SilverCoin
+		<Weight>0.1
+		<Price>1:S
+		<RequiredMTOs>Anvil
+		<RequiredEnergy>0
+		<RequiredResources>Silver:1
+	<Resource>
+		<Type>BronzeCoin
+		<Weight>0.1
+		<Price>1:B
+		<RequiredMTOs>Anvil
+		<RequiredEnergy>0
+		<RequiredResources>Bronze:1
