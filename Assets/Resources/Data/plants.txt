@@ -10,14 +10,14 @@
 	<SimpleName>Shrub
 	<Seed>ShrubSeed
 	<PlantPlantObjectPrefab>PlantShrub
-	<ReturnResources>Log:2,ShrubSeed:2
+	<ReturnResources>Log:2,ShrubSeed:2,Leaf:2,Sap:2
 	<MaxIntegrity>50
 <PlantGroup>
 	<Type>ColourfulTree
 	<SimpleName>Tree
 	<Seed>TreeSeed
 	<PlantPlantObjectPrefab>PlantTree
-	<ReturnResources>Log:5,TreeSeed:3
+	<ReturnResources>Log:5,TreeSeed:3,Leaf:4,Sap:4
 	<MaxIntegrity>100
 <PlantGroup>
 	<Type>DeadTree
@@ -31,26 +31,26 @@
 	<SimpleName>Shrub
 	<Seed>ShrubSeed
 	<PlantPlantObjectPrefab>PlantShrub
-	<ReturnResources>Log:2,ShrubSeed:2
+	<ReturnResources>Log:2,ShrubSeed:2,Leaf:2,Sap:2
 	<MaxIntegrity>50
 <PlantGroup>
 	<Type>SnowTree
 	<SimpleName>Tree
 	<Seed>TreeSeed
 	<PlantPlantObjectPrefab>PlantTree
-	<ReturnResources>Log:5,TreeSeed:3
+	<ReturnResources>Log:5,TreeSeed:3,Leaf:4,Sap:4
 	<MaxIntegrity>100
 <PlantGroup>
 	<Type>ThinTree
 	<SimpleName>Tree
 	<Seed>TreeSeed
 	<PlantPlantObjectPrefab>PlantTree
-	<ReturnResources>Log:5,TreeSeed:3
+	<ReturnResources>Log:5,TreeSeed:3,Leaf:3,Sap:4
 	<MaxIntegrity>100
 <PlantGroup>
 	<Type>WideTree
 	<SimpleName>Tree
 	<Seed>TreeSeed
 	<PlantPlantObjectPrefab>PlantTree
-	<ReturnResources>Log:5,TreeSeed:4
+	<ReturnResources>Log:5,TreeSeed:4,Leaf:4,Sap:4
 	<MaxIntegrity>125

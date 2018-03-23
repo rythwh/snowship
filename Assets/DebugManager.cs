@@ -13,8 +13,6 @@ public class DebugManager : MonoBehaviour {
 	private TileManager tileM;
 	private CameraManager cameraM;
 	private TimeManager timeM;
-	private JobManager jobM;
-	private PathManager pathM;
 
 	private void GetScriptReferences() {
 		colonistM = GetComponent<ColonistManager>();
@@ -23,8 +21,6 @@ public class DebugManager : MonoBehaviour {
 		tileM = GetComponent<TileManager>();
 		cameraM = GetComponent<CameraManager>();
 		timeM = GetComponent<TimeManager>();
-		jobM = GetComponent<JobManager>();
-		pathM = GetComponent<PathManager>();
 	}
 
 	private GameObject debugPanel;

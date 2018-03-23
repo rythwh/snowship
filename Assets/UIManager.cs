@@ -146,10 +146,12 @@ public class UIManager : MonoBehaviour {
 	private GameObject resourcesMenuButton;
 	private GameObject resourcesList;
 
+	/*
 	private GameObject cancelButton;
 
 	private GameObject priorityIncreaseButton;
 	private GameObject priorityDecreaseButton;
+	*/
 
 	private GameObject selectedMTOIndicator;
 	private GameObject mtoNoFuelPanelObj;
@@ -317,6 +319,7 @@ public class UIManager : MonoBehaviour {
 		resourcesMenuButton.GetComponent<Button>().onClick.AddListener(delegate { SetResourcesList(); });
 		resourcesList.SetActive(false);
 
+		/*
 		cancelButton = gameUI.transform.Find("Cancel-Button").gameObject;
 		cancelButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Cancel)); });
 
@@ -325,6 +328,7 @@ public class UIManager : MonoBehaviour {
 
 		priorityDecreaseButton = gameUI.transform.Find("PriorityDecrease-Button").gameObject;
 		priorityDecreaseButton.GetComponent<Button>().onClick.AddListener(delegate { jobM.SetSelectedPrefab(resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.DecreasePriority)); });
+		*/
 
 		mtoNoFuelPanelObj = gameUI.transform.Find("SelectedManufacturingTileObjectNoFuel-Panel").gameObject;
 		mtoFuelPanelObj = gameUI.transform.Find("SelectedManufacturingTileObjectFuel-Panel").gameObject;
@@ -665,13 +669,10 @@ public class UIManager : MonoBehaviour {
 		planetTiles.Clear();
 
 		int planetSeed = SeedParser(planetSeedInputField.text, planetSeedInputField);
-		print("Planet Seed: " + planetSeed);
 
 		int planetSize = Mathf.FloorToInt(Mathf.FloorToInt(planetPreviewPanel.GetComponent<RectTransform>().sizeDelta.x) / planetTileSize);
-		print("Planet Size: " + planetSize);
 
 		int planetTemperature = CalculatePlanetTemperature(planetDistance);
-		print("Planet Temperature: " + planetTemperature);
 
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().cellSize = new Vector2(planetTileSize, planetTileSize);
 		planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
@@ -832,7 +833,6 @@ public class UIManager : MonoBehaviour {
 		if (string.IsNullOrEmpty(colonyName) || new Regex(@"\W+", RegexOptions.IgnorePatternWhitespace).Replace(colonyName, string.Empty).Length <= 0) {
 			colonyName = "Colony";
 		}
-		print(colonyName);
 
 		string mapSeedString = mapSeedInputField.text;
 		int mapSeed = SeedParser(mapSeedString, mapSeedInputField);
@@ -1362,19 +1362,14 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public class HappinessModifierElement {
-		private UIManager uiM;
 
 		public ColonistManager.HappinessModifierInstance happinessModifierInstance;
 		public GameObject obj;
 
 		public HappinessModifierElement(ColonistManager.HappinessModifierInstance happinessModifierInstance, Transform parent, UIManager uiM) {
-			this.uiM = uiM;
-
 			this.happinessModifierInstance = happinessModifierInstance;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/HappinessModifierElement-Panel"), parent, false);
-
-
 
 			obj.transform.Find("HappinessModifierName-Text").GetComponent<Text>().text = happinessModifierInstance.prefab.name;
 			if (happinessModifierInstance.prefab.effectAmount > 0) {
@@ -2012,7 +2007,6 @@ public class UIManager : MonoBehaviour {
 			Destroy(obj);
 		}
 		professionElement.editColonistsInProfessionElements.Clear();
-		ColonistManager.Profession nothingProfession = colonistM.professions.Find(findProfession => findProfession.type == ColonistManager.ProfessionTypeEnum.Nothing);
 		if (remove) { // User clicked red minus button
 			List<ColonistManager.Colonist> validColonists = colonistM.colonists.Where(c => c.profession == professionElement.profession).ToList();
 			validColonists = validColonists.OrderBy(c => CalculateProfessionSkillLevel(c.profession, c, false, 0)).ToList();
@@ -2497,7 +2491,7 @@ public class UIManager : MonoBehaviour {
 			foreach (ResourceManager.ResourcesEnum resourceEnum in resourceM.GetManufacturableResources()) {
 				ResourceManager.Resource resource = resourceM.GetResourceByEnum(resourceEnum);
 
-				if (resource.manufacturingTileObjects.Contains(selectedMTO.parentObject.prefab) || (resource.manufacturingTileObjects.Count <= 0 && resource.manufacturingTileObjectSubGroups.Contains(selectedMTO.parentObject.prefab.tileObjectPrefabSubGroup))) {
+				if (resource.requiredMTOs.Contains(selectedMTO.parentObject.prefab) || (resource.requiredMTOs.Count <= 0 && resource.requiredMTOSubGroups.Contains(selectedMTO.parentObject.prefab.tileObjectPrefabSubGroup))) {
 					GameObject selectResourceButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/SelectManufacturedResource-Panel"), selectResourceList.transform, false);
 					selectResourceButton.transform.Find("ResourceImage-Image").GetComponent<Image>().sprite = resource.image;
 					selectResourceButton.transform.Find("ResourceName-Text").GetComponent<Text>().text = resource.name;
@@ -2573,7 +2567,6 @@ public class UIManager : MonoBehaviour {
 				}
 
 				InputField desiredAmountInput = obj.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>();
-				Text desiredAmountText = desiredAmountInput.transform.Find("Text").GetComponent<Text>();
 				desiredAmountInput.onEndEdit.AddListener(delegate {
 					int newDesiredAmount = 0;
 					if (int.TryParse(desiredAmountInput.text, out newDesiredAmount)) {
