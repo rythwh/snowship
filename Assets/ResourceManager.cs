@@ -36,10 +36,13 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourcesEnum {
 		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Log, Wood, Firewood, Snow, Sand, Cactus, Leaf, Sap,
+		GoldOre, SilverOre, BronzeOre,
+		Gold, Silver, Bronze,
 		Brick, Glass, Cotton, Cloth,
 		WheatSeed, CottonSeed, TreeSeed, AppleSeed, ShrubSeed, CactusSeed,
 		Wheat,
-		Potato, BakedPotato, Berries, Apple, BakedApple
+		Potato, BakedPotato, Berries, Apple, BakedApple,
+		GoldCoin, SilverCoin, BronzeCoin
 	};
 
 	List<ResourcesEnum> manufacturableResources = new List<ResourcesEnum>() {
