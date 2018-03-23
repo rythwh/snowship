@@ -34,7 +34,6 @@ public class JobManager:MonoBehaviour {
 
 	public class Job {
 
-		private ColonistManager colonistM;
 		private ResourceManager resourceM;
 		private TileManager tileM;
 		private UIManager uiM;
@@ -42,7 +41,6 @@ public class JobManager:MonoBehaviour {
 		private void GetScriptReferences() {
 			GameObject GM = GameObject.Find("GM");
 
-			colonistM = GM.GetComponent<ColonistManager>();
 			resourceM = GM.GetComponent<ResourceManager>();
 			tileM = GM.GetComponent<TileManager>();
 			uiM = GM.GetComponent<UIManager>();
@@ -1007,13 +1005,17 @@ public class JobManager:MonoBehaviour {
 		} else {
 			cost += pathM.RegionBlockDistance(job.tile.regionBlock,colonist.overTile.regionBlock,true,true,true);
 		}
-		if (job.prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type != ResourceManager.TileObjectPrefabGroupsEnum.None) {
-			ColonistManager.Profession jobTypeProfession = colonistM.professions.Find(profession => profession.primarySkill == colonist.GetSkillFromJobType(job.prefab.jobType).prefab);
+		ColonistManager.SkillInstance skill = colonist.GetSkillFromJobType(job.prefab.jobType);
+		if (skill != null) {
+			ColonistManager.Profession jobTypeProfession = colonistM.professions.Find(profession => profession.primarySkill == skill.prefab);
 			if (jobTypeProfession != null && jobTypeProfession == colonist.profession) {
-				cost -= tileM.map.mapData.mapSize + (colonist.GetSkillFromJobType(job.prefab.jobType).level * 5f);
+				cost -= tileM.map.mapData.mapSize + (skill.level * 5f);
 			} else {
-				cost -= colonist.GetSkillFromJobType(job.prefab.jobType).level * 5f;
+				cost -= skill.level * 5f;
 			}
+		}
+		if (colonist.profession.type == ColonistManager.ProfessionTypeEnum.Builder && resourceM.GetContainerTileObjectTypes().Contains(job.prefab.type)) {
+			cost -= tileM.map.mapData.mapSize;
 		}
 		return cost;
 	}

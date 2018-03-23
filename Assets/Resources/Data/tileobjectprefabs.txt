@@ -129,6 +129,20 @@
 			<BlockingAmount>0.8,0.3
 			<MaxIntegrity>100
 			<MaxInventoryAmount>250
+		<Object>
+			<Type>WoodenDrawers
+			<TimeToBuild>30
+			<ResourcesToBuild>Wood:4
+			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+			<JobType>Build
+			<Flammability>1.0
+			<Walkable>true
+			<WalkSpeed>0.5
+			<Layer>2
+			<AddToTileWhenBuilt>true
+			<BlockingAmount>0.8,0.3
+			<MaxIntegrity>100
+			<MaxInventoryAmount>100
 	<SubGroup>
 		Beds
 		<Object>
@@ -145,6 +159,36 @@
 			<BlockingAmount>1.0,0.8
 			<MaxIntegrity>150
 			<RestComfortAmount>10
+	<SubGroup>
+		Chairs
+		<Object>
+			<Type>WoodenChair
+			<TimeToBuild>10
+			<ResourcesToBuild>Wood:2
+			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+			<JobType>Build
+			<Flammability>1.0
+			<Walkable>true
+			<WalkSpeed>0.5
+			<Layer>2
+			<AddToTileWhenBuilt>true
+			<BlockingAmount>0.5,0.5
+			<MaxIntegrity>150
+	<SubGroup>
+		Tables
+		<Object>
+			<Type>WoodenTable
+			<TimeToBuild>10
+			<ResourcesToBuild>Wood:4
+			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+			<JobType>Build
+			<Flammability>1.0
+			<Walkable>true
+			<WalkSpeed>0.2
+			<Layer>2
+			<AddToTileWhenBuilt>true
+			<BlockingAmount>0.5,0.5
+			<MaxIntegrity>150
 	<SubGroup>
 		Lights
 		<Object>
@@ -223,6 +267,19 @@
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.35,0.35
 			<MaxIntegrity>500
+		<Object>
+			<Type>SplittingLog
+			<TimeToBuild>5
+			<ResourcesToBuild>Log:1
+			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+			<JobType>Build
+			<Flammability>1.0
+			<Walkable>true
+			<WalkSpeed>0.5
+			<Layer>2
+			<AddToTileWhenBuilt>true
+			<BlockingAmount>0.35,0.35
+			<MaxIntegrity>200
 <Group>
 	Farm
 	<SubGroup>
@@ -348,6 +405,28 @@
 			<JobType>Remove
 			<Layer>0
 			<AddToTileWhenBuilt>false
+	<SubGroup>
+		Cancel
+		<Object>
+			<Type>Cancel
+			<TimeToBuild>0
+			<JobType>Cancel
+			<Layer>0
+			<AddToTileWhenBuilt>false
+	<SubGroup>
+		Priority
+		<Object>
+			<Type>IncreasePriority
+			<TimeToBuild>0
+			<JobType>IncreasePriority
+			<Layer>0
+			<AddToTileWhenBuilt>false
+		<Object>
+			<Type>DecreasePriority
+			<TimeToBuild>0
+			<JobType>DecreasePriority
+			<Layer>0
+			<AddToTileWhenBuilt>false
 <Group>
 	None
 	<SubGroup>
@@ -368,24 +447,6 @@
 			<Type>EmptyInventory
 			<TimeToBuild>5
 			<JobType>EmptyInventory
-			<Layer>0
-			<AddToTileWhenBuilt>false
-		<Object>
-			<Type>Cancel
-			<TimeToBuild>0
-			<JobType>Cancel
-			<Layer>0
-			<AddToTileWhenBuilt>false
-		<Object>
-			<Type>IncreasePriority
-			<TimeToBuild>0
-			<JobType>IncreasePriority
-			<Layer>0
-			<AddToTileWhenBuilt>false
-		<Object>
-			<Type>DecreasePriority
-			<TimeToBuild>0
-			<JobType>DecreasePriority
 			<Layer>0
 			<AddToTileWhenBuilt>false
 		<Object>

@@ -9,18 +9,12 @@ public class TileManager : MonoBehaviour {
 	private CameraManager cameraM;
 	private ResourceManager resourceM;
 	private ColonistManager colonistM;
-	private DebugManager debugM;
-	private PersistenceManager persistenceM;
-	private TimeManager timeM;
 
 	void Awake() {
 		uiM = GetComponent<UIManager>();
 		cameraM = GetComponent<CameraManager>();
 		resourceM = GetComponent<ResourceManager>();
 		colonistM = GetComponent<ColonistManager>();
-		debugM = GetComponent<DebugManager>();
-		persistenceM = GetComponent<PersistenceManager>();
-		timeM = GetComponent<TimeManager>();
 	}
 
 	void Start() {
@@ -589,11 +583,11 @@ public class TileManager : MonoBehaviour {
 					objectInstances.Add(tileObjectPrefab.layer, new ResourceManager.TileObjectInstance(tileObjectPrefab, this, rotationIndex));
 				}
 			}
-			tileM.resourceM.AddTileObjectInstance(objectInstances[tileObjectPrefab.layer]);
 			if (farm) {
 
 			}
 			PostChangeTileObject();
+			tileM.resourceM.AddTileObjectInstance(objectInstances[tileObjectPrefab.layer]);
 		}
 
 		public void PostChangeTileObject() {
@@ -763,7 +757,6 @@ public class TileManager : MonoBehaviour {
 			}
 			Random.InitState(mapSeed);
 			this.mapSeed = mapSeed;
-			print("Map Seed: " + mapSeed);
 
 			this.mapSize = mapSize;
 			this.actualMap = actualMap;
@@ -790,7 +783,7 @@ public class TileManager : MonoBehaviour {
 	public void PreInitialize() {
 		resourceM.CreateResources();
 		resourceM.CreateTileObjectPrefabs();
-		resourceM.SetManufacturableResourcesData();
+		//resourceM.SetManufacturableResourcesData();
 		resourceM.CreatePlantGroups();
 
 		CreateTileTypes();
@@ -1761,7 +1754,6 @@ public class TileManager : MonoBehaviour {
 			} else {
 				primaryWindDirection = mapData.primaryWindDirection;
 			}
-			print("Wind Direction: " + primaryWindDirection);
 
 			float windStrengthMapSum = 0;
 			for (int i = windDirectionMin; i < (windDirectionMax + 1); i++) {

@@ -700,7 +700,7 @@ public class PersistenceManager : MonoBehaviour {
 							float equatorOffset = float.Parse(lineData[4].Split(',')[1]);
 							float averageTemperature = float.Parse(lineData[5].Split(',')[1]);
 							float averagePrecipitation = float.Parse(lineData[6].Split(',')[1]);
-							float windDirection = float.Parse(lineData[7].Split(',')[1]);
+							int windDirection = int.Parse(lineData[7].Split(',')[1]);
 							Dictionary<TileManager.TileTypes, float> terrainTypeHeights = new Dictionary<TileManager.TileTypes, float>();
 							foreach (string terrainTypeHeightString in lineData[8].Split(',').Skip(1)) {
 								terrainTypeHeights.Add((TileManager.TileTypes)System.Enum.Parse(typeof(TileManager.TileTypes), terrainTypeHeightString.Split(':')[0]), float.Parse(terrainTypeHeightString.Split(':')[1]));
@@ -725,7 +725,7 @@ public class PersistenceManager : MonoBehaviour {
 								terrainTypeHeights,
 								surroundingPlanetTileHeightDirections,
 								false,
-								uiM.planet.primaryWindDirection,
+								windDirection,
 								planetTilePosition
 							);
 							tileM.map = new TileManager.Map(mapData, true);

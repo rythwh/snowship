@@ -507,7 +507,7 @@ public class ColonistManager : MonoBehaviour {
 					need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, job, null, null, jobM, pathM));
 					return true;
 				} else if (closestFood.Key.human != null) {
-					Human human = closestFood.Key.human;
+					//Human human = closestFood.Key.human;
 					//print("Take from other human.");
 				}
 			}
@@ -964,20 +964,24 @@ public class ColonistManager : MonoBehaviour {
 				jobM.UpdateColonistJobCosts(this);
 			}
 
-			if (job == null) {
-				if (path.Count <= 0) {
-					if (jobM.GetColonistJobsCountForColonist(this) <= 0) {
-						EmptyInventory();
-					}
-				} else {
-					wanderTimer = Random.Range(10f,20f);
-				}
-			} else {
+			if (job != null) {
 				if (!job.started && overTile == job.tile) {
 					StartJob();
 				}
 				if (job.started && overTile == job.tile && !Mathf.Approximately(job.jobProgress,0)) {
 					WorkJob();
+				}
+			}
+			if (job == null) {
+				if (path.Count <= 0) {
+					List<ResourceManager.Container> validEmptyInventoryContainers = FindValidContainersToEmptyInventory();
+					if (inventory.CountResources() > 0 && validEmptyInventoryContainers.Count > 0) {
+						EmptyInventory(validEmptyInventoryContainers);
+					} else {
+						Wander();
+					}
+				} else {
+					wanderTimer = Random.Range(10f, 20f);
 				}
 			}
 		}
@@ -997,16 +1001,14 @@ public class ColonistManager : MonoBehaviour {
 			jobM.UpdateAllColonistJobCosts();
 		}
 
-		public void EmptyInventory() {
-			List<ResourceManager.Container> validContainers = resourceM.containers.Where(container => container.parentObject.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
-			if (inventory.CountResources() > 0 && resourceM.containers.Count > 0 && validContainers.Count > 0) {
-				List<ResourceManager.Container> closestContainers = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock, overTile.regionBlock, true, true, false)).ToList();
-				if (closestContainers.Count > 0) {
-					ResourceManager.Container closestContainer = closestContainers[0];
-					SetJob(new JobManager.ColonistJob(this, new JobManager.Job(closestContainer.parentObject.tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory), 0), null, null, jobM, pathM));
-				}
-			} else {
-				Wander();
+		public List<ResourceManager.Container> FindValidContainersToEmptyInventory() {
+			return resourceM.containers.Where(container => container.parentObject.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
+		}
+
+		public void EmptyInventory(List<ResourceManager.Container> validContainers) {
+			if (inventory.CountResources() > 0 && validContainers.Count > 0) {
+				ResourceManager.Container closestContainer = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock, overTile.regionBlock, true, true, false)).ToList()[0];
+				SetJob(new JobManager.ColonistJob(this, new JobManager.Job(closestContainer.parentObject.tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory), 0), null, null, jobM, pathM));
 			}
 		}
 
@@ -1201,8 +1203,9 @@ public class ColonistManager : MonoBehaviour {
 				}
 			}
 
-			if (finishedJob.prefab.tileObjectPrefabSubGroup.tileObjectPrefabGroup.type != ResourceManager.TileObjectPrefabGroupsEnum.None) {
-				GetSkillFromJobType(finishedJob.prefab.jobType).AddExperience(finishedJob.prefab.timeToBuild);
+			SkillInstance skill = GetSkillFromJobType(finishedJob.prefab.jobType);
+			if (skill != null) {
+				skill.AddExperience(finishedJob.prefab.timeToBuild);
 			}
 
 			MoveToClosestWalkableTile(true);
@@ -1214,9 +1217,6 @@ public class ColonistManager : MonoBehaviour {
 			uiM.UpdateSelectedColonistInformation();
 			uiM.UpdateSelectedContainerInfo();
 
-			if (inventory.CountResources() >= inventory.maxAmount) {
-				EmptyInventory();
-			}
 			if (storedJob != null) {
 				Update();
 			}
