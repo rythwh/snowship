@@ -454,7 +454,7 @@ public class ColonistManager : MonoBehaviour {
 				needIncreaseAmount *= need.prefab.traitsAffectingThisNeed[trait.prefab.type];
 			}
 		}
-		need.value += (needIncreaseAmount + (needsValueSpecialIncreases.ContainsKey(need.prefab.type) ? needsValueSpecialIncreases[need.prefab.type](need) : 0)) * timeM.deltaTime * (debugM.debugMode ? 25f : 1f);
+		need.value += (needIncreaseAmount + (needsValueSpecialIncreases.ContainsKey(need.prefab.type) ? needsValueSpecialIncreases[need.prefab.type](need) : 0)) * timeM.deltaTime;
 		need.value = Mathf.Clamp(need.value,0,need.prefab.clampValue);
 	}
 

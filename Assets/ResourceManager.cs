@@ -28,16 +28,19 @@ public class ResourceManager : MonoBehaviour {
 
 	public enum ResourceGroupsEnum {
 		Natural,
+		Ores,
+		Metals,
 		Materials,
 		Seeds,
 		RawFoods,
-		Foods
+		Foods,
+		Coins
 	};
 
 	public enum ResourcesEnum {
 		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Log, Wood, Firewood, Snow, Sand, Cactus, Leaf, Sap,
-		GoldOre, SilverOre, BronzeOre,
-		Gold, Silver, Bronze,
+		GoldOre, SilverOre, BronzeOre, IronOre,
+		Gold, Silver, Bronze, Iron,
 		Brick, Glass, Cotton, Cloth,
 		WheatSeed, CottonSeed, TreeSeed, AppleSeed, ShrubSeed, CactusSeed,
 		Wheat,
@@ -46,7 +49,8 @@ public class ResourceManager : MonoBehaviour {
 	};
 
 	List<ResourcesEnum> manufacturableResources = new List<ResourcesEnum>() {
-		ResourcesEnum.Wood, ResourcesEnum.Firewood, ResourcesEnum.Brick, ResourcesEnum.Glass, ResourcesEnum.Cloth, ResourcesEnum.BakedPotato, ResourcesEnum.BakedApple
+		ResourcesEnum.Wood, ResourcesEnum.Firewood, ResourcesEnum.Brick, ResourcesEnum.Glass, ResourcesEnum.Cloth, ResourcesEnum.BakedPotato, ResourcesEnum.BakedApple,
+		ResourcesEnum.Gold, ResourcesEnum.Silver, ResourcesEnum.Bronze, ResourcesEnum.Iron, ResourcesEnum.GoldCoin, ResourcesEnum.SilverCoin, ResourcesEnum.BronzeCoin
 	};
 	public List<ResourcesEnum> GetManufacturableResources() {
 		return manufacturableResources;
@@ -102,7 +106,8 @@ public class ResourceManager : MonoBehaviour {
 			foreach (string resourceGroupResourceString in resourceGroupResourcesData.Skip(1)) {
 
 				ResourcesEnum type = ResourcesEnum.Apple;
-				int price = 0;
+				float weight = 0;
+				Resource.Price price = null;
 				int nutrition = 0;
 				int fuelEnergy = 0;
 				List<TileObjectPrefabSubGroupsEnum> requiredMTOSubGroups = new List<TileObjectPrefabSubGroupsEnum>();
@@ -121,8 +126,32 @@ public class ResourceManager : MonoBehaviour {
 							case "Type":
 								type = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum), value);
 								break;
+							case "Weight":
+								weight = float.Parse(value);
+								break;
 							case "Price":
-								price = int.Parse(value);
+								int gold = 0;
+								int silver = 0;
+								int bronze = 0;
+								foreach (string priceValue in value.Split(',')) {
+									string priceValueAmount = uiM.RemoveNonAlphanumericChars(value.Split(':')[0]);
+									string priceValueDenomination = uiM.RemoveNonAlphanumericChars(value.Split(':')[1]);
+									switch (priceValueDenomination) {
+										case "G":
+											gold = int.Parse(priceValueAmount);
+											break;
+										case "S":
+											silver = int.Parse(priceValueAmount);
+											break;
+										case "B":
+											bronze = int.Parse(priceValueAmount);
+											break;
+										default:
+											print("Unknown resource-price label: \"" + value + "\"");
+											break;
+									}
+									price = new Resource.Price(gold, silver, bronze);
+								}
 								break;
 							case "Nutrition":
 								nutrition = int.Parse(value);
@@ -161,6 +190,7 @@ public class ResourceManager : MonoBehaviour {
 				Resource newResource = new Resource(
 					this,
 					type,
+					weight,
 					price,
 					nutrition,
 					fuelEnergy,
@@ -186,7 +216,9 @@ public class ResourceManager : MonoBehaviour {
 
 		public ResourceGroup resourceGroup;
 
-		public int price;
+		public float weight = 0;
+
+		public Price price;
 
 		public int nutrition = 0;
 
@@ -213,11 +245,13 @@ public class ResourceManager : MonoBehaviour {
 
 		public UIManager.ResourceInstanceElement resourceListElement;
 
-		public Resource(ResourceGroup resourceGroup, ResourcesEnum type, int price, int nutrition, int fuelEnergy, List<TileObjectPrefabSubGroupsEnum> requiredMTOSubGroupsTemp, List<TileObjectPrefabsEnum> requiredMTOsTemp, int requiredEnergy, Dictionary<ResourcesEnum,float> requiredResourcesTemp) {
+		public Resource(ResourceGroup resourceGroup, ResourcesEnum type, float weight, Price price, int nutrition, int fuelEnergy, List<TileObjectPrefabSubGroupsEnum> requiredMTOSubGroupsTemp, List<TileObjectPrefabsEnum> requiredMTOsTemp, int requiredEnergy, Dictionary<ResourcesEnum,float> requiredResourcesTemp) {
 			this.resourceGroup = resourceGroup;
 
 			this.type = type;
 			name = resourceGroup.uiM.SplitByCapitals(type.ToString());
+
+			this.weight = weight;
 
 			this.price = price;
 
@@ -269,6 +303,53 @@ public class ResourceManager : MonoBehaviour {
 				resourceGroup.uiM.selectedMTOPanel.obj.transform.Find("ResourceTargetAmount-Panel/TargetAmount-Input").GetComponent<InputField>().text = desiredAmount.ToString();
 			}
 			resourceListElement.desiredAmountInput.text = desiredAmount.ToString();
+		}
+
+		public class Price {
+			public int gold = 0;
+			public int silver = 0;
+			public int bronze = 0;
+
+			public float relativeGold = 0;
+			public float relativeSilver = 0;
+			public float relativeBronze = 0;
+
+			public enum PriceTypeEnum { Gold, Silver, Bronze };
+			public enum RelativePriceTypeEnum {	RelativeGold, RelativeSilver, RelativeBronze };
+
+			public Price(int gold, int silver, int bronze) {
+				this.gold = gold;
+				this.silver = silver;
+				this.bronze = bronze;
+
+				relativeGold = gold * (silver / 100f) * (bronze / 10000f);
+				relativeSilver = (gold * 100f) + silver + (bronze / 100f);
+				relativeBronze = (gold * 10000f) + (silver * 100f) + bronze;
+			}
+
+			public int GetPrice(PriceTypeEnum priceType) {
+				switch (priceType) {
+					case PriceTypeEnum.Gold:
+						return gold;
+					case PriceTypeEnum.Silver:
+						return silver;
+					case PriceTypeEnum.Bronze:
+						return bronze;
+				}
+				return -1;
+			}
+
+			public float GetRelativePrice(RelativePriceTypeEnum relativePriceType) {
+				switch (relativePriceType) {
+					case RelativePriceTypeEnum.RelativeGold:
+						return relativeGold;
+					case RelativePriceTypeEnum.RelativeSilver:
+						return relativeSilver;
+					case RelativePriceTypeEnum.RelativeBronze:
+						return relativeBronze;
+				}
+				return -1;
+			}
 		}
 	}
 
@@ -408,7 +489,7 @@ public class ResourceManager : MonoBehaviour {
 		WoodenTable,
 		Torch, WoodenLamp,
 		StoneFurnace,
-		CottonGin, SplittingBlock, SplittingLog,
+		CottonGin, SplittingBlock, SplittingLog, Anvil,
 		ChopPlant, PlantPlant, PlantAppleTree, PlantBerryBush,
 		Mine, Dig,
 		RemoveLayer1, RemoveLayer2, RemoveAll,
@@ -439,7 +520,7 @@ public class ResourceManager : MonoBehaviour {
 
 	Dictionary<TileObjectPrefabSubGroupsEnum,List<TileObjectPrefabsEnum>> ManufacturingTileObjects = new Dictionary<TileObjectPrefabSubGroupsEnum,List<TileObjectPrefabsEnum>>() {
 		{TileObjectPrefabSubGroupsEnum.Furnaces,new List<TileObjectPrefabsEnum>() { TileObjectPrefabsEnum.StoneFurnace } },
-		{TileObjectPrefabSubGroupsEnum.Processing,new List<TileObjectPrefabsEnum>() { TileObjectPrefabsEnum.CottonGin, TileObjectPrefabsEnum.SplittingBlock, TileObjectPrefabsEnum.SplittingLog } }
+		{TileObjectPrefabSubGroupsEnum.Processing,new List<TileObjectPrefabsEnum>() { TileObjectPrefabsEnum.CottonGin, TileObjectPrefabsEnum.SplittingBlock, TileObjectPrefabsEnum.SplittingLog, TileObjectPrefabsEnum.Anvil} }
 	};
 	public Dictionary<TileObjectPrefabSubGroupsEnum, List<TileObjectPrefabsEnum>> GetManufacturingTileObjects() {
 		return ManufacturingTileObjects;
@@ -451,7 +532,7 @@ public class ResourceManager : MonoBehaviour {
 		return ManufacturingTileObjectsFuel;
 	}
 	List<TileObjectPrefabsEnum> ManufacturingTileObjectsNoFuel = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.CottonGin, TileObjectPrefabsEnum.SplittingBlock, TileObjectPrefabsEnum.SplittingLog
+		TileObjectPrefabsEnum.CottonGin, TileObjectPrefabsEnum.SplittingBlock, TileObjectPrefabsEnum.SplittingLog, TileObjectPrefabsEnum.Anvil
 	};
 	public List<TileObjectPrefabsEnum> GetManufacturingTileObjectsNoFuel() {
 		return ManufacturingTileObjectsNoFuel;
