@@ -89,6 +89,10 @@
 		<Type>BronzeOre
 		<Weight>10
 		<Price>5:B
+	<Resource>
+		<Type>IronOre
+		<Weight>10
+		<Price>1:S
 <Group>
 	Metals
 	<Resource>
@@ -112,6 +116,13 @@
 		<RequiredMTOSubGroups>Furnaces
 		<RequiredEnergy>50
 		<RequiredResources>BronzeOre:1
+	<Resource>
+		<Type>Iron
+		<Weight>1
+		<Price>2:S
+		<RequiredMTOSubGroups>Furnaces
+		<RequiredEnergy>50
+		<RequiredResources>IronOre:1
 <Group>
 	Materials
 	<Resource>
@@ -211,20 +222,23 @@
 		<Type>GoldCoin
 		<Weight>0.1
 		<Price>1:G
+		<RequiredMTOSubGroups>Processing
 		<RequiredMTOs>Anvil
 		<RequiredEnergy>0
-		<RequiredResources>Gold:1
+		<RequiredResources>Gold:0.1
 	<Resource>
 		<Type>SilverCoin
 		<Weight>0.1
 		<Price>1:S
+		<RequiredMTOSubGroups>Processing
 		<RequiredMTOs>Anvil
 		<RequiredEnergy>0
-		<RequiredResources>Silver:1
+		<RequiredResources>Silver:0.1
 	<Resource>
 		<Type>BronzeCoin
 		<Weight>0.1
 		<Price>1:B
+		<RequiredMTOSubGroups>Processing
 		<RequiredMTOs>Anvil
 		<RequiredEnergy>0
-		<RequiredResources>Bronze:1
+		<RequiredResources>Bronze:0.1

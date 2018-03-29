@@ -280,6 +280,19 @@
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.35,0.35
 			<MaxIntegrity>200
+		<Object>
+			<Type>Anvil
+			<TimeToBuild>15
+			<ResourcesToBuild>Iron:2
+			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+			<JobType>Build
+			<Flammability>0.0
+			<Walkable>true
+			<WalkSpeed>0.5
+			<Layer>2
+			<AddToTileWhenBuilt>true
+			<BlockingAmount>0.6,0.35
+			<MaxIntegrity>1000
 <Group>
 	Farm
 	<SubGroup>
