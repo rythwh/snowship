@@ -243,7 +243,7 @@
 		<Object>
 			<Type>CottonGin
 			<TimeToBuild>30
-			<ResourcesToBuild>Wood:6,Stone:2
+			<ResourcesToBuild>Wood:6,Iron:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
 			<Flammability>0.7
@@ -359,7 +359,7 @@
 		<Object>
 			<Type>PlantPlant
 			<TimeToBuild>10
-			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes
+			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
 			<Layer>0
 			<AddToTileWhenBuilt>false
@@ -367,15 +367,15 @@
 			<Type>PlantAppleTree
 			<TimeToBuild>10
 			<ResourcesToBuild>AppleSeed:1
-			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes
+			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
 			<Layer>0
 			<AddToTileWhenBuilt>false
 		<Object>
-			<Type>PlantBerryBush
+			<Type>PlantBlueberryBush
 			<TimeToBuild>10
-			<ResourcesToBuild>Berries:1
-			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes
+			<ResourcesToBuild>Blueberry:1
+			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
 			<Layer>0
 			<AddToTileWhenBuilt>false
@@ -400,21 +400,21 @@
 		<Object>
 			<Type>RemoveLayer1
 			<TimeToBuild>15
-			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs
+			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs,OmitObjectInstancesOnAdditionalTiles
 			<JobType>Remove
 			<Layer>1
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>RemoveLayer2
 			<TimeToBuild>15
-			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs
+			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs,OmitObjectInstancesOnAdditionalTiles
 			<JobType>Remove
 			<Layer>2
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>RemoveAll
 			<TimeToBuild>15
-			<SelectionModifiers>Objects,OmitSameLayerJobs
+			<SelectionModifiers>Objects,OmitSameLayerJobs,OmitObjectInstancesOnAdditionalTiles
 			<JobType>Remove
 			<Layer>0
 			<AddToTileWhenBuilt>false
@@ -484,15 +484,15 @@
 			<Type>PlantTree
 			<TimeToBuild>10
 			<ResourcesToBuild>TreeSeed:1
-			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes
+			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
 			<Layer>0
 			<AddToTileWhenBuilt>false
 		<Object>
-			<Type>PlantShrub
+			<Type>PlantBush
 			<TimeToBuild>10
-			<ResourcesToBuild>ShrubSeed:1
-			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes
+			<ResourcesToBuild>BushSeed:1
+			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
 			<Layer>0
 			<AddToTileWhenBuilt>false
@@ -500,7 +500,7 @@
 			<Type>PlantCactus
 			<TimeToBuild>10
 			<ResourcesToBuild>CactusSeed:1
-			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNoTreeOrDeadTreeBiomes
+			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
 			<Layer>0
 			<AddToTileWhenBuilt>false

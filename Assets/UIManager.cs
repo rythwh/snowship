@@ -423,12 +423,12 @@ public class UIManager : MonoBehaviour {
 				}
 			}
 			if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
-				ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == newMouseOverTile);
+				ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == newMouseOverTile || findContainer.parentObject.additionalTiles.Contains(newMouseOverTile));
 				if (container != null) {
 					SetSelectedManufacturingTileObject(null);
 					SetSelectedContainer(container);
 				}
-				ResourceManager.ManufacturingTileObject mto = resourceM.manufacturingTileObjectInstances.Find(mtoi => mtoi.parentObject.tile == newMouseOverTile);
+				ResourceManager.ManufacturingTileObject mto = resourceM.manufacturingTileObjectInstances.Find(mtoi => mtoi.parentObject.tile == newMouseOverTile || mtoi.parentObject.additionalTiles.Contains(newMouseOverTile));
 				if (mto != null) {
 					SetSelectedContainer(null);
 					SetSelectedManufacturingTileObject(mto);
@@ -1643,23 +1643,26 @@ public class UIManager : MonoBehaviour {
 			this.colonist = colonist;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/JobInfoElement-Panel"), parent, false);
+			Text jobInfoNameText = obj.transform.Find("JobInfo/Name").GetComponent<Text>();
 
 			obj.transform.Find("JobInfo/Image").GetComponent<Image>().sprite = job.prefab.baseSprite;
 			if (job.prefab.jobType == JobManager.JobTypesEnum.Mine ||
 				job.prefab.jobType == JobManager.JobTypesEnum.Dig) {
-				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.tile.tileType.name;
+				jobInfoNameText.text = job.tile.tileType.name;
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.PlantPlant) {
-				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.plant.name;
+				jobInfoNameText.text = job.plant.name;
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.ChopPlant) {
-				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.tile.plant.name;
+				jobInfoNameText.text = job.tile.plant.name;
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.PlantFarm) {
-				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.prefab.name;
+				jobInfoNameText.text = job.prefab.name;
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.HarvestFarm) {
-				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.tile.farm.name;
+				jobInfoNameText.text = job.tile.farm.name;
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.CreateResource) {
-				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.createResource.name;
+				jobInfoNameText.text = job.createResource.name;
+			} else if (job.prefab.jobType == JobManager.JobTypesEnum.Remove) {
+				jobInfoNameText.text = job.tile.GetObjectInstanceAtLayer(job.prefab.layer).prefab.name;
 			} else {
-				obj.transform.Find("JobInfo/Name").GetComponent<Text>().text = job.prefab.name;
+				jobInfoNameText.text = job.prefab.name;
 			}
 			obj.transform.Find("JobInfo/Type").GetComponent<Text>().text = uiM.SplitByCapitals(job.prefab.jobType.ToString());
 			obj.GetComponent<Button>().onClick.AddListener(delegate {
@@ -2385,7 +2388,7 @@ public class UIManager : MonoBehaviour {
 			resourceInstanceElement.Update();
 		}
 		int index = 0;
-		foreach (ResourceInstanceElement resourceInstanceElement in resourceInstanceElements.OrderByDescending(element => element.resource.worldTotalAmount)) {
+		foreach (ResourceInstanceElement resourceInstanceElement in resourceInstanceElements.OrderByDescending(element => element.resource.worldTotalAmount).ThenBy(element => element.resource.name)) {
 			resourceInstanceElement.obj.transform.SetSiblingIndex(index);
 			index += 1;
 		}
@@ -2713,40 +2716,7 @@ public class UIManager : MonoBehaviour {
 			}
 			selectedMTOPanel.Select(selectedMTO, selectedMTOIndicator);
 		}
-
-
-
-		/*
-		SetSelectedManufacturingTileObjectPanel();
-		if (selectedMTO != null) {
-			SetSelectedMTOCreateResource(selectedMTO.createResource);
-			SetSelectedMTOFuelResource(selectedMTO.fuelResource);
-		}
-		*/
 	}
-
-	/*
-	public void InitializeSelectedManufacturingTileObjectPanel(GameObject selectedMTOPanel, bool fuel) {
-		
-	}
-	*/
-
-	/*
-	public void SetSelectedManufacturingTileObjectPanel() {
-		if (selectedMTO != null) {
-			
-		} else {
-			selectResourcePanel.SetActive(false);
-			selectFuelResourcePanel.SetActive(false);
-			selectedMTOIndicator.SetActive(false);
-			selectedMTOPanel.SetActive(false);
-		}
-	}
-	*/
-
-
-
-
 
 	public void TogglePauseMenu() {
 		if (pauseSavePanel.activeSelf) {

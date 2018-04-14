@@ -170,7 +170,7 @@
 		<Weight>0.01
 		<Price>2:B
 	<Resource>
-		<Type>ShrubSeed
+		<Type>BushSeed
 		<Weight>0.01
 		<Price>1:B
 	<Resource>
@@ -199,9 +199,9 @@
 		<RequiredEnergy>50
 		<RequiredResources>Potato:1
 	<Resource>
-		<Type>Berries
+		<Type>Blueberry
 		<Weight>0.01
-		<Price>5:B
+		<Price>1:B
 		<Nutrition>1
 	<Resource>
 		<Type>Apple

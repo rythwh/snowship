@@ -6,11 +6,11 @@
 	<ReturnResources>Cactus:3,CactusSeed:3
 	<MaxIntegrity>75
 <PlantGroup>
-	<Type>ColourfulShrub
-	<SimpleName>Shrub
-	<Seed>ShrubSeed
-	<PlantPlantObjectPrefab>PlantShrub
-	<ReturnResources>Log:2,ShrubSeed:2,Leaf:2,Sap:2
+	<Type>ColourfulBush
+	<SimpleName>Bush
+	<Seed>BushSeed
+	<PlantPlantObjectPrefab>PlantBush
+	<ReturnResources>Log:2,BushSeed:2,Leaf:2,Sap:2
 	<MaxIntegrity>50
 <PlantGroup>
 	<Type>ColourfulTree
@@ -27,11 +27,11 @@
 	<ReturnResources>Log:3
 	<MaxIntegrity>25
 <PlantGroup>
-	<Type>Shrub
-	<SimpleName>Shrub
-	<Seed>ShrubSeed
-	<PlantPlantObjectPrefab>PlantShrub
-	<ReturnResources>Log:2,ShrubSeed:2,Leaf:2,Sap:2
+	<Type>Bush
+	<SimpleName>Bush
+	<Seed>BushSeed
+	<PlantPlantObjectPrefab>PlantBush
+	<ReturnResources>Log:2,BushSeed:2,Leaf:2,Sap:2
 	<MaxIntegrity>50
 <PlantGroup>
 	<Type>SnowTree

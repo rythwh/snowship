@@ -549,6 +549,11 @@ public class TileManager : MonoBehaviour {
 		public void RemoveTileObjectAtLayer(int layer) {
 			if (objectInstances.ContainsKey(layer)) {
 				if (objectInstances[layer] != null) {
+					foreach (Tile additionalTile in objectInstances[layer].additionalTiles) {
+						if (additionalTile != this) {
+							additionalTile.RemoveTileObjectAtLayer(layer);
+						}
+					}
 					Destroy(objectInstances[layer].obj);
 					objectInstances[layer] = null;
 				}
@@ -583,9 +588,6 @@ public class TileManager : MonoBehaviour {
 					objectInstances.Add(tileObjectPrefab.layer, new ResourceManager.TileObjectInstance(tileObjectPrefab, this, rotationIndex));
 				}
 			}
-			if (farm) {
-
-			}
 			PostChangeTileObject();
 			tileM.resourceM.AddTileObjectInstance(objectInstances[tileObjectPrefab.layer]);
 		}
@@ -603,6 +605,23 @@ public class TileManager : MonoBehaviour {
 				}
 			}
 			SetWalkSpeed();
+		}
+
+		public void SetTileObjectInstanceReference(ResourceManager.TileObjectInstance tileObjectInstanceReference) {
+			if (objectInstances.ContainsKey(tileObjectInstanceReference.prefab.layer)) {
+				if (objectInstances[tileObjectInstanceReference.prefab.layer] != null) {
+					if (tileObjectInstanceReference != null) {
+						Debug.LogError("Trying to add object where one already exists at " + obj.transform.position);
+					} else {
+						objectInstances[tileObjectInstanceReference.prefab.layer] = null;
+					}
+				} else {
+					objectInstances[tileObjectInstanceReference.prefab.layer] = tileObjectInstanceReference;
+				}
+			} else {
+				objectInstances.Add(tileObjectInstanceReference.prefab.layer, tileObjectInstanceReference);
+			}
+			PostChangeTileObject();
 		}
 
 		public ResourceManager.TileObjectInstance GetObjectInstanceAtLayer(int layer) {

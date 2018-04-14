@@ -13,19 +13,19 @@ Tundra/
 	StoneThinGrass,StoneIce,StoneHole/
 	Stone/
 	0.2,0.05/
-	Shrub, DeadTree/
+	Bush, DeadTree/
 	#BFBFBF`
 WetTundra/
 	ColdGrass,ColdGrassWater,DirtHole/
 	Dirt/
 	0.3,0.025/
-	Shrub,ThinTree/
+	Bush,ThinTree/
 	#CCC0DA`
 PolarWetlands/
 	Mud,DirtWater,DirtHole/
 	Dirt/
 	0.2,0.02/
-	Shrub,ThinTree/
+	Bush,ThinTree/
 	#60497B`
 CoolDesert/
 	StoneSnow,StoneWater,StoneHole/
@@ -43,7 +43,7 @@ Steppe/
 	DirtDryGrass,DirtWater,DirtHole/
 	Dirt/
 	0.25/
-	Shrub/
+	Bush/
 	#948B54`
 BorealForest/
 	DirtThinGrass,DirtWater,DirtHole/
@@ -61,7 +61,7 @@ TemperateForest/
 	DirtGrass,DirtWater,DirtHole/
 	Dirt/
 	0.9,0.2,0.2,0.05/
-	WideTree,ThinTree,Shrub,DeadTree/
+	WideTree,ThinTree,Bush,DeadTree/
 	#DBEEF3`
 TemperateWetForest/
 	Grass,GrassWater,DirtHole/
@@ -73,7 +73,7 @@ TemperateWetlands/
 	ThickGrass,GrassWater,DirtHole/
 	Dirt/
 	0.4/
-	Shrub/
+	Bush/
 	#31849B`
 ExtremeDesert/
 	Sand,SandWater,SandHole/
@@ -91,71 +91,71 @@ SubtropicalScrub/
 	DryGrass,DryGrassWater,DirtHole/
 	Dirt/
 	0.2/
-	Shrub/
+	Bush/
 	#CCCC00`
 TropicalScrub/
 	DryGrass,DryGrassWater,DirtHole/
 	Dirt/
 	0.3/
-	Shrub/
+	Bush/
 	#FFFF00`
 SubtropicalWoodlands/
 	Grass,GrassWater,DirtHole/
 	Dirt/
 	0.7,0.3,0.05/
-	WideTree,Shrub,DeadTree/
+	WideTree,Bush,DeadTree/
 	#FCD5B4`
 TropicalWoodlands/
 	DryGrass,DryGrassWater,DirtHole/
 	Dirt/
 	0.4,0.3,0.02/
-	Shrub,WideTree,DeadTree/
+	Bush,WideTree,DeadTree/
 	#FFFBC1`
 Mediterranean/
 	Grass,GrassWater,DirtHole/
 	Dirt/
 	0.7,0.7,0.01/
-	Shrub,WideTree,DeadTree/
+	Bush,WideTree,DeadTree/
 	#D99795`
 SubtropicalDryForest/
 	DryGrass,DryGrassWater,DirtHole/
 	Dirt/
 	0.1,0.5,0.5,0.1/
-	Shrub,WideTree,ThinTree,DeadTree/
+	Bush,WideTree,ThinTree,DeadTree/
 	#D7E4BC`
 TropicalDryForest/
 	DryGrass,DryGrassWater,DirtHole/
 	Dirt/
 	0.2,0.4,0.4,0.05/
-	Shrub,WideTree,ThinTree,DeadTree/
+	Bush,WideTree,ThinTree,DeadTree/
 	#CCFF33`
 SubtropicalForest/
 	Grass,GrassWater,DirtHole/
 	Dirt/
 	0.8,0.8,0.5,0.02/
-	WideTree,ThinTree,Shrub,DeadTree/
+	WideTree,ThinTree,Bush,DeadTree/
 	#66FF66`
 SubtropicalWetForest/
 	Grass,GrassWater,DirtHole/
 	Dirt/
 	0.8,0.8,0.7,0.01/
-	WideTree,ThinTree,Shrub,DeadTree/
+	WideTree,ThinTree,Bush,DeadTree/
 	#00B050`
 SubtropicalWetlands/
 	ThickGrass,GrassWater,DirtHole/
 	Dirt/
 	0.6,0.2,0.01/
-	Shrub,WideTree,DeadTree/
+	Bush,WideTree,DeadTree/
 	#00823B`
 TropicalWetForest/
 	ThickGrass,GrassWater,DirtHole/
 	Dirt/
 	0.9,0.9,0.9,0.01/
-	WideTree,Shrub,ThinTree,DeadTree/
+	WideTree,Bush,ThinTree,DeadTree/
 	#75923C`
 TropicalWetlands/
 	ThickGrass,GrassWater,DirtHole/
 	Dirt/
 	0.8,0.4,0.01/
-	Shrub,WideTree,DeadTree/
+	Bush,WideTree,DeadTree/
 	#4F6228
