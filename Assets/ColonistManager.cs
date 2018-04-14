@@ -13,7 +13,6 @@ public class ColonistManager : MonoBehaviour {
 	private PathManager pathM;
 	private JobManager jobM;
 	private TimeManager timeM;
-	private DebugManager debugM;
 
 	private void GetScriptReferences() {
 		tileM = GetComponent<TileManager>();
@@ -23,7 +22,6 @@ public class ColonistManager : MonoBehaviour {
 		pathM = GetComponent<PathManager>();
 		jobM = GetComponent<JobManager>();
 		timeM = GetComponent<TimeManager>();
-		debugM = GetComponent<DebugManager>();
 	}
 
 	void Awake() {

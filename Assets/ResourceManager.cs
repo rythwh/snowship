@@ -42,9 +42,9 @@ public class ResourceManager : MonoBehaviour {
 		GoldOre, SilverOre, BronzeOre, IronOre,
 		Gold, Silver, Bronze, Iron,
 		Brick, Glass, Cotton, Cloth,
-		WheatSeed, CottonSeed, TreeSeed, AppleSeed, ShrubSeed, CactusSeed,
+		WheatSeed, CottonSeed, TreeSeed, AppleSeed, BushSeed, CactusSeed,
 		Wheat,
-		Potato, BakedPotato, Berries, Apple, BakedApple,
+		Potato, BakedPotato, Blueberry, Apple, BakedApple,
 		GoldCoin, SilverCoin, BronzeCoin
 	};
 
@@ -490,7 +490,7 @@ public class ResourceManager : MonoBehaviour {
 		Torch, WoodenLamp,
 		StoneFurnace,
 		CottonGin, SplittingBlock, SplittingLog, Anvil,
-		ChopPlant, PlantPlant, PlantAppleTree, PlantBerryBush,
+		ChopPlant, PlantPlant, PlantAppleTree, PlantBlueberryBush,
 		Mine, Dig,
 		RemoveLayer1, RemoveLayer2, RemoveAll,
 		Cancel,
@@ -498,7 +498,7 @@ public class ResourceManager : MonoBehaviour {
 		WheatFarm, PotatoFarm, CottonFarm,
 		HarvestFarm,
 		CreateResource, PickupResources, EmptyInventory, CollectFood, Eat, Sleep,
-		PlantTree, PlantShrub, PlantCactus
+		PlantTree, PlantBush, PlantCactus
 	};
 
 	List<TileObjectPrefabsEnum> BitmaskingTileObjects = new List<TileObjectPrefabsEnum>() {
@@ -691,7 +691,8 @@ public class ResourceManager : MonoBehaviour {
 							case "MultiTilePositions":
 								List<string> multiTilePositionStrings = value.Split(';').ToList();
 								foreach (string multiTilePositionString in multiTilePositionStrings) {
-									multiTilePositions.Add(new Vector2(float.Parse(multiTilePositionString.Split(',')[0]), float.Parse(multiTilePositionString.Split(',')[1])));
+									Vector2 multiTilePosition = new Vector2(float.Parse(multiTilePositionString.Split(',')[0]), float.Parse(multiTilePositionString.Split(',')[1]));
+									multiTilePositions.Add(multiTilePosition);
 								}
 								break;
 							case "MaxInventoryAmount":
@@ -778,6 +779,8 @@ public class ResourceManager : MonoBehaviour {
 		public Vector2 blockingAmount;
 
 		public List<Vector2> multiTilePositions = new List<Vector2>() { new Vector2(0, 0) };
+		public Vector2 anchorPositionOffset;
+		public Vector2 dimensions;
 
 		public int maxInventoryAmount;
 
@@ -836,6 +839,10 @@ public class ResourceManager : MonoBehaviour {
 			this.blockingAmount = blockingAmount;
 
 			this.multiTilePositions.AddRange(multiTilePositions);
+			float largestX = this.multiTilePositions.OrderByDescending(MTP => MTP.x).ToList()[0].x;
+			float largestY = this.multiTilePositions.OrderByDescending(MTP => MTP.y).ToList()[0].y;
+			dimensions = new Vector2(largestX + 1, largestY + 1);
+			anchorPositionOffset = new Vector2(largestX / 2, largestY / 2);
 
 			this.maxInventoryAmount = maxInventoryAmount;
 
@@ -928,6 +935,7 @@ public class ResourceManager : MonoBehaviour {
 		}
 
 		public TileManager.Tile tile;
+		public List<TileManager.Tile> additionalTiles = new List<TileManager.Tile>();
 		
 		public TileObjectPrefab prefab;
 		public GameObject obj;
@@ -945,10 +953,18 @@ public class ResourceManager : MonoBehaviour {
 			GetScriptReferences();
 
 			this.prefab = prefab;
+
 			this.tile = tile;
+			foreach (Vector2 multiTilePosition in prefab.multiTilePositions.Skip(1)) {
+				TileManager.Tile additionalTile = tile.map.GetTileFromPosition(tile.obj.transform.position + (Vector3)multiTilePosition);
+				additionalTiles.Add(additionalTile);
+				additionalTile.SetTileObjectInstanceReference(this);
+			}
+
 			this.rotationIndex = rotationIndex;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
+			obj.transform.position += (Vector3)prefab.anchorPositionOffset;
 			obj.name = "Tile Object Instance: " + prefab.name;
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 1 + prefab.layer; // Tile Object Sprite
 			obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
@@ -1024,11 +1040,18 @@ public class ResourceManager : MonoBehaviour {
 		return ContainerTileObjectTypes;
 	}
 
-	public enum PlantGroupsEnum { Cactus, ColourfulShrub, ColourfulTree, DeadTree, Shrub, SnowTree, ThinTree, WideTree };
+	public enum PlantGroupsEnum { Cactus, ColourfulBush, ColourfulTree, DeadTree, Bush, SnowTree, ThinTree, WideTree };
+
+	private List<PlantGroupsEnum> livingTreesAndBushes = new List<PlantGroupsEnum>() {
+		PlantGroupsEnum.ColourfulBush, PlantGroupsEnum.ColourfulTree, PlantGroupsEnum.Bush, PlantGroupsEnum.SnowTree, PlantGroupsEnum.ThinTree, PlantGroupsEnum.WideTree
+	};
+	public List<PlantGroupsEnum> GetLivingTreesAndBushes() {
+		return livingTreesAndBushes;
+	}
 
 	private Dictionary<ResourcesEnum, ResourcesEnum> seedToHarvestResource = new Dictionary<ResourcesEnum, ResourcesEnum>() {
 		{ ResourcesEnum.AppleSeed,ResourcesEnum.Apple },
-		{ ResourcesEnum.Berries,ResourcesEnum.Berries }
+		{ ResourcesEnum.Blueberry,ResourcesEnum.Blueberry }
 	};
 	public Dictionary<ResourcesEnum, ResourcesEnum> GetSeedToHarvestResource() {
 		return seedToHarvestResource;
@@ -1175,9 +1198,9 @@ public class ResourceManager : MonoBehaviour {
 					if (Random.Range(0f, 1f) <= 0.05f) {
 						harvestResource = resourceM.GetResourceByEnum(ResourcesEnum.Apple);
 					}
-				} else if (group.type == PlantGroupsEnum.Shrub && !small) {
+				} else if (group.type == PlantGroupsEnum.Bush && !small) {
 					if (Random.Range(0f, 1f) <= 0.05f) {
-						harvestResource = resourceM.GetResourceByEnum(ResourcesEnum.Berries);
+						harvestResource = resourceM.GetResourceByEnum(ResourcesEnum.Blueberry);
 					}
 				}
 			}
@@ -1219,7 +1242,7 @@ public class ResourceManager : MonoBehaviour {
 				int randomRangeAmount = 1;
 				if (harvestResource.type == ResourcesEnum.Apple) {
 					randomRangeAmount = Random.Range(1, 6);
-				} else if (harvestResource.type == ResourcesEnum.Berries) {
+				} else if (harvestResource.type == ResourcesEnum.Blueberry) {
 					randomRangeAmount = Random.Range(5, 20);
 				}
 				int amount = Mathf.Clamp(randomRangeAmount, 1, int.MaxValue);

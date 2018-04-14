@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: b3582b0cef5511645a0a54d3c2b0657c
-timeCreated: 1518759414
+timeCreated: 1523571256
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -14,6 +14,8 @@ TextureImporter:
     21300014: shrub-small_1
     21300016: shrub-small-berries_0
     21300018: shrub-small-berries_1
+    21300020: bush-small-blueberry_0
+    21300022: bush-small-blueberry_1
   externalObjects: {}
   serializedVersion: 4
   mipmaps:
@@ -90,7 +92,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: shrub-small-berries_0
+      name: bush-small-blueberry_0
       rect:
         serializedVersion: 2
         x: 0
@@ -104,7 +106,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: shrub-small-berries_1
+      name: bush-small-blueberry_1
       rect:
         serializedVersion: 2
         x: 0

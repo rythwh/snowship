@@ -269,15 +269,8 @@ public class PersistenceManager : MonoBehaviour {
 	*/
 	public string GetTileDataString(TileManager.Tile tile) {
 		string tileData = string.Empty;
-		/*
-		tileData += tile.obj.transform.position.x + "," + tile.obj.transform.position.y;
-		tileData += "/" + tile.height;
-		tileData += "/" + tile.temperature;
-		tileData += "/" + tile.precipitation;
-		*/
 		tileData += tile.tileType.type + "," + tile.sr.sprite.name;
 		if (tile.plant != null) {
-			//print(tile.obj.transform.position);
 			tileData += "/" + tile.plant.group.type + "," + tile.plant.obj.GetComponent<SpriteRenderer>().sprite.name + "," + tile.plant.small + "," + tile.plant.growthProgress + "," + (tile.plant.harvestResource != null ? tile.plant.harvestResource.type.ToString() : "None");
 		} else {
 			tileData += "/None";
@@ -306,7 +299,7 @@ public class PersistenceManager : MonoBehaviour {
 	*/
 	public string GetObjectInstanceDataString(ResourceManager.TileObjectInstance objectInstance) {
 		string objectInstanceData = "ObjectInstance";
-		objectInstanceData += "/Position," + objectInstance.obj.transform.position.x + "," + objectInstance.obj.transform.position.y;
+		objectInstanceData += "/Position," + objectInstance.tile.obj.transform.position.x + "," + objectInstance.tile.obj.transform.position.y;
 		objectInstanceData += "/PrefabType," + objectInstance.prefab.type;
 		objectInstanceData += "/RotationIndex," + objectInstance.rotationIndex;
 		objectInstanceData += "/Integrity," + objectInstance.integrity;
@@ -320,7 +313,7 @@ public class PersistenceManager : MonoBehaviour {
 	*/
 	public string GetManufacturingTileObjectDataString(ResourceManager.ManufacturingTileObject mto) {
 		string mtoData = "MTO";
-		mtoData += "/Position," + mto.parentObject.obj.transform.position.x + "," + mto.parentObject.obj.transform.position.y;
+		mtoData += "/Position," + mto.parentObject.tile.obj.transform.position.x + "," + mto.parentObject.tile.obj.transform.position.y;
 		if (mto.createResource != null) {
 			mtoData += "/CreateResource," + mto.createResource.type;
 		} else {
@@ -343,7 +336,7 @@ public class PersistenceManager : MonoBehaviour {
 	*/
 	public string GetFarmDataString(ResourceManager.Farm farm) {
 		string farmData = "Farm";
-		farmData += "/Position," + farm.obj.transform.position.x + "," + farm.obj.transform.position.y;
+		farmData += "/Position," + farm.tile.obj.transform.position.x + "," + farm.tile.obj.transform.position.y;
 		farmData += "/SeedType," + farm.seedType;
 		farmData += "/GrowTimer," + farm.growTimer;
 		farmData += "/MaxGrowthTime," + farm.maxGrowthTime;
@@ -352,7 +345,7 @@ public class PersistenceManager : MonoBehaviour {
 
 	public string GetContainerDataString(ResourceManager.Container container) {
 		string containerData = "Container";
-		containerData += "/Position," + container.parentObject.obj.transform.position.x + "," + container.parentObject.obj.transform.position.y;
+		containerData += "/Position," + container.parentObject.tile.obj.transform.position.x + "," + container.parentObject.tile.obj.transform.position.y;
 		containerData += "/InventoryMaxAmount," + container.inventory.maxAmount;
 		/*
 		 *	/InventoryResources:Count,InventoryResource:ResourceType:Amount,InventoryResource:ResourceType:Amount,...
@@ -531,7 +524,7 @@ public class PersistenceManager : MonoBehaviour {
 				jobData += ",ContainerPickups";
 				foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
 					jobData += ";ContainerPickup";
-					jobData += ":" + containerPickup.container.parentObject.obj.transform.position.x + "`" + containerPickup.container.parentObject.obj.transform.position.y;
+					jobData += ":" + containerPickup.container.parentObject.tile.obj.transform.position.x + "`" + containerPickup.container.parentObject.tile.obj.transform.position.y;
 					foreach (ResourceManager.ResourceAmount resourceToPickup in containerPickup.resourcesToPickup) {
 						jobData += ":ResourceToPickup`" + resourceToPickup.resource.type + "`" + resourceToPickup.amount;
 					}
@@ -553,7 +546,7 @@ public class PersistenceManager : MonoBehaviour {
 			jobData += "/None";
 		}
 		if (job.activeTileObject != null) {
-			jobData += "/ActiveTileObject," + job.activeTileObject.obj.transform.position.x + "," + job.activeTileObject.obj.transform.position.y + "," + job.activeTileObject.prefab.type;
+			jobData += "/ActiveTileObject," + job.activeTileObject.tile.obj.transform.position.x + "," + job.activeTileObject.tile.obj.transform.position.y + "," + job.activeTileObject.prefab.type;
 		} else {
 			jobData += "/None";
 		}

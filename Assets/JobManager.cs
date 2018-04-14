@@ -86,8 +86,8 @@ public class JobManager:MonoBehaviour {
 				ResourceManager.PlantGroup plantGroup = resourceM.GetPlantGroupByBiome(tile.biome, true);
 				if (prefab.type == ResourceManager.TileObjectPrefabsEnum.PlantAppleTree) {
 					plantGroup = resourceM.GetPlantGroupByEnum(ResourceManager.PlantGroupsEnum.WideTree);
-				} else if (prefab.type == ResourceManager.TileObjectPrefabsEnum.PlantBerryBush) {
-					plantGroup = resourceM.GetPlantGroupByEnum(ResourceManager.PlantGroupsEnum.Shrub);
+				} else if (prefab.type == ResourceManager.TileObjectPrefabsEnum.PlantBlueberryBush) {
+					plantGroup = resourceM.GetPlantGroupByEnum(ResourceManager.PlantGroupsEnum.Bush);
 				}
 				if (plantGroup != null) {
 					plant = new ResourceManager.Plant(plantGroup, tile, false, true, tileM.map.smallPlants,false,(resourcesToBuild.Count > 0 ? resourceM.GetResourceByEnum(resourceM.GetSeedToHarvestResource()[resourcesToBuild[0].resource.type]) : null),resourceM);
@@ -100,7 +100,8 @@ public class JobManager:MonoBehaviour {
 			this.rotationIndex = rotationIndex;
 
 			jobPreview = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
-			jobPreview.name = "JobPreview: " + prefab.name + " at " + tile.obj.transform.position;
+			jobPreview.transform.position += (Vector3)prefab.anchorPositionOffset;
+			jobPreview.name = "JobPreview: " + prefab.name + " at " + jobPreview.transform.position;
 			SpriteRenderer jPSR = jobPreview.GetComponent<SpriteRenderer>();
 			if (prefab.baseSprite != null) {
 				jPSR.sprite = prefab.baseSprite;
@@ -117,11 +118,6 @@ public class JobManager:MonoBehaviour {
 
 		public void SetCreateResourceData(ResourceManager.Resource createResource, ResourceManager.TileObjectInstance manufacturingTileObject) {
 			this.createResource = createResource;
-			/*
-			foreach (ResourceManager.ResourceAmount resourceAmount in createResource.requiredResources) {
-				resourcesToBuild.Add(new ResourceManager.ResourceAmount(resourceAmount.resource, resourceAmount.amount));
-			}
-			*/
 			resourcesToBuild.AddRange(createResource.requiredResources);
 			if (manufacturingTileObject.mto.fuelResource != null) {
 				resourcesToBuild.Add(new ResourceManager.ResourceAmount(manufacturingTileObject.mto.fuelResource, manufacturingTileObject.mto.fuelResourcesRequired));
@@ -132,7 +128,6 @@ public class JobManager:MonoBehaviour {
 		public void SetColonist(ColonistManager.Colonist colonist, ResourceManager resourceM, ColonistManager colonistM, JobManager jobM, PathManager pathM) {
 			this.colonist = colonist;
 			if (prefab.jobType != JobTypesEnum.PickupResources && containerPickups != null && containerPickups.Count > 0) {
-				//print(containerPickups[0].resourcesToPickup.Count);
 				colonist.storedJob = this;
 				colonist.SetJob(new ColonistJob(colonist,new Job(containerPickups[0].container.parentObject.tile,resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.PickupResources),0),null,null,jobM,pathM));
 			}
@@ -173,7 +168,7 @@ public class JobManager:MonoBehaviour {
 			return "Building a " + job.prefab.name + ".";
 		});
 		jobDescriptionFunctions.Add(JobTypesEnum.Remove,delegate (Job job) {
-			return "Removing a " + job.tile.GetObjectInstanceAtLayer(job.prefab.layer) + ".";
+			return "Removing a " + job.tile.GetObjectInstanceAtLayer(job.prefab.layer).prefab.name + ".";
 		});
 		jobDescriptionFunctions.Add(JobTypesEnum.ChopPlant,delegate (Job job) {
 			return "Chopping down a " + job.tile.plant.group.name + ".";
@@ -515,7 +510,7 @@ public class JobManager:MonoBehaviour {
 	public void SelectedPrefabPreview() {
 		Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 		TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
-		selectedPrefabPreview.transform.position = tile.obj.transform.position;
+		selectedPrefabPreview.transform.position = tile.obj.transform.position + (Vector3)selectedPrefab.anchorPositionOffset;
 	}
 
 	public void UpdateSelectedPrefabInfo() {
@@ -565,103 +560,130 @@ public class JobManager:MonoBehaviour {
 	}
 
 	public enum SelectionModifiersEnum { Outline, Walkable, OmitWalkable, Buildable, OmitBuildable, StoneTypes, OmitStoneTypes, AllWaterTypes, OmitAllWaterTypes, LiquidWaterTypes, OmitLiquidWaterTypes, OmitNonStoneAndWaterTypes,
-		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances, Farms, OmitFarms, ObjectsAtSameLayer, OmitNonCoastWater, OmitHoles, OmitPreviousDig, OmitNoTreeOrDeadTreeBiomes
+		Objects, OmitObjects, Floors, OmitFloors, Plants, OmitPlants, OmitSameLayerJobs, OmitSameLayerObjectInstances, Farms, OmitFarms, ObjectsAtSameLayer, OmitNonCoastWater, OmitHoles, OmitPreviousDig, OmitNonLivingTreeOrBushBiomes, OmitObjectInstancesOnAdditionalTiles
 	};
-	Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>> selectionModifierFunctions = new Dictionary<SelectionModifiersEnum,System.Action<TileManager.Tile,List<TileManager.Tile>>>();
 
+	Dictionary<SelectionModifiersEnum, System.Func<TileManager.Tile, TileManager.Tile, ResourceManager.TileObjectPrefab, bool>> selectionModifierFunctions = new Dictionary<SelectionModifiersEnum, System.Func<TileManager.Tile, TileManager.Tile, ResourceManager.TileObjectPrefab, bool>>();
 	void InitializeSelectionModifierFunctions() {
-		selectionModifierFunctions.Add(SelectionModifiersEnum.Walkable,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (!tile.walkable) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.Walkable, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return posTile.walkable;
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitWalkable,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.walkable) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitWalkable, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return !posTile.walkable;
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.Buildable,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (!tile.tileType.buildable) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.Buildable, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return posTile.tileType.buildable;
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitBuildable,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.tileType.buildable) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitBuildable, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return !posTile.tileType.buildable;
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.StoneTypes,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (!tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.StoneTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return tileM.GetStoneEquivalentTileTypes().Contains(posTile.tileType.type);
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitStoneTypes,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitStoneTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return !tileM.GetStoneEquivalentTileTypes().Contains(posTile.tileType.type);
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.AllWaterTypes,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (!tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.AllWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return tileM.GetWaterEquivalentTileTypes().Contains(posTile.tileType.type);
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitAllWaterTypes,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitAllWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return !tileM.GetWaterEquivalentTileTypes().Contains(posTile.tileType.type);
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.LiquidWaterTypes,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (!tileM.GetLiquidWaterEquivalentTileTypes().Contains(tile.tileType.type)) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.LiquidWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return tileM.GetLiquidWaterEquivalentTileTypes().Contains(posTile.tileType.type);
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitLiquidWaterTypes,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tileM.GetLiquidWaterEquivalentTileTypes().Contains(tile.tileType.type)) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitLiquidWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return !tileM.GetLiquidWaterEquivalentTileTypes().Contains(posTile.tileType.type);
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonStoneAndWaterTypes,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type) || tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonStoneAndWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return (!tileM.GetWaterEquivalentTileTypes().Contains(posTile.tileType.type) && !tileM.GetStoneEquivalentTileTypes().Contains(posTile.tileType.type));
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.Plants,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.plant == null) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.Plants, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return posTile.plant != null;
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitPlants,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.plant != null) { removeTiles.Add(tile); }
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitPlants, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return posTile.plant == null;
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitSameLayerJobs,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (jobs.Find(job => job.prefab.layer == selectedPrefab.layer && job.tile == tile) != null) {
-				removeTiles.Add(tile);
-				return;
-			}
-			if (colonistM.colonists.Find(colonist => colonist.job != null && colonist.job.prefab.layer == selectedPrefab.layer && colonist.job.tile == tile) != null) {
-				removeTiles.Add(tile);
-				return;
-			}
-			if (colonistM.colonists.Find(colonist => colonist.storedJob != null && colonist.storedJob.prefab.layer == selectedPrefab.layer && colonist.storedJob.tile == tile) != null) {
-				removeTiles.Add(tile);
-				return;
-			}
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitSameLayerObjectInstances,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.objectInstances.ContainsKey(selectedPrefab.layer) && tile.objectInstances[selectedPrefab.layer] != null) { removeTiles.Add(tile); }
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.Farms,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.farm == null) { removeTiles.Add(tile); }
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitFarms,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.farm != null) { removeTiles.Add(tile); }
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.ObjectsAtSameLayer,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.GetObjectInstanceAtLayer(selectedPrefab.layer) == null) { removeTiles.Add(tile); }
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.Objects,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.GetAllObjectInstances().Count <= 0) { removeTiles.Add(tile); }
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitObjects,delegate (TileManager.Tile tile,List<TileManager.Tile> removeTiles) {
-			if (tile.GetAllObjectInstances().Count > 0) { removeTiles.Add(tile); }
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonCoastWater, delegate (TileManager.Tile tile, List<TileManager.Tile> removeTiles) {
-			if (tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
-				if (!(tile.surroundingTiles.Find(t => t != null && !tileM.GetWaterEquivalentTileTypes().Contains(t.tileType.type)) != null)) {
-					removeTiles.Add(tile);
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitSameLayerJobs, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			foreach (Job job in jobs) {
+				if (job.prefab.layer == prefab.layer) {
+					if (job.tile == posTile) {
+						return false;
+					}
+					foreach (Vector2 multiTilePosition in job.prefab.multiTilePositions) {
+						if ((tileM.map.GetTileFromPosition(job.tile.obj.transform.position + (Vector3)multiTilePosition)) == posTile) {
+							return false;
+						}
+					}
 				}
 			}
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitHoles, delegate (TileManager.Tile tile, List<TileManager.Tile> removeTiles) {
-			if (tileM.GetHoleTileTypes().Contains(tile.tileType.type)) {
-					removeTiles.Add(tile);
+			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+				if (colonist.job != null && colonist.job.prefab.layer == prefab.layer) {
+					if (colonist.job.tile == posTile) {
+						return false;
+					}
+					foreach (Vector2 multiTilePosition in colonist.job.prefab.multiTilePositions) {
+						if ((tileM.map.GetTileFromPosition(colonist.job.tile.obj.transform.position + (Vector3)multiTilePosition)) == posTile) {
+							return false;
+						}
+					}
+				}
 			}
-		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitPreviousDig, delegate (TileManager.Tile tile, List<TileManager.Tile> removeTiles) {
-			if (tile.dugPreviously) {
-				removeTiles.Add(tile);
+			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+				if (colonist.storedJob != null && colonist.storedJob.prefab.layer == prefab.layer) {
+					if (colonist.storedJob.tile == posTile) {
+						return false;
+					}
+					foreach (Vector2 multiTilePosition in colonist.storedJob.prefab.multiTilePositions) {
+						if ((tileM.map.GetTileFromPosition(colonist.storedJob.tile.obj.transform.position + (Vector3)multiTilePosition)) == posTile) {
+							return false;
+						}
+					}
+				}
 			}
+			return true;
 		});
-		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNoTreeOrDeadTreeBiomes, delegate (TileManager.Tile tile, List<TileManager.Tile> removeTiles) {
-			if (tile.biome.vegetationChances.Keys.Where(group => group != ResourceManager.PlantGroupsEnum.DeadTree).ToList().Count <= 0) {
-				removeTiles.Add(tile);
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitSameLayerObjectInstances, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return (!posTile.objectInstances.ContainsKey(prefab.layer) || posTile.objectInstances[prefab.layer] == null);
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.Farms, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return posTile.farm != null;
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitFarms, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return posTile.farm == null;
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.ObjectsAtSameLayer, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return posTile.GetObjectInstanceAtLayer(prefab.layer) != null;
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.Objects, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return posTile.GetAllObjectInstances().Count > 0;
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitObjects, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return posTile.GetAllObjectInstances().Count <= 0;
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonCoastWater, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			if (tileM.GetWaterEquivalentTileTypes().Contains(posTile.tileType.type)) {
+				if (!(posTile.surroundingTiles.Find(t => t != null && !tileM.GetWaterEquivalentTileTypes().Contains(t.tileType.type)) != null)) {
+					return false;
+				}
 			}
+			return true;
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitHoles, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return !tileM.GetHoleTileTypes().Contains(posTile.tileType.type);
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitPreviousDig, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return !posTile.dugPreviously;
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonLivingTreeOrBushBiomes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			return posTile.biome.vegetationChances.Keys.Where(groupEnum => resourceM.GetLivingTreesAndBushes().Contains(groupEnum)).ToList().Count > 0;
+		});
+		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitObjectInstancesOnAdditionalTiles, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
+			ResourceManager.TileObjectInstance tileObjectInstance = posTile.GetObjectInstanceAtLayer(prefab.layer);
+			if (tileObjectInstance != null && tileObjectInstance.tile != posTile) {
+				return false;
+			}
+			return true;
 		});
 	}
 
@@ -707,45 +729,47 @@ public class JobManager:MonoBehaviour {
 
 					List<TileManager.Tile> selectionArea = new List<TileManager.Tile>();
 
-					float maxY = ((largerY - smallerY) + smallerY + 1);
-					float maxX = ((largerX - smallerX) + smallerX + 1);
+					float maxY = largerY + 1;
+					float maxX = largerX + 1;
 
-					for (float y = smallerY; y < maxY; y++) {
-						for (float x = smallerX; x < maxX; x++) {
-							TileManager.Tile tile = tileM.map.GetTileFromPosition(new Vector2(x,y));
+					bool addedToSelectionArea = false;
+					for (float y = smallerY; y < maxY; y += (addedToSelectionArea ? (rotationIndex == 0 || rotationIndex == 2 ? selectedPrefab.dimensions.y : selectedPrefab.dimensions.x) : 1)) {
+						for (float x = smallerX; x < maxX; x += (addedToSelectionArea ? (rotationIndex == 0 || rotationIndex == 2 ? selectedPrefab.dimensions.x : selectedPrefab.dimensions.y) : 1)) {
+							addedToSelectionArea = false;
+							TileManager.Tile tile = tileM.map.GetTileFromPosition(new Vector2(x, y));
+							bool addTile = true;
+							bool addOutlineTile = true;
 							if (selectedPrefab.selectionModifiers.Contains(SelectionModifiersEnum.Outline)) {
-								if (x == smallerX || y == smallerY || x == ((largerX - smallerX) + smallerX) || y == ((largerY - smallerY) + smallerY)) {
-									selectionArea.Add(tile);
+								addOutlineTile = (x == smallerX || y == smallerY || x == largerX || y == largerY);
+							}
+							foreach (SelectionModifiersEnum selectionModifier in selectedPrefab.selectionModifiers) {
+								if (selectionModifier != SelectionModifiersEnum.Outline) {
+									foreach (Vector2 multiTilePosition in selectedPrefab.multiTilePositions) {
+										addTile = selectionModifierFunctions[selectionModifier](tile, tileM.map.GetTileFromPosition(tile.obj.transform.position + (Vector3)multiTilePosition), selectedPrefab);
+										if (!addTile) {
+											break;
+										}
+									}
+									if (!addTile) {
+										break;
+									}
 								}
-							} else {
+							}
+							if (addTile && addOutlineTile) {
 								selectionArea.Add(tile);
-							}
-						}
-					}
+								addedToSelectionArea = true;
 
-					foreach (SelectionModifiersEnum selectionModifier in selectedPrefab.selectionModifiers) {
-						List<TileManager.Tile> removeTiles = new List<TileManager.Tile>();
-						if (selectionModifier == SelectionModifiersEnum.Outline) {
-							continue;
-						} else {
-							foreach (TileManager.Tile tile in selectionArea) {
-								selectionModifierFunctions[selectionModifier](tile,removeTiles);
+								GameObject selectionIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), tile.obj.transform, false);
+								selectionIndicator.name = "Selection Indicator";
+								SpriteRenderer sISR = selectionIndicator.GetComponent<SpriteRenderer>();
+								sISR.sprite = Resources.Load<Sprite>(@"UI/selectionIndicator");
+								sISR.sortingOrder = 20; // Selection Indicator Sprite
+								selectionIndicators.Add(selectionIndicator);
 							}
 						}
-						RemoveTilesFromList(selectionArea,removeTiles);
-						removeTiles.Clear();
 					}
 
 					uiM.UpdateSelectionSizePanel(smallerX - maxX,smallerY - maxY,selectionArea.Count,selectedPrefab);
-
-					foreach (TileManager.Tile tile in selectionArea) {
-						GameObject selectionIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
-						selectionIndicator.name = "Selection Indicator";
-						SpriteRenderer sISR = selectionIndicator.GetComponent<SpriteRenderer>();
-						sISR.sprite = Resources.Load<Sprite>(@"UI/selectionIndicator");
-						sISR.sortingOrder = 20; // Selection Indicator Sprite
-						selectionIndicators.Add(selectionIndicator);
-					}
 
 					if (Input.GetMouseButtonUp(0)) {
 						if (selectedPrefab.jobType == JobTypesEnum.Cancel) {
@@ -762,13 +786,6 @@ public class JobManager:MonoBehaviour {
 				}
 			}
 		}
-	}
-
-	public void RemoveTilesFromList(List<TileManager.Tile> listToModify,List<TileManager.Tile> removeList) {
-		foreach (TileManager.Tile tile in removeList) {
-			listToModify.Remove(tile);
-		}
-		removeList.Clear();
 	}
 
 	public void CancelJobsInSelectionArea(List<TileManager.Tile> selectionArea) {
@@ -862,16 +879,28 @@ public class JobManager:MonoBehaviour {
 		{1,ResourceManager.TileObjectPrefabsEnum.RemoveLayer1 },{2,ResourceManager.TileObjectPrefabsEnum.RemoveLayer2 }
 	};
 
-	public void CreateJobsInSelectionArea(ResourceManager.TileObjectPrefab prefab,List<TileManager.Tile> selectionArea) {
+	public void CreateJobsInSelectionArea(ResourceManager.TileObjectPrefab prefab, List<TileManager.Tile> selectionArea) {
 		foreach (TileManager.Tile tile in selectionArea) {
 			if (selectedPrefab.type == ResourceManager.TileObjectPrefabsEnum.RemoveAll) {
 				foreach (ResourceManager.TileObjectInstance instance in tile.GetAllObjectInstances()) {
-					if (RemoveLayerMap.ContainsKey(instance.prefab.layer) && !JobOfPrefabTypeExistsAtTile(RemoveLayerMap[instance.prefab.layer],tile)) {
-						CreateJob(new Job(tile,resourceM.GetTileObjectPrefabByEnum(RemoveLayerMap[instance.prefab.layer]),rotationIndex));
+					if (RemoveLayerMap.ContainsKey(instance.prefab.layer) && !JobOfPrefabTypeExistsAtTile(RemoveLayerMap[instance.prefab.layer], tile)) {
+						ResourceManager.TileObjectPrefab selectedRemovePrefab = resourceM.GetTileObjectPrefabByEnum(RemoveLayerMap[instance.prefab.layer]);
+						bool createJobAtTile = true;
+						foreach (SelectionModifiersEnum selectionModifier in selectedRemovePrefab.selectionModifiers) {
+							if (selectionModifier != SelectionModifiersEnum.Outline) {
+								createJobAtTile = selectionModifierFunctions[selectionModifier](tile, tile, selectedRemovePrefab);
+								if (!createJobAtTile) {
+									break;
+								}
+							}
+						}
+						if (createJobAtTile) {
+							CreateJob(new Job(tile, selectedRemovePrefab, rotationIndex));
+						}
 					}
 				}
 			} else {
-				CreateJob(new Job(tile,prefab,rotationIndex));
+				CreateJob(new Job(tile, prefab, rotationIndex));
 			}
 		}
 	}

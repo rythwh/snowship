@@ -65,43 +65,6 @@ public class DebugManager : MonoBehaviour {
 			if (togglesuncycle_Toggle) {
 				togglesuncycle_Update();
 			}
-			if (Input.GetMouseButtonDown(0)) {
-				//Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
-				//TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
-
-				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Log", "10", "true", "true" });
-				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Glass", "10", "true", "true" });
-
-				//tile.SetColour(tileM.map.GetTileColourAtHour(timeM.GetTileBrightnessTime()), Mathf.RoundToInt(timeM.GetTileBrightnessTime()), true);
-
-				/*
-				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Stone","10","true","true"});
-				//commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Clay", "20", "true", "true" });
-				commandFunctions[Commands.changeinvamt](Commands.changeinvamt, new List<string>() { "Log", "3", "true", "true" });
-				//JobManager.Job newJob = new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.StoneFurnace), 0);
-				JobManager.Job newJob = new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.WoodenFence), 0);
-				newJob.jobProgress = 0.1f;
-				jobM.CreateJob(newJob);
-				*/
-
-				/*
-				resourceM.CreateResource(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Brick), 4, tile.GetAllObjectInstances().Find(toi => toi.prefab.activeSprites.Count > 0));
-				*/
-
-				/*
-				tile.GetAllObjectInstances().Find(toi => toi.prefab.activeSprites.Count > 0).SetActiveSprite(!tile.GetAllObjectInstances().Find(toi => toi.prefab.activeSprites.Count > 0).active);
-				*/
-
-				/*
-				commandFunctions[Commands.selecttiles](Commands.selecttiles, new List<string>() { tile.position.x.ToString(), tile.position.y.ToString() });
-				commandFunctions[Commands.changetiletype](Commands.changetiletype,new List<string>() { "Grass" });
-				commandFunctions[Commands.deselecttiles](Commands.deselecttiles, new List<string>());
-				*/
-
-				/*
-				jobM.finishJobFunctions[JobManager.JobTypesEnum.Dig](colonistM.colonists[0], new JobManager.Job(tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Dig), 0));
-				*/
-			}
 		}
 	}
 
@@ -117,7 +80,8 @@ public class DebugManager : MonoBehaviour {
 		spawntraders,			// spawntraders <numToSpawn>				-- spawns <numToSpawn> traders
 		sethealth,				// sethealth <amount>						-- sets the health of the selected colonist to <amount>
 		setneed,                // setneed <name> <amount>					-- sets the need named <name> on the selected colonist to <amount>
-		changeinvamt,           // changeinvamt <resourceName> <amount> (allColonists) (allContainers)
+		cia,					// changeinvamt								-- shortcut to "changinvamt"
+		changeinvamt,           // changeinvamt || cia <resourceName> <amount> (allColonists) (allContainers)
 		//																	-- adds the amount of the resource named <resourceName> to <amount> to a selected colonist, container,
 		//																	   or all colonists (allColonists = true), or all containers (allContainers = true)
 		selectcontainer,        // selectcontainer <index>					-- sets the selected container to the container at <index> in the list of containers
@@ -168,6 +132,7 @@ public class DebugManager : MonoBehaviour {
 		{Commands.spawntraders,"spawntraders <numToSpawn> -- spawns <numToSpawn> traders" },
 		{Commands.sethealth,"sethealth <amount> -- sets the health of the selected colonist to <amount> (value between 0 (0%) -> 1 (100%))" },
 		{Commands.setneed,"setneed <name> <amount> -- sets the need named <name> on the selected colonist to <amount> (value between 0 (0%) -> 100 (100%))" },
+		{Commands.cia,"cia -- shortcut to \"changeinvamt\" -- see that command for more information" },
 		{Commands.changeinvamt,"changeinvamt <resourceName> <amount> (allColonists) (allContainers) -- adds the amount of the resource named <resourceName> to <amount> to a selected colonist, container, or all colonists (allColonists = true), or all containers (allContainers = true)" },
 		{Commands.selectcontainer,"selectcontainer <index> -- sets the selected container to the container at <index> in the list of containers" },
 		{Commands.selecttiles,"selecttiles <x(,rangeX)> <y,(rangeY)> -- without (rangeX/Y): select tile at <x> <y>. with (rangeX/Y): select all tiles between <x> -> (rangeX) <y> -> (rangeY)" },
@@ -236,14 +201,16 @@ public class DebugManager : MonoBehaviour {
 	private int textBoxSizePerLine = 11;
 
 	private void OutputToConsole(string outputString) {
-		GameObject outputTextBox = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/CommandOutputText-Panel"), debugConsoleList.transform, false);
+		if (!string.IsNullOrEmpty(outputString)) {
+			GameObject outputTextBox = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/CommandOutputText-Panel"), debugConsoleList.transform, false);
 
-		int lines = Mathf.CeilToInt(outputString.Length / charsPerLine);
+			int lines = Mathf.CeilToInt(outputString.Length / charsPerLine);
 
-		outputTextBox.GetComponent<LayoutElement>().minHeight = lines * textBoxSizePerLine;
-		outputTextBox.GetComponent<RectTransform>().sizeDelta = new Vector2(outputTextBox.GetComponent<RectTransform>().sizeDelta.x, lines * textBoxSizePerLine);
+			outputTextBox.GetComponent<LayoutElement>().minHeight = lines * textBoxSizePerLine;
+			outputTextBox.GetComponent<RectTransform>().sizeDelta = new Vector2(outputTextBox.GetComponent<RectTransform>().sizeDelta.x, lines * textBoxSizePerLine);
 
-		outputTextBox.transform.Find("Text").GetComponent<Text>().text = outputString;
+			outputTextBox.transform.Find("Text").GetComponent<Text>().text = outputString;
+		}
 	}
 
 	private Dictionary<Commands, Action<Commands,List<string>>> commandFunctions = new Dictionary<Commands, Action<Commands,List<string>>>();
@@ -408,6 +375,9 @@ public class DebugManager : MonoBehaviour {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
+		commandFunctions.Add(Commands.cia, delegate (Commands selectedCommand, List<string> parameters) {
+			commandFunctions[Commands.changeinvamt](Commands.changeinvamt, parameters);
+		});
 		commandFunctions.Add(Commands.changeinvamt, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 2) {
 				ResourceManager.Resource resource = resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
@@ -436,7 +406,18 @@ public class DebugManager : MonoBehaviour {
 							OutputToConsole("No container selected, skipping.");
 						}
 					} else {
-						OutputToConsole("ERROR: No colonist or container selected.");
+						int amount = 0;
+						if (int.TryParse(parameters[1], out amount)) {
+							foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+								colonist.inventory.ChangeResourceAmount(resource, amount);
+							}
+							foreach (ResourceManager.Container container in resourceM.containers) {
+								container.inventory.ChangeResourceAmount(resource, amount);
+							}
+							OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to all colonists and all containers.");
+						} else {
+							OutputToConsole("ERROR: Unable to parse resource amount as int.");
+						}
 					}
 				} else {
 					OutputToConsole("ERROR: Invalid resource name.");
