@@ -46,7 +46,7 @@ public class DebugManager : MonoBehaviour {
 
 		debugPanel.SetActive(false);
 
-		whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+		whiteSquare = resourceM.whiteSquareSprite;
 
 		CreateCommandFunctions();
 	}
@@ -197,8 +197,8 @@ public class DebugManager : MonoBehaviour {
 		}
 	}
 
-	private float charsPerLine = 53;
-	private int textBoxSizePerLine = 11;
+	private float charsPerLine = 70;
+	private int textBoxSizePerLine = 17;
 
 	private void OutputToConsole(string outputString) {
 		if (!string.IsNullOrEmpty(outputString)) {
@@ -836,7 +836,7 @@ public class DebugManager : MonoBehaviour {
 						if (selectedTiles.Count > 0) {
 							foreach (TileManager.Tile tile in selectedTiles) {
 								tile.SetPlant(false, new ResourceManager.Plant(plantGroup, tile, false, small, tileM.map.smallPlants,true,null,resourceM));
-								tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
+							tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
 								if (tile.plant != null) {
 									counter += 1;
 								}
@@ -913,7 +913,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.togglesuncycle, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				holdHour = timeM.GetTileBrightnessTime();
+				holdHour = timeM.tileBrightnessTime;
 				togglesuncycle_Toggle = !togglesuncycle_Toggle;
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
@@ -926,7 +926,7 @@ public class DebugManager : MonoBehaviour {
 					if (time >= 0 && time < 24) {
 						holdHour = time;
 						timeM.SetTime(time);
-						tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
+						tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
 					} else {
 						OutputToConsole("ERROR: Time out of range.");
 					}
@@ -957,7 +957,7 @@ public class DebugManager : MonoBehaviour {
 					tile.sr.color = Color.white;
 				}
 				tileM.map.Bitmasking(tileM.map.tiles);
-				tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
+				tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
@@ -965,7 +965,7 @@ public class DebugManager : MonoBehaviour {
 		commandFunctions.Add(Commands.viewregions, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				foreach (TileManager.Map.Region region in tileM.map.regions) {
-					region.ColourRegion();
+					region.ColourRegion(resourceM.whiteSquareSprite);
 				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
@@ -1069,7 +1069,7 @@ public class DebugManager : MonoBehaviour {
 		commandFunctions.Add(Commands.viewregionblocks, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				foreach (TileManager.Map.Region region in tileM.map.regionBlocks) {
-					region.ColourRegion();
+					region.ColourRegion(resourceM.whiteSquareSprite);
 				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
@@ -1078,7 +1078,7 @@ public class DebugManager : MonoBehaviour {
 		commandFunctions.Add(Commands.viewsquareregionblocks, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				foreach (TileManager.Map.Region region in tileM.map.squareRegionBlocks) {
-					region.ColourRegion();
+					region.ColourRegion(resourceM.whiteSquareSprite);
 				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");

@@ -253,7 +253,7 @@
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.5,0.5
 			<MaxIntegrity>100
-			<MultiTilePositions>1,0
+			<MultiTilePositions>0,0;1,0
 		<Object>
 			<Type>SplittingBlock
 			<TimeToBuild>10
@@ -400,21 +400,21 @@
 		<Object>
 			<Type>RemoveLayer1
 			<TimeToBuild>15
-			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs,OmitObjectInstancesOnAdditionalTiles
+			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs
 			<JobType>Remove
 			<Layer>1
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>RemoveLayer2
 			<TimeToBuild>15
-			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs,OmitObjectInstancesOnAdditionalTiles
+			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs
 			<JobType>Remove
 			<Layer>2
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>RemoveAll
 			<TimeToBuild>15
-			<SelectionModifiers>Objects,OmitSameLayerJobs,OmitObjectInstancesOnAdditionalTiles
+			<SelectionModifiers>Objects,OmitSameLayerJobs
 			<JobType>Remove
 			<Layer>0
 			<AddToTileWhenBuilt>false
