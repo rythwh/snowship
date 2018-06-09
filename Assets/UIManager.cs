@@ -249,7 +249,7 @@ public class UIManager : MonoBehaviour {
 		planetDistanceSlider.value = 4;
 
 		temperatureRangeSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
-		temperatureRangeSlider.value = 5;
+		temperatureRangeSlider.value = 7;
 
 		windDirectionSlider.onValueChanged.AddListener(delegate { UpdatePlanetInfo(); });
 		windDirectionSlider.value = UnityEngine.Random.Range(0, 8); // 0 -> 7 (8 is exclusive)
@@ -521,17 +521,6 @@ public class UIManager : MonoBehaviour {
 	public List<PlanetTile> planetTiles = new List<PlanetTile>();
 
 	public class PlanetTile {
-
-		private TileManager tileM;
-		private UIManager uiM;
-
-		void GetScriptReferences() {
-			GameObject GM = GameObject.Find("GM");
-
-			tileM = GM.GetComponent<TileManager>();
-			uiM = GM.GetComponent<UIManager>();
-		}
-
 		public TileManager.Tile tile;
 		public GameObject obj;
 
@@ -551,8 +540,6 @@ public class UIManager : MonoBehaviour {
 
 		public PlanetTile(TileManager.Tile tile, Transform parent, Vector2 position, int planetSize, float planetTemperature) {
 
-			GetScriptReferences();
-
 			this.tile = tile;
 
 			this.position = position;
@@ -560,13 +547,13 @@ public class UIManager : MonoBehaviour {
 			this.planetSize = planetSize;
 			this.planetTemperature = planetTemperature;
 
-			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/PlanetTile"), parent, false);
+			obj = Instantiate(tile.map.resourceM.planetTilePrefab, parent, false);
 			obj.name = "Planet Tile: " + position;
 			image = obj.GetComponent<Image>();
 			image.sprite = tile.obj.GetComponent<SpriteRenderer>().sprite;
 
 			obj.GetComponent<Button>().onClick.AddListener(delegate {
-				uiM.SetSelectedPlanetTile(this);
+				tile.map.uiM.SetSelectedPlanetTile(this);
 			});
 
 			SetMapData();
@@ -579,12 +566,12 @@ public class UIManager : MonoBehaviour {
 			averageTemperature = tile.temperature + planetTemperature;
 			averagePrecipitation = tile.GetPrecipitation();
 
-			if (!tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
+			if (!tile.map.tileM.GetWaterEquivalentTileTypes().Contains(tile.tileType.type)) {
 				foreach (TileManager.Tile nTile in tile.horizontalSurroundingTiles) {
 					if (nTile != null) {
-						if (tileM.GetWaterEquivalentTileTypes().Contains(nTile.tileType.type)) {
+						if (tile.map.tileM.GetWaterEquivalentTileTypes().Contains(nTile.tileType.type)) {
 							surroundingPlanetTileHeightDirections.Add(-2);
-						} else if (tileM.GetStoneEquivalentTileTypes().Contains(nTile.tileType.type)) {
+						} else if (tile.map.tileM.GetStoneEquivalentTileTypes().Contains(nTile.tileType.type)) {
 							surroundingPlanetTileHeightDirections.Add(5);
 						} else {
 							surroundingPlanetTileHeightDirections.Add(0);
@@ -1150,8 +1137,8 @@ public class UIManager : MonoBehaviour {
 				foreach (ResourceManager.TileObjectInstance tileObject in mouseOverTile.GetAllObjectInstances().OrderBy(o => o.prefab.layer).ToList()) {
 					if (!tileObjectElements.ContainsKey(tileObject.prefab.layer)) {
 						tileObjectElements.Add(tileObject.prefab.layer, new List<GameObject>() {
-							Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage"), tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"), false),
-							Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"), tileInformation.transform, false)
+							Instantiate(resourceM.tileImage, tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"), false),
+							Instantiate(resourceM.objectDataPanel, tileInformation.transform, false)
 						});
 					}
 
@@ -1785,9 +1772,9 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void InitializeSelectedContainerIndicator() {
-		selectedContainerIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), Vector2.zero, Quaternion.identity);
+		selectedContainerIndicator = Instantiate(resourceM.tilePrefab, Vector2.zero, Quaternion.identity);
 		SpriteRenderer sCISR = selectedContainerIndicator.GetComponent<SpriteRenderer>();
-		sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
+		sCISR.sprite = resourceM.selectionCornersSprite;
 		sCISR.name = "SelectedContainerIndicator";
 		sCISR.sortingOrder = 20; // Selected Container Indicator Sprite
 		sCISR.color = new Color(1f, 1f, 1f, 0.75f);
@@ -2124,7 +2111,7 @@ public class UIManager : MonoBehaviour {
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ObjectPrefab-Button"), parent, false);
 
-			obj.transform.Find("ObjectPrefabSprite-Image").GetComponent<Image>().sprite = prefab.baseSprite;
+			obj.transform.Find("ObjectPrefabSprite-Panel/ObjectPrefabSprite-Image").GetComponent<Image>().sprite = prefab.baseSprite;
 			obj.transform.Find("ObjectPrefabName-Text").GetComponent<Text>().text = prefab.name;
 
 			objectInstancesList = obj.transform.Find("ObjectInstancesList-ScrollPanel").gameObject;
@@ -2187,7 +2174,7 @@ public class UIManager : MonoBehaviour {
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ObjectInstance-Button"), parent, false);
 
-			obj.transform.Find("ObjectInstanceSprite-Image").GetComponent<Image>().sprite = instance.obj.GetComponent<SpriteRenderer>().sprite;
+			obj.transform.Find("ObjectInstanceSprite-Panel/ObjectInstanceSprite-Image").GetComponent<Image>().sprite = instance.obj.GetComponent<SpriteRenderer>().sprite;
 			obj.transform.Find("ObjectInstanceName-Text").GetComponent<Text>().text = instance.prefab.name;
 			obj.transform.Find("TilePosition-Text").GetComponent<Text>().text = "(" + Mathf.FloorToInt(instance.tile.obj.transform.position.x) + ", " + Mathf.FloorToInt(instance.tile.obj.transform.position.y) + ")"; ;
 
@@ -2395,9 +2382,9 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void InitializeSelectedManufacturingTileObjectIndicator() {
-		selectedMTOIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), Vector2.zero, Quaternion.identity);
+		selectedMTOIndicator = Instantiate(resourceM.tilePrefab, Vector2.zero, Quaternion.identity);
 		SpriteRenderer sCISR = selectedMTOIndicator.GetComponent<SpriteRenderer>();
-		sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
+		sCISR.sprite = resourceM.selectionCornersSprite;
 		sCISR.name = "SelectedMTOIndicator";
 		sCISR.sortingOrder = 20; // Selected MTO Indicator Sprite
 		sCISR.color = new Color(1f, 1f, 1f, 0.75f);
@@ -2489,7 +2476,7 @@ public class UIManager : MonoBehaviour {
 
 			obj.transform.Find("SelectedManufacturingTileObjectName-Text").GetComponent<Text>().text = selectedMTO.parentObject.prefab.name;
 
-			obj.transform.Find("SelectedManufacturingTileObjectSprite-Image").GetComponent<Image>().sprite = selectedMTO.parentObject.obj.GetComponent<SpriteRenderer>().sprite;
+			obj.transform.Find("SelectedManufacturingTileObjectSprite-Panel/SelectedManufacturingTileObjectSprite-Image").GetComponent<Image>().sprite = selectedMTO.parentObject.obj.GetComponent<SpriteRenderer>().sprite;
 
 			foreach (ResourceManager.ResourcesEnum resourceEnum in resourceM.GetManufacturableResources()) {
 				ResourceManager.Resource resource = resourceM.GetResourceByEnum(resourceEnum);

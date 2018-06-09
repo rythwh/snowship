@@ -27,10 +27,12 @@ public class ColonistManager : MonoBehaviour {
 	void Awake() {
 		GetScriptReferences();
 
-		foreach (string name in Resources.Load<TextAsset>(@"Data/names-male").text.Split(' ').ToList()) {
+		List<string> maleNamesRaw = Resources.Load<TextAsset>(@"Data/names-male").text.Split(' ').ToList();
+		foreach (string name in maleNamesRaw) {
 			maleNames.Add(name.ToLower());
 		}
-		foreach (string name in Resources.Load<TextAsset>(@"Data/names-female").text.Split(' ').ToList()) {
+		List<string> femaleNamesRaw = Resources.Load<TextAsset>(@"Data/names-female").text.Split(' ').ToList();
+		foreach (string name in femaleNamesRaw) {
 			femaleNames.Add(name.ToLower());
 		}
 
@@ -89,7 +91,7 @@ public class ColonistManager : MonoBehaviour {
 			GetScriptReferences();
 
 			overTile = spawnTile;
-			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),overTile.obj.transform.position,Quaternion.identity);
+			obj = Instantiate(spawnTile.map.resourceM.tilePrefab,overTile.obj.transform.position,Quaternion.identity);
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 10; // Life Sprite
 
 			health = startingHealth;
@@ -228,12 +230,13 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void SetNameCanvas(string name) {
+			Font nameCanvasFont = Resources.Load<Font>(@"UI/Fonts/Quicksand/Quicksand-Bold");
 			nameCanvas.transform.Find("NameBackground-Image/Name-Text").GetComponent<Text>().text = name;
 			Canvas.ForceUpdateCanvases(); // The charInfo.advance is not calculated until the text is rendered
 			int textWidthPixels = 0;
 			foreach (char character in name) {
 				CharacterInfo charInfo;
-				Resources.Load<Font>(@"UI/Fonts/Quicksand/Quicksand-Bold").GetCharacterInfo(character, out charInfo, 48, FontStyle.Normal);
+				nameCanvasFont.GetCharacterInfo(character, out charInfo, 48, FontStyle.Normal);
 				textWidthPixels += charInfo.advance;
 			}
 			nameCanvas.transform.Find("NameBackground-Image").GetComponent<RectTransform>().sizeDelta = new Vector2(textWidthPixels / 2.8f, 20);
@@ -1196,7 +1199,7 @@ public class ColonistManager : MonoBehaviour {
 				finishedJob.tile.SetTileObject(finishedJob.prefab,finishedJob.rotationIndex);
 				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
 				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).FinishCreation();
-				if (!resourceM.GetBitmaskingTileObjects().Contains(finishedJob.prefab.type) && finishedJob.prefab.bitmaskSprites.Count > 0) {
+				if (finishedJob.prefab.canRotate) {
 					finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().sprite = finishedJob.prefab.bitmaskSprites[finishedJob.rotationIndex];
 				}
 			}
@@ -1492,7 +1495,7 @@ public class ColonistManager : MonoBehaviour {
 	public void AddColonist(Colonist colonist) {
 		colonists.Add(colonist);
 		uiM.SetColonistElements();
-		tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
+		tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
 	}
 
 	public Colonist selectedColonist;
@@ -1557,10 +1560,10 @@ public class ColonistManager : MonoBehaviour {
 	}
 
 	void CreateColonistIndicator() {
-		selectedColonistIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),selectedColonist.obj.transform,false);
+		selectedColonistIndicator = Instantiate(resourceM.tilePrefab,selectedColonist.obj.transform,false);
 		selectedColonistIndicator.name = "SelectedColonistIndicator";
 		SpriteRenderer sCISR = selectedColonistIndicator.GetComponent<SpriteRenderer>();
-		sCISR.sprite = Resources.Load<Sprite>(@"UI/selectionCorners");
+		sCISR.sprite = resourceM.selectionCornersSprite;
 		sCISR.sortingOrder = 20; // Selected Colonist Indicator Sprite
 		sCISR.color = new Color(1f,1f,1f,0.75f);
 		selectedColonistIndicator.transform.localScale = new Vector2(1f,1f) * 1.2f;

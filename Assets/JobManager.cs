@@ -99,8 +99,8 @@ public class JobManager:MonoBehaviour {
 
 			this.rotationIndex = rotationIndex;
 
-			jobPreview = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
-			jobPreview.transform.position += (Vector3)prefab.anchorPositionOffset;
+			jobPreview = Instantiate(resourceM.tilePrefab,tile.obj.transform,false);
+			jobPreview.transform.position += (Vector3)prefab.anchorPositionOffset[rotationIndex];
 			jobPreview.name = "JobPreview: " + prefab.name + " at " + jobPreview.transform.position;
 			SpriteRenderer jPSR = jobPreview.GetComponent<SpriteRenderer>();
 			if (prefab.baseSprite != null) {
@@ -136,7 +136,7 @@ public class JobManager:MonoBehaviour {
 		public void ChangePriority(int amount) {
 			priority += amount;
 			if (priorityIndicator == null && jobPreview != null) {
-				priorityIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), jobPreview.transform, false);
+				priorityIndicator = Instantiate(resourceM.tilePrefab, jobPreview.transform, false);
 				priorityIndicator.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/priorityIndicator");
 				priorityIndicator.GetComponent<SpriteRenderer>().sortingOrder = jobPreview.GetComponent<SpriteRenderer>().sortingOrder + 1; // Priority Indicator Sprite
 				if (priority == 1) {
@@ -310,7 +310,7 @@ public class JobManager:MonoBehaviour {
 			job.tile.SetPlant(false,job.plant);
 			tileM.map.smallPlants.Add(job.plant);
 			colonist.inventory.ChangeResourceAmount(job.plant.group.seed,-1);
-			tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
+			tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
 		});
 		finishJobFunctions.Add(JobTypesEnum.Mine,delegate (ColonistManager.Colonist colonist,Job job) {
 			colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum),job.tile.tileType.type.ToString())),Random.Range(4,7));
@@ -506,28 +506,26 @@ public class JobManager:MonoBehaviour {
 	}
 
 	private GameObject selectedPrefabPreview;
-	private GameObject selectionSizePanel;
 	public void SelectedPrefabPreview() {
 		Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
 		TileManager.Tile tile = tileM.map.GetTileFromPosition(mousePosition);
-		selectedPrefabPreview.transform.position = tile.obj.transform.position + (Vector3)selectedPrefab.anchorPositionOffset;
+		selectedPrefabPreview.transform.position = tile.obj.transform.position + (Vector3)selectedPrefab.anchorPositionOffset[rotationIndex];
 	}
 
 	public void UpdateSelectedPrefabInfo() {
 		if (selectedPrefab != null) {
 			if (enableSelectionPreview) {
-				bool canRotate = (!resourceM.GetBitmaskingTileObjects().Contains(selectedPrefab.type) && selectedPrefab.bitmaskSprites.Count > 0);
 				if (!selectedPrefabPreview.activeSelf) {
 					selectedPrefabPreview.SetActive(true);
 					selectedPrefabPreview.GetComponent<SpriteRenderer>().sprite = selectedPrefab.baseSprite;
-					if (canRotate) {
+					if (selectedPrefab.canRotate) {
 						selectedPrefabPreview.GetComponent<SpriteRenderer>().sprite = selectedPrefab.bitmaskSprites[rotationIndex];
 					}
 					uiM.SelectionSizeCanvasSetActive(false);
 				}
 				SelectedPrefabPreview();
 				if (Input.GetKeyDown(KeyCode.R)) {
-					if (canRotate) {
+					if (selectedPrefab.canRotate) {
 						rotationIndex += 1;
 						if (rotationIndex >= selectedPrefab.bitmaskSprites.Count) {
 							rotationIndex = 0;
@@ -610,7 +608,7 @@ public class JobManager:MonoBehaviour {
 					if (job.tile == posTile) {
 						return false;
 					}
-					foreach (Vector2 multiTilePosition in job.prefab.multiTilePositions) {
+					foreach (Vector2 multiTilePosition in job.prefab.multiTilePositions[job.rotationIndex]) {
 						if ((tileM.map.GetTileFromPosition(job.tile.obj.transform.position + (Vector3)multiTilePosition)) == posTile) {
 							return false;
 						}
@@ -622,7 +620,7 @@ public class JobManager:MonoBehaviour {
 					if (colonist.job.tile == posTile) {
 						return false;
 					}
-					foreach (Vector2 multiTilePosition in colonist.job.prefab.multiTilePositions) {
+					foreach (Vector2 multiTilePosition in colonist.job.prefab.multiTilePositions[colonist.job.rotationIndex]) {
 						if ((tileM.map.GetTileFromPosition(colonist.job.tile.obj.transform.position + (Vector3)multiTilePosition)) == posTile) {
 							return false;
 						}
@@ -634,7 +632,7 @@ public class JobManager:MonoBehaviour {
 					if (colonist.storedJob.tile == posTile) {
 						return false;
 					}
-					foreach (Vector2 multiTilePosition in colonist.storedJob.prefab.multiTilePositions) {
+					foreach (Vector2 multiTilePosition in colonist.storedJob.prefab.multiTilePositions[colonist.storedJob.rotationIndex]) {
 						if ((tileM.map.GetTileFromPosition(colonist.storedJob.tile.obj.transform.position + (Vector3)multiTilePosition)) == posTile) {
 							return false;
 						}
@@ -705,6 +703,7 @@ public class JobManager:MonoBehaviour {
 		foreach (GameObject selectionIndicator in selectionIndicators) {
 			Destroy(selectionIndicator);
 		}
+		selectionIndicators.Clear();
 
 		if (selectedPrefab != null) {
 			Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
@@ -733,9 +732,10 @@ public class JobManager:MonoBehaviour {
 					float maxX = largerX + 1;
 
 					bool addedToSelectionArea = false;
-					for (float y = smallerY; y < maxY; y += (addedToSelectionArea ? (rotationIndex == 0 || rotationIndex == 2 ? selectedPrefab.dimensions.y : selectedPrefab.dimensions.x) : 1)) {
-						for (float x = smallerX; x < maxX; x += (addedToSelectionArea ? (rotationIndex == 0 || rotationIndex == 2 ? selectedPrefab.dimensions.x : selectedPrefab.dimensions.y) : 1)) {
-							addedToSelectionArea = false;
+					for (float y = smallerY; y < maxY; y += (addedToSelectionArea ? selectedPrefab.dimensions[rotationIndex].y : 1)) {
+						//addedToSelectionArea = false;
+						for (float x = smallerX; x < maxX; x += (addedToSelectionArea ? selectedPrefab.dimensions[rotationIndex].x : 1)) {
+							addedToSelectionArea = true; // default = false // Try swapping x and y values when the object is rotated vertically (i.e. rotationIndex == 1 || 3).
 							TileManager.Tile tile = tileM.map.GetTileFromPosition(new Vector2(x, y));
 							bool addTile = true;
 							bool addOutlineTile = true;
@@ -744,9 +744,16 @@ public class JobManager:MonoBehaviour {
 							}
 							foreach (SelectionModifiersEnum selectionModifier in selectedPrefab.selectionModifiers) {
 								if (selectionModifier != SelectionModifiersEnum.Outline) {
-									foreach (Vector2 multiTilePosition in selectedPrefab.multiTilePositions) {
-										addTile = selectionModifierFunctions[selectionModifier](tile, tileM.map.GetTileFromPosition(tile.obj.transform.position + (Vector3)multiTilePosition), selectedPrefab);
-										if (!addTile) {
+									foreach (Vector2 multiTilePosition in selectedPrefab.multiTilePositions[rotationIndex]) {
+										Vector2 actualMultiTilePosition = tile.obj.transform.position + (Vector3)multiTilePosition;
+										if (actualMultiTilePosition.x >= 0 && actualMultiTilePosition.x < tileM.map.mapData.mapSize && actualMultiTilePosition.y >= 0 && actualMultiTilePosition.y < tileM.map.mapData.mapSize) {
+											TileManager.Tile posTile = tileM.map.GetTileFromPosition(actualMultiTilePosition);
+											addTile = selectionModifierFunctions[selectionModifier](tile, posTile, selectedPrefab);
+											if (!addTile) {
+												break;
+											}
+										} else {
+											addTile = false;
 											break;
 										}
 									}
@@ -759,7 +766,7 @@ public class JobManager:MonoBehaviour {
 								selectionArea.Add(tile);
 								addedToSelectionArea = true;
 
-								GameObject selectionIndicator = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), tile.obj.transform, false);
+								GameObject selectionIndicator = Instantiate(resourceM.tilePrefab, tile.obj.transform, false);
 								selectionIndicator.name = "Selection Indicator";
 								SpriteRenderer sISR = selectionIndicator.GetComponent<SpriteRenderer>();
 								sISR.sprite = Resources.Load<Sprite>(@"UI/selectionIndicator");
@@ -883,19 +890,19 @@ public class JobManager:MonoBehaviour {
 		foreach (TileManager.Tile tile in selectionArea) {
 			if (selectedPrefab.type == ResourceManager.TileObjectPrefabsEnum.RemoveAll) {
 				foreach (ResourceManager.TileObjectInstance instance in tile.GetAllObjectInstances()) {
-					if (RemoveLayerMap.ContainsKey(instance.prefab.layer) && !JobOfPrefabTypeExistsAtTile(RemoveLayerMap[instance.prefab.layer], tile)) {
+					if (RemoveLayerMap.ContainsKey(instance.prefab.layer) && !JobOfPrefabTypeExistsAtTile(RemoveLayerMap[instance.prefab.layer], instance.tile)) {
 						ResourceManager.TileObjectPrefab selectedRemovePrefab = resourceM.GetTileObjectPrefabByEnum(RemoveLayerMap[instance.prefab.layer]);
 						bool createJobAtTile = true;
 						foreach (SelectionModifiersEnum selectionModifier in selectedRemovePrefab.selectionModifiers) {
 							if (selectionModifier != SelectionModifiersEnum.Outline) {
-								createJobAtTile = selectionModifierFunctions[selectionModifier](tile, tile, selectedRemovePrefab);
+								createJobAtTile = selectionModifierFunctions[selectionModifier](instance.tile, instance.tile, selectedRemovePrefab);
 								if (!createJobAtTile) {
 									break;
 								}
 							}
 						}
 						if (createJobAtTile) {
-							CreateJob(new Job(tile, selectedRemovePrefab, rotationIndex));
+							CreateJob(new Job(instance.tile, selectedRemovePrefab, rotationIndex));
 						}
 					}
 				}

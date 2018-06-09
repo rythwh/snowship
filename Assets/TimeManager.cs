@@ -37,7 +37,10 @@ public class TimeManager : MonoBehaviour {
 
 	public bool minuteChanged;
 
+	public float tileBrightnessTime = 0;
+
 	void Update() {
+		tileBrightnessTime = CalculateTileBrightnessTime();
 		if (tileM.generated) {
 			if (Input.GetKeyDown(KeyCode.Alpha1) && !uiM.pauseMenu.activeSelf && !debugM.debugMode) {
 				if (timeModifier > 0) {
@@ -66,7 +69,7 @@ public class TimeManager : MonoBehaviour {
 				minute += 1;
 				timer = 0;
 				if (minute % 10 == 0) {
-					tileM.map.SetTileBrightness(GetTileBrightnessTime());
+					tileM.map.SetTileBrightness(tileBrightnessTime);
 				}
 				minuteChanged = true;
 				if (minute >= 60) {
@@ -123,7 +126,7 @@ public class TimeManager : MonoBehaviour {
 		return hour;
 	}
 
-	public float GetTileBrightnessTime() {
+	private float CalculateTileBrightnessTime() {
 		return (float)System.Math.Round(hour + (minute / 60f),2);
 	}
 

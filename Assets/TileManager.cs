@@ -15,6 +15,8 @@ public class TileManager : MonoBehaviour {
 		cameraM = GetComponent<CameraManager>();
 		resourceM = GetComponent<ResourceManager>();
 		colonistM = GetComponent<ColonistManager>();
+
+		resourceM.GetResourceReferences();
 	}
 
 	void Start() {
@@ -283,10 +285,6 @@ public class TileManager : MonoBehaviour {
 	};
 
 	public class Tile {
-
-		private TileManager tileM;
-		private TimeManager timeM;
-
 		public SpriteRenderer sr;
 
 		public Map map;
@@ -333,17 +331,13 @@ public class TileManager : MonoBehaviour {
 
 		public bool dugPreviously;
 
-		public Tile(Map map, Vector2 position, float height, TileManager tileM, TimeManager timeM, bool normalTile) {
-
-			this.tileM = tileM;
-			this.timeM = timeM;
-
+		public Tile(Map map, Vector2 position, float height, bool normalTile) {
 			this.map = map;
 
 			this.position = position;
 
 			if (normalTile) {
-				obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), new Vector2(position.x + 0.5f, position.y + 0.5f), Quaternion.identity);
+				obj = Instantiate(map.resourceM.tilePrefab, new Vector2(position.x + 0.5f, position.y + 0.5f), Quaternion.identity);
 				obj.transform.SetParent(GameObject.Find("TileParent").transform, true);
 				obj.name = "Tile: " + position;
 
@@ -370,7 +364,7 @@ public class TileManager : MonoBehaviour {
 			if (bitmask) {
 				map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList());
 			}
-			if (plant != null && !tileM.PlantableTileTypes.Contains(tileType.type)) {
+			if (plant != null && !map.tileM.PlantableTileTypes.Contains(tileType.type)) {
 				map.smallPlants.Remove(plant);
 				Destroy(plant.obj);
 				plant = null;
@@ -397,7 +391,7 @@ public class TileManager : MonoBehaviour {
 					foreach (Tile tile in nonWalkableSurroundingTiles) {
 						if (!removeFromNonWalkableSurroundingTiles.Contains(tile)) {
 							int tileIndex = surroundingTiles.IndexOf(tile);
-							List<List<int>> orderedIndexesToCheckList = tileM.nonWalkableSurroundingTilesComparatorMap[tileIndex];
+							List<List<int>> orderedIndexesToCheckList = map.tileM.nonWalkableSurroundingTilesComparatorMap[tileIndex];
 							bool removedOppositeTile = false;
 							foreach (List<int> orderedIndexesToCheck in orderedIndexesToCheckList) {
 								if (surroundingTiles[orderedIndexesToCheck[0]] != null && !surroundingTiles[orderedIndexesToCheck[0]].walkable) {
@@ -494,11 +488,11 @@ public class TileManager : MonoBehaviour {
 
 		public void SetTileTypeBasedOnHeight() {
 			if (height < map.mapData.terrainTypeHeights[TileTypes.GrassWater]) {
-				SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater), false, false, false, false);
+				SetTileType(map.tileM.GetTileTypeByEnum(TileTypes.GrassWater), false, false, false, false);
 			} else if (height > map.mapData.terrainTypeHeights[TileTypes.Stone]) {
-				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Stone), false, false, false, false);
+				SetTileType(map.tileM.GetTileTypeByEnum(TileTypes.Stone), false, false, false, false);
 			} else {
-				SetTileType(tileM.GetTileTypeByEnum(TileTypes.Grass), false, false, false, false);
+				SetTileType(map.tileM.GetTileTypeByEnum(TileTypes.Grass), false, false, false, false);
 			}
 		}
 
@@ -515,14 +509,14 @@ public class TileManager : MonoBehaviour {
 
 		public void SetBiome(Biome biome) {
 			this.biome = biome;
-			if (!tileM.StoneEquivalentTileTypes.Contains(tileType.type)) {
-				if (!tileM.WaterEquivalentTileTypes.Contains(tileType.type)) {
+			if (!map.tileM.StoneEquivalentTileTypes.Contains(tileType.type)) {
+				if (!map.tileM.WaterEquivalentTileTypes.Contains(tileType.type)) {
 					SetTileType(biome.tileType, false, false, false, false);
 				} else {
 					SetTileType(biome.waterType, false, false, false, false);
 				}
 			}
-			if (tileM.PlantableTileTypes.Contains(tileType.type)) {
+			if (map.tileM.PlantableTileTypes.Contains(tileType.type)) {
 				SetPlant(false, null);
 			}
 		}
@@ -535,9 +529,9 @@ public class TileManager : MonoBehaviour {
 			}
 			if (!removePlant) {
 				if (specificPlant == null) {
-					ResourceManager.PlantGroup biomePlantGroup = tileM.resourceM.GetPlantGroupByBiome(biome, false);
+					ResourceManager.PlantGroup biomePlantGroup = map.resourceM.GetPlantGroupByBiome(biome, false);
 					if (biomePlantGroup != null) {
-						plant = new ResourceManager.Plant(biomePlantGroup, this, true, false, map.smallPlants, true, null, tileM.resourceM);
+						plant = new ResourceManager.Plant(biomePlantGroup, this, true, false, map.smallPlants, true, null, map.resourceM);
 					}
 				} else {
 					plant = specificPlant;
@@ -549,12 +543,11 @@ public class TileManager : MonoBehaviour {
 		public void RemoveTileObjectAtLayer(int layer) {
 			if (objectInstances.ContainsKey(layer)) {
 				if (objectInstances[layer] != null) {
-					foreach (Tile additionalTile in objectInstances[layer].additionalTiles) {
-						if (additionalTile != this) {
-							additionalTile.RemoveTileObjectAtLayer(layer);
-						}
-					}
 					Destroy(objectInstances[layer].obj);
+					foreach (Tile additionalTile in objectInstances[layer].additionalTiles) {
+						additionalTile.objectInstances[layer] = null;
+						additionalTile.PostChangeTileObject();
+					}
 					objectInstances[layer] = null;
 				}
 			}
@@ -589,7 +582,7 @@ public class TileManager : MonoBehaviour {
 				}
 			}
 			PostChangeTileObject();
-			tileM.resourceM.AddTileObjectInstance(objectInstances[tileObjectPrefab.layer]);
+			map.resourceM.AddTileObjectInstance(objectInstances[tileObjectPrefab.layer]);
 		}
 
 		public void PostChangeTileObject() {
@@ -659,11 +652,11 @@ public class TileManager : MonoBehaviour {
 
 		public void SetFarm(ResourceManager.Farm farm) {
 			if (farm == null) {
-				tileM.resourceM.farms.Remove(this.farm);
+				map.resourceM.farms.Remove(this.farm);
 				this.farm = null;
 			} else {
 				this.farm = farm;
-				tileM.resourceM.farms.Add(farm);
+				map.resourceM.farms.Add(farm);
 			}
 		}
 
@@ -677,7 +670,7 @@ public class TileManager : MonoBehaviour {
 			} else {
 				sr.color = newColour;
 			}
-			float colourBrightnessMultiplier = Mathf.Lerp(currentHourBrightness, nextHourBrightness, (timeM.GetTileBrightnessTime() - hour));
+			float colourBrightnessMultiplier = Mathf.Lerp(currentHourBrightness, nextHourBrightness, (map.timeM.tileBrightnessTime - hour));
 			sr.color = new Color(sr.color.r * colourBrightnessMultiplier, sr.color.g * colourBrightnessMultiplier, sr.color.b * colourBrightnessMultiplier, 1f);
 
 			if (plant != null) {
@@ -802,7 +795,6 @@ public class TileManager : MonoBehaviour {
 	public void PreInitialize() {
 		resourceM.CreateResources();
 		resourceM.CreateTileObjectPrefabs();
-		//resourceM.SetManufacturableResourcesData();
 		resourceM.CreatePlantGroups();
 
 		CreateTileTypes();
@@ -846,13 +838,13 @@ public class TileManager : MonoBehaviour {
 
 	public class Map {
 
-		private TileManager tileM;
-		private TimeManager timeM;
-		private PathManager pathM;
-		private CameraManager cameraM;
-		private ColonistManager colonistM;
-		private ResourceManager resourceM;
-		private UIManager uiM;
+		public TileManager tileM;
+		public TimeManager timeM;
+		public PathManager pathM;
+		public CameraManager cameraM;
+		public ColonistManager colonistM;
+		public ResourceManager resourceM;
+		public UIManager uiM;
 
 		public bool createdMap;
 
@@ -895,7 +887,7 @@ public class TileManager : MonoBehaviour {
 				SetResourceVeins();
 				DetermineShadowDirectionsAtHour();
 				DetermineShadowTiles(tiles, false);
-				SetTileBrightness(timeM.GetTileBrightnessTime());
+				SetTileBrightness(timeM.tileBrightnessTime);
 				DetermineVisibleRegionBlocks();
 				Bitmasking(tiles);
 				createdMap = true;
@@ -988,7 +980,7 @@ public class TileManager : MonoBehaviour {
 				uiM.UpdateLoadingStateText("Lighting", "Calculating Shadows"); yield return null;
 				DetermineShadowTiles(tiles, false);
 				uiM.UpdateLoadingStateText("Lighting", "Applying Shadows"); yield return null;
-				SetTileBrightness(timeM.GetTileBrightnessTime());
+				SetTileBrightness(timeM.tileBrightnessTime);
 				uiM.UpdateLoadingStateText("Lighting", "Determining Visible Region Blocks"); yield return null;
 				DetermineVisibleRegionBlocks();
 			}
@@ -1009,7 +1001,7 @@ public class TileManager : MonoBehaviour {
 
 					Vector2 position = new Vector2(x, y);
 
-					Tile tile = new Tile(this, position, height, tileM, timeM, true);
+					Tile tile = new Tile(this, position, height, true);
 
 					innerTiles.Add(tile);
 					tiles.Add(tile);
@@ -1162,8 +1154,8 @@ public class TileManager : MonoBehaviour {
 				colour = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 			}
 
-			public void ColourRegion() {
-				Sprite whiteSquare = Resources.Load<Sprite>(@"UI/white-square");
+			public void ColourRegion(Sprite whiteSquareSprite) {
+				Sprite whiteSquare = whiteSquareSprite;
 				foreach (Tile tile in this.tiles) {
 					tile.sr.sprite = whiteSquare;
 					tile.sr.color = colour;
@@ -2188,7 +2180,7 @@ public class TileManager : MonoBehaviour {
 						}
 					}
 				}
-				SetTileBrightness(timeM.GetTileBrightnessTime());
+				SetTileBrightness(timeM.tileBrightnessTime);
 			}
 		}
 
@@ -2334,7 +2326,7 @@ public class TileManager : MonoBehaviour {
 				}
 			}
 			if (setBrightnessAtEnd) {
-				SetTileBrightness(timeM.GetTileBrightnessTime());
+				SetTileBrightness(timeM.tileBrightnessTime);
 			}
 		}
 

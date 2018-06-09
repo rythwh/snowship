@@ -16,6 +16,22 @@ public class ResourceManager : MonoBehaviour {
 		jobM = GetComponent<JobManager>();
 	}
 
+	public GameObject tilePrefab;
+	public Sprite selectionCornersSprite;
+	public Sprite whiteSquareSprite;
+	public GameObject planetTilePrefab;
+	public GameObject tileImage;
+	public GameObject objectDataPanel;
+
+	public void GetResourceReferences() {
+		tilePrefab = Resources.Load<GameObject>(@"Prefabs/Tile");
+		selectionCornersSprite = Resources.Load<Sprite>(@"UI/selectionCorners");
+		whiteSquareSprite = Resources.Load<Sprite>(@"UI/white-square");
+		planetTilePrefab = Resources.Load<GameObject>(@"UI/UIElements/PlanetTile");
+		tileImage = Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage");
+		objectDataPanel = Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel");
+	}
+
 	void Update() {
 		CalculateResourceTotals();
 		foreach (Farm farm in farms) {
@@ -743,12 +759,14 @@ public class ResourceManager : MonoBehaviour {
 	public class TileObjectPrefab {
 
 		private UIManager uiM;
+		private ResourceManager resourceM;
 
 		void GetScriptReferences() {
 
 			GameObject GM = GameObject.Find("GM");
 
 			uiM = GM.GetComponent<UIManager>();
+			resourceM = GM.GetComponent<ResourceManager>();
 		}
 
 		public TileObjectPrefabsEnum type;
@@ -778,9 +796,9 @@ public class ResourceManager : MonoBehaviour {
 
 		public Vector2 blockingAmount;
 
-		public List<Vector2> multiTilePositions = new List<Vector2>() { new Vector2(0, 0) };
-		public Vector2 anchorPositionOffset;
-		public Vector2 dimensions;
+		public Dictionary<int, List<Vector2>> multiTilePositions = new Dictionary<int, List<Vector2>>();
+		public Dictionary<int, Vector2> anchorPositionOffset = new Dictionary<int, Vector2>();
+		public Dictionary<int, Vector2> dimensions = new Dictionary<int, Vector2>();
 
 		public int maxInventoryAmount;
 
@@ -788,6 +806,8 @@ public class ResourceManager : MonoBehaviour {
 		public Color lightColour;
 
 		public float restComfortAmount;
+
+		public bool canRotate;
 
 		public TileObjectPrefab(
 			TileObjectPrefabSubGroup tileObjectPrefabSubGroup,
@@ -838,12 +858,6 @@ public class ResourceManager : MonoBehaviour {
 
 			this.blockingAmount = blockingAmount;
 
-			this.multiTilePositions.AddRange(multiTilePositions);
-			float largestX = this.multiTilePositions.OrderByDescending(MTP => MTP.x).ToList()[0].x;
-			float largestY = this.multiTilePositions.OrderByDescending(MTP => MTP.y).ToList()[0].y;
-			dimensions = new Vector2(largestX + 1, largestY + 1);
-			anchorPositionOffset = new Vector2(largestX / 2, largestY / 2);
-
 			this.maxInventoryAmount = maxInventoryAmount;
 
 			this.maxLightDistance = maxLightDistance;
@@ -860,6 +874,33 @@ public class ResourceManager : MonoBehaviour {
 			}
 			if (jobType == JobManager.JobTypesEnum.PlantFarm) {
 				baseSprite = bitmaskSprites[bitmaskSprites.Count - 1];
+			}
+
+			canRotate = (!resourceM.GetBitmaskingTileObjects().Contains(type) && bitmaskSprites.Count > 0);
+
+			float largestX = 0;
+			float largestY = 0;
+
+			if (multiTilePositions.Count <= 0) {
+				multiTilePositions.Add(new Vector2(0, 0));
+			}
+
+			for (int i = 0; i < (bitmaskSprites.Count > 0 ? bitmaskSprites.Count : 1); i++) {
+				if (i == 0 || i > 0 && canRotate) {
+					this.multiTilePositions.Add(i, new List<Vector2>());
+					if (i == 0) {
+						this.multiTilePositions[i].AddRange(multiTilePositions);
+					} else {
+						foreach (Vector2 oldMultiTilePosition in this.multiTilePositions[i-1]) {
+							Vector2 newMultiTilePosition = new Vector2(oldMultiTilePosition.y, largestX - oldMultiTilePosition.x);
+							this.multiTilePositions[i].Add(newMultiTilePosition);
+						}
+					}
+					largestX = this.multiTilePositions[i].OrderByDescending(MTP => MTP.x).ToList()[0].x;
+					largestY = this.multiTilePositions[i].OrderByDescending(MTP => MTP.y).ToList()[0].y;
+					dimensions.Add(i, new Vector2(largestX + 1, largestY + 1));
+					anchorPositionOffset.Add(i, new Vector2(largestX / 2, largestY / 2));
+				}
 			}
 		}
 	}
@@ -934,8 +975,9 @@ public class ResourceManager : MonoBehaviour {
 			resourceM = GM.GetComponent<ResourceManager>();
 		}
 
-		public TileManager.Tile tile;
+		public TileManager.Tile tile; // The tile that this object covers that is closest to the zeroPointTile (usually they are the same tile)
 		public List<TileManager.Tile> additionalTiles = new List<TileManager.Tile>();
+		public TileManager.Tile zeroPointTile; // The tile representing the (0,0) position of the object even if the object doesn't cover it
 		
 		public TileObjectPrefab prefab;
 		public GameObject obj;
@@ -955,16 +997,24 @@ public class ResourceManager : MonoBehaviour {
 			this.prefab = prefab;
 
 			this.tile = tile;
-			foreach (Vector2 multiTilePosition in prefab.multiTilePositions.Skip(1)) {
-				TileManager.Tile additionalTile = tile.map.GetTileFromPosition(tile.obj.transform.position + (Vector3)multiTilePosition);
+			zeroPointTile = tile;
+			foreach (Vector2 multiTilePosition in prefab.multiTilePositions[rotationIndex]) {
+				TileManager.Tile additionalTile = zeroPointTile.map.GetTileFromPosition(zeroPointTile.obj.transform.position + (Vector3)multiTilePosition);
 				additionalTiles.Add(additionalTile);
-				additionalTile.SetTileObjectInstanceReference(this);
+				if (additionalTile != zeroPointTile) {
+					additionalTile.SetTileObjectInstanceReference(this);
+				}
+			}
+			if (additionalTiles.Count > 0 && !additionalTiles.Contains(tile)) {
+				tile = additionalTiles.OrderBy(additionalTile => Vector2.Distance(tile.obj.transform.position, additionalTile.obj.transform.position)).ToList()[0];
+			} else if (additionalTiles.Count <= 0) {
+				additionalTiles.Add(tile);
 			}
 
 			this.rotationIndex = rotationIndex;
 
-			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"),tile.obj.transform,false);
-			obj.transform.position += (Vector3)prefab.anchorPositionOffset;
+			obj = Instantiate(resourceM.tilePrefab, zeroPointTile.obj.transform,false);
+			obj.transform.position += (Vector3)prefab.anchorPositionOffset[rotationIndex];
 			obj.name = "Tile Object Instance: " + prefab.name;
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 1 + prefab.layer; // Tile Object Sprite
 			obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
@@ -984,9 +1034,11 @@ public class ResourceManager : MonoBehaviour {
 
 			if (resourceM.LightBlockingTileObjects.Contains(prefab.type)) {
 				foreach (LightSource lightSource in resourceM.lightSources) {
-					if (lightSource.litTiles.Contains(tile)) {
-						lightSource.RemoveTileBrightnesses();
-						lightSource.SetTileBrightnesses();
+					foreach (TileManager.Tile objectTile in additionalTiles) {
+						if (lightSource.litTiles.Contains(objectTile)) {
+							lightSource.RemoveTileBrightnesses();
+							lightSource.SetTileBrightnesses();
+						}
 					}
 				}
 			}
@@ -997,10 +1049,16 @@ public class ResourceManager : MonoBehaviour {
 		}
 
 		public void FinishCreation() {
-			List<TileManager.Tile> bitmaskingTiles = new List<TileManager.Tile>() { tile };
-			bitmaskingTiles.AddRange(tile.surroundingTiles);
+			List<TileManager.Tile> bitmaskingTiles = new List<TileManager.Tile>();
+			foreach (TileManager.Tile additionalTile in additionalTiles) {
+				bitmaskingTiles.Add(additionalTile);
+				bitmaskingTiles.AddRange(additionalTile.surroundingTiles);
+			}
+			bitmaskingTiles = bitmaskingTiles.Distinct().ToList();
 			resourceM.Bitmask(bitmaskingTiles);
-			SetColour(tile.sr.color);
+			foreach (TileManager.Tile tile in additionalTiles) {
+				SetColour(tile.sr.color);
+			}
 		}
 
 		public void SetColour(Color newColour) {
@@ -1186,7 +1244,7 @@ public class ResourceManager : MonoBehaviour {
 			this.group = group;
 			this.tile = tile;
 
-			obj = Instantiate(Resources.Load<GameObject>(@"Prefabs/Tile"), tile.obj.transform.position, Quaternion.identity);
+			obj = Instantiate(resourceM.tilePrefab, tile.obj.transform.position, Quaternion.identity);
 
 			SpriteRenderer pSR = obj.GetComponent<SpriteRenderer>();
 
@@ -1351,7 +1409,7 @@ public class ResourceManager : MonoBehaviour {
 					}
 				}
 			}
-			tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
+			tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
 		}
 
 		public void RemoveTileBrightnesses() {
@@ -1360,7 +1418,7 @@ public class ResourceManager : MonoBehaviour {
 			}
 			litTiles.Clear();
 			parentTile.RemoveLightSourceBrightness(this);
-			tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
+			tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
 		}
 	}
 
@@ -1454,7 +1512,7 @@ public class ResourceManager : MonoBehaviour {
 
 		public float CalculateGrowthRate() {
 			float growthRate = timeM.deltaTime;
-			growthRate *= Mathf.Max(tileM.map.CalculateBrightnessLevelAtHour(timeM.GetTileBrightnessTime()), tile.lightSourceBrightness);
+			growthRate *= Mathf.Max(tileM.map.CalculateBrightnessLevelAtHour(timeM.tileBrightnessTime), tile.lightSourceBrightness);
 			growthRate *= precipitationGrowthMultiplier;
 			growthRate *= temperatureGrowthMultipler;
 			growthRate = Mathf.Clamp(growthRate, 0, 1);

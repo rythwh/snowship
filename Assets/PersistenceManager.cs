@@ -137,7 +137,7 @@ public class PersistenceManager : MonoBehaviour {
 
 		// Save the time data
 		string timeData = "Time";
-		timeData += "/Time," + timeM.GetTileBrightnessTime();
+		timeData += "/Time," + timeM.tileBrightnessTime;
 		timeData += "/Date," + timeM.GetDateString();
 		file.WriteLine(timeData);
 
@@ -1009,7 +1009,7 @@ public class PersistenceManager : MonoBehaviour {
 		tileM.map.SetTileRegions(false);
 		tileM.map.CreateRegionBlocks();
 		tileM.map.DetermineShadowTiles(tileM.map.tiles, false);
-		tileM.map.SetTileBrightness(timeM.GetTileBrightnessTime());
+		tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
 		tileM.map.DetermineVisibleRegionBlocks();
 		tileM.map.Bitmasking(tileM.map.tiles);
 		resourceM.Bitmask(tileM.map.tiles);
