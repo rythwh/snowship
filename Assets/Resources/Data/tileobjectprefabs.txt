@@ -4,7 +4,7 @@
 		Walls
 		<Object>
 			<Type>WoodenWall
-			<TimeToBuild>20
+			<TimeToBuild>5
 			<ResourcesToBuild>Wood:5
 			<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -17,7 +17,7 @@
 			<MaxIntegrity>1000
 		<Object>
 			<Type>StoneWall
-			<TimeToBuild>20
+			<TimeToBuild>5
 			<ResourcesToBuild>Stone:5
 			<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -30,7 +30,7 @@
 			<MaxIntegrity>4000
 		<Object>
 			<Type>BrickWall
-			<TimeToBuild>20
+			<TimeToBuild>10
 			<ResourcesToBuild>Brick:5
 			<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -43,7 +43,7 @@
 			<MaxIntegrity>2500
 		<Object>
 			<Type>WoodenFence
-			<TimeToBuild>15
+			<TimeToBuild>10
 			<ResourcesToBuild>Wood:3
 			<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -58,7 +58,7 @@
 		Doors
 		<Object>
 			<Type>WoodenDoor
-			<TimeToBuild>15
+			<TimeToBuild>5
 			<ResourcesToBuild>Wood:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -73,7 +73,7 @@
 		Floors
 		<Object>
 			<Type>WoodenFloor
-			<TimeToBuild>15
+			<TimeToBuild>5
 			<ResourcesToBuild>Wood:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -86,7 +86,7 @@
 			<MaxIntegrity>100
 		<Object>
 			<Type>BrickFloor
-			<TimeToBuild>15
+			<TimeToBuild>10
 			<ResourcesToBuild>Brick:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -103,7 +103,7 @@
 		Containers
 		<Object>
 			<Type>Basket
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<ResourcesToBuild>Wood:1
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -117,7 +117,7 @@
 			<MaxInventoryAmount>100
 		<Object>
 			<Type>WoodenChest
-			<TimeToBuild>20
+			<TimeToBuild>10
 			<ResourcesToBuild>Wood:3
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -131,7 +131,7 @@
 			<MaxInventoryAmount>250
 		<Object>
 			<Type>WoodenDrawers
-			<TimeToBuild>30
+			<TimeToBuild>15
 			<ResourcesToBuild>Wood:4
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -147,7 +147,7 @@
 		Beds
 		<Object>
 			<Type>WoodenBed
-			<TimeToBuild>20
+			<TimeToBuild>10
 			<ResourcesToBuild>Wood:4,Cloth:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -163,7 +163,7 @@
 		Chairs
 		<Object>
 			<Type>WoodenChair
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<ResourcesToBuild>Wood:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -178,7 +178,7 @@
 		Tables
 		<Object>
 			<Type>WoodenTable
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<ResourcesToBuild>Wood:4
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -193,7 +193,7 @@
 		Lights
 		<Object>
 			<Type>Torch
-			<TimeToBuild>20
+			<TimeToBuild>5
 			<ResourcesToBuild>Wood:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -204,11 +204,11 @@
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.1,0.8
 			<MaxIntegrity>10
-			<MaxLightDistance>5
-			<LightColour>#E67E22
+			<MaxLightDistance>10
+			<LightColour>E67E22
 		<Object>
 			<Type>WoodenLamp
-			<TimeToBuild>20
+			<TimeToBuild>10
 			<ResourcesToBuild>Wood:1,Glass:1
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -219,15 +219,15 @@
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.8,0.1
 			<MaxIntegrity>20
-			<MaxLightDistance>10
-			<LightColour>#E67E22
+			<MaxLightDistance>7
+			<LightColour>E67E22
 <Group>
 	Industrial
 	<SubGroup>
 		Furnaces
 		<Object>
 			<Type>StoneFurnace
-			<TimeToBuild>15
+			<TimeToBuild>10
 			<ResourcesToBuild>Stone:5
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -256,7 +256,7 @@
 			<MultiTilePositions>0,0;1,0
 		<Object>
 			<Type>SplittingBlock
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<ResourcesToBuild>Stone:1
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 			<JobType>Build
@@ -299,7 +299,7 @@
 		PlantFarm
 		<Object>
 			<Type>WheatFarm
-			<TimeToBuild>15
+			<TimeToBuild>5
 			<ResourcesToBuild>WheatSeed:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs
 			<JobType>PlantFarm
@@ -312,7 +312,7 @@
 			<MaxIntegrity>10
 		<Object>
 			<Type>PotatoFarm
-			<TimeToBuild>15
+			<TimeToBuild>5
 			<ResourcesToBuild>Potato:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs
 			<JobType>PlantFarm
@@ -325,7 +325,7 @@
 			<MaxIntegrity>10
 		<Object>
 			<Type>CottonFarm
-			<TimeToBuild>15
+			<TimeToBuild>5
 			<ResourcesToBuild>CottonSeed:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs
 			<JobType>PlantFarm
@@ -340,7 +340,7 @@
 		HarvestFarm
 		<Object>
 			<Type>HarvestFarm
-			<TimeToBuild>20
+			<TimeToBuild>10
 			<SelectionModifiers>Walkable,Buildable,Farms,OmitSameLayerJobs
 			<JobType>HarvestFarm
 			<Layer>0
@@ -351,21 +351,21 @@
 		Plants
 		<Object>
 			<Type>ChopPlant
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<SelectionModifiers>Walkable,Plants,OmitSameLayerJobs
 			<JobType>ChopPlant
 			<Layer>0
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>PlantPlant
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
 			<Layer>0
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>PlantAppleTree
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<ResourcesToBuild>AppleSeed:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
@@ -373,7 +373,7 @@
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>PlantBlueberryBush
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<ResourcesToBuild>Blueberry:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
@@ -383,14 +383,14 @@
 		Terrain
 		<Object>
 			<Type>Mine
-			<TimeToBuild>15
+			<TimeToBuild>10
 			<SelectionModifiers>StoneTypes,OmitSameLayerJobs
 			<JobType>Mine
 			<Layer>0
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>Dig
-			<TimeToBuild>15
+			<TimeToBuild>10
 			<SelectionModifiers>OmitNonCoastWater,OmitHoles,OmitPreviousDig,OmitStoneTypes,OmitObjects,OmitPlants,OmitSameLayerJobs
 			<JobType>Dig
 			<Layer>0
@@ -399,21 +399,21 @@
 		Remove
 		<Object>
 			<Type>RemoveLayer1
-			<TimeToBuild>15
+			<TimeToBuild>10
 			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs
 			<JobType>Remove
 			<Layer>1
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>RemoveLayer2
-			<TimeToBuild>15
+			<TimeToBuild>10
 			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs
 			<JobType>Remove
 			<Layer>2
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>RemoveAll
-			<TimeToBuild>15
+			<TimeToBuild>10
 			<SelectionModifiers>Objects,OmitSameLayerJobs
 			<JobType>Remove
 			<Layer>0
@@ -446,7 +446,7 @@
 		None
 		<Object>
 			<Type>CreateResource
-			<TimeToBuild>15
+			<TimeToBuild>5
 			<JobType>CreateResource
 			<Layer>0
 			<AddToTileWhenBuilt>false
@@ -482,7 +482,7 @@
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>PlantTree
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<ResourcesToBuild>TreeSeed:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
@@ -490,7 +490,7 @@
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>PlantBush
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<ResourcesToBuild>BushSeed:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant
@@ -498,7 +498,7 @@
 			<AddToTileWhenBuilt>false
 		<Object>
 			<Type>PlantCactus
-			<TimeToBuild>10
+			<TimeToBuild>5
 			<ResourcesToBuild>CactusSeed:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,OmitNonLivingTreeOrBushBiomes
 			<JobType>PlantPlant

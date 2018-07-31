@@ -1384,6 +1384,7 @@ public class ResourceManager : MonoBehaviour {
 		}
 
 		public void SetTileBrightnesses() {
+			List<TileManager.Tile> newLitTiles = new List<TileManager.Tile>();
 			foreach (TileManager.Tile tile in tileM.map.tiles) {
 				float distance = Vector2.Distance(tile.obj.transform.position, parentTile.obj.transform.position);
 				if (distance <= parentObject.prefab.maxLightDistance) {
@@ -1392,8 +1393,15 @@ public class ResourceManager : MonoBehaviour {
 						bool lightTile = true;
 						Vector3 lightVector = parentObject.obj.transform.position;
 						while ((parentObject.obj.transform.position - lightVector).magnitude <= distance) {
-							if (tileM.map.GetTileFromPosition(lightVector) != parentTile) {
-								if (tileM.map.TileBlocksLight(tileM.map.GetTileFromPosition(lightVector))) {
+							TileManager.Tile lightVectorTile = tileM.map.GetTileFromPosition(lightVector);
+							if (lightVectorTile != parentTile) {
+								if (tileM.map.TileBlocksLight(lightVectorTile)) {
+									/*
+									if (!lightVectorTile.horizontalSurroundingTiles.Any(t => newLitTiles.Contains(t) && !tileM.map.TileBlocksLight(t))) {
+										lightTile = false;
+										break;
+									}
+									*/
 									lightTile = false;
 									break;
 								}
@@ -1402,7 +1410,7 @@ public class ResourceManager : MonoBehaviour {
 						}
 						if (lightTile) {
 							tile.AddLightSourceBrightness(this, intensityAtTile);
-							litTiles.Add(tile);
+							newLitTiles.Add(tile);
 						}
 					} else {
 						parentTile.AddLightSourceBrightness(this, intensityAtTile);
@@ -1410,6 +1418,7 @@ public class ResourceManager : MonoBehaviour {
 				}
 			}
 			tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
+			litTiles.AddRange(newLitTiles);
 		}
 
 		public void RemoveTileBrightnesses() {

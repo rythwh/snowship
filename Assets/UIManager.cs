@@ -20,9 +20,9 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public Color HexToColor(string hexString) {
-		int r = int.Parse("" + hexString[2] + hexString[3], System.Globalization.NumberStyles.HexNumber);
-		int g = int.Parse("" + hexString[4] + hexString[5], System.Globalization.NumberStyles.HexNumber);
-		int b = int.Parse("" + hexString[6] + hexString[7], System.Globalization.NumberStyles.HexNumber);
+		Int32 r = Int32.Parse("" + hexString[0] + hexString[1], System.Globalization.NumberStyles.HexNumber);
+		Int32 g = Int32.Parse("" + hexString[2] + hexString[3], System.Globalization.NumberStyles.HexNumber);
+		Int32 b = Int32.Parse("" + hexString[4] + hexString[5], System.Globalization.NumberStyles.HexNumber);
 		return new Color(r, g, b, 255f) / 255f;
 	}
 
@@ -30,7 +30,7 @@ public class UIManager : MonoBehaviour {
 		return new Regex("[^a-zA-Z0-9 -]").Replace(removeFromString, string.Empty);
 	}
 
-	public enum Colours { DarkRed, DarkGreen, LightRed, LightGreen, LightGrey220, LightGrey200, Grey150, DarkGrey50, LightBlue, LightOrange, White, DarkYellow, LightYellow };
+	public enum Colours { DarkRed, DarkGreen, LightRed, LightGreen, LightGrey220, LightGrey200, Grey150, DarkGrey50, LightBlue, LightOrange, White, DarkYellow, LightYellow, LightPurple};
 
 	private Dictionary<Colours, Color> colourMap = new Dictionary<Colours, Color>() {
 		{Colours.DarkRed,new Color(192f, 57f, 43f, 255f) / 255f },
@@ -45,7 +45,8 @@ public class UIManager : MonoBehaviour {
 		{Colours.LightOrange,new Color(230f, 126f, 34f, 255f) / 255f },
 		{Colours.White,new Color(255f, 255f, 255f, 255f) / 255f },
 		{Colours.DarkYellow,new Color(216f, 176f, 15f, 255f) / 255f },
-		{Colours.LightYellow,new Color(241f, 196f, 15f, 255f) / 255f }
+		{Colours.LightYellow,new Color(241f, 196f, 15f, 255f) / 255f },
+		{Colours.LightPurple,new Color(155f, 89f, 182f, 255f) / 255f }
 	};
 
 	public Color GetColour(Colours colourKey) {
@@ -1659,6 +1660,10 @@ public class UIManager : MonoBehaviour {
 
 			if (job.priority > 0) {
 				obj.transform.Find("JobInfo").GetComponent<Image>().color = uiM.colourMap[Colours.LightYellow];
+			} else if (job.priority < 0) {
+				obj.transform.Find("JobInfo").GetComponent<Image>().color = uiM.colourMap[Colours.LightRed];
+			} else {
+				obj.transform.Find("JobInfo").GetComponent<Image>().color = uiM.colourMap[Colours.LightGrey220];
 			}
 
 			if (colonist != null) {

@@ -24,6 +24,9 @@ public class ColonistManager : MonoBehaviour {
 		timeM = GetComponent<TimeManager>();
 	}
 
+	public List<string> maleNames = new List<string>();
+	public List<string> femaleNames = new List<string>();
+
 	void Awake() {
 		GetScriptReferences();
 
@@ -86,20 +89,25 @@ public class ColonistManager : MonoBehaviour {
 
 		public Gender gender;
 
-		public Life(TileManager.Tile spawnTile, float startingHealth, Gender gender) {
+		public enum Gender { Male, Female };
 
+		public Life(TileManager.Tile spawnTile, float startingHealth) {
 			GetScriptReferences();
 
+			gender = GetRandomGender();
+
 			overTile = spawnTile;
-			obj = Instantiate(spawnTile.map.resourceM.tilePrefab,overTile.obj.transform.position,Quaternion.identity);
+			obj = Instantiate(spawnTile.map.resourceM.tilePrefab, overTile.obj.transform.position, Quaternion.identity);
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 10; // Life Sprite
 
 			health = startingHealth;
-
-			this.gender = gender;
 		}
 
-		private Dictionary<int,int> moveSpritesMap = new Dictionary<int,int>() {
+		public static Gender GetRandomGender() {
+			return (Gender)Random.Range(0, System.Enum.GetNames(typeof(Gender)).Length);
+		}
+
+		private static readonly Dictionary<int,int> moveSpritesMap = new Dictionary<int,int>() {
 			{16,1 },{32,0 },{64,0 },{128,1}
 		};
 		private float moveTimer;
@@ -186,9 +194,9 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	public string GetName(Gender gender) {
+	public string GetName(Life.Gender gender) {
 		string chosenName = "NAME";
-		List<string> names = (gender == Gender.Male ? maleNames : femaleNames);
+		List<string> names = (gender == Life.Gender.Male ? maleNames : femaleNames);
 		List<string> validNames = names.Where(name => colonists.Find(colonistWithName => colonistWithName.name.ToLower() == name.ToLower()) == null).ToList();
 		if (validNames.Count > 0) {
 			chosenName = validNames[Random.Range(0, validNames.Count)];
@@ -203,6 +211,8 @@ public class ColonistManager : MonoBehaviour {
 		return chosenName;
 	}
 
+	public List<List<Sprite>> humanMoveSprites = new List<List<Sprite>>();
+
 	public class Human : Life {
 
 		public string name;
@@ -215,9 +225,12 @@ public class ColonistManager : MonoBehaviour {
 		// Inventory
 		public ResourceManager.Inventory inventory;
 
-		public Human(TileManager.Tile spawnTile,Dictionary<HumanLook,int> humanLookIndices, float startingHealth, Gender gender) : base(spawnTile,startingHealth, gender) {
+		public enum HumanLook { Skin, Hair, Shirt, Pants };
+
+		public Human(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
+			humanLookIndices = GetHumanLookIndices(gender);
+
 			moveSprites = colonistM.humanMoveSprites[humanLookIndices[HumanLook.Skin]];
-			this.humanLookIndices = humanLookIndices;
 
 			inventory = new ResourceManager.Inventory(this,null,50);
 
@@ -227,6 +240,16 @@ public class ColonistManager : MonoBehaviour {
 
 			nameCanvas = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"),obj.transform,false);
 			SetNameCanvas(name);
+		}
+
+		public static Dictionary<HumanLook, int> GetHumanLookIndices(Gender gender) {
+			Dictionary<HumanLook, int> humanLookIndices = new Dictionary<HumanLook, int>() {
+			{HumanLook.Skin, Random.Range(0,3) },
+			{HumanLook.Hair, Random.Range(0,0) },
+			{HumanLook.Shirt, Random.Range(0,0) },
+			{HumanLook.Pants, Random.Range(0,0) }
+		};
+			return humanLookIndices;
 		}
 
 		public void SetNameCanvas(string name) {
@@ -245,7 +268,11 @@ public class ColonistManager : MonoBehaviour {
 		public new void Update() {
 			base.Update();
 			nameCanvas.transform.Find("NameBackground-Image").localScale = Vector2.one * Mathf.Clamp(cameraM.cameraComponent.orthographicSize,2,10) * 0.0025f;
-			nameCanvas.transform.Find("NameBackground-Image").GetComponent<Image>().color = Color.Lerp(uiM.GetColour(UIManager.Colours.LightRed), uiM.GetColour(UIManager.Colours.LightGreen), health);
+			nameCanvas.transform.Find("NameBackground-Image/HealthIndicator-Image").GetComponent<Image>().color = Color.Lerp(uiM.GetColour(UIManager.Colours.LightRed), uiM.GetColour(UIManager.Colours.LightGreen), health);
+		}
+
+		public void SetNameColour(Color nameColour) {
+			nameCanvas.transform.Find("NameBackground-Image/NameColour-Image").GetComponent<Image>().color = nameColour;
 		}
 	}
 
@@ -926,7 +953,9 @@ public class ColonistManager : MonoBehaviour {
 		public float effectiveHappiness = 100;
 		public List<HappinessModifierInstance> happinessModifiers = new List<HappinessModifierInstance>();
 
-		public Colonist(TileManager.Tile spawnTile,Dictionary<HumanLook,int> humanLookIndices, Profession profession, float startingHealth, Gender gender) : base(spawnTile,humanLookIndices,startingHealth,gender) {
+		public Colonist(TileManager.Tile spawnTile, Profession profession, float startingHealth) : base(spawnTile, startingHealth) {
+			SetNameColour(uiM.GetColour(UIManager.Colours.LightGreen));
+
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
 
 			this.profession = profession;
@@ -1396,35 +1425,6 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	public List<Trader> traders = new List<Trader>();
-
-	public class Trader : Human {
-		public Trader(TileManager.Tile spawnTile, Dictionary<HumanLook, int> humanLookIndices, float startingHealth, Gender gender) : base(spawnTile, humanLookIndices, startingHealth, gender) {
-
-		}
-	}
-
-	public List<List<Sprite>> humanMoveSprites = new List<List<Sprite>>();
-	public enum HumanLook { Skin, Hair, Shirt, Pants };
-	public enum Gender { Male, Female };
-
-	public List<string> maleNames = new List<string>();
-	public List<string> femaleNames = new List<string>();
-
-	public Dictionary<HumanLook, int> GetHumanLookIndices(Gender gender) {
-		Dictionary<HumanLook, int> humanLookIndices = new Dictionary<HumanLook, int>() {
-			{HumanLook.Skin, Random.Range(0,3) },
-			{HumanLook.Hair, Random.Range(0,0) },
-			{HumanLook.Shirt, Random.Range(0,0) },
-			{HumanLook.Pants, Random.Range(0,0) }
-		};
-		return humanLookIndices;
-	}
-
-	public Gender GetRandomGender() {
-		return (Gender)Random.Range(0, System.Enum.GetNames(typeof(Gender)).Length);
-	}
-
 	public void SpawnStartColonists(int amount) {
 		SpawnColonists(amount);
 
@@ -1445,10 +1445,6 @@ public class ColonistManager : MonoBehaviour {
 		if (amount > 0) {
 			int mapSize = tileM.map.mapData.mapSize;
 			for (int i = 0; i < amount; i++) {
-				Gender gender = GetRandomGender();
-
-				Dictionary<HumanLook, int> humanLookIndices = GetHumanLookIndices(gender);
-
 				List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 				if (walkableTilesByDistanceToCentre.Count <= 0) {
 					foreach (TileManager.Tile tile in tileM.map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
@@ -1486,7 +1482,7 @@ public class ColonistManager : MonoBehaviour {
 				}
 				TileManager.Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
 
-				Colonist colonist = new Colonist(colonistSpawnTile, humanLookIndices, professions[Random.Range(0, professions.Count)], 1, gender);
+				Colonist colonist = new Colonist(colonistSpawnTile, professions[Random.Range(0, professions.Count)], 1);
 				AddColonist(colonist);
 			}
 		}
@@ -1522,6 +1518,10 @@ public class ColonistManager : MonoBehaviour {
 		if (Input.GetKey(KeyCode.F) && selectedColonist != null) {
 			cameraM.SetCameraPosition(selectedColonist.obj.transform.position);
 			cameraM.SetCameraZoom(5);
+		}
+
+		foreach (Trader trader in traders) {
+			trader.Update();
 		}
 	}
 
@@ -1579,6 +1579,16 @@ public class ColonistManager : MonoBehaviour {
 
 	}
 
+	public List<Trader> traders = new List<Trader>();
+
+	public class Trader : Human {
+		public Trader(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
+			SetNameColour(uiM.GetColour(UIManager.Colours.LightPurple));
+			obj.transform.SetParent(GameObject.Find("TraderParent").transform, false);
+			MoveToTile(colonistM.colonists[0].overTile, false);
+		}
+	}
+
 	private float traderTimer = 0; // The time since the last trader visited
 	private int traderTimeMin = 1440; // Traders will only come once every traderTimeMin in-game minutes
 	private int traderTimeMax = 10080; // Traders will definitely come if the traderTimer is greater than traderTimeMax
@@ -1586,18 +1596,27 @@ public class ColonistManager : MonoBehaviour {
 		traderTimer += timeM.deltaTime;
 		if (traderTimer > traderTimeMin && timeM.minuteChanged) {
 			if (Random.Range(0f, 1f) < ((traderTimer - traderTimeMin) / (traderTimeMax - traderTimeMin))) {
+				traderTimer = 0;
 				SpawnTrader();
 			}
 		}
 	}
 
 	public void SpawnTrader() {
-		traderTimer = 0;
-		Gender gender = GetRandomGender();
-		Dictionary<HumanLook, int> humanLookIndices = GetHumanLookIndices(gender);
 		List<TileManager.Tile> validSpawnTiles = tileM.map.edgeTiles.Where(tile => tile.walkable && !tileM.GetLiquidWaterEquivalentTileTypes().Contains(tile.tileType.type)).ToList();
 		if (validSpawnTiles.Count > 0) {
-			traders.Add(new Trader(validSpawnTiles[Random.Range(0, validSpawnTiles.Count)], humanLookIndices, 1f, gender));
+			traders.Add(new Trader(validSpawnTiles[Random.Range(0, validSpawnTiles.Count)], 1f));
+		}
+	}
+
+	public enum CaravanTypeEnum { Foot, Wagon, Boat };
+
+	public class Caravan {
+		public List<Trader> traders;
+		public CaravanTypeEnum caravanType;
+
+		public Caravan(int amount, CaravanTypeEnum caravanType, ColonistManager colonistM) {
+			colonistM.SpawnTrader();
 		}
 	}
 }

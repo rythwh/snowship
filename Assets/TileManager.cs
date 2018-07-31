@@ -49,6 +49,14 @@ public class TileManager : MonoBehaviour {
 		return StoneEquivalentTileTypes;
 	}
 
+	List<TileTypes> DirtBaseTileTypes = new List<TileTypes>() {
+		TileTypes.Dirt, TileTypes.DirtDryGrass, TileTypes.DirtGrass, TileTypes.DirtThinGrass, TileTypes.Mud,
+		TileTypes.Grass, TileTypes.ThickGrass, TileTypes.ColdGrass, TileTypes.DryGrass, TileTypes.StoneThinGrass
+	};
+	public List<TileTypes> GetDirtBaseTileTypes() {
+		return DirtBaseTileTypes;
+	}
+
 	List<TileTypes> PlantableTileTypes = new List<TileTypes>() {
 		TileTypes.Dirt, TileTypes.Mud, TileTypes.DirtGrass, TileTypes.DirtThinGrass, TileTypes.DirtDryGrass, TileTypes.Grass, TileTypes.ThickGrass,
 		TileTypes.DryGrass, TileTypes.ColdGrass, TileTypes.Sand, TileTypes.Snow, TileTypes.SnowStone, TileTypes.StoneThinGrass, TileTypes.StoneSand, TileTypes.StoneSnow
@@ -351,7 +359,7 @@ public class TileManager : MonoBehaviour {
 
 		public void SetTileHeight(float height) {
 			this.height = height;
-			SetTileTypeBasedOnHeight();
+			SetTileTypeByHeight();
 		}
 
 		public void SetTileType(TileType tileType, bool bitmask, bool resetRegion, bool removeFromOldRegion, bool setBiomeTileType) {
@@ -486,7 +494,7 @@ public class TileManager : MonoBehaviour {
 			}
 		}
 
-		public void SetTileTypeBasedOnHeight() {
+		public void SetTileTypeByHeight() {
 			if (height < map.mapData.terrainTypeHeights[TileTypes.GrassWater]) {
 				SetTileType(map.tileM.GetTileTypeByEnum(TileTypes.GrassWater), false, false, false, false);
 			} else if (height > map.mapData.terrainTypeHeights[TileTypes.Stone]) {
@@ -937,7 +945,7 @@ public class TileManager : MonoBehaviour {
 			if (mapData.actualMap) {
 				uiM.UpdateLoadingStateText("Rivers", "Determining Drainage Basins"); yield return null;
 				DetermineDrainageBasins();
-				uiM.UpdateLoadingStateText("Rivers", "Determining River Path"); yield return null;
+				uiM.UpdateLoadingStateText("Rivers", "Determining River Paths"); yield return null;
 				CreateRivers();
 				uiM.UpdateLoadingStateText("Rivers", "Rendering"); yield return null;
 				Bitmasking(tiles);
@@ -1123,7 +1131,7 @@ public class TileManager : MonoBehaviour {
 
 				for (int k = 0; k < tiles.Count; k++) {
 					tiles[k].height = averageTileHeights[k];
-					tiles[k].SetTileTypeBasedOnHeight();
+					tiles[k].SetTileTypeByHeight();
 				}
 			}
 		}
