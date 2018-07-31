@@ -285,6 +285,9 @@ public class JobManager:MonoBehaviour {
 		});
 		finishJobFunctions.Add(JobTypesEnum.PlantFarm,delegate (ColonistManager.Colonist colonist,Job job) {
 			finishJobFunctions[JobTypesEnum.Build](colonist,job);
+			if (tileM.GetDirtBaseTileTypes().Contains(job.tile.tileType.type)) {
+				job.tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Mud), true, false, false, false);
+			}
 		});
 		finishJobFunctions.Add(JobTypesEnum.HarvestFarm,delegate (ColonistManager.Colonist colonist,Job job) {
 			if (job.tile.farm != null) {

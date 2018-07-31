@@ -389,10 +389,10 @@ public class PersistenceManager : MonoBehaviour {
 		colonistData += "/Position," + colonist.obj.transform.position.x + "," + colonist.obj.transform.position.y;
 		colonistData += "/Name," + colonist.name;
 		colonistData += "/Gender," + colonist.gender;
-		colonistData += "/SkinIndex," + colonist.humanLookIndices[ColonistManager.HumanLook.Skin];
-		colonistData += "/HairIndex," + colonist.humanLookIndices[ColonistManager.HumanLook.Hair];
-		colonistData += "/ShirtIndex," + colonist.humanLookIndices[ColonistManager.HumanLook.Shirt];
-		colonistData += "/PantsIndex," + colonist.humanLookIndices[ColonistManager.HumanLook.Pants];
+		colonistData += "/SkinIndex," + colonist.humanLookIndices[ColonistManager.Human.HumanLook.Skin];
+		colonistData += "/HairIndex," + colonist.humanLookIndices[ColonistManager.Human.HumanLook.Hair];
+		colonistData += "/ShirtIndex," + colonist.humanLookIndices[ColonistManager.Human.HumanLook.Shirt];
+		colonistData += "/PantsIndex," + colonist.humanLookIndices[ColonistManager.Human.HumanLook.Pants];
 		colonistData += "/Health," + colonist.health;
 		colonistData += "/PlayerMoved," + colonist.playerMoved;
 		colonistData += "/Profession," + colonist.profession.type;
@@ -845,13 +845,13 @@ public class PersistenceManager : MonoBehaviour {
 
 						string name = lineData[2].Split(',')[1];
 
-						ColonistManager.Gender gender = (ColonistManager.Gender)System.Enum.Parse(typeof(ColonistManager.Gender), lineData[3].Split(',')[1]);
+						ColonistManager.Life.Gender gender = (ColonistManager.Life.Gender)System.Enum.Parse(typeof(ColonistManager.Life.Gender), lineData[3].Split(',')[1]);
 
-						Dictionary<ColonistManager.HumanLook, int> humanLookIndices = new Dictionary<ColonistManager.HumanLook, int>() {
-							{ ColonistManager.HumanLook.Skin, int.Parse(lineData[4].Split(',')[1]) },
-							{ ColonistManager.HumanLook.Hair, int.Parse(lineData[5].Split(',')[1]) },
-							{ ColonistManager.HumanLook.Shirt, int.Parse(lineData[6].Split(',')[1]) },
-							{ ColonistManager.HumanLook.Pants, int.Parse(lineData[7].Split(',')[1]) },
+						Dictionary<ColonistManager.Human.HumanLook, int> humanLookIndices = new Dictionary<ColonistManager.Human.HumanLook, int>() {
+							{ ColonistManager.Human.HumanLook.Skin, int.Parse(lineData[4].Split(',')[1]) },
+							{ ColonistManager.Human.HumanLook.Hair, int.Parse(lineData[5].Split(',')[1]) },
+							{ ColonistManager.Human.HumanLook.Shirt, int.Parse(lineData[6].Split(',')[1]) },
+							{ ColonistManager.Human.HumanLook.Pants, int.Parse(lineData[7].Split(',')[1]) },
 						};
 
 						float health = float.Parse(lineData[8].Split(',')[1]);
@@ -861,7 +861,10 @@ public class PersistenceManager : MonoBehaviour {
 						ColonistManager.Profession profession = colonistM.professions.Find(p => p.type.ToString() == lineData[10].Split(',')[1]);
 						ColonistManager.Profession oldProfession = colonistM.professions.Find(p => p.type.ToString() == lineData[11].Split(',')[1]);
 
-						ColonistManager.Colonist colonist = new ColonistManager.Colonist(tile, humanLookIndices, profession, health, gender);
+						ColonistManager.Colonist colonist = new ColonistManager.Colonist(tile, profession, health) {
+							humanLookIndices = humanLookIndices,
+							gender = gender
+						};
 
 						ResourceManager.Inventory inventory = new ResourceManager.Inventory(colonist, null, int.Parse(lineData[12].Split(',')[1]));
 						foreach (string inventoryResourceString in lineData[13].Split(',').Skip(1)) {
