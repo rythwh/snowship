@@ -719,6 +719,25 @@ public class TileManager : MonoBehaviour {
 		public float GetPrecipitation() {
 			return precipitation;
 		}
+
+		public ResourceManager.Resource GetResource() {
+			if (map.tileM.GetResourceTileTypes().Contains(tileType.type)) {
+				if (map.tileM.GetWaterEquivalentTileTypes().Contains(tileType.type)) {
+					if (map.tileM.GetWaterToGroundResourceMap().ContainsKey(tileType.type)) {
+						return map.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), map.tileM.GetTileTypeByEnum(map.tileM.GetWaterToGroundResourceMap()[tileType.type]).type.ToString()));
+					}
+				} else {
+					return map.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), tileType.type.ToString()));
+				}
+			} else {
+				if (map.tileM.GetStoneEquivalentTileTypes().Contains(tileType.type)) {
+					return map.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), tileType.type.ToString()));
+				} else {
+					return biome.groundResource;
+				}
+			}
+			return null;
+		}
 	}
 
 	public bool generating;
@@ -912,7 +931,7 @@ public class TileManager : MonoBehaviour {
 		public IEnumerator CreateMap() {
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Map", "Creating Tiles"); yield return null; }
 			CreateTiles();
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Map", "Rendering"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Map", "Validating"); yield return null; }
 			Bitmasking(tiles);
 
 			if (mapData.preventEdgeTouching) {
@@ -926,7 +945,7 @@ public class TileManager : MonoBehaviour {
 				SetSortedMapEdgeTiles();
 				uiM.UpdateLoadingStateText("Terrain", "Merging Terrain with Planet"); yield return null;
 				SmoothHeightWithSurroundingPlanetTiles();
-				uiM.UpdateLoadingStateText("Terrain", "Rendering"); yield return null;
+				uiM.UpdateLoadingStateText("Terrain", "Validating"); yield return null;
 				Bitmasking(tiles);
 			}
 
@@ -939,7 +958,7 @@ public class TileManager : MonoBehaviour {
 			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypes>() { TileTypes.GrassWater });
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Walkability"); yield return null; }
 			SetTileRegions(false);
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Rendering"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Validating"); yield return null; }
 			Bitmasking(tiles);
 
 			if (mapData.actualMap) {
@@ -947,7 +966,7 @@ public class TileManager : MonoBehaviour {
 				DetermineDrainageBasins();
 				uiM.UpdateLoadingStateText("Rivers", "Determining River Paths"); yield return null;
 				CreateRivers();
-				uiM.UpdateLoadingStateText("Rivers", "Rendering"); yield return null;
+				uiM.UpdateLoadingStateText("Rivers", "Validating"); yield return null;
 				Bitmasking(tiles);
 			}
 
@@ -968,7 +987,7 @@ public class TileManager : MonoBehaviour {
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Setting Biomes"); yield return null; }
 			SetBiomes();
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Rendering"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Validating"); yield return null; }
 			Bitmasking(tiles);
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Region Blocks", "Determining Region Blocks"); yield return null; }
@@ -980,7 +999,7 @@ public class TileManager : MonoBehaviour {
 
 				uiM.UpdateLoadingStateText("Resources", "Creating Resource Veins"); yield return null;
 				SetResourceVeins();
-				uiM.UpdateLoadingStateText("Resources", "Rendering"); yield return null;
+				uiM.UpdateLoadingStateText("Resources", "Validating"); yield return null;
 				Bitmasking(tiles);
 
 				uiM.UpdateLoadingStateText("Lighting", "Determining Hourly Shadow Directions"); yield return null;
@@ -993,7 +1012,7 @@ public class TileManager : MonoBehaviour {
 				DetermineVisibleRegionBlocks();
 			}
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Lighting", "Rendering"); yield return null; }
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Lighting", "Validating"); yield return null; }
 			Bitmasking(tiles);
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Finalizing", string.Empty); yield return null; }
