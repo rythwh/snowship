@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 using System.Linq;
+using System;
 
 public class PersistenceManager : MonoBehaviour {
 
@@ -11,9 +12,9 @@ public class PersistenceManager : MonoBehaviour {
 	public const int saveVersion = 2;
 
 	private Dictionary<int, string> gameVersionStrings = new Dictionary<int, string>() {
-		{ 1, "Alpha R1" },
-		{ 2, "Alpha R1.1" },
-		{ 3, "Alpha R2" }
+		{ 1, "2018.1" },
+		{ 2, "2018.1.1" },
+		{ 3, "2018.2" }
 	};
 	public string GetGameVersionString(int gameVersion) {
 		if (gameVersionStrings.ContainsKey(gameVersion)) {
@@ -35,6 +36,8 @@ public class PersistenceManager : MonoBehaviour {
 
 	private string settingsFilePath;
 
+	public SettingsState settingsState;
+
 	void Awake() {
 
 		cameraM = GetComponent<CameraManager>();
@@ -46,11 +49,47 @@ public class PersistenceManager : MonoBehaviour {
 		resourceM = GetComponent<ResourceManager>();
 
 		settingsFilePath = Application.persistentDataPath + "/Settings/settings.snowship";
-		uiM.settingsState = new UIManager.SettingsState(uiM);
+		settingsState = new SettingsState(uiM);
 		if (!LoadSettings()) {
 			SaveSettings();
 		}
-		uiM.settingsState.SetSettings();
+		settingsState.SetSettings();
+	}
+
+	public class SettingsState {
+		private UIManager uiM;
+
+		public Resolution resolution;
+		public int resolutionWidth;
+		public int resolutionHeight;
+		public int refreshRate;
+		public bool fullscreen;
+		public CanvasScaler.ScaleMode scaleMode;
+
+		public SettingsState(UIManager uiM) {
+			this.uiM = uiM;
+
+			resolution = Screen.currentResolution;
+			resolutionWidth = Screen.currentResolution.width;
+			resolutionHeight = Screen.currentResolution.height;
+			refreshRate = Screen.currentResolution.refreshRate;
+			fullscreen = true;
+			scaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+		}
+
+		public void SetSettings() {
+			Screen.SetResolution(resolutionWidth, resolutionHeight, fullscreen, refreshRate);
+
+			uiM.canvas.GetComponent<CanvasScaler>().uiScaleMode = scaleMode;
+		}
+	}
+
+	public void ApplySettings(bool closeAfterApplying) {
+		if (closeAfterApplying) {
+			uiM.ToggleSettingsMenu();
+		}
+		settingsState.SetSettings();
+		SaveSettings();
 	}
 
 	public void SaveSettings() {
@@ -60,32 +99,39 @@ public class PersistenceManager : MonoBehaviour {
 		File.WriteAllText(settingsFilePath, string.Empty);
 		StreamWriter file = new StreamWriter(settingsFilePath);
 
-		file.WriteLine(uiM.settingsState.resolutionWidth + "," + uiM.settingsState.resolutionHeight);
-		file.WriteLine(uiM.settingsState.fullscreen);
-		file.WriteLine(uiM.settingsState.scaleMode.ToString());
+		file.WriteLine(settingsState.resolutionWidth + "," + settingsState.resolutionHeight + "," + settingsState.refreshRate);
+		file.WriteLine(settingsState.fullscreen);
+		file.WriteLine(settingsState.scaleMode.ToString());
 
 		file.Close();
 	}
 
 	public bool LoadSettings() {
-		Directory.CreateDirectory(Application.persistentDataPath + "/Settings/");
-		FileStream createFile = File.Create(settingsFilePath);
-		createFile.Close();
-		StreamReader file = new StreamReader(settingsFilePath);
+		StreamReader file = null;
+		try {
+			file = new StreamReader(settingsFilePath);
+			if (file == null) {
+				return false;
+			}
+		} catch (Exception) {
+			return false;
+		}
 		List<string> lines = file.ReadToEnd().Split('\n').ToList();
 		for (int i = 0; i < lines.Count; i++) {
 			string line = lines[i];
 			if (!string.IsNullOrEmpty(line)) {
 				switch (i) {
 					case 0:
-						uiM.settingsState.resolutionWidth = int.Parse(line.Split(',')[0]);
-						uiM.settingsState.resolutionHeight = int.Parse(line.Split(',')[1]);
+						settingsState.resolutionWidth = int.Parse(line.Split(',')[0]);
+						settingsState.resolutionHeight = int.Parse(line.Split(',')[1]);
+						settingsState.refreshRate = int.Parse(line.Split(',')[2]);
+						settingsState.resolution = uiM.GetResolutionByDimensions(settingsState.resolutionWidth, settingsState.resolutionHeight, settingsState.refreshRate);
 						break;
 					case 1:
-						uiM.settingsState.fullscreen = bool.Parse(line);
+						settingsState.fullscreen = bool.Parse(line);
 						break;
 					case 2:
-						uiM.settingsState.scaleMode = (CanvasScaler.ScaleMode)System.Enum.Parse(typeof(CanvasScaler.ScaleMode), line);
+						settingsState.scaleMode = (CanvasScaler.ScaleMode)Enum.Parse(typeof(CanvasScaler.ScaleMode), line);
 						break;
 				}
 			}
@@ -97,7 +143,7 @@ public class PersistenceManager : MonoBehaviour {
 	/* https://stackoverflow.com/questions/13266496/easily-write-a-whole-class-instance-to-xml-file-and-read-back-in */
 
 	public string GenerateSaveFileName() {
-		System.DateTime now = System.DateTime.Now;
+		DateTime now = DateTime.Now;
 		string dateTime = now.Year + "y" + now.Month + "m" + now.Day + "d" + now.Hour + "h" + now.Minute + "m" + now.Second + "s" + now.Millisecond + "m";
 		string fileName = "snowship-save-" + uiM.colonyName + "-" + dateTime + "-" + gameVersion + "-" + saveVersion + ".snowship";
 		return fileName;
@@ -459,7 +505,7 @@ public class PersistenceManager : MonoBehaviour {
 		foreach (ColonistManager.NeedInstance need in colonist.needs) {
 			colonistData += ",Need";
 			colonistData += ":" + need.prefab.type;
-			colonistData += ":" + need.value;
+			colonistData += ":" + need.GetValue();
 		}
 		colonistData += "/BaseHappiness," + colonist.baseHappiness;
 		colonistData += "/EffectiveHappiness," + colonist.effectiveHappiness;
@@ -559,7 +605,7 @@ public class PersistenceManager : MonoBehaviour {
 		tileM.generated = false;
 
 		if (!fromMainMenu) {
-			colonistM.SetSelectedColonist(null);
+			colonistM.SetSelectedHuman(null);
 			uiM.SetSelectedContainer(null);
 			uiM.SetSelectedManufacturingTileObject(null);
 		}
@@ -696,7 +742,7 @@ public class PersistenceManager : MonoBehaviour {
 							int windDirection = int.Parse(lineData[7].Split(',')[1]);
 							Dictionary<TileManager.TileTypes, float> terrainTypeHeights = new Dictionary<TileManager.TileTypes, float>();
 							foreach (string terrainTypeHeightString in lineData[8].Split(',').Skip(1)) {
-								terrainTypeHeights.Add((TileManager.TileTypes)System.Enum.Parse(typeof(TileManager.TileTypes), terrainTypeHeightString.Split(':')[0]), float.Parse(terrainTypeHeightString.Split(':')[1]));
+								terrainTypeHeights.Add((TileManager.TileTypes)Enum.Parse(typeof(TileManager.TileTypes), terrainTypeHeightString.Split(':')[0]), float.Parse(terrainTypeHeightString.Split(':')[1]));
 							}
 							List<int> surroundingPlanetTileHeightDirections = new List<int>();
 							foreach (string surroundingPlanetTileHeightDirectionString in lineData[9].Split(',').Skip(1)) {
@@ -729,7 +775,7 @@ public class PersistenceManager : MonoBehaviour {
 						} else {
 							TileManager.Tile tile = tileM.map.tiles[innerSectionIndex - 1];
 
-							TileManager.TileType savedTileType = tileM.GetTileTypeByEnum((TileManager.TileTypes)System.Enum.Parse(typeof(TileManager.TileTypes), lineData[0].Split(',')[0]));
+							TileManager.TileType savedTileType = tileM.GetTileTypeByEnum((TileManager.TileTypes)Enum.Parse(typeof(TileManager.TileTypes), lineData[0].Split(',')[0]));
 							if (savedTileType != tile.tileType) {
 								tile.SetTileType(savedTileType, false, false, false, false);
 								if (tileM.GetHoleTileTypes().Contains(savedTileType.type)) {
@@ -751,11 +797,11 @@ public class PersistenceManager : MonoBehaviour {
 									tile.SetPlant(true, null);
 								}
 							} else {
-								ResourceManager.PlantGroup savedPlantGroup = resourceM.GetPlantGroupByEnum((ResourceManager.PlantGroupsEnum)System.Enum.Parse(typeof(ResourceManager.PlantGroupsEnum), lineData[1].Split(',')[0]));
+								ResourceManager.PlantGroup savedPlantGroup = resourceM.GetPlantGroupByEnum((ResourceManager.PlantGroupsEnum)Enum.Parse(typeof(ResourceManager.PlantGroupsEnum), lineData[1].Split(',')[0]));
 								bool savedPlantSmall = bool.Parse(lineData[1].Split(',')[2]);
 								ResourceManager.Resource harvestResource = null;
 								if (lineData[1].Split(',')[4] != "None") {
-									harvestResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), lineData[1].Split(',')[4]));
+									harvestResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), lineData[1].Split(',')[4]));
 								}
 								ResourceManager.Plant savedPlant = new ResourceManager.Plant(savedPlantGroup, tile, false, savedPlantSmall, tileM.map.smallPlants, false, harvestResource, resourceM) {
 									growthProgress = float.Parse(lineData[1].Split(',')[3]),
@@ -801,12 +847,12 @@ public class PersistenceManager : MonoBehaviour {
 						tileM.map.rivers.Add(new TileManager.Map.River(startTile, endTile, riverTiles));
 					} else if (sectionIndex == 5) { // Resources
 						foreach (string resourceData in lineData.Skip(1)) {
-							ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), resourceData.Split(',')[0]));
+							ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), resourceData.Split(',')[0]));
 							resource.ChangeDesiredAmount(int.Parse(resourceData.Split(',')[1]));
 						}
 					} else if (sectionIndex == 6) { // Object
 						TileManager.Tile tile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(lineData[1].Split(',')[1]), float.Parse(lineData[1].Split(',')[2])));
-						ResourceManager.TileObjectPrefab tileObjectPrefab = resourceM.GetTileObjectPrefabByEnum((ResourceManager.TileObjectPrefabsEnum)System.Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), lineData[2].Split(',')[1]));
+						ResourceManager.TileObjectPrefab tileObjectPrefab = resourceM.GetTileObjectPrefabByEnum((ResourceManager.TileObjectPrefabsEnum)Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), lineData[2].Split(',')[1]));
 						int rotationIndex = int.Parse(lineData[3].Split(',')[1]);
 						float integrity = int.Parse(lineData[4].Split(',')[1]);
 						tile.SetTileObject(tileObjectPrefab, rotationIndex);
@@ -815,10 +861,10 @@ public class PersistenceManager : MonoBehaviour {
 						TileManager.Tile tile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(lineData[1].Split(',')[1]), float.Parse(lineData[1].Split(',')[2])));
 						ResourceManager.ManufacturingTileObject mto = resourceM.manufacturingTileObjectInstances.Find(findMTO => findMTO.parentObject.tile == tile);
 						if (lineData[2] != "None") {
-							mto.createResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), lineData[2].Split(',')[1]));
+							mto.createResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), lineData[2].Split(',')[1]));
 						}
 						if (lineData[3] != "None") {
-							mto.fuelResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), lineData[3].Split(',')[1]));
+							mto.fuelResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), lineData[3].Split(',')[1]));
 						}
 						mto.active = bool.Parse(lineData[4].Split(',')[1]);
 					} else if (sectionIndex == 8) { // Farm
@@ -833,7 +879,7 @@ public class PersistenceManager : MonoBehaviour {
 						ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == tile);
 						ResourceManager.Inventory inventory = new ResourceManager.Inventory(null, container, int.Parse(lineData[2].Split(',')[1]));
 						foreach (string inventoryResourceString in lineData[3].Split(',').Skip(1)) {
-							ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), inventoryResourceString.Split(':')[1]));
+							ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), inventoryResourceString.Split(':')[1]));
 							int amount = int.Parse(inventoryResourceString.Split(':')[2]);
 							inventory.ChangeResourceAmount(resource, amount);
 						}
@@ -845,7 +891,7 @@ public class PersistenceManager : MonoBehaviour {
 
 						string name = lineData[2].Split(',')[1];
 
-						ColonistManager.Life.Gender gender = (ColonistManager.Life.Gender)System.Enum.Parse(typeof(ColonistManager.Life.Gender), lineData[3].Split(',')[1]);
+						ColonistManager.Life.Gender gender = (ColonistManager.Life.Gender)Enum.Parse(typeof(ColonistManager.Life.Gender), lineData[3].Split(',')[1]);
 
 						Dictionary<ColonistManager.Human.HumanLook, int> humanLookIndices = new Dictionary<ColonistManager.Human.HumanLook, int>() {
 							{ ColonistManager.Human.HumanLook.Skin, int.Parse(lineData[4].Split(',')[1]) },
@@ -868,7 +914,7 @@ public class PersistenceManager : MonoBehaviour {
 
 						ResourceManager.Inventory inventory = new ResourceManager.Inventory(colonist, null, int.Parse(lineData[12].Split(',')[1]));
 						foreach (string inventoryResourceString in lineData[13].Split(',').Skip(1)) {
-							ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), inventoryResourceString.Split(':')[1]));
+							ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), inventoryResourceString.Split(':')[1]));
 							int amount = int.Parse(inventoryResourceString.Split(':')[2]);
 							inventory.ChangeResourceAmount(resource, amount);
 						}
@@ -927,7 +973,9 @@ public class PersistenceManager : MonoBehaviour {
 						foreach (string needDataString in lineData[19].Split(',').Skip(1)) {
 							ColonistManager.NeedPrefab needPrefab = colonistM.GetNeedPrefabFromString(needDataString.Split(':')[1]);
 							float value = float.Parse(needDataString.Split(':')[2]);
-							needs.Add(new ColonistManager.NeedInstance(colonist, needPrefab) { value = value });
+							ColonistManager.NeedInstance needInstance = new ColonistManager.NeedInstance(colonist, needPrefab);
+							needInstance.SetValue(value);
+							needs.Add(needInstance);
 						}
 						foreach (ColonistManager.NeedPrefab needPrefab in colonistM.needPrefabs.Where(nP => needs.Find(need => need.prefab == nP) == null)) {
 							ColonistManager.NeedInstance need = new ColonistManager.NeedInstance(colonist, needPrefab);
@@ -972,7 +1020,7 @@ public class PersistenceManager : MonoBehaviour {
 									ColonistManager.Colonist reservedResourcesColonist = colonistM.colonists.Find(findColonist => findColonist.name == reservedResourcesStringKVP.Value.Split(';')[0].Split(':')[1]);
 									List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
 									foreach (string reservedResourceString in reservedResourcesStringKVP.Value.Split(';').Skip(1)) {
-										ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), reservedResourceString.Split(':')[1]));
+										ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), reservedResourceString.Split(':')[1]));
 										int amount = int.Parse(reservedResourceString.Split(':')[2]);
 										resourcesToReserve.Add(new ResourceManager.ResourceAmount(resource, amount));
 									}
@@ -985,7 +1033,7 @@ public class PersistenceManager : MonoBehaviour {
 									ColonistManager.Colonist reservedResourcesColonist = colonistM.colonists.Find(findColonist => findColonist.name == reservedResourcesStringKVP.Value.Split(',')[1].Split(';')[0].Split(':')[1]);
 									List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
 									foreach (string reservedResourceString in reservedResourcesStringKVP.Value.Split(';').Skip(1)) {
-										ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), reservedResourceString.Split(':')[1]));
+										ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), reservedResourceString.Split(':')[1]));
 										int amount = int.Parse(reservedResourceString.Split(':')[2]);
 										resourcesToReserve.Add(new ResourceManager.ResourceAmount(resource, amount));
 									}
@@ -1029,14 +1077,14 @@ public class PersistenceManager : MonoBehaviour {
 
 	public JobManager.Job LoadJob(List<string> jobDataSplit) {
 		TileManager.Tile jobTile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(jobDataSplit[1].Split(',')[1]), float.Parse(jobDataSplit[1].Split(',')[2])));
-		ResourceManager.TileObjectPrefab jobPrefab = resourceM.GetTileObjectPrefabByEnum((ResourceManager.TileObjectPrefabsEnum)System.Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), jobDataSplit[2].Split(',')[1]));
+		ResourceManager.TileObjectPrefab jobPrefab = resourceM.GetTileObjectPrefabByEnum((ResourceManager.TileObjectPrefabsEnum)Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), jobDataSplit[2].Split(',')[1]));
 		int rotationIndex = int.Parse(jobDataSplit[3].Split(',')[1]);
 		bool started = bool.Parse(jobDataSplit[4].Split(',')[1]);
 		float progress = float.Parse(jobDataSplit[5].Split(',')[1]);
 		float colonistBuildTime = float.Parse(jobDataSplit[6].Split(',')[1]);
 		List<ResourceManager.ResourceAmount> resourcesToBuild = new List<ResourceManager.ResourceAmount>();
 		foreach (string resourceToBuildString in jobDataSplit[7].Split(',').Skip(1)) {
-			ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), resourceToBuildString.Split(':')[1]));
+			ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), resourceToBuildString.Split(':')[1]));
 			int amount = int.Parse(resourceToBuildString.Split(':')[2]);
 			resourcesToBuild.Add(new ResourceManager.ResourceAmount(resource, amount));
 		}
@@ -1046,7 +1094,7 @@ public class PersistenceManager : MonoBehaviour {
 			List<string> onColonistDataSplit = jobDataSplit[8].Split(',').ToList();
 			if (onColonistDataSplit[1] != "None") {
 				foreach (string colonistResourceString in onColonistDataSplit[1].Split(';').Skip(1)) {
-					ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), colonistResourceString.Split(':')[1]));
+					ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), colonistResourceString.Split(':')[1]));
 					int amount = int.Parse(colonistResourceString.Split(':')[2]);
 					colonistResources.Add(new ResourceManager.ResourceAmount(resource, amount));
 				}
@@ -1059,7 +1107,7 @@ public class PersistenceManager : MonoBehaviour {
 					ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == containerTile);
 					List<ResourceManager.ResourceAmount> resourcesToPickup = new List<ResourceManager.ResourceAmount>();
 					foreach (string resourceToPickupString in containerPickupDataSplit.Skip(2).ToList()) {
-						ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), resourceToPickupString.Split('`')[1]));
+						ResourceManager.Resource resource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), resourceToPickupString.Split('`')[1]));
 						int amount = int.Parse(resourceToPickupString.Split('`')[2]);
 						resourcesToPickup.Add(new ResourceManager.ResourceAmount(resource, amount));
 					}
@@ -1078,13 +1126,13 @@ public class PersistenceManager : MonoBehaviour {
 		};
 
 		if (jobDataSplit[9] != "None") {
-			job.plant = new ResourceManager.Plant(resourceM.GetPlantGroupByEnum((ResourceManager.PlantGroupsEnum)System.Enum.Parse(typeof(ResourceManager.PlantGroupsEnum),jobDataSplit[9].Split(',')[1])), jobTile, false, true, tileM.map.smallPlants,false,(jobDataSplit[9].Split(',')[2] != "None" ? resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[9].Split(',')[2])) : null), resourceM);
+			job.plant = new ResourceManager.Plant(resourceM.GetPlantGroupByEnum((ResourceManager.PlantGroupsEnum)Enum.Parse(typeof(ResourceManager.PlantGroupsEnum),jobDataSplit[9].Split(',')[1])), jobTile, false, true, tileM.map.smallPlants,false,(jobDataSplit[9].Split(',')[2] != "None" ? resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[9].Split(',')[2])) : null), resourceM);
 		}
 		if (jobDataSplit[10] != "None") {
-			job.createResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[10].Split(',')[1]));
+			job.createResource = resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), jobDataSplit[10].Split(',')[1]));
 		}
 		if (jobDataSplit[11] != "None") {
-			ResourceManager.TileObjectPrefabsEnum activeTileObjectPrefab = (ResourceManager.TileObjectPrefabsEnum)System.Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), jobDataSplit[11].Split(',')[3]);
+			ResourceManager.TileObjectPrefabsEnum activeTileObjectPrefab = (ResourceManager.TileObjectPrefabsEnum)Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), jobDataSplit[11].Split(',')[3]);
 			TileManager.Tile activeTileObjectTile = tileM.map.GetTileFromPosition(new Vector2(float.Parse(jobDataSplit[11].Split(',')[1]), float.Parse(jobDataSplit[11].Split(',')[2])));
 			ResourceManager.TileObjectInstance activeTileObject = activeTileObjectTile.objectInstances.Values.ToList().Find(oi => oi.tile == activeTileObjectTile && oi.prefab.type == activeTileObjectPrefab);
 			job.activeTileObject = activeTileObject;

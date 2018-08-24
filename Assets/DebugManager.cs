@@ -75,7 +75,7 @@ public class DebugManager : MonoBehaviour {
 	private enum Commands {
 		help,                   // help (commandName)						-- without (commandName): lists all commands. with (commandName), shows syntax/description of the specified command
 		clear,					// clear									-- clear the console
-		selectcolonist,			// selectcolonist <name>					-- sets the selected colonist to the first colonist named <name>
+		selecthuman,            // selecthuman <name>						-- sets the selected human to the first human named <name>
 		spawncolonists,			// spawncolonists <numToSpawn>				-- spawns <numToSpawn> colonists to join the colony
 		spawntraders,			// spawntraders <numToSpawn>				-- spawns <numToSpawn> traders
 		sethealth,				// sethealth <amount>						-- sets the health of the selected colonist to <amount>
@@ -84,6 +84,7 @@ public class DebugManager : MonoBehaviour {
 		changeinvamt,           // changeinvamt || cia <resourceName> <amount> (allColonists) (allContainers)
 		//																	-- adds the amount of the resource named <resourceName> to <amount> to a selected colonist, container,
 		//																	   or all colonists (allColonists = true), or all containers (allContainers = true)
+		listresources,			// listresources							-- lists all resources
 		selectcontainer,        // selectcontainer <index>					-- sets the selected container to the container at <index> in the list of containers
 		selecttiles,            // selecttiles <x(,rangeX)> <y,(rangeY)>	-- without (rangeX/Y): select tile at <x> <y>. with (rangeX/Y): select all tiles between <x> -> (rangeX) <y> -> (rangeY)
 		selecttilemouse,		// selecttilemouse							-- toggle continous selection of the tile at the mouse position
@@ -127,13 +128,14 @@ public class DebugManager : MonoBehaviour {
 	private Dictionary<Commands, string> commandHelpOutputs = new Dictionary<Commands, string>() {
 		{Commands.help,"help (commandName) -- without (commandName): lists all commands. with (commandName), shows syntax/description of the specified command" },
 		{Commands.clear,"clear -- clear the console" },
-		{Commands.selectcolonist,"selectcolonist <name> -- sets the selected colonist to the first colonist named <name>" },
+		{Commands.selecthuman,"selecthuman <name> -- sets the selected human to the first human named <name>" },
 		{Commands.spawncolonists,"spawncolonists <numToSpawn> -- spawns <numToSpawn> colonists to join the colony" },
 		{Commands.spawntraders,"spawntraders <numToSpawn> -- spawns <numToSpawn> traders" },
 		{Commands.sethealth,"sethealth <amount> -- sets the health of the selected colonist to <amount> (value between 0 (0%) -> 1 (100%))" },
 		{Commands.setneed,"setneed <name> <amount> -- sets the need named <name> on the selected colonist to <amount> (value between 0 (0%) -> 100 (100%))" },
 		{Commands.cia,"cia -- shortcut to \"changeinvamt\" -- see that command for more information" },
 		{Commands.changeinvamt,"changeinvamt <resourceName> <amount> (allColonists) (allContainers) -- adds the amount of the resource named <resourceName> to <amount> to a selected colonist, container, or all colonists (allColonists = true), or all containers (allContainers = true)" },
+		{Commands.listresources,"listresources -- lists all resources" },
 		{Commands.selectcontainer,"selectcontainer <index> -- sets the selected container to the container at <index> in the list of containers" },
 		{Commands.selecttiles,"selecttiles <x(,rangeX)> <y,(rangeY)> -- without (rangeX/Y): select tile at <x> <y>. with (rangeX/Y): select all tiles between <x> -> (rangeX) <y> -> (rangeY)" },
 		{Commands.selecttilemouse,"selecttilemouse -- continuously select the tile under the mouse until this command is run again" },
@@ -262,13 +264,13 @@ public class DebugManager : MonoBehaviour {
 			debugConsoleList.GetComponent<RectTransform>().anchoredPosition = new Vector2(10, 0);
 			debugConsole.transform.Find("Scrollbar").GetComponent<Scrollbar>().value = 0;
 		});
-		commandFunctions.Add(Commands.selectcolonist, delegate (Commands selectedCommand, List<string> parameters) {
+		commandFunctions.Add(Commands.selecthuman, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 1) {
-				ColonistManager.Colonist selectedColonist = colonistM.colonists.Find(colonist => colonist.name == parameters[0]);
-				if (selectedColonist != null) {
-					colonistM.SetSelectedColonist(selectedColonist);
-					if (colonistM.selectedColonist == selectedColonist) {
-						OutputToConsole("SUCCESS: Selected " + colonistM.selectedColonist.name + ".");
+				ColonistManager.Human selectedHuman = (ColonistManager.Human)colonistM.colonists.Find(colonist => colonist.name == parameters[0]) ?? colonistM.traders.Find(colonist => colonist.name == parameters[0]);
+				if (selectedHuman != null) {
+					colonistM.SetSelectedHuman(selectedHuman);
+					if (colonistM.selectedHuman == selectedHuman) {
+						OutputToConsole("SUCCESS: Selected " + colonistM.selectedHuman.name + ".");
 					}
 				} else {
 					OutputToConsole("ERROR: Invalid colonist name: " + parameters[0]);
@@ -320,15 +322,15 @@ public class DebugManager : MonoBehaviour {
 				float newHealth = 0;
 				if (float.TryParse(parameters[0], out newHealth)) {
 					if (newHealth >= 0 && newHealth <= 1) {
-						if (colonistM.selectedColonist != null) {
-							colonistM.selectedColonist.health = newHealth;
-							if (colonistM.selectedColonist.health == newHealth) {
-								OutputToConsole("SUCCESS: " + colonistM.selectedColonist.name + "'s health is now " + colonistM.selectedColonist.health + ".");
+						if (colonistM.selectedHuman != null) {
+							colonistM.selectedHuman.health = newHealth;
+							if (colonistM.selectedHuman.health == newHealth) {
+								OutputToConsole("SUCCESS: " + colonistM.selectedHuman.name + "'s health is now " + colonistM.selectedHuman.health + ".");
 							} else {
-								OutputToConsole("ERROR: Unable to change " + colonistM.selectedColonist.name + "'s health.");
+								OutputToConsole("ERROR: Unable to change " + colonistM.selectedHuman.name + "'s health.");
 							}
 						} else {
-							OutputToConsole("ERROR: No colonist selected.");
+							OutputToConsole("ERROR: No human selected.");
 						}
 					} else {
 						OutputToConsole("ERROR: Invalid range on health value (float from 0 to 1).");
@@ -344,29 +346,34 @@ public class DebugManager : MonoBehaviour {
 			if (parameters.Count == 2) {
 				ColonistManager.NeedPrefab needPrefab = colonistM.needPrefabs.Find(need => need.name == parameters[0]);
 				if (needPrefab != null) {
-					if (colonistM.selectedColonist != null) {
-						ColonistManager.NeedInstance needInstance = colonistM.selectedColonist.needs.Find(need => need.prefab == needPrefab);
-						if (needInstance != null) {
-							float newNeedValue = 0;
-							if (float.TryParse(parameters[1], out newNeedValue)) {
-								if (newNeedValue >= 0 && newNeedValue <= 100) {
-									needInstance.value = newNeedValue;
-									if (needInstance.value == newNeedValue) {
-										OutputToConsole("SUCCESS: " + needInstance.prefab.name + " now has value " + needInstance.value + ".");
+					if (colonistM.selectedHuman != null) {
+						if (colonistM.selectedHuman is ColonistManager.Colonist) {
+							ColonistManager.Colonist selectedColonist = (ColonistManager.Colonist)colonistM.selectedHuman;
+							ColonistManager.NeedInstance needInstance = selectedColonist.needs.Find(need => need.prefab == needPrefab);
+							if (needInstance != null) {
+								float newNeedValue = 0;
+								if (float.TryParse(parameters[1], out newNeedValue)) {
+									if (newNeedValue >= 0 && newNeedValue <= 100) {
+										needInstance.SetValue(newNeedValue);
+										if (needInstance.GetValue() == newNeedValue) {
+											OutputToConsole("SUCCESS: " + needInstance.prefab.name + " now has value " + needInstance.GetValue() + ".");
+										} else {
+											OutputToConsole("ERROR: Unable to change " + needInstance.prefab.name + " need value.");
+										}
 									} else {
-										OutputToConsole("ERROR: Unable to change " + needInstance.prefab.name + " need value.");
+										OutputToConsole("ERROR: Invalid range on need value (float from 0 to 100).");
 									}
 								} else {
-									OutputToConsole("ERROR: Invalid range on need value (float from 0 to 100).");
+									OutputToConsole("ERROR: Unable to parse need value as float.");
 								}
 							} else {
-								OutputToConsole("ERROR: Unable to parse need value as float.");
+								OutputToConsole("ERROR: Unable to find specified need on selected colonist.");
 							}
 						} else {
-							OutputToConsole("ERROR: Unable to find specified need on selected colonist.");
+							OutputToConsole("ERROR: Selected human is not a colonist.");
 						}
 					} else {
-						OutputToConsole("ERROR: No colonist selected.");
+						OutputToConsole("ERROR: No human selected.");
 					}
 				} else {
 					OutputToConsole("ERROR: Invalid need name.");
@@ -382,12 +389,12 @@ public class DebugManager : MonoBehaviour {
 			if (parameters.Count == 2) {
 				ResourceManager.Resource resource = resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
 				if (resource != null) {
-					if (colonistM.selectedColonist != null || uiM.selectedContainer != null) {
-						if (colonistM.selectedColonist != null) {
+					if (colonistM.selectedHuman != null || uiM.selectedContainer != null) {
+						if (colonistM.selectedHuman != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								colonistM.selectedColonist.inventory.ChangeResourceAmount(resource, amount);
-								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to " + colonistM.selectedColonist + ".");
+								colonistM.selectedHuman.inventory.ChangeResourceAmount(resource, amount);
+								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to " + colonistM.selectedHuman + ".");
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
 							}
@@ -483,6 +490,15 @@ public class DebugManager : MonoBehaviour {
 					}
 				} else {
 					OutputToConsole("ERROR: Unable to parse allContainers parameter as bool.");
+				}
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
+		commandFunctions.Add(Commands.listresources, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 0) {
+				foreach (ResourceManager.Resource resource in resourceM.resources) {
+					OutputToConsole(resource.type.ToString());
 				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");

@@ -52,7 +52,7 @@ public class CameraManager : MonoBehaviour {
 			}
 			cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x,0,tileM.map.mapData.mapSize),Mathf.Clamp(cameraGO.transform.position.y,0,tileM.map.mapData.mapSize));
 
-			if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
+			if (!uiM.IsPointerOverUI()) {
 				cameraComponent.orthographicSize -= Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") + (Input.GetAxis("KeyboardZoom") / 10f), -1f, 1f) * cameraComponent.orthographicSize * Time.deltaTime * 100;
 				if (debugM.debugMode) {
 					cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize, minOrthoSize, maxOrthoSize * 25);

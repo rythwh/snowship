@@ -322,13 +322,13 @@ public class ResourceManager : MonoBehaviour {
 		}
 
 		public class Price {
-			public int gold = 0;
-			public int silver = 0;
-			public int bronze = 0;
+			public int gold = 0; // Amount of Gold in this price
+			public int silver = 0; // Amount of Silver in this Price
+			public int bronze = 0; // Amount of Bronze in this Price
 
-			public float relativeGold = 0;
-			public float relativeSilver = 0;
-			public float relativeBronze = 0;
+			public float relativeGold = 0; // Entire value of this Price, represented as only Gold
+			public float relativeSilver = 0; // Entire value of this Price, represented as only Silver
+			public float relativeBronze = 0; // Entire value of this Price, represented as only Bronze
 
 			public enum PriceTypeEnum { Gold, Silver, Bronze };
 			public enum RelativePriceTypeEnum {	RelativeGold, RelativeSilver, RelativeBronze };
@@ -337,7 +337,9 @@ public class ResourceManager : MonoBehaviour {
 				this.gold = gold;
 				this.silver = silver;
 				this.bronze = bronze;
+			}
 
+			public void CalculateRelativePrices() {
 				relativeGold = gold * (silver / 100f) * (bronze / 10000f);
 				relativeSilver = (gold * 100f) + silver + (bronze / 100f);
 				relativeBronze = (gold * 10000f) + (silver * 100f) + bronze;
@@ -366,6 +368,24 @@ public class ResourceManager : MonoBehaviour {
 				}
 				return -1;
 			}
+
+			public void Redistribute() {
+				silver += Mathf.FloorToInt(bronze / 100f);
+				bronze = bronze % 100; // Does this work with negatives?
+
+				gold += Mathf.FloorToInt(silver / 100f);
+				silver = silver % 100; // Does this work with negatives?
+			}
+
+			public void ChangePrice(Price price) {
+				gold += price.gold;
+				silver += price.silver;
+				bronze += price.bronze;
+
+				Redistribute();
+
+				CalculateRelativePrices();
+			}
 		}
 	}
 
@@ -376,6 +396,7 @@ public class ResourceManager : MonoBehaviour {
 	public class ResourceAmount {
 		public Resource resource;
 		public int amount;
+
 		public ResourceAmount(Resource resource, int amount) {
 			this.resource = resource;
 			this.amount = amount;
@@ -389,6 +410,18 @@ public class ResourceManager : MonoBehaviour {
 		public ReservedResources(List<ResourceAmount> resourcesToReserve, ColonistManager.Colonist colonistReservingResources) {
 			resources.AddRange(resourcesToReserve);
 			colonist = colonistReservingResources;
+		}
+	}
+
+	public class TradeResourceAmount {
+		public ResourceAmount resourceAmount;
+		public bool important;
+		public int tradeAmount;
+		public Resource.Price price;
+
+		public TradeResourceAmount(ResourceAmount resourceAmount, bool important) {
+			this.resourceAmount = resourceAmount;
+			this.important = important;
 		}
 	}
 
@@ -1587,6 +1620,7 @@ public class ResourceManager : MonoBehaviour {
 			}
 			resourceM.CalculateResourceTotals();
 			uiM.SetSelectedColonistInformation();
+			uiM.SetSelectedTraderMenu();
 			uiM.SetSelectedContainerInfo();
 			jobM.UpdateColonistJobs();
 		}
@@ -1607,6 +1641,7 @@ public class ResourceManager : MonoBehaviour {
 				reservedResources.Add(new ReservedResources(resourcesToReserve,colonistReservingResources));
 			}
 			uiM.SetSelectedColonistInformation();
+			uiM.SetSelectedTraderMenu();
 			uiM.SetSelectedContainerInfo();
 			return allResourcesFound;
 		}
@@ -1622,6 +1657,7 @@ public class ResourceManager : MonoBehaviour {
 				reservedResources.Remove(rr);
 			}
 			uiM.SetSelectedColonistInformation();
+			uiM.SetSelectedTraderMenu();
 			uiM.SetSelectedContainerInfo();
 			return reservedResourcesByColonist;
 		}
@@ -1641,6 +1677,7 @@ public class ResourceManager : MonoBehaviour {
 			}
 			reservedResourcesToRemove.Clear();
 			uiM.SetSelectedColonistInformation();
+			uiM.SetSelectedTraderMenu();
 			uiM.SetSelectedContainerInfo();
 		}
 	}
@@ -1677,6 +1714,63 @@ public class ResourceManager : MonoBehaviour {
 				}
 			}
 		}
+	}
+
+	public List<ResourceAmount> GetFilteredResources(bool colonistInventory, bool colonistReserved, bool containerInventory, bool containerReserved) {
+		List<ResourceAmount> returnResources = new List<ResourceAmount>();
+		if (colonistInventory || colonistReserved) {
+			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+				if (colonistInventory) {
+					foreach (ResourceAmount resourceAmount in colonist.inventory.resources) {
+						ResourceAmount existingResourceAmount = returnResources.Find(ra => ra.resource == resourceAmount.resource);
+						if (existingResourceAmount == null) {
+							returnResources.Add(new ResourceAmount(resourceAmount.resource, resourceAmount.amount));
+						} else {
+							existingResourceAmount.amount += resourceAmount.amount;
+						}
+					}
+				}
+				if (colonistReserved) {
+					foreach (ReservedResources reservedResources in colonist.inventory.reservedResources) {
+						foreach (ResourceAmount resourceAmount in reservedResources.resources) {
+							ResourceAmount existingResourceAmount = returnResources.Find(ra => ra.resource == resourceAmount.resource);
+							if (existingResourceAmount == null) {
+								returnResources.Add(new ResourceAmount(resourceAmount.resource, resourceAmount.amount));
+							} else {
+								existingResourceAmount.amount += resourceAmount.amount;
+							}
+						}
+					}
+				}
+			}
+		}
+		if (containerInventory || containerReserved) {
+			foreach (Container container in containers) {
+				if (containerInventory) {
+					foreach (ResourceAmount resourceAmount in container.inventory.resources) {
+						ResourceAmount existingResourceAmount = returnResources.Find(ra => ra.resource == resourceAmount.resource);
+						if (existingResourceAmount == null) {
+							returnResources.Add(new ResourceAmount(resourceAmount.resource, resourceAmount.amount));
+						} else {
+							existingResourceAmount.amount += resourceAmount.amount;
+						}
+					}
+				}
+				if (containerReserved) {
+					foreach (ReservedResources reservedResources in container.inventory.reservedResources) {
+						foreach (ResourceAmount resourceAmount in reservedResources.resources) {
+							ResourceAmount existingResourceAmount = returnResources.Find(ra => ra.resource == resourceAmount.resource);
+							if (existingResourceAmount == null) {
+								returnResources.Add(new ResourceAmount(resourceAmount.resource, resourceAmount.amount));
+							} else {
+								existingResourceAmount.amount += resourceAmount.amount;
+							}
+						}
+					}
+				}
+			}
+		}
+		return returnResources;
 	}
 
 	Dictionary<int,int> bitmaskMap = new Dictionary<int,int>() {

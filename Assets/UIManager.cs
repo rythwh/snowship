@@ -30,7 +30,7 @@ public class UIManager : MonoBehaviour {
 		return new Regex("[^a-zA-Z0-9 -]").Replace(removeFromString, string.Empty);
 	}
 
-	public enum Colours { DarkRed, DarkGreen, LightRed, LightGreen, LightGrey220, LightGrey200, Grey150, DarkGrey50, LightBlue, LightOrange, White, DarkYellow, LightYellow, LightPurple};
+	public enum Colours { DarkRed, DarkGreen, LightRed, LightGreen, LightGrey220, LightGrey200, LightGrey180, Grey150, DarkGrey50, LightBlue, LightOrange, DarkOrange, White, DarkYellow, LightYellow, LightPurple};
 
 	private Dictionary<Colours, Color> colourMap = new Dictionary<Colours, Color>() {
 		{Colours.DarkRed,new Color(192f, 57f, 43f, 255f) / 255f },
@@ -39,10 +39,12 @@ public class UIManager : MonoBehaviour {
 		{Colours.LightGreen,new Color(46f, 204f, 113f, 255f) / 255f },
 		{Colours.LightGrey220,new Color(220f, 220f, 220f, 255f) / 255f },
 		{Colours.LightGrey200,new Color(200f, 200f, 200f, 255f) / 255f },
+		{Colours.LightGrey180,new Color(180f, 180f, 180f, 255f) / 255f },
 		{Colours.Grey150,new Color(150f, 150f, 150f, 255f) / 255f },
 		{Colours.DarkGrey50,new Color(50f, 50f, 50f, 255f) / 255f },
 		{Colours.LightBlue,new Color(52f, 152f, 219f, 255f) / 255f },
 		{Colours.LightOrange,new Color(230f, 126f, 34f, 255f) / 255f },
+		{Colours.DarkOrange,new Color(211f, 84f, 0f, 255f) / 255f },
 		{Colours.White,new Color(255f, 255f, 255f, 255f) / 255f },
 		{Colours.DarkYellow,new Color(216f, 176f, 15f, 255f) / 255f },
 		{Colours.LightYellow,new Color(241f, 196f, 15f, 255f) / 255f },
@@ -126,9 +128,11 @@ public class UIManager : MonoBehaviour {
 	private GameObject jobList;
 
 	private GameObject selectedColonistInformationPanel;
-	private GameObject selectedColonistInventoryPanel;
+	private GameObject selectedColonistInventorySliderPanel;
 	private GameObject selectedColonistHappinessModifiersButton;
 	private GameObject selectedColonistHappinessModifiersPanel;
+
+	private GameObject selectedTraderMenu;
 
 	private GameObject dateTimeInformationPanel;
 
@@ -167,8 +171,6 @@ public class UIManager : MonoBehaviour {
 
 	private GameObject pauseSavePanel;
 
-	public SettingsState settingsState;
-
 	void Awake() {
 
 		screenWidth = Screen.width;
@@ -203,8 +205,8 @@ public class UIManager : MonoBehaviour {
 
 		settingsPanel = canvas.transform.Find("Settings-Panel").gameObject;
 		settingsPanel.transform.Find("SettingsCancel-Button").GetComponent<Button>().onClick.AddListener(delegate { ToggleSettingsMenu(); });
-		settingsPanel.transform.Find("SettingsApply-Button").GetComponent<Button>().onClick.AddListener(delegate { ApplySettings(false); });
-		settingsPanel.transform.Find("SettingsAccept-Button").GetComponent<Button>().onClick.AddListener(delegate { ApplySettings(true); });
+		settingsPanel.transform.Find("SettingsApply-Button").GetComponent<Button>().onClick.AddListener(delegate { persistenceM.ApplySettings(false); });
+		settingsPanel.transform.Find("SettingsAccept-Button").GetComponent<Button>().onClick.AddListener(delegate { persistenceM.ApplySettings(true); });
 
 		mapSelectionPanel = mainMenu.transform.Find("Map-Panel").gameObject;
 		mapPanelExitButton = mapSelectionPanel.transform.Find("Exit-Button").gameObject;
@@ -289,12 +291,14 @@ public class UIManager : MonoBehaviour {
 
 		selectedColonistInformationPanel = gameUI.transform.Find("SelectedColonistInfo-Panel").gameObject;
 
-		selectedColonistInventoryPanel = selectedColonistInformationPanel.transform.Find("ColonistInventory-Panel").gameObject;
+		selectedColonistInventorySliderPanel = selectedColonistInformationPanel.transform.Find("ColonistInventorySlider-Panel").gameObject;
 
 		selectedColonistHappinessModifiersPanel = selectedColonistInformationPanel.transform.Find("HappinessModifier-Panel").gameObject;
 		selectedColonistHappinessModifiersButton = selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessModifiers-Button").gameObject;
 		selectedColonistHappinessModifiersButton.GetComponent<Button>().onClick.AddListener(delegate { selectedColonistHappinessModifiersPanel.SetActive(!selectedColonistHappinessModifiersPanel.activeSelf); });
 		selectedColonistHappinessModifiersPanel.SetActive(false);
+
+		selectedTraderMenu = gameUI.transform.Find("SelectedTraderMenu-Panel").gameObject;
 
 		dateTimeInformationPanel = gameUI.transform.Find("DateTimeInformation-Panel").gameObject;
 
@@ -369,6 +373,7 @@ public class UIManager : MonoBehaviour {
 
 	public void InitializeGameUI() {
 		SetSelectedColonistInformation();
+		SetSelectedTraderMenu();
 		SetSelectedContainerInfo();
 		SetJobElements();
 		InitializeProfessionsList();
@@ -402,9 +407,8 @@ public class UIManager : MonoBehaviour {
 					}
 				}
 			}
-			if (colonistM.selectedColonist != null) {
-				UpdateSelectedColonistInformation();
-			}
+			UpdateSelectedColonistInformation();
+			UpdateSelectedTraderMenu();
 			if (jobElements.Count > 0) {
 				UpdateJobElements();
 			}
@@ -423,7 +427,7 @@ public class UIManager : MonoBehaviour {
 					SetSelectedManufacturingTileObject(null);
 				}
 			}
-			if (Input.GetMouseButtonDown(0) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
+			if (Input.GetMouseButtonDown(0) && !IsPointerOverUI()) {
 				ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject.tile == newMouseOverTile || findContainer.parentObject.additionalTiles.Contains(newMouseOverTile));
 				if (container != null) {
 					SetSelectedManufacturingTileObject(null);
@@ -599,7 +603,7 @@ public class UIManager : MonoBehaviour {
 			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTileTemperature-Panel/TemperatureValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedPlanetTile.averageTemperature) + "°C";
 			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTilePrecipitation-Panel/PrecipitationValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedPlanetTile.averagePrecipitation * 100) + "%";
 			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTileAltitude-Panel/AltitudeValue-Text").GetComponent<Text>().text = Mathf.RoundToInt((selectedPlanetTile.tile.height - selectedPlanetTile.terrainTypeHeights[TileManager.TileTypes.GrassWater]) * 10000f) + "m";
-			mapSelectionPanel.transform.Find("PlanetPreview-Panel/SelectedPlanetTileCoordinates-Text").GetComponent<Text>().text = "(" + Mathf.FloorToInt(selectedPlanetTile.position.x) + "," + Mathf.FloorToInt(selectedPlanetTile.position.y) + ")";
+			mapSelectionPanel.transform.Find("PlanetPreview-Panel/SelectedPlanetTileCoordinates-Text").GetComponent<Text>().text = "(" + Mathf.FloorToInt(selectedPlanetTile.position.x) + ", " + Mathf.FloorToInt(selectedPlanetTile.position.y) + ")";
 		} else {
 			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTileTemperature-Panel/TemperatureValue-Text").GetComponent<Text>().text = "";
 			mapSelectionPanel.transform.Find("SelectedPlanetTileSettings-Panel/SelectedPlanetTilePrecipitation-Panel/PrecipitationValue-Text").GetComponent<Text>().text = "";
@@ -1094,12 +1098,16 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public void InitializeTileInformation() {
+		resourceElements.Add(Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ResourceData-Panel"), tileInformation.transform, false));
+
 		plantObjectElements.Add(Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage"), tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage"), false));
 		plantObjectElements.Add(Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel"), tileInformation.transform, false));
 	}
 
-	private Dictionary<int, List<GameObject>> tileObjectElements = new Dictionary<int, List<GameObject>>();
+	private List<GameObject> resourceElements = new List<GameObject>();
 	private List<GameObject> plantObjectElements = new List<GameObject>();
+	private Dictionary<int, List<GameObject>> tileObjectElements = new Dictionary<int, List<GameObject>>();
+	
 	public void UpdateTileInformation() {
 		if (mouseOverTile != null) {
 			foreach (KeyValuePair<int, List<GameObject>> tileObjectElementKVP in tileObjectElements) {
@@ -1110,6 +1118,21 @@ public class UIManager : MonoBehaviour {
 
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage").GetComponent<Image>().sprite = mouseOverTile.obj.GetComponent<SpriteRenderer>().sprite;
 
+			ResourceManager.Resource mouseOverTileResource = mouseOverTile.GetResource();
+			if (mouseOverTileResource != null) {
+				foreach (GameObject resourceElement in resourceElements) {
+					resourceElement.SetActive(true);
+				}
+
+				resourceElements[0].transform.Find("TileInfo-ResourceData-Value").GetComponent<Text>().text = mouseOverTileResource.name;
+				resourceElements[0].transform.Find("TileInfo-ResourceData-Image").GetComponent<Image>().sprite = mouseOverTileResource.image;
+				resourceElements[0].GetComponent<Image>().color = colourMap[Colours.LightGrey200];
+			} else {
+				foreach (GameObject resourceElement in resourceElements) {
+					resourceElement.SetActive(false);
+				}
+			}
+
 			if (mouseOverTile.plant != null) {
 				foreach (GameObject plantObjectElement in plantObjectElements) {
 					plantObjectElement.SetActive(true);
@@ -1117,6 +1140,7 @@ public class UIManager : MonoBehaviour {
 				plantObjectElements[0].GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
 				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "Plant";
 				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.name;
+				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Image").GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
 
 				if (mouseOverTile.plant.group.maxIntegrity > 0) {
 					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
@@ -1127,7 +1151,7 @@ public class UIManager : MonoBehaviour {
 					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
 					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = 1;
 					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().value = 1;
-					plantObjectElements[1].transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = colourMap[Colours.LightGrey220];
+					plantObjectElements[1].transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = colourMap[Colours.LightGrey200];
 				}
 			} else {
 				foreach (GameObject plantObjectElement in plantObjectElements) {
@@ -1150,6 +1174,7 @@ public class UIManager : MonoBehaviour {
 					GameObject tileObjectDataObject = tileObjectElements[tileObject.prefab.layer][1];
 					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "L" + tileObject.prefab.layer;
 					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
+					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Image").GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
 
 					if (tileObject.prefab.maxIntegrity > 0) {
 						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
@@ -1160,7 +1185,7 @@ public class UIManager : MonoBehaviour {
 						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
 						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = 1;
 						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().value = 1;
-						tileObjectDataObject.transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = colourMap[Colours.LightGrey220];
+						tileObjectDataObject.transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = colourMap[Colours.LightGrey200];
 					}
 
 					tileObjectDataObject.SetActive(true);
@@ -1168,29 +1193,8 @@ public class UIManager : MonoBehaviour {
 			}
 
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Position").GetComponent<Text>().text = "(" + Mathf.FloorToInt(mouseOverTile.obj.transform.position.x) + ", " + Mathf.FloorToInt(mouseOverTile.obj.transform.position.y) + ")";
-			if (tileM.GetStoneEquivalentTileTypes().Contains(mouseOverTile.tileType.type)) {
-				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Tile Type";
-				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.tileType.name;
-			} else if (tileM.GetWaterEquivalentTileTypes().Contains(mouseOverTile.tileType.type)) {
-				if (tileM.GetWaterEquivalentTileTypes().Contains(mouseOverTile.tileType.type) && !tileM.GetLiquidWaterEquivalentTileTypes().Contains(mouseOverTile.tileType.type)) {
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Tile Type";
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "Ice";
-				} else {
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Tile Type";
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = "Water";
-				}
-			} else if (tileM.GetResourceTileTypes().Contains(mouseOverTile.tileType.type) || (tileM.GetWaterToGroundResourceMap().ContainsKey(mouseOverTile.tileType.type) && tileM.GetResourceTileTypes().Contains(tileM.GetWaterToGroundResourceMap()[mouseOverTile.tileType.type]))) {
-				if (tileM.GetResourceTileTypes().Contains(mouseOverTile.tileType.type)) {
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Tile Type";
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.tileType.name;
-				} else {
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Tile Type";
-					tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = tileM.GetTileTypeByEnum(tileM.GetWaterToGroundResourceMap()[mouseOverTile.tileType.type]).name;
-				}
-			} else {
-				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-BiomeLabel").GetComponent<Text>().text = "Biome";
-				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.biome.name;
-			}
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Type").GetComponent<Text>().text = mouseOverTile.tileType.name;
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.biome.name;
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Temperature").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.temperature) + "°C";
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Precipitation").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.GetPrecipitation() * 100f) + "%";
 
@@ -1256,12 +1260,10 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public class InventoryElement {
-		public ColonistManager.Colonist colonist;
 		public ResourceManager.ResourceAmount resourceAmount;
 		public GameObject obj;
 
-		public InventoryElement(ColonistManager.Colonist colonist, ResourceManager.ResourceAmount resourceAmount, Transform parent, UIManager uiM) {
-			this.colonist = colonist;
+		public InventoryElement(ResourceManager.ResourceAmount resourceAmount, Transform parent) {
 			this.resourceAmount = resourceAmount;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ResourceInfoElement-Panel"), parent, false);
@@ -1277,14 +1279,49 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
+	public class TradeResourceElement {
+		public bool onTrader;
+		public ResourceManager.TradeResourceAmount tradeResourceAmount;
+		public GameObject obj;
+
+		private GameObject selectedIndicator;
+		private InputField desiredAmountInputField;
+
+		public TradeResourceElement(bool onTrader, ResourceManager.TradeResourceAmount tradeResourceAmount, Transform parent, bool important) {
+			this.onTrader = onTrader;
+			this.tradeResourceAmount = tradeResourceAmount;
+
+			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TradeResourceElement-Panel"), parent, false);
+
+			desiredAmountInputField = obj.transform.Find("DesiredAmount-Input").GetComponent<InputField>();
+			selectedIndicator = obj.transform.Find("SelectedIndicator").gameObject;
+
+			obj.transform.Find("Image").GetComponent<Image>().sprite = tradeResourceAmount.resourceAmount.resource.image;
+			obj.transform.Find("Name").GetComponent<Text>().text = tradeResourceAmount.resourceAmount.resource.name;
+			obj.transform.Find("Value").GetComponent<Text>().text = GetFormattedResourceValueString(100, 100, 100);
+
+			obj.transform.Find("ImportanceIndicator").gameObject.SetActive(important);
+
+			Update();
+		}
+
+		public void Update() {
+			obj.transform.Find("Amount").GetComponent<Text>().text = tradeResourceAmount.resourceAmount.amount.ToString();
+
+			selectedIndicator.SetActive(!String.IsNullOrEmpty(desiredAmountInputField.text));
+		}
+	}
+
+	public static string GetFormattedResourceValueString(int gold, int silver, int bronze) {
+		return string.Format("<color=\"#f39c12\">{0}</color> <color=\"#7f8c8d\">{1}</color> <color=\"#d35400\">{2}</color>", gold, silver, bronze);
+	}
+
 	public class ReservedResourcesColonistElement {
-		public ColonistManager.Colonist colonist;
 		public ResourceManager.ReservedResources reservedResources;
 		public List<ReservedResourceElement> reservedResourceElements = new List<ReservedResourceElement>();
 		public GameObject obj;
 
 		public ReservedResourcesColonistElement(ColonistManager.Colonist colonist, ResourceManager.ReservedResources reservedResources, Transform parent) {
-			this.colonist = colonist;
 			this.reservedResources = reservedResources;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ReservedResourcesColonistInfoElement-Panel"), parent, false);
@@ -1294,18 +1331,16 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("ColonistImage").GetComponent<Image>().sprite = colonist.moveSprites[0];
 
 			foreach (ResourceManager.ResourceAmount ra in reservedResources.resources) {
-				reservedResourceElements.Add(new ReservedResourceElement(colonist, ra, parent));
+				reservedResourceElements.Add(new ReservedResourceElement(ra, parent));
 			}
 		}
 	}
 
 	public class ReservedResourceElement {
-		public ColonistManager.Colonist colonist;
 		public ResourceManager.ResourceAmount resourceAmount;
 		public GameObject obj;
 
-		public ReservedResourceElement(ColonistManager.Colonist colonist, ResourceManager.ResourceAmount resourceAmount, Transform parent) {
-			this.colonist = colonist;
+		public ReservedResourceElement(ResourceManager.ResourceAmount resourceAmount, Transform parent) {
 			this.resourceAmount = resourceAmount;
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ReservedResourceInfoElement-Panel"), parent, false);
@@ -1341,11 +1376,11 @@ public class UIManager : MonoBehaviour {
 		}
 
 		public void Update() {
-			obj.transform.Find("NeedValue-Text").GetComponent<Text>().text = (Mathf.RoundToInt((needInstance.value / needInstance.prefab.clampValue) * 100)) + "%";
+			obj.transform.Find("NeedValue-Text").GetComponent<Text>().text = needInstance.GetRoundedValue() + "%";
 
-			obj.transform.Find("Need-Slider").GetComponent<Slider>().value = needInstance.value;
-			obj.transform.Find("Need-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(uiM.colourMap[Colours.DarkGreen], uiM.colourMap[Colours.DarkRed], (needInstance.value / needInstance.prefab.clampValue));
-			obj.transform.Find("Need-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = Color.Lerp(uiM.colourMap[Colours.LightGreen], uiM.colourMap[Colours.LightRed], (needInstance.value / needInstance.prefab.clampValue));
+			obj.transform.Find("Need-Slider").GetComponent<Slider>().value = needInstance.GetValue();
+			obj.transform.Find("Need-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(uiM.colourMap[Colours.DarkGreen], uiM.colourMap[Colours.DarkRed], (needInstance.GetValue() / needInstance.prefab.clampValue));
+			obj.transform.Find("Need-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = Color.Lerp(uiM.colourMap[Colours.LightGreen], uiM.colourMap[Colours.LightRed], (needInstance.GetValue() / needInstance.prefab.clampValue));
 		}
 	}
 
@@ -1362,10 +1397,13 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("HappinessModifierName-Text").GetComponent<Text>().text = happinessModifierInstance.prefab.name;
 			if (happinessModifierInstance.prefab.effectAmount > 0) {
 				obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGreen];
+				obj.GetComponent<Outline>().effectColor = uiM.colourMap[Colours.DarkGreen];
 			} else if (happinessModifierInstance.prefab.effectAmount < 0) {
 				obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightRed];
+				obj.GetComponent<Outline>().effectColor = uiM.colourMap[Colours.DarkRed];
 			} else {
 				obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGrey220];
+				obj.GetComponent<Outline>().effectColor = uiM.colourMap[Colours.LightGrey200];
 			}
 
 			Update();
@@ -1382,112 +1420,101 @@ public class UIManager : MonoBehaviour {
 				obj.transform.Find("HappinessModifierTime-Text").GetComponent<Text>().text = Mathf.RoundToInt(happinessModifierInstance.timer) + "s (" + Mathf.RoundToInt(happinessModifierInstance.prefab.effectLengthSeconds) + "s)";
 			}
 			if (happinessModifierInstance.prefab.effectAmount > 0) {
-				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = "+" + happinessModifierInstance.prefab.effectAmount;
+				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = "+" + happinessModifierInstance.prefab.effectAmount + "%";
 			} else if (happinessModifierInstance.prefab.effectAmount < 0) {
-				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = happinessModifierInstance.prefab.effectAmount.ToString();
+				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = happinessModifierInstance.prefab.effectAmount + "%";
 			} else {
-				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = happinessModifierInstance.prefab.effectAmount.ToString();
+				obj.transform.Find("HappinessModifierAmount-Text").GetComponent<Text>().text = happinessModifierInstance.prefab.effectAmount + "%";
 			}
 			return true;
 		}
 	}
 
-	List<SkillElement> skillElements = new List<SkillElement>();
+	public const int colonistInformationPanelVerticalOffset = 310;
 
-	List<NeedElement> needElements = new List<NeedElement>();
-	List<HappinessModifierElement> happinessModifierElements = new List<HappinessModifierElement>();
+	public void SetRightListPanelSize() {
+		RectTransform rightListPanel = gameUI.transform.Find("RightList-Panel").GetComponent<RectTransform>();
+		Vector2 rightListSize = rightListPanel.offsetMin;
+		int verticalOffset = 5; // Nothing active default
+		if (selectedColonistInformationPanel.activeSelf) {
+			verticalOffset = 310;
+		} else if (selectedTraderMenu.activeSelf) {
+			verticalOffset = 310;
+		}
+		rightListPanel.offsetMin = new Vector2(rightListSize.x, verticalOffset);
+	}
 
-	List<InventoryElement> inventoryElements = new List<InventoryElement>();
-	List<ReservedResourcesColonistElement> reservedResourcesColonistElements = new List<ReservedResourcesColonistElement>();
+	List<SkillElement> selectedColonistSkillElements = new List<SkillElement>();
 
-	/* Called from ColonistManager.SetSelectedColonistFromInput(), ColonistManager.SetSelectedColonist(), ColonistManager.DeselectSelectedColonist(), TileManager.Initialize() */
+	List<NeedElement> selectedColonistNeedElements = new List<NeedElement>();
+	List<HappinessModifierElement> selectedColonistHappinessModifierElements = new List<HappinessModifierElement>();
+
+	List<InventoryElement> selectedColonistInventoryElements = new List<InventoryElement>();
+	List<ReservedResourcesColonistElement> selectedColonistReservedResourcesColonistElements = new List<ReservedResourcesColonistElement>();
+
 	public void SetSelectedColonistInformation() {
-		if (colonistM.selectedColonist != null) {
+		if (colonistM.selectedHuman != null && colonistM.selectedHuman is ColonistManager.Colonist) {
 			selectedColonistInformationPanel.SetActive(true);
 
-			RectTransform rightListPanel = gameUI.transform.Find("RightList-Panel").GetComponent<RectTransform>();
-			Vector2 rightListSize = rightListPanel.offsetMin;
-			rightListPanel.offsetMin = new Vector2(rightListSize.x, 310);
-
-			selectedColonistInformationPanel.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonistM.selectedColonist.name + " (" + colonistM.selectedColonist.gender.ToString()[0] + ")";
-			selectedColonistInformationPanel.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = colonistM.selectedColonist.moveSprites[0];
+			selectedColonistInformationPanel.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonistM.selectedHuman.name + " (" + colonistM.selectedHuman.gender.ToString()[0] + ")";
+			selectedColonistInformationPanel.transform.Find("ColonistBaseSprite-Image").GetComponent<Image>().sprite = colonistM.selectedHuman.moveSprites[0];
 
 			selectedColonistInformationPanel.transform.Find("AffiliationName-Text").GetComponent<Text>().text = "Colonist of " + colonyName;
 
-			foreach (SkillElement skillElement in skillElements) {
-				Destroy(skillElement.obj);
-			}
-			skillElements.Clear();
-			foreach (NeedElement needElement in needElements) {
-				Destroy(needElement.obj);
-			}
-			needElements.Clear();
-			foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in reservedResourcesColonistElements) {
+			foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in selectedColonistReservedResourcesColonistElements) {
 				foreach (ReservedResourceElement reservedResourceElement in reservedResourcesColonistElement.reservedResourceElements) {
 					Destroy(reservedResourceElement.obj);
 				}
 				reservedResourcesColonistElement.reservedResourceElements.Clear();
 				Destroy(reservedResourcesColonistElement.obj);
 			}
-			reservedResourcesColonistElements.Clear();
-			foreach (InventoryElement inventoryElement in inventoryElements) {
+			selectedColonistReservedResourcesColonistElements.Clear();
+			foreach (InventoryElement inventoryElement in selectedColonistInventoryElements) {
 				Destroy(inventoryElement.obj);
 			}
-			inventoryElements.Clear();
-			foreach (HappinessModifierElement happinessModifierElement in happinessModifierElements) {
-				Destroy(happinessModifierElement.obj);
-			}
-			happinessModifierElements.Clear();
+			selectedColonistInventoryElements.Clear();
 
-			foreach (ColonistManager.SkillInstance skill in colonistM.selectedColonist.skills) {
-				skillElements.Add(new SkillElement(colonistM.selectedColonist, skill, selectedColonistInformationPanel.transform.Find("SkillsList-Panel"), this));
+			RemakeSelectedColonistHappinessModifiers();
+			RemakeSelectedColonistNeeds();
+			RemakeSelectedColonistSkills();
+
+			foreach (ResourceManager.ReservedResources rr in colonistM.selectedHuman.inventory.reservedResources) {
+				selectedColonistReservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.colonist, rr, selectedColonistInformationPanel.transform.Find("ColonistInventory-Panel/Inventory-ScrollPanel/InventoryList-Panel")));
 			}
-			foreach (ColonistManager.NeedInstance need in colonistM.selectedColonist.needs) {
-				needElements.Add(new NeedElement(need, selectedColonistInformationPanel.transform.Find("Needs-Panel/Needs-ScrollPanel/NeedsList-Panel"), this));
+			foreach (ResourceManager.ResourceAmount ra in colonistM.selectedHuman.inventory.resources) {
+				selectedColonistInventoryElements.Add(new InventoryElement(ra, selectedColonistInformationPanel.transform.Find("ColonistInventory-Panel/Inventory-ScrollPanel/InventoryList-Panel")));
 			}
-			foreach (ResourceManager.ReservedResources rr in colonistM.selectedColonist.inventory.reservedResources) {
-				reservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.colonist, rr, selectedColonistInformationPanel.transform.Find("Inventory-Panel/Inventory-ScrollPanel/InventoryList-Panel")));
-			}
-			foreach (ResourceManager.ResourceAmount ra in colonistM.selectedColonist.inventory.resources) {
-				inventoryElements.Add(new InventoryElement(colonistM.selectedColonist, ra, selectedColonistInformationPanel.transform.Find("Inventory-Panel/Inventory-ScrollPanel/InventoryList-Panel"), this));
-			}
-			foreach (ColonistManager.HappinessModifierInstance hmi in colonistM.selectedColonist.happinessModifiers) {
-				happinessModifierElements.Add(new HappinessModifierElement(hmi, selectedColonistInformationPanel.transform.Find("HappinessModifier-Panel/HappinessModifier-ScrollPanel/HappinessModifierList-Panel"), this));
-			}
+			
 		} else {
 			selectedColonistInformationPanel.SetActive(false);
 
-			RectTransform rightListPanel = gameUI.transform.Find("RightList-Panel").GetComponent<RectTransform>();
-			Vector2 rightListSize = rightListPanel.offsetMin;
-			rightListPanel.offsetMin = new Vector2(rightListSize.x, 5);
-
-			if (skillElements.Count > 0) {
-				foreach (SkillElement skillElement in skillElements) {
+			if (selectedColonistSkillElements.Count > 0) {
+				foreach (SkillElement skillElement in selectedColonistSkillElements) {
 					Destroy(skillElement.obj);
 				}
-				skillElements.Clear();
+				selectedColonistSkillElements.Clear();
 			}
-			if (needElements.Count > 0) {
-				foreach (NeedElement needElement in needElements) {
+			if (selectedColonistNeedElements.Count > 0) {
+				foreach (NeedElement needElement in selectedColonistNeedElements) {
 					Destroy(needElement.obj);
 				}
-				needElements.Clear();
+				selectedColonistNeedElements.Clear();
 			}
-			if (reservedResourcesColonistElements.Count > 0) {
-				foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in reservedResourcesColonistElements) {
+			if (selectedColonistReservedResourcesColonistElements.Count > 0) {
+				foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in selectedColonistReservedResourcesColonistElements) {
 					foreach (ReservedResourceElement reservedResourceElement in reservedResourcesColonistElement.reservedResourceElements) {
 						Destroy(reservedResourceElement.obj);
 					}
 					reservedResourcesColonistElement.reservedResourceElements.Clear();
 					Destroy(reservedResourcesColonistElement.obj);
 				}
-				reservedResourcesColonistElements.Clear();
+				selectedColonistReservedResourcesColonistElements.Clear();
 			}
-			if (inventoryElements.Count > 0) {
-				foreach (InventoryElement inventoryElement in inventoryElements) {
+			if (selectedColonistInventoryElements.Count > 0) {
+				foreach (InventoryElement inventoryElement in selectedColonistInventoryElements) {
 					Destroy(inventoryElement.obj);
 				}
-				inventoryElements.Clear();
+				selectedColonistInventoryElements.Clear();
 			}
 		}
 	}
@@ -1499,30 +1526,72 @@ public class UIManager : MonoBehaviour {
 		{1,-50 },{2,-65 },{3,-70 }
 	};
 
+	public void RemakeSelectedColonistHappinessModifiers() {
+		if (colonistM.selectedHuman != null && colonistM.selectedHuman is ColonistManager.Colonist) {
+			ColonistManager.Colonist selectedColonist = (ColonistManager.Colonist)colonistM.selectedHuman;
+			foreach (HappinessModifierElement happinessModifierElement in selectedColonistHappinessModifierElements) {
+				Destroy(happinessModifierElement.obj);
+			}
+			selectedColonistHappinessModifierElements.Clear();
+			foreach (ColonistManager.HappinessModifierInstance hmi in selectedColonist.happinessModifiers) {
+				selectedColonistHappinessModifierElements.Add(new HappinessModifierElement(hmi, selectedColonistInformationPanel.transform.Find("HappinessModifier-Panel/HappinessModifier-ScrollPanel/HappinessModifierList-Panel"), this));
+			}
+		}
+	}
+
+	public void RemakeSelectedColonistNeeds() {
+		if (colonistM.selectedHuman != null && colonistM.selectedHuman is ColonistManager.Colonist) {
+			ColonistManager.Colonist selectedColonist = (ColonistManager.Colonist)colonistM.selectedHuman;
+			foreach (NeedElement needElement in selectedColonistNeedElements) {
+				Destroy(needElement.obj);
+			}
+			selectedColonistNeedElements.Clear();
+			List<ColonistManager.NeedInstance> sortedNeeds = selectedColonist.needs.OrderByDescending(need => need.GetValue()).ToList();
+			foreach (ColonistManager.NeedInstance need in sortedNeeds) {
+				selectedColonistNeedElements.Add(new NeedElement(need, selectedColonistInformationPanel.transform.Find("Needs-Panel/Needs-ScrollPanel/NeedsList-Panel"), this));
+			}
+		}
+	}
+
+	public void RemakeSelectedColonistSkills() {
+		if (colonistM.selectedHuman != null && colonistM.selectedHuman is ColonistManager.Colonist) {
+			ColonistManager.Colonist selectedColonist = (ColonistManager.Colonist)colonistM.selectedHuman;
+			foreach (SkillElement skillElement in selectedColonistSkillElements) {
+				Destroy(skillElement.obj);
+			}
+			selectedColonistSkillElements.Clear();
+			List<ColonistManager.SkillInstance> sortedSkills = selectedColonist.skills.OrderByDescending(skill => skill.CalculateTotalSkillLevel()).ToList();
+			foreach (ColonistManager.SkillInstance skill in sortedSkills) {
+				selectedColonistSkillElements.Add(new SkillElement(selectedColonist, skill, selectedColonistInformationPanel.transform.Find("Skills-Panel/Skills-ScrollPanel/SkillsList-Panel"), this));
+			}
+		}
+	}
+
 	private List<HappinessModifierElement> removeHME = new List<HappinessModifierElement>();
 	public void UpdateSelectedColonistInformation() {
-		if (colonistM.selectedColonist != null) {
+		if (colonistM.selectedHuman != null && colonistM.selectedHuman is ColonistManager.Colonist) {
+			ColonistManager.Colonist selectedColonist = (ColonistManager.Colonist)colonistM.selectedHuman;
 
-			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealth-Slider").GetComponent<Slider>().value = Mathf.RoundToInt(colonistM.selectedColonist.health * 100);
-			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealth-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(colourMap[Colours.DarkRed], colourMap[Colours.DarkGreen], colonistM.selectedColonist.health);
-			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealth-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = Color.Lerp(colourMap[Colours.LightRed], colourMap[Colours.LightGreen], colonistM.selectedColonist.health);
-			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealthValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(colonistM.selectedColonist.health * 100) + "%";
+			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealth-Slider").GetComponent<Slider>().value = Mathf.RoundToInt(selectedColonist.health * 100);
+			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealth-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(colourMap[Colours.DarkRed], colourMap[Colours.DarkGreen], selectedColonist.health);
+			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealth-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = Color.Lerp(colourMap[Colours.LightRed], colourMap[Colours.LightGreen], selectedColonist.health);
+			selectedColonistInformationPanel.transform.Find("ColonistHealth-Panel/ColonistHealthValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedColonist.health * 100) + "%";
 
-			selectedColonistInventoryPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().minValue = 0;
-			selectedColonistInventoryPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().maxValue = colonistM.selectedColonist.inventory.maxAmount;
-			selectedColonistInventoryPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().value = colonistM.selectedColonist.inventory.CountResources();
-			selectedColonistInventoryPanel.transform.Find("ColonistInventoryValue-Text").GetComponent<Text>().text = colonistM.selectedColonist.inventory.CountResources() + "/ " + colonistM.selectedColonist.inventory.maxAmount;
+			selectedColonistInventorySliderPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().minValue = 0;
+			selectedColonistInventorySliderPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().maxValue = selectedColonist.inventory.maxAmount;
+			selectedColonistInventorySliderPanel.transform.Find("ColonistInventory-Slider").GetComponent<Slider>().value = selectedColonist.inventory.CountResources();
+			selectedColonistInventorySliderPanel.transform.Find("ColonistInventoryValue-Text").GetComponent<Text>().text = selectedColonist.inventory.CountResources() + "/ " + selectedColonist.inventory.maxAmount;
 
-			selectedColonistInformationPanel.transform.Find("ColonistCurrentAction-Text").GetComponent<Text>().text = jobM.GetJobDescription(colonistM.selectedColonist.job);
-			if (colonistM.selectedColonist.storedJob != null) {
-				selectedColonistInformationPanel.transform.Find("ColonistStoredAction-Text").GetComponent<Text>().text = jobM.GetJobDescription(colonistM.selectedColonist.storedJob);
+			selectedColonistInformationPanel.transform.Find("ColonistCurrentAction-Text").GetComponent<Text>().text = jobM.GetJobDescription(selectedColonist.job);
+			if (selectedColonist.storedJob != null) {
+				selectedColonistInformationPanel.transform.Find("ColonistStoredAction-Text").GetComponent<Text>().text = jobM.GetJobDescription(selectedColonist.storedJob);
 			} else {
 				selectedColonistInformationPanel.transform.Find("ColonistStoredAction-Text").GetComponent<Text>().text = string.Empty;
 			}
 
-			selectedColonistInformationPanel.transform.Find("SkillsList-Panel/SkillsListTitle-Panel/Profession-Text").GetComponent<Text>().text = colonistM.selectedColonist.profession.name;
+			selectedColonistInformationPanel.transform.Find("Skills-Panel/ProfessionLabel-Text").GetComponent<Text>().text = selectedColonist.profession.name;
 
-			int happinessModifiersSum = Mathf.RoundToInt(colonistM.selectedColonist.happinessModifiersSum);
+			int happinessModifiersSum = Mathf.RoundToInt(selectedColonist.happinessModifiersSum);
 
 			int happinessLength = Mathf.Abs(happinessModifiersSum).ToString().Length;
 			Text happinessModifierAmountText = selectedColonistHappinessModifiersButton.transform.Find("HappinessModifiersAmount-Text").GetComponent<Text>();
@@ -1534,23 +1603,23 @@ public class UIManager : MonoBehaviour {
 				happinessModifierAmountText.color = colourMap[Colours.LightRed];
 			} else {
 				happinessModifierAmountText.text = happinessModifiersSum + "%";
-				happinessModifierAmountText.color = colourMap[Colours.LightGrey200];
+				happinessModifierAmountText.color = colourMap[Colours.DarkGrey50];
 			}
 			selectedColonistHappinessModifiersButton.GetComponent<RectTransform>().sizeDelta = new Vector2(happinessModifierButtonSizeMap[happinessLength], 20);
 			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<RectTransform>().offsetMax = new Vector2(happinessModifierValueHorizontalPositionMap[happinessLength], 0);
-			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(colonistM.selectedColonist.effectiveHappiness) + "%";
-			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<Text>().color = Color.Lerp(colourMap[Colours.LightRed], colourMap[Colours.LightGreen], colonistM.selectedColonist.effectiveHappiness / 100f);
+			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedColonist.effectiveHappiness) + "%";
+			selectedColonistInformationPanel.transform.Find("Needs-Panel/HappinessValue-Text").GetComponent<Text>().color = Color.Lerp(colourMap[Colours.LightRed], colourMap[Colours.LightGreen], selectedColonist.effectiveHappiness / 100f);
 
-			foreach (SkillElement skillElement in skillElements) {
+			foreach (SkillElement skillElement in selectedColonistSkillElements) {
 				skillElement.Update();
 			}
-			foreach (NeedElement needElement in needElements) {
+			foreach (NeedElement needElement in selectedColonistNeedElements) {
 				needElement.Update();
 			}
-			foreach (InventoryElement inventoryElement in inventoryElements) {
+			foreach (InventoryElement inventoryElement in selectedColonistInventoryElements) {
 				inventoryElement.Update();
 			}
-			foreach (HappinessModifierElement happinessModifierElement in happinessModifierElements) {
+			foreach (HappinessModifierElement happinessModifierElement in selectedColonistHappinessModifierElements) {
 				bool keep = happinessModifierElement.Update();
 				if (!keep) {
 					removeHME.Add(happinessModifierElement);
@@ -1559,7 +1628,7 @@ public class UIManager : MonoBehaviour {
 			if (removeHME.Count > 0) {
 				foreach (HappinessModifierElement happinessModifierElement in removeHME) {
 					Destroy(happinessModifierElement.obj);
-					happinessModifierElements.Remove(happinessModifierElement);
+					selectedColonistHappinessModifierElements.Remove(happinessModifierElement);
 				}
 				removeHME.Clear();
 			}
@@ -1580,13 +1649,14 @@ public class UIManager : MonoBehaviour {
 
 			obj.transform.Find("BodySprite").GetComponent<Image>().sprite = colonist.moveSprites[0];
 			obj.transform.Find("Name").GetComponent<Text>().text = colonist.name;
-			obj.GetComponent<Button>().onClick.AddListener(delegate { colonist.colonistM.SetSelectedColonist(colonist); });
+			obj.GetComponent<Button>().onClick.AddListener(delegate { colonist.colonistM.SetSelectedHuman(colonist); });
 
 			Update(uiM);
 		}
 
 		public void Update(UIManager uiM) {
 			obj.GetComponent<Image>().color = Color.Lerp(uiM.colourMap[Colours.LightRed], uiM.colourMap[Colours.LightGreen], colonist.health);
+			obj.GetComponent<Outline>().effectColor = Color.Lerp(uiM.colourMap[Colours.DarkRed], uiM.colourMap[Colours.DarkGreen], colonist.health);
 		}
 
 		public void DestroyObject() {
@@ -1620,7 +1690,6 @@ public class UIManager : MonoBehaviour {
 	}
 
 	public class JobElement {
-
 		public JobManager.Job job;
 		public ColonistManager.Colonist colonist;
 		public GameObject obj;
@@ -1660,30 +1729,42 @@ public class UIManager : MonoBehaviour {
 
 			if (job.priority > 0) {
 				obj.transform.Find("JobInfo").GetComponent<Image>().color = uiM.colourMap[Colours.LightYellow];
+				obj.GetComponent<Outline>().effectColor = uiM.colourMap[Colours.DarkYellow];
 			} else if (job.priority < 0) {
 				obj.transform.Find("JobInfo").GetComponent<Image>().color = uiM.colourMap[Colours.LightRed];
+				obj.GetComponent<Outline>().effectColor = uiM.colourMap[Colours.DarkRed];
 			} else {
 				obj.transform.Find("JobInfo").GetComponent<Image>().color = uiM.colourMap[Colours.LightGrey220];
+				obj.GetComponent<Outline>().effectColor = uiM.colourMap[Colours.LightGrey180];
 			}
 
 			if (colonist != null) {
 				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, 93);
-				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().minValue = 0;
-				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().maxValue = job.colonistBuildTime;
-				if (colonist.job.started) {
-					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGreen];
-				} else {
-					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightYellow];
-				}
 
 				colonistObj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ColonistInfoElement-Panel"), obj.transform, false);
-
 				colonistObj.transform.Find("BodySprite").GetComponent<Image>().sprite = colonist.moveSprites[0];
 				colonistObj.transform.Find("Name").GetComponent<Text>().text = colonist.name;
-				colonistObj.GetComponent<Button>().onClick.AddListener(delegate { colonist.colonistM.SetSelectedColonist(colonist); });
-				colonistObj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGreen];
+				colonistObj.GetComponent<Button>().onClick.AddListener(delegate { colonist.colonistM.SetSelectedHuman(colonist); });
 				colonistObj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, colonistObj.GetComponent<RectTransform>().sizeDelta.y);
 				colonistObj.GetComponent<Outline>().enabled = false;
+				
+				if (colonist.job.started) {
+					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGreen];
+					obj.GetComponent<Outline>().effectColor = uiM.colourMap[Colours.DarkGreen];
+					colonistObj.GetComponent<Image>().color = uiM.colourMap[Colours.LightGreen];
+
+					obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().minValue = 0;
+					obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().maxValue = job.colonistBuildTime;
+					obj.transform.Find("JobInfo/JobProgress-Slider/Fill Area/Fill").GetComponent<Image>().color = uiM.colourMap[Colours.LightGreen];
+				} else {
+					obj.GetComponent<Image>().color = uiM.colourMap[Colours.LightOrange];
+					obj.GetComponent<Outline>().effectColor = uiM.colourMap[Colours.DarkOrange];
+					colonistObj.GetComponent<Image>().color = uiM.colourMap[Colours.LightOrange];
+
+					obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().minValue = 0;
+					obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().maxValue = colonist.startPathLength;
+					obj.transform.Find("JobInfo/JobProgress-Slider/Fill Area/Fill").GetComponent<Image>().color = uiM.colourMap[Colours.LightOrange];
+				}
 			}
 
 			job.jobUIElement = this;
@@ -1692,7 +1773,11 @@ public class UIManager : MonoBehaviour {
 		}
 
 		public void Update() {
-			obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().value = job.colonistBuildTime - job.jobProgress;
+			if (colonist != null && !colonist.job.started && colonist.startPathLength > 0 && colonist.path.Count > 0) {
+				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().value = (1 - (colonist.path.Count / (float)colonist.startPathLength)) * colonist.startPathLength;//Mathf.Lerp((1 - (colonist.path.Count / (float)colonist.startPathLength)) * colonist.startPathLength, (1 - ((colonist.path.Count - 1) / (float)colonist.startPathLength)) * colonist.startPathLength, (1 - Vector2.Distance(colonist.obj.transform.position, colonist.path[0].obj.transform.position)) + 0.5f);
+			} else {
+				obj.transform.Find("JobInfo/JobProgress-Slider").GetComponent<Slider>().value = job.colonistBuildTime - job.jobProgress;
+			}
 		}
 
 		public void DestroyObjects() {
@@ -1723,11 +1808,11 @@ public class UIManager : MonoBehaviour {
 		if (jobM.jobs.Count > 0 || colonistM.colonists.Where(colonist => colonist.job != null).ToList().Count > 0) {
 			jobList.SetActive(true);
 			RemoveJobElements();
-			List<ColonistManager.Colonist> orderedColonists = colonistM.colonists.Where(colonist => colonist.job != null).OrderBy(colonist => colonist.job.jobProgress).ToList();
-			foreach (ColonistManager.Colonist jobColonist in orderedColonists.Where(colonist => colonist.job.started)) {
+			List<ColonistManager.Colonist> orderedColonists = colonistM.colonists.Where(colonist => colonist.job != null).ToList();
+			foreach (ColonistManager.Colonist jobColonist in orderedColonists.Where(colonist => colonist.job.started).OrderBy(colonist => colonist.job.jobProgress)) {
 				jobElements.Add(new JobElement(jobColonist.job, jobColonist, jobList.transform.Find("JobList-Panel"), this, cameraM));
 			}
-			foreach (ColonistManager.Colonist jobColonist in orderedColonists.Where(colonist => !colonist.job.started)) {
+			foreach (ColonistManager.Colonist jobColonist in orderedColonists.Where(colonist => !colonist.job.started).OrderBy(colonist => colonist.path.Count)) {
 				jobElements.Add(new JobElement(jobColonist.job, jobColonist, jobList.transform.Find("JobList-Panel"), this, cameraM));
 			}
 			foreach (JobManager.Job job in jobM.jobs.Where(j => j.started).OrderBy(j => (j.jobProgress / j.colonistBuildTime))) {
@@ -1820,7 +1905,7 @@ public class UIManager : MonoBehaviour {
 				containerReservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.colonist, rr, selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel")));
 			}
 			foreach (ResourceManager.ResourceAmount ra in selectedContainer.inventory.resources) {
-				containerInventoryElements.Add(new InventoryElement(colonistM.selectedColonist, ra, selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel"), this));
+				containerInventoryElements.Add(new InventoryElement(ra, selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel")));
 			}
 			selectedContainerInventoryPanel.transform.Find("SelectedContainerSprite-Image").GetComponent<Image>().sprite = selectedContainer.parentObject.obj.GetComponent<SpriteRenderer>().sprite;
 		} else {
@@ -1957,30 +2042,20 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("BodySprite").GetComponent<Image>().sprite = colonist.moveSprites[0];
 			obj.transform.Find("Name").GetComponent<Text>().text = colonist.name;
 			obj.GetComponent<Button>().onClick.AddListener(delegate {
-				colonistM.SetSelectedColonist(colonist);
+				colonistM.SetSelectedHuman(colonist);
 			});
 			professionElement.colonistsInProfessionElements.Add(obj);
 		}
 	}
 
-	double CalculateProfessionSkillLevel(ColonistManager.Profession profession, ColonistManager.Colonist colonist, bool round, int decimalPlaces) {
-		if (profession.type != ColonistManager.ProfessionTypeEnum.Nothing) {
-			ColonistManager.SkillInstance skillInstance = colonist.skills.Find(skill => skill.prefab == profession.primarySkill);
-			double skillLevel = skillInstance.level + (skillInstance.currentExperience / skillInstance.nextLevelExperience);
-			if (round) {
-				return Math.Round(skillLevel, decimalPlaces);
-			}
-			return skillLevel;
-		}
-		return 0;
-	}
+	
 
 	void UpdateProfessionLevelInfo(GameObject obj, ColonistManager.Colonist colonist, ColonistManager.Profession currentProfession, ColonistManager.Profession nextProfession) {
 		obj.transform.Find("ColonistCurrentProfession-Text").GetComponent<Text>().text = currentProfession.name;
 		if (colonist.profession.type != ColonistManager.ProfessionTypeEnum.Nothing) {
 			/*ColonistManager.SkillInstance currentSkillInstance = colonist.skills.Find(skill => skill.prefab == colonist.profession.primarySkill);
 			double currentSkillLevel = Math.Round(currentSkillInstance.level + (currentSkillInstance.currentExperience / currentSkillInstance.nextLevelExperience), 2);*/
-			double currentSkillLevel = CalculateProfessionSkillLevel(currentProfession, colonist, true, 2);
+			double currentSkillLevel = currentProfession.CalculateSkillLevelFromPrimarySkill(colonist, true, 2);
 			obj.transform.Find("ColonistProfessionLevel-Text").GetComponent<Text>().text = currentSkillLevel.ToString();
 		} else {
 			obj.transform.Find("ColonistProfessionLevel-Text").GetComponent<Text>().text = "0";
@@ -1990,7 +2065,7 @@ public class UIManager : MonoBehaviour {
 		if (nextProfession.type != ColonistManager.ProfessionTypeEnum.Nothing) {
 			/*ColonistManager.SkillInstance nextSkillInstance = colonist.skills.Find(skill => skill.prefab == nextProfession.primarySkill);
 			double nextSkillLevel = Math.Round(nextSkillInstance.level + (nextSkillInstance.currentExperience / nextSkillInstance.nextLevelExperience), 2);*/
-			double nextSkillLevel = CalculateProfessionSkillLevel(nextProfession, colonist, true, 2);
+			double nextSkillLevel = nextProfession.CalculateSkillLevelFromPrimarySkill(colonist, true, 2);
 			obj.transform.Find("ColonistNextProfessionLevel-Text").GetComponent<Text>().text = nextSkillLevel.ToString();
 		} else {
 			obj.transform.Find("ColonistNextProfessionLevel-Text").GetComponent<Text>().text = "0";
@@ -2004,7 +2079,7 @@ public class UIManager : MonoBehaviour {
 		professionElement.editColonistsInProfessionElements.Clear();
 		if (remove) { // User clicked red minus button
 			List<ColonistManager.Colonist> validColonists = colonistM.colonists.Where(c => c.profession == professionElement.profession).ToList();
-			validColonists = validColonists.OrderBy(c => CalculateProfessionSkillLevel(c.profession, c, false, 0)).ToList();
+			validColonists = validColonists.OrderBy(colonist => colonist.profession.CalculateSkillLevelFromPrimarySkill(colonist, false, 0)).ToList();
 			foreach (ColonistManager.Colonist colonist in validColonists) {
 				GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/EditColonistInProfessionInfoElement-Panel"), professionElement.editColonistsInProfessionListObj.transform, false);
 				obj.GetComponent<Image>().color = colourMap[Colours.LightGrey200];
@@ -2029,9 +2104,9 @@ public class UIManager : MonoBehaviour {
 		} else { // User clicked green plus button
 			List<ColonistManager.Colonist> validColonists = colonistM.colonists.Where(c => c.profession != professionElement.profession).ToList();
 			if (professionElement.profession.type == ColonistManager.ProfessionTypeEnum.Nothing) {
-				validColonists = validColonists.OrderBy(c => CalculateProfessionSkillLevel(professionElement.profession, c, false, 0)).ToList();
+				validColonists = validColonists.OrderBy(colonist => professionElement.profession.CalculateSkillLevelFromPrimarySkill(colonist, false, 0)).ToList();
 			} else {
-				validColonists = validColonists.OrderByDescending(c => CalculateProfessionSkillLevel(professionElement.profession, c, false, 0)).ToList();
+				validColonists = validColonists.OrderByDescending(colonist => professionElement.profession.CalculateSkillLevelFromPrimarySkill(colonist, false, 0)).ToList();
 			}
 			foreach (ColonistManager.Colonist colonist in validColonists) {
 				GameObject obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/EditColonistInProfessionInfoElement-Panel"), professionElement.editColonistsInProfessionListObj.transform, false);
@@ -2102,6 +2177,67 @@ public class UIManager : MonoBehaviour {
 	public void UpdateProfessionsList() {
 		foreach (ProfessionElement professionElement in professionElements) {
 			professionElement.Update();
+		}
+	}
+
+	private List<TradeResourceElement> selectedTraderTradeResourceElements = new List<TradeResourceElement>();
+	private List<TradeResourceElement> colonyTradeResourceElements = new List<TradeResourceElement>();
+
+	public void SetSelectedTraderMenu() {
+		if (colonistM.selectedHuman != null && colonistM.selectedHuman is ColonistManager.Trader) {
+			ColonistManager.Trader selectedTrader = (ColonistManager.Trader)colonistM.selectedHuman;
+
+			selectedTraderMenu.SetActive(true);
+
+			selectedTraderMenu.transform.Find("TraderBaseSprite-Image").GetComponent<Image>().sprite = selectedTrader.moveSprites[0];
+
+			selectedTraderMenu.transform.Find("TraderName-Text").GetComponent<Text>().text = selectedTrader.name;
+
+			selectedTraderMenu.transform.Find("TraderAffiliationName-Text").GetComponent<Text>().text = "Affiliation (WIP)";
+			selectedTraderMenu.transform.Find("TraderCurrentAction-Text").GetComponent<Text>().text = "Current Action (WIP)";
+			selectedTraderMenu.transform.Find("TraderStoredAction-Text").GetComponent<Text>().text = "Stored Action (WIP)";
+
+			foreach (TradeResourceElement tradeResourceElement in selectedTraderTradeResourceElements) {
+				Destroy(tradeResourceElement.obj);
+			}
+			selectedTraderTradeResourceElements.Clear();
+			foreach (ResourceManager.TradeResourceAmount tradeResourceAmount in selectedTrader.GetInventoryAsTradeResourceAmounts().OrderBy(tra => tra.resourceAmount.resource.name)) {
+				selectedTraderTradeResourceElements.Add(new TradeResourceElement(true, tradeResourceAmount, selectedTraderMenu.transform.Find("TraderInventory-Panel/TraderResources-ScrollPanel/InventoryList-Panel"), false));
+			}
+
+			foreach (TradeResourceElement inventoryElement in colonyTradeResourceElements) {
+				Destroy(inventoryElement.obj);
+			}
+			colonyTradeResourceElements.Clear();
+			foreach (ResourceManager.ResourceAmount resourceAmount in resourceM.GetFilteredResources(true, false, true, false).OrderBy(resourceAmount => resourceAmount.resource.name)) {
+				ResourceManager.TradeResourceAmount tradeResourceAmount = new ResourceManager.TradeResourceAmount(resourceAmount, resourceAmount.resource.desiredAmount > resourceAmount.amount);
+				colonyTradeResourceElements.Add(new TradeResourceElement(false, tradeResourceAmount, selectedTraderMenu.transform.Find("ColonyInventory-Panel/ColonyResources-ScrollPanel/ResourceList-Panel"), true));
+			}
+		} else {
+			selectedTraderMenu.SetActive(false);
+		}
+	}
+
+	public void UpdateSelectedTraderMenu() {
+		if (colonistM.selectedHuman != null && colonistM.selectedHuman is ColonistManager.Trader) {
+			ColonistManager.Trader selectedTrader = (ColonistManager.Trader)colonistM.selectedHuman;
+
+			selectedTraderMenu.transform.Find("TraderHealth-Panel/TraderHealth-Slider").GetComponent<Slider>().value = Mathf.RoundToInt(selectedTrader.health * 100);
+			selectedTraderMenu.transform.Find("TraderHealth-Panel/TraderHealth-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(colourMap[Colours.DarkRed], colourMap[Colours.DarkGreen], selectedTrader.health);
+			selectedTraderMenu.transform.Find("TraderHealth-Panel/TraderHealth-Slider/Handle Slide Area/Handle").GetComponent<Image>().color = Color.Lerp(colourMap[Colours.LightRed], colourMap[Colours.LightGreen], selectedTrader.health);
+			selectedTraderMenu.transform.Find("TraderHealth-Panel/TraderHealthValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedTrader.health * 100) + "%";
+
+			selectedTraderMenu.transform.Find("TraderInventorySlider-Panel/TraderInventory-Slider").GetComponent<Slider>().minValue = 0;
+			selectedTraderMenu.transform.Find("TraderInventorySlider-Panel/TraderInventory-Slider").GetComponent<Slider>().maxValue = selectedTrader.inventory.maxAmount;
+			selectedTraderMenu.transform.Find("TraderInventorySlider-Panel/TraderInventory-Slider").GetComponent<Slider>().value = selectedTrader.inventory.CountResources();
+			selectedTraderMenu.transform.Find("TraderInventorySlider-Panel/TraderInventoryValue-Text").GetComponent<Text>().text = selectedTrader.inventory.CountResources() + "/ " + selectedTrader.inventory.maxAmount;
+
+			foreach (TradeResourceElement inventoryElement in selectedTraderTradeResourceElements) {
+				inventoryElement.Update();
+			}
+			foreach (TradeResourceElement inventoryElement in colonyTradeResourceElements) {
+				inventoryElement.Update();
+			}
 		}
 	}
 
@@ -2912,34 +3048,6 @@ public class UIManager : MonoBehaviour {
 		ScaleWithScreenSize
 	};
 
-	public class SettingsState {
-		private UIManager uiM;
-
-		public Resolution resolution;
-		public int resolutionWidth;
-		public int resolutionHeight;
-		public int refreshRate;
-		public bool fullscreen;
-		public CanvasScaler.ScaleMode scaleMode;
-
-		public SettingsState(UIManager uiM) {
-			this.uiM = uiM;
-
-			resolution = Screen.currentResolution;
-			resolutionWidth = Screen.currentResolution.width;
-			resolutionHeight = Screen.currentResolution.height;
-			refreshRate = Screen.currentResolution.refreshRate;
-			fullscreen = true;
-			scaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
-		}
-
-		public void SetSettings() {
-			Screen.SetResolution(resolutionWidth, resolutionHeight, fullscreen);
-
-			uiM.canvas.GetComponent<CanvasScaler>().uiScaleMode = scaleMode;
-		}
-	}
-
 	public void ToggleSettingsMenu() {
 		settingsPanel.SetActive(!settingsPanel.activeSelf);
 		ToggleMainMenuButtons(settingsPanel);
@@ -2951,45 +3059,46 @@ public class UIManager : MonoBehaviour {
 			resolutionSlider.maxValue = Screen.resolutions.Length - 1;
 			resolutionSlider.onValueChanged.AddListener(delegate {
 				Resolution r = Screen.resolutions[Mathf.RoundToInt(resolutionSlider.value)];
-				settingsState.resolution = r;
-				settingsState.resolutionWidth = r.width;
-				settingsState.resolutionHeight = r.height;
-				settingsState.refreshRate = r.refreshRate;
-				resolutionSettingsPanel.transform.Find("ResolutionValue-Text").GetComponent<Text>().text = settingsState.resolutionWidth + " × " + settingsState.resolutionHeight + " @ " + r.refreshRate + "hz";
+				persistenceM.settingsState.resolution = r;
+				persistenceM.settingsState.resolutionWidth = r.width;
+				persistenceM.settingsState.resolutionHeight = r.height;
+				persistenceM.settingsState.refreshRate = r.refreshRate;
+				resolutionSettingsPanel.transform.Find("ResolutionValue-Text").GetComponent<Text>().text = persistenceM.settingsState.resolutionWidth + " × " + persistenceM.settingsState.resolutionHeight + " @ " + r.refreshRate + "hz";
 			});
-			resolutionSlider.value = Screen.resolutions.ToList().IndexOf(settingsState.resolution);
+			resolutionSlider.value = Screen.resolutions.ToList().IndexOf(persistenceM.settingsState.resolution);
 
 			GameObject fullscreenSettingsPanel = settingsPanel.transform.Find("SettingsList-ScrollPanel/SettingsList-Panel/FullscreenSettings-Panel").gameObject;
 			Toggle fullscreenToggle = fullscreenSettingsPanel.transform.Find("Fullscreen-Toggle").GetComponent<Toggle>();
-			fullscreenToggle.onValueChanged.AddListener(delegate { settingsState.fullscreen = fullscreenToggle.isOn; });
-			fullscreenToggle.isOn = settingsState.fullscreen;
+			fullscreenToggle.onValueChanged.AddListener(delegate { persistenceM.settingsState.fullscreen = fullscreenToggle.isOn; });
+			fullscreenToggle.isOn = persistenceM.settingsState.fullscreen;
 
 			GameObject UIScaleModeSettingsPanel = settingsPanel.transform.Find("SettingsList-ScrollPanel/SettingsList-Panel/UIScaleModeSettings-Panel").gameObject;
 			Toggle UIScaleModeToggle = UIScaleModeSettingsPanel.transform.Find("UIScaleMode-Toggle").GetComponent<Toggle>();
 			UIScaleModeToggle.onValueChanged.AddListener(delegate {
 				if (UIScaleModeToggle.isOn) {
-					settingsState.scaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+					persistenceM.settingsState.scaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
 				} else {
-					settingsState.scaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+					persistenceM.settingsState.scaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
 				}
 			});
-			if (settingsState.scaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize) {
+			if (persistenceM.settingsState.scaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize) {
 				UIScaleModeToggle.isOn = true;
-			} else if (settingsState.scaleMode == CanvasScaler.ScaleMode.ConstantPixelSize) {
+			} else if (persistenceM.settingsState.scaleMode == CanvasScaler.ScaleMode.ConstantPixelSize) {
 				UIScaleModeToggle.isOn = false;
 			}
 		}
 	}
 
-	public void ApplySettings(bool closeAfterApplying) {
-		if (closeAfterApplying) {
-			ToggleSettingsMenu();
-		}
-		settingsState.SetSettings();
-		persistenceM.SaveSettings();
+	public Resolution GetResolutionByDimensions(int width, int height, int refreshRate) {
+		List<Resolution> resolutions = Screen.resolutions.ToList();
+		return resolutions.Find(resolution => resolution.width == width && resolution.height == height && resolution.refreshRate == refreshRate);
 	}
 
 	public void ExitToMenu() {
 		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+	}
+
+	public bool IsPointerOverUI() {
+		return UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
 	}
 }
