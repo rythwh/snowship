@@ -1285,6 +1285,7 @@ public class UIManager : MonoBehaviour {
 		public GameObject obj;
 
 		private GameObject selectedIndicator;
+		private GameObject importanceIndicator;
 		private InputField desiredAmountInputField;
 
 		public TradeResourceElement(bool onTrader, ResourceManager.TradeResourceAmount tradeResourceAmount, Transform parent, bool important) {
@@ -1293,12 +1294,24 @@ public class UIManager : MonoBehaviour {
 
 			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TradeResourceElement-Panel"), parent, false);
 
-			desiredAmountInputField = obj.transform.Find("DesiredAmount-Input").GetComponent<InputField>();
 			selectedIndicator = obj.transform.Find("SelectedIndicator").gameObject;
+			selectedIndicator.SetActive(false);
+
+			importanceIndicator = obj.transform.Find("ImportanceIndicator").gameObject;
+			importanceIndicator.SetActive(tradeResourceAmount.important);
+
+			desiredAmountInputField = obj.transform.Find("DesiredAmount-Input").GetComponent<InputField>();
+			desiredAmountInputField.text = tradeResourceAmount.GetTradeAmount().ToString();
+			ValidateDesiredAmountInputField();
+			desiredAmountInputField.onEndEdit.AddListener(delegate { ValidateDesiredAmountInputField(); });
 
 			obj.transform.Find("Image").GetComponent<Image>().sprite = tradeResourceAmount.resourceAmount.resource.image;
 			obj.transform.Find("Name").GetComponent<Text>().text = tradeResourceAmount.resourceAmount.resource.name;
-			obj.transform.Find("Value").GetComponent<Text>().text = GetFormattedResourceValueString(100, 100, 100);
+			obj.transform.Find("Value").GetComponent<Text>().text = GetFormattedResourceValueString(
+				tradeResourceAmount.price.gold,
+				tradeResourceAmount.price.silver,
+				tradeResourceAmount.price.bronze
+			);
 
 			obj.transform.Find("ImportanceIndicator").gameObject.SetActive(important);
 
@@ -1307,8 +1320,24 @@ public class UIManager : MonoBehaviour {
 
 		public void Update() {
 			obj.transform.Find("Amount").GetComponent<Text>().text = tradeResourceAmount.resourceAmount.amount.ToString();
+		}
 
-			selectedIndicator.SetActive(!String.IsNullOrEmpty(desiredAmountInputField.text));
+		public void ValidateDesiredAmountInputField() {
+			selectedIndicator.SetActive(false);
+			int desiredAmount = -1;
+			if (int.TryParse(desiredAmountInputField.text, out desiredAmount)) {
+				if (desiredAmount > 0) {
+					if (desiredAmount > tradeResourceAmount.resourceAmount.amount) {
+						desiredAmountInputField.text = tradeResourceAmount.resourceAmount.amount.ToString();
+					}
+					tradeResourceAmount.SetTradeAmount(desiredAmount);
+				} else {
+					desiredAmountInputField.text = string.Empty;
+				}
+			} else {
+				desiredAmountInputField.text = string.Empty;
+			}
+			selectedIndicator.SetActive(!string.IsNullOrEmpty(desiredAmountInputField.text));
 		}
 	}
 
@@ -2205,12 +2234,22 @@ public class UIManager : MonoBehaviour {
 				selectedTraderTradeResourceElements.Add(new TradeResourceElement(true, tradeResourceAmount, selectedTraderMenu.transform.Find("TraderInventory-Panel/TraderResources-ScrollPanel/InventoryList-Panel"), false));
 			}
 
-			foreach (TradeResourceElement inventoryElement in colonyTradeResourceElements) {
-				Destroy(inventoryElement.obj);
+			foreach (TradeResourceElement tradeResourceElement in colonyTradeResourceElements) {
+				Destroy(tradeResourceElement.obj);
 			}
 			colonyTradeResourceElements.Clear();
 			foreach (ResourceManager.ResourceAmount resourceAmount in resourceM.GetFilteredResources(true, false, true, false).OrderBy(resourceAmount => resourceAmount.resource.name)) {
-				ResourceManager.TradeResourceAmount tradeResourceAmount = new ResourceManager.TradeResourceAmount(resourceAmount, resourceAmount.resource.desiredAmount > resourceAmount.amount);
+				ResourceManager.TradeResourceAmount tradeResourceAmount = selectedTrader.selectedColonyResources.Find(tra => tra.resourceAmount.resource == resourceAmount.resource);
+				if (tradeResourceAmount == null) {
+					tradeResourceAmount = new ResourceManager.TradeResourceAmount(
+						selectedTrader, 
+						false, 
+						resourceAmount, 
+						resourceAmount.resource.desiredAmount > resourceAmount.amount,
+						resourceAmount.resource.price,
+						0
+					);
+				}
 				colonyTradeResourceElements.Add(new TradeResourceElement(false, tradeResourceAmount, selectedTraderMenu.transform.Find("ColonyInventory-Panel/ColonyResources-ScrollPanel/ResourceList-Panel"), true));
 			}
 		} else {
@@ -2232,11 +2271,11 @@ public class UIManager : MonoBehaviour {
 			selectedTraderMenu.transform.Find("TraderInventorySlider-Panel/TraderInventory-Slider").GetComponent<Slider>().value = selectedTrader.inventory.CountResources();
 			selectedTraderMenu.transform.Find("TraderInventorySlider-Panel/TraderInventoryValue-Text").GetComponent<Text>().text = selectedTrader.inventory.CountResources() + "/ " + selectedTrader.inventory.maxAmount;
 
-			foreach (TradeResourceElement inventoryElement in selectedTraderTradeResourceElements) {
-				inventoryElement.Update();
+			foreach (TradeResourceElement tradeResourceElement in selectedTraderTradeResourceElements) {
+				tradeResourceElement.Update();
 			}
-			foreach (TradeResourceElement inventoryElement in colonyTradeResourceElements) {
-				inventoryElement.Update();
+			foreach (TradeResourceElement tradeResourceElement in colonyTradeResourceElements) {
+				tradeResourceElement.Update();
 			}
 		}
 	}

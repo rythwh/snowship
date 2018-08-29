@@ -70,6 +70,9 @@ public class DebugManager : MonoBehaviour {
 
 	private void ToggleDebugUI() {
 		debugPanel.SetActive(debugMode);
+		if (debugMode) {
+			debugInput.Select();
+		}
 	}
 
 	private enum Commands {
@@ -197,6 +200,8 @@ public class DebugManager : MonoBehaviour {
 			}
 			commandFunctions[selectedCommand](selectedCommand,commandStringSplit.Skip(1).ToList());
 		}
+
+		debugInput.Select();
 	}
 
 	private float charsPerLine = 70;

@@ -1628,8 +1628,8 @@ public class ColonistManager : MonoBehaviour {
 
 		public string originLocation; // This should be changed to a "Location" object (to be created in TileManager?) that stores info
 
-		public List<ResourceManager.ResourceAmount> selectedTraderResources = new List<ResourceManager.ResourceAmount>();
-		public List<ResourceManager.ResourceAmount> selectedColonyResources = new List<ResourceManager.ResourceAmount>();
+		public List<ResourceManager.TradeResourceAmount> selectedTraderResources = new List<ResourceManager.TradeResourceAmount>();
+		public List<ResourceManager.TradeResourceAmount> selectedColonyResources = new List<ResourceManager.TradeResourceAmount>();
 
 		public Trader(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
 			SetNameColour(uiM.GetColour(UIManager.Colours.LightPurple));
@@ -1640,13 +1640,44 @@ public class ColonistManager : MonoBehaviour {
 		public List<ResourceManager.TradeResourceAmount> GetInventoryAsTradeResourceAmounts() {
 			List<ResourceManager.TradeResourceAmount> tradeResourceAmounts = new List<ResourceManager.TradeResourceAmount>();
 			foreach (ResourceManager.ResourceAmount resourceAmount in inventory.resources) {
-				tradeResourceAmounts.Add(new ResourceManager.TradeResourceAmount(resourceAmount, DetermineImportanceForResource(resourceAmount.resource)));
+				ResourceManager.TradeResourceAmount existingTradeResourceAmount = selectedTraderResources.Find(tra => tra.resourceAmount.resource == resourceAmount.resource);
+				if (existingTradeResourceAmount != null) {
+					tradeResourceAmounts.Add(existingTradeResourceAmount);
+				} else {
+					tradeResourceAmounts.Add(new ResourceManager.TradeResourceAmount(
+						this,
+						true,
+						resourceAmount,
+						DetermineImportanceForResource(resourceAmount.resource),
+						DeterminePriceForResource(resourceAmount.resource),
+						0
+					));
+				}
 			}
 			return tradeResourceAmounts;
 		}
 
 		public bool DetermineImportanceForResource(ResourceManager.Resource resource) {
 			return false; // This needs to be implemented once the the originLocation is properly implemented (see above)
+		}
+
+		public ResourceManager.Resource.Price DeterminePriceForResource(ResourceManager.Resource resource) {
+			return new ResourceManager.Resource.Price(UnityEngine.Random.Range(0,100), UnityEngine.Random.Range(0, 100), UnityEngine.Random.Range(0, 100));
+		}
+
+		public void SetSelectedResource(ResourceManager.TradeResourceAmount tradeResourceAmount) {
+			SetSelectedResource(tradeResourceAmount, tradeResourceAmount.onTrader ? selectedTraderResources : selectedColonyResources);
+		}
+
+		private void SetSelectedResource(ResourceManager.TradeResourceAmount tradeResourceAmount, List<ResourceManager.TradeResourceAmount> selectedList) {
+			ResourceManager.TradeResourceAmount existingTradeResourceAmount = selectedList.Find(tra => tra.resourceAmount.resource == tradeResourceAmount.resourceAmount.resource);
+			if (existingTradeResourceAmount == null) {
+				selectedList.Add(tradeResourceAmount);
+			} else {
+				if (existingTradeResourceAmount.GetTradeAmount() <= 0) {
+					selectedList.Remove(tradeResourceAmount);
+				}
+			}
 		}
 	}
 
