@@ -416,12 +416,29 @@ public class ResourceManager : MonoBehaviour {
 	public class TradeResourceAmount {
 		public ResourceAmount resourceAmount;
 		public bool important;
-		public int tradeAmount;
+		private int tradeAmount;
 		public Resource.Price price;
 
-		public TradeResourceAmount(ResourceAmount resourceAmount, bool important) {
+		public bool onTrader;
+		public ColonistManager.Trader trader;
+
+		public TradeResourceAmount(ColonistManager.Trader trader, bool onTrader, ResourceAmount resourceAmount, bool important, Resource.Price price, int tradeAmount) {
+			this.trader = trader;
+			this.onTrader = onTrader;
 			this.resourceAmount = resourceAmount;
 			this.important = important;
+			this.price = price;
+
+			this.tradeAmount = tradeAmount;
+		}
+
+		public void SetTradeAmount(int tradeAmount) {
+			this.tradeAmount = tradeAmount;
+			trader.SetSelectedResource(this);
+		}
+
+		public int GetTradeAmount() {
+			return tradeAmount;
 		}
 	}
 

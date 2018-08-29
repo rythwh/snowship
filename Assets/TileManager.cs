@@ -2221,6 +2221,9 @@ public class TileManager : MonoBehaviour {
 			foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
 				colonist.SetColour(colonist.overTile.sr.color);
 			}
+			foreach (ColonistManager.Trader trader in colonistM.traders) {
+				trader.SetColour(trader.overTile.sr.color);
+			}
 			cameraM.cameraComponent.backgroundColor = newColour * 0.5f;
 		}
 
