@@ -1812,6 +1812,7 @@ public class TileManager : MonoBehaviour {
 			foreach (Tile tile in tiles) {
 				if (Mathf.RoundToInt(mapData.averagePrecipitation) != -1) {
 					tile.SetPrecipitation((tile.GetPrecipitation() + mapData.averagePrecipitation) / 2f);
+					tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), mapData.averagePrecipitation * 0.9f, 1f));
 				}
 				tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), 0f, 1f));
 			}

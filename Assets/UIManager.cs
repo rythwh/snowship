@@ -189,7 +189,7 @@ public class UIManager : MonoBehaviour {
 		mainMenu = canvas.transform.Find("MainMenu").gameObject;
 
 		string gameVersionString = "Snowship " + persistenceM.GetGameVersionString(PersistenceManager.gameVersion);
-		string disclaimerText = "<size=14>" + gameVersionString + "</size>\nSnowship by Ryan White - flizzehh.itch.io/snowship\nThis game is a work in progress and subject to major changes.";
+		string disclaimerText = "<size=20>" + gameVersionString + "</size>\nSnowship by Ryan White - flizzehh.itch.io/snowship\nThis game is a work in progress and subject to major changes.";
 		mainMenu.transform.Find("Disclaimer-Text").GetComponent<Text>().text = disclaimerText;
 
 		mainMenuBackground = mainMenu.transform.Find("MainMenuBackground-Image").gameObject;
