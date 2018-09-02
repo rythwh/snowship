@@ -1637,11 +1637,13 @@ public class TileManager : MonoBehaviour {
 							if (riverTile == foundOtherRiverAtTile) {
 								break;
 							}
-							int maxExpandRadius = 1;
-							List<Tile> expandFrontier = new List<Tile>();
-							expandFrontier.Add(riverTile);
-							List<Tile> checkedExpandTiles = new List<Tile>();
-							checkedExpandTiles.Add(riverTile);
+							int maxExpandRadius = 3;
+							List<Tile> expandFrontier = new List<Tile>() {
+								riverTile
+							};
+							List<Tile> checkedExpandTiles = new List<Tile>() {
+								riverTile
+							};
 							while (expandFrontier.Count > 0) {
 								Tile expandTile = expandFrontier[0];
 								expandFrontier.RemoveAt(0);
@@ -1700,7 +1702,7 @@ public class TileManager : MonoBehaviour {
 				} else {
 					tile.temperature = mapData.averageTemperature;
 				}
-				tile.temperature += -(100f * Mathf.Pow(tile.height - 0.5f, 3));
+				tile.temperature += -(50f * Mathf.Pow(tile.height - 0.5f, 3));
 			}
 
 			AverageTileTemperatures();
@@ -1812,7 +1814,7 @@ public class TileManager : MonoBehaviour {
 			foreach (Tile tile in tiles) {
 				if (Mathf.RoundToInt(mapData.averagePrecipitation) != -1) {
 					tile.SetPrecipitation((tile.GetPrecipitation() + mapData.averagePrecipitation) / 2f);
-					tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), mapData.averagePrecipitation * 0.9f, 1f));
+					//tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), mapData.averagePrecipitation, 1f));
 				}
 				tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), 0f, 1f));
 			}
@@ -1848,7 +1850,7 @@ public class TileManager : MonoBehaviour {
 						}
 						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * waterMultiplier);
 					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.5f);
+						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * tile.height);
 					} else {
 						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.95f);
 					}

@@ -1193,7 +1193,13 @@ public class UIManager : MonoBehaviour {
 			}
 
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Position").GetComponent<Text>().text = "(" + Mathf.FloorToInt(mouseOverTile.obj.transform.position.x) + ", " + Mathf.FloorToInt(mouseOverTile.obj.transform.position.y) + ")";
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Type").GetComponent<Text>().text = mouseOverTile.tileType.name;
+			string tileTypeString = mouseOverTile.tileType.name;
+			if (tileM.GetLiquidWaterEquivalentTileTypes().Contains(mouseOverTile.tileType.type)) {
+				tileTypeString = "Water";
+			} else if (tileM.GetWaterEquivalentTileTypes().Contains(mouseOverTile.tileType.type)) {
+				tileTypeString = "Ice";
+			}
+			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Type").GetComponent<Text>().text = tileTypeString;
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.biome.name;
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Temperature").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.temperature) + "°C";
 			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Precipitation").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.GetPrecipitation() * 100f) + "%";
