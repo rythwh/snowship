@@ -73,8 +73,8 @@ public class TimeManager : MonoBehaviour {
 				}
 				minuteChanged = true;
 				if (minute >= 60) {
-					minute = 1;
 					hour += 1;
+					minute = 0;
 					if (hour >= 24) {
 						day += 1;
 						hour = 0;
