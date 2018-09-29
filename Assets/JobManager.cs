@@ -36,14 +36,12 @@ public class JobManager:MonoBehaviour {
 
 		private ResourceManager resourceM;
 		private TileManager tileM;
-		private UIManager uiM;
 
 		private void GetScriptReferences() {
 			GameObject GM = GameObject.Find("GM");
 
 			resourceM = GM.GetComponent<ResourceManager>();
 			tileM = GM.GetComponent<TileManager>();
-			uiM = GM.GetComponent<UIManager>();
 		}
 
 		public TileManager.Tile tile;
@@ -73,7 +71,7 @@ public class JobManager:MonoBehaviour {
 
 		public int priority;
 
-		public Job(TileManager.Tile tile,ResourceManager.TileObjectPrefab prefab,int rotationIndex) {
+		public Job(TileManager.Tile tile, ResourceManager.TileObjectPrefab prefab, int rotationIndex) {
 
 			GetScriptReferences();
 
@@ -90,27 +88,27 @@ public class JobManager:MonoBehaviour {
 					plantGroup = resourceM.GetPlantGroupByEnum(ResourceManager.PlantGroupsEnum.Bush);
 				}
 				if (plantGroup != null) {
-					plant = new ResourceManager.Plant(plantGroup, tile, false, true, tileM.map.smallPlants,false,(resourcesToBuild.Count > 0 ? resourceM.GetResourceByEnum(resourceM.GetSeedToHarvestResource()[resourcesToBuild[0].resource.type]) : null),resourceM);
+					plant = new ResourceManager.Plant(plantGroup, tile, false, true, tileM.map.smallPlants, false, (resourcesToBuild.Count > 0 ? resourceM.GetResourceByEnum(ResourceManager.seedToHarvestResource[resourcesToBuild[0].resource.type]) : null), resourceM);
 					tileM.map.smallPlants.Remove(plant);
 					plant.obj.SetActive(false);
-					resourcesToBuild.Add(new ResourceManager.ResourceAmount(plant.group.seed,1));
+					resourcesToBuild.Add(new ResourceManager.ResourceAmount(plant.group.seed, 1));
 				}
 			}
 
 			this.rotationIndex = rotationIndex;
 
-			jobPreview = Instantiate(resourceM.tilePrefab,tile.obj.transform,false);
+			jobPreview = Instantiate(resourceM.tilePrefab, tile.obj.transform, false);
 			jobPreview.transform.position += (Vector3)prefab.anchorPositionOffset[rotationIndex];
 			jobPreview.name = "JobPreview: " + prefab.name + " at " + jobPreview.transform.position;
 			SpriteRenderer jPSR = jobPreview.GetComponent<SpriteRenderer>();
 			if (prefab.baseSprite != null) {
 				jPSR.sprite = prefab.baseSprite;
 			}
-			if (!resourceM.GetBitmaskingTileObjects().Contains(prefab.type) && prefab.bitmaskSprites.Count > 0) {
+			if (!ResourceManager.bitmaskingTileObjects.Contains(prefab.type) && prefab.bitmaskSprites.Count > 0) {
 				jPSR.sprite = prefab.bitmaskSprites[rotationIndex];
 			}
 			jPSR.sortingOrder = 5 + prefab.layer; // Job Preview Sprite
-			jPSR.color = new Color(1f,1f,1f,0.25f);
+			jPSR.color = new Color(1f, 1f, 1f, 0.25f);
 
 			jobProgress = prefab.timeToBuild;
 			colonistBuildTime = prefab.timeToBuild;
@@ -140,9 +138,9 @@ public class JobManager:MonoBehaviour {
 				priorityIndicator.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(@"UI/priorityIndicator");
 				priorityIndicator.GetComponent<SpriteRenderer>().sortingOrder = jobPreview.GetComponent<SpriteRenderer>().sortingOrder + 1; // Priority Indicator Sprite
 				if (priority == 1) {
-					priorityIndicator.GetComponent<SpriteRenderer>().color = uiM.GetColour(UIManager.Colours.LightYellow);
+					priorityIndicator.GetComponent<SpriteRenderer>().color = UIManager.GetColour(UIManager.Colours.LightYellow);
 				} else if (priority == -1) {
-					priorityIndicator.GetComponent<SpriteRenderer>().color = uiM.GetColour(UIManager.Colours.LightRed);
+					priorityIndicator.GetComponent<SpriteRenderer>().color = UIManager.GetColour(UIManager.Colours.LightRed);
 				}
 			}
 			if (priority == 0) {
@@ -158,7 +156,8 @@ public class JobManager:MonoBehaviour {
 	public enum JobTypesEnum {
 		Build, Remove,
 		ChopPlant, PlantPlant, Mine, Dig, PlantFarm, HarvestFarm,
-		CreateResource, PickupResources, EmptyInventory, Cancel, IncreasePriority, DecreasePriority, CollectFood, Eat, Sleep
+		CreateResource, PickupResources, EmptyInventory, Cancel, IncreasePriority, DecreasePriority,
+		CollectFood, Eat, CollectWater, Drink, Sleep
 	};
 
 	public Dictionary<JobTypesEnum,System.Func<Job,string>> jobDescriptionFunctions = new Dictionary<JobTypesEnum,System.Func<Job,string>>();
@@ -180,10 +179,10 @@ public class JobManager:MonoBehaviour {
 			return "Mining " + job.tile.tileType.name + ".";
 		});
 		jobDescriptionFunctions.Add(JobTypesEnum.Dig,delegate (Job job) {
-			if (tileM.GetResourceTileTypes().Contains(job.tile.tileType.type)) {
-				if (tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) {
-					if (tileM.GetWaterToGroundResourceMap().ContainsKey(job.tile.tileType.type)) {
-						return "Digging " + tileM.GetTileTypeByEnum(tileM.GetWaterToGroundResourceMap()[job.tile.tileType.type]).name + ".";
+			if (TileManager.resourceTileTypes.Contains(job.tile.tileType.type)) {
+				if (TileManager.waterEquivalentTileTypes.Contains(job.tile.tileType.type)) {
+					if (TileManager.waterToGroundResourceMap.ContainsKey(job.tile.tileType.type)) {
+						return "Digging " + tileM.GetTileTypeByEnum(TileManager.waterToGroundResourceMap[job.tile.tileType.type]).name + ".";
 					} else {
 						return "Digging something.";
 					}
@@ -214,6 +213,12 @@ public class JobManager:MonoBehaviour {
 		});
 		jobDescriptionFunctions.Add(JobTypesEnum.Eat,delegate (Job job) {
 			return "Eating.";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.CollectWater, delegate (Job job) {
+			return "Finding something to drink.";
+		});
+		jobDescriptionFunctions.Add(JobTypesEnum.Drink, delegate (Job job) {
+			return "Drinking.";
 		});
 		jobDescriptionFunctions.Add(JobTypesEnum.Sleep,delegate (Job job) {
 			return "Sleeping.";
@@ -285,16 +290,16 @@ public class JobManager:MonoBehaviour {
 		});
 		finishJobFunctions.Add(JobTypesEnum.PlantFarm,delegate (ColonistManager.Colonist colonist,Job job) {
 			finishJobFunctions[JobTypesEnum.Build](colonist,job);
-			if (tileM.GetDirtBaseTileTypes().Contains(job.tile.tileType.type)) {
+			if (TileManager.dirtBaseTileTypes.Contains(job.tile.tileType.type)) {
 				job.tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Mud), true, false, false, false);
 			}
 		});
 		finishJobFunctions.Add(JobTypesEnum.HarvestFarm,delegate (ColonistManager.Colonist colonist,Job job) {
 			if (job.tile.farm != null) {
 				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(job.tile.farm.seedType), Random.Range(1, 3));
-				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(resourceM.GetFarmSeedReturnResource()[job.tile.farm.seedType]), Random.Range(1, 6));
+				colonist.inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.farmSeedReturnResource[job.tile.farm.seedType]), Random.Range(1, 6));
 
-				CreateJob(new Job(job.tile, resourceM.GetTileObjectPrefabByEnum(resourceM.GetFarmSeedsTileObject()[job.tile.farm.seedType]), 0));
+				CreateJob(new Job(job.tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.farmSeedsTileObject[job.tile.farm.seedType]), 0));
 
 				colonist.resourceM.RemoveTileObjectInstance(job.tile.farm);
 				job.tile.RemoveTileObjectAtLayer(job.tile.farm.prefab.layer);
@@ -330,20 +335,20 @@ public class JobManager:MonoBehaviour {
 			job.tile.dugPreviously = true;
 			colonist.inventory.ChangeResourceAmount(job.tile.GetResource(), Random.Range(4, 7));
 			bool setToWater = false;
-			if ((!tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) || (tileM.GetResourceTileTypes().Contains(job.tile.tileType.type))) {
+			if ((!TileManager.waterEquivalentTileTypes.Contains(job.tile.tileType.type)) || (TileManager.resourceTileTypes.Contains(job.tile.tileType.type))) {
 				foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
-					if (nTile != null && tileM.GetWaterEquivalentTileTypes().Contains(nTile.tileType.type)) {
+					if (nTile != null && TileManager.waterEquivalentTileTypes.Contains(nTile.tileType.type)) {
 						job.tile.SetTileType(nTile.tileType, true, true, true, true);
 						setToWater = true;
 						break;
 					}
 				}
-			} else if (tileM.GetWaterEquivalentTileTypes().Contains(job.tile.tileType.type)) {
+			} else if (TileManager.waterEquivalentTileTypes.Contains(job.tile.tileType.type)) {
 				setToWater = true;
 			}
 			if (setToWater) {
 				foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
-					if (nTile != null && tileM.GetHoleTileTypes().Contains(nTile.tileType.type)) {
+					if (nTile != null && TileManager.holeTileTypes.Contains(nTile.tileType.type)) {
 						List<TileManager.Tile> frontier = new List<TileManager.Tile>() { nTile };
 						List<TileManager.Tile> checkedTiles = new List<TileManager.Tile>() { };
 						TileManager.Tile currentTile = nTile;
@@ -353,7 +358,7 @@ public class JobManager:MonoBehaviour {
 							checkedTiles.Add(currentTile);
 							currentTile.SetTileType(job.tile.tileType, true, true, true, true);
 							foreach (TileManager.Tile nTile2 in currentTile.horizontalSurroundingTiles) {
-								if (nTile2 != null && tileM.GetHoleTileTypes().Contains(nTile2.tileType.type) && !checkedTiles.Contains(nTile2)) {
+								if (nTile2 != null && TileManager.holeTileTypes.Contains(nTile2.tileType.type) && !checkedTiles.Contains(nTile2)) {
 									frontier.Add(nTile2);
 								}
 							}
@@ -569,25 +574,25 @@ public class JobManager:MonoBehaviour {
 			return !posTile.tileType.buildable;
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.StoneTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return tileM.GetStoneEquivalentTileTypes().Contains(posTile.tileType.type);
+			return TileManager.stoneEquivalentTileTypes.Contains(posTile.tileType.type);
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitStoneTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return !tileM.GetStoneEquivalentTileTypes().Contains(posTile.tileType.type);
+			return !TileManager.stoneEquivalentTileTypes.Contains(posTile.tileType.type);
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.AllWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return tileM.GetWaterEquivalentTileTypes().Contains(posTile.tileType.type);
+			return TileManager.waterEquivalentTileTypes.Contains(posTile.tileType.type);
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitAllWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return !tileM.GetWaterEquivalentTileTypes().Contains(posTile.tileType.type);
+			return !TileManager.waterEquivalentTileTypes.Contains(posTile.tileType.type);
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.LiquidWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return tileM.GetLiquidWaterEquivalentTileTypes().Contains(posTile.tileType.type);
+			return TileManager.liquidWaterEquivalentTileTypes.Contains(posTile.tileType.type);
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitLiquidWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return !tileM.GetLiquidWaterEquivalentTileTypes().Contains(posTile.tileType.type);
+			return !TileManager.liquidWaterEquivalentTileTypes.Contains(posTile.tileType.type);
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonStoneAndWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return (!tileM.GetWaterEquivalentTileTypes().Contains(posTile.tileType.type) && !tileM.GetStoneEquivalentTileTypes().Contains(posTile.tileType.type));
+			return (!TileManager.waterEquivalentTileTypes.Contains(posTile.tileType.type) && !TileManager.stoneEquivalentTileTypes.Contains(posTile.tileType.type));
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.Plants, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
 			return posTile.plant != null;
@@ -653,21 +658,21 @@ public class JobManager:MonoBehaviour {
 			return posTile.GetAllObjectInstances().Count <= 0;
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonCoastWater, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			if (tileM.GetWaterEquivalentTileTypes().Contains(posTile.tileType.type)) {
-				if (!(posTile.surroundingTiles.Find(t => t != null && !tileM.GetWaterEquivalentTileTypes().Contains(t.tileType.type)) != null)) {
+			if (TileManager.waterEquivalentTileTypes.Contains(posTile.tileType.type)) {
+				if (!(posTile.surroundingTiles.Find(t => t != null && !TileManager.waterEquivalentTileTypes.Contains(t.tileType.type)) != null)) {
 					return false;
 				}
 			}
 			return true;
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitHoles, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return !tileM.GetHoleTileTypes().Contains(posTile.tileType.type);
+			return !TileManager.holeTileTypes.Contains(posTile.tileType.type);
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitPreviousDig, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
 			return !posTile.dugPreviously;
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitNonLivingTreeOrBushBiomes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return posTile.biome.vegetationChances.Keys.Where(groupEnum => resourceM.GetLivingTreesAndBushes().Contains(groupEnum)).ToList().Count > 0;
+			return posTile.biome.vegetationChances.Keys.Where(groupEnum => ResourceManager.livingTreesAndBushes.Contains(groupEnum)).ToList().Count > 0;
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitObjectInstancesOnAdditionalTiles, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
 			ResourceManager.TileObjectInstance tileObjectInstance = posTile.GetObjectInstanceAtLayer(prefab.layer);
@@ -806,36 +811,32 @@ public class JobManager:MonoBehaviour {
 		removeJobs.Clear();
 
 		foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
-
-			bool removeJob = false;
-			bool removeStoredJob = false;
-
-			if (colonist.job != null && selectionArea.Contains(colonist.job.tile)) {
-				removeJob = true;
-
-				if (colonist.storedJob != null && !selectionArea.Contains(colonist.storedJob.tile)) {
-					removeStoredJob = true;
-				}
+			if (!((colonist.job != null && selectionArea.Contains(colonist.job.tile)) || (colonist.storedJob != null && selectionArea.Contains(colonist.storedJob.tile)))) {
+				continue;
 			}
 
-			if (removeStoredJob || (colonist.storedJob != null && selectionArea.Contains(colonist.storedJob.tile))) {
+			if (colonist.storedJob != null) {
+				if (colonist.storedJob.containerPickups != null) {
+					foreach (ContainerPickup containerPickup in colonist.storedJob.containerPickups) {
+						containerPickup.container.inventory.ReleaseReservedResources(colonist);
+					}
+				}
 				if (colonist.storedJob.prefab.jobType == JobTypesEnum.CreateResource) {
 					colonist.storedJob.activeTileObject.mto.jobBacklog.Remove(colonist.storedJob);
 				}
 				if (colonist.storedJob.jobUIElement != null) {
 					colonist.storedJob.jobUIElement.Remove(uiM);
-				} else {
-					Debug.LogWarning("storedJob on Colonist " + colonist.name + " jobUIElement is null for job " + colonist.storedJob.prefab.type);
 				}
 				colonist.storedJob.Remove();
 				colonist.storedJob = null;
-
-				if (colonist.job != null) {
-					removeJob = true;
-				}
 			}
 
-			if (removeJob) {
+			if (colonist.job != null) {
+				if (colonist.job.containerPickups != null) {
+					foreach (ContainerPickup containerPickup in colonist.job.containerPickups) {
+						containerPickup.container.inventory.ReleaseReservedResources(colonist);
+					}
+				}
 				if (colonist.job.prefab.jobType == JobTypesEnum.CreateResource) {
 					colonist.job.activeTileObject.mto.jobBacklog.Remove(colonist.job);
 				}
@@ -850,6 +851,7 @@ public class JobManager:MonoBehaviour {
 		}
 
 		UpdateColonistJobs();
+		uiM.SetJobElements();
 	}
 
 	public void ChangeJobPriorityInSelectionArea(List<TileManager.Tile> selectionArea, int amount) {
@@ -1043,7 +1045,7 @@ public class JobManager:MonoBehaviour {
 				cost -= skill.level * 5f;
 			}
 		}
-		if (colonist.profession.type == ColonistManager.ProfessionTypeEnum.Builder && resourceM.GetContainerTileObjectTypes().Contains(job.prefab.type)) {
+		if (colonist.profession.type == ColonistManager.ProfessionTypeEnum.Builder && ResourceManager.containerTileObjectTypes.Contains(job.prefab.type)) {
 			cost -= tileM.map.mapData.mapSize;
 		}
 		return cost;

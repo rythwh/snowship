@@ -39,7 +39,10 @@ public class DebugManager : MonoBehaviour {
 
 		debugInputObj = debugPanel.transform.Find("DebugCommand-Input").gameObject;
 		debugInput = debugInputObj.GetComponent<InputField>();
-		debugInput.onEndEdit.AddListener(delegate { ParseCommandInput(); });
+		debugInput.onEndEdit.AddListener(delegate {
+			ParseCommandInput();
+			SelectDebugInput();
+		});
 
 		debugConsole = debugPanel.transform.Find("DebugCommandsList-ScrollPanel").gameObject;
 		debugConsoleList = debugConsole.transform.Find("DebugCommandsList-Panel").gameObject;
@@ -57,6 +60,7 @@ public class DebugManager : MonoBehaviour {
 		if (tileM.generated && (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.BackQuote))) {
 			debugMode = !debugMode;
 			ToggleDebugUI();
+			SelectDebugInput();
 		}
 		if (debugMode) {
 			if (selecttilemouse_Toggle) {
@@ -68,11 +72,17 @@ public class DebugManager : MonoBehaviour {
 		}
 	}
 
+	public void SelectDebugInput() {
+		if (debugMode) {
+			if (!UnityEngine.EventSystems.EventSystem.current.alreadySelecting) {
+				UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(debugInput.gameObject, null);
+				debugInput.OnPointerClick(new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current));
+			}
+		}
+	}
+
 	private void ToggleDebugUI() {
 		debugPanel.SetActive(debugMode);
-		if (debugMode) {
-			debugInput.Select();
-		}
 	}
 
 	private enum Commands {
@@ -80,7 +90,8 @@ public class DebugManager : MonoBehaviour {
 		clear,					// clear									-- clear the console
 		selecthuman,            // selecthuman <name>						-- sets the selected human to the first human named <name>
 		spawncolonists,			// spawncolonists <numToSpawn>				-- spawns <numToSpawn> colonists to join the colony
-		spawntraders,			// spawntraders <numToSpawn>				-- spawns <numToSpawn> traders
+		spawncaravans,          // spawncaravans <numToSpawn> <caravanType> <maxNumTraders> 
+		//																	-- spawns <numToSpawn> caravans of the <caravanType> type with a maximum number of <maxNumTraders> traders
 		sethealth,				// sethealth <amount>						-- sets the health of the selected colonist to <amount>
 		setneed,                // setneed <name> <amount>					-- sets the need named <name> on the selected colonist to <amount>
 		cia,					// changeinvamt								-- shortcut to "changinvamt"
@@ -90,7 +101,8 @@ public class DebugManager : MonoBehaviour {
 		listresources,			// listresources							-- lists all resources
 		selectcontainer,        // selectcontainer <index>					-- sets the selected container to the container at <index> in the list of containers
 		selecttiles,            // selecttiles <x(,rangeX)> <y,(rangeY)>	-- without (rangeX/Y): select tile at <x> <y>. with (rangeX/Y): select all tiles between <x> -> (rangeX) <y> -> (rangeY)
-		selecttilemouse,		// selecttilemouse							-- toggle continous selection of the tile at the mouse position
+		selecttilemouse,        // selecttilemouse							-- toggle continous selection of the tile at the mouse position
+		viewtileproperty,       // viewtileproperty <variableName>			-- view the value of the variable with name <variableName>
 		deselecttiles,          // deselecttiles							-- deselect all selected tiles
 		deselectunwalkable,		// deselectunwalkabletiles					-- deselect all tiles in the selection that are unwalkable
 		deselectwalkable,		// deselectwalkabletiles					-- deselect all tiles in the selection that are walkable
@@ -108,6 +120,7 @@ public class DebugManager : MonoBehaviour {
 		camzoom,                // camzoom <zoom>							-- sets the camera orthographic size to <zoom>
 		togglesuncycle,         // togglesuncycle							-- toggle the day/night (sun) cycle (i.e. the changing of tile brightnesses every N in-game minutes)
 		settime,                // settime <time>							-- sets the in-game time to <time> (time = float between 0 and 23, decimals represent minutes (0.5 = 30 minutes))
+		pause,					// pause									-- pauses or unpauses the game
 		viewselectedtiles,      // viewselectedtiles						-- sets the map overlay to highlight all selected tiles
 		viewnormal,             // viewnormal								-- sets the map overlay to normal gameplay settings
 		viewregions,            // viewregions								-- sets the map overlay to colour individual regions (region colour is random)
@@ -117,6 +130,7 @@ public class DebugManager : MonoBehaviour {
 		viewbiomes,             // viewbiomes								-- sets the map overlay to colour individual biomes (colours correspond to specific biomes)
 		viewdrainagebasins,     // viewdrainagebasins						-- sets the map overlay to colour individual drainage basins (drainage basin colour is random)
 		viewrivers,             // viewrivers (index)						-- without (index): highlight all rivers. with (index): highlight the river at (index) in the list of rivers
+		viewlargerivers,        // viewlargerivers (index)					-- without (index): highlight all large rivers. with (index): highlight the large river at (index) in the list of large rivers
 		viewwalkspeed,          // viewwalkspeed							-- sets the map overlay to colour each tile depending on its walk speed (black = 0, white = 1)
 		viewregionblocks,       // viewregionblocks							-- sets the map overlay to colour individual region blocks (region block colour is random)
 		viewsquareregionblocks, // viewsquareregionblocks					-- sets the map overlay to colour invididual square region blocks (square region block colour is random)
@@ -133,7 +147,7 @@ public class DebugManager : MonoBehaviour {
 		{Commands.clear,"clear -- clear the console" },
 		{Commands.selecthuman,"selecthuman <name> -- sets the selected human to the first human named <name>" },
 		{Commands.spawncolonists,"spawncolonists <numToSpawn> -- spawns <numToSpawn> colonists to join the colony" },
-		{Commands.spawntraders,"spawntraders <numToSpawn> -- spawns <numToSpawn> traders" },
+		{Commands.spawncaravans,"spawncaravans <numToSpawn> <caravanType> <maxNumTraders> -- spawns <numToSpawn> caravans of the <caravanType> type with a maximum number of <maxNumTraders> traders" },
 		{Commands.sethealth,"sethealth <amount> -- sets the health of the selected colonist to <amount> (value between 0 (0%) -> 1 (100%))" },
 		{Commands.setneed,"setneed <name> <amount> -- sets the need named <name> on the selected colonist to <amount> (value between 0 (0%) -> 100 (100%))" },
 		{Commands.cia,"cia -- shortcut to \"changeinvamt\" -- see that command for more information" },
@@ -142,6 +156,7 @@ public class DebugManager : MonoBehaviour {
 		{Commands.selectcontainer,"selectcontainer <index> -- sets the selected container to the container at <index> in the list of containers" },
 		{Commands.selecttiles,"selecttiles <x(,rangeX)> <y,(rangeY)> -- without (rangeX/Y): select tile at <x> <y>. with (rangeX/Y): select all tiles between <x> -> (rangeX) <y> -> (rangeY)" },
 		{Commands.selecttilemouse,"selecttilemouse -- continuously select the tile under the mouse until this command is run again" },
+		{Commands.viewtileproperty,"viewtileproperty <variableName> -- view the value of the variable with name <variableName>" },
 		{Commands.deselecttiles,"deselecttiles -- deselect all selected tiles" },
 		{Commands.deselectunwalkable,"deselectunwalkabletiles -- deselect all tiles in the selection that are unwalkable" },
 		{Commands.deselectwalkable,"deselectwalkabletiles -- deselect all tiles in the selection that are walkable" },
@@ -159,6 +174,7 @@ public class DebugManager : MonoBehaviour {
 		{Commands.camzoom,"camzoom <zoom> -- sets the camera orthographic size to <zoom>" },
 		{Commands.togglesuncycle,"togglesuncycle -- toggle the day/night (sun) cycle (i.e. the changing of tile brightnesses every N in-game minutes)" },
 		{Commands.settime,"settime <time> -- sets the in-game time to <time> (time = float between 0 and 23, decimals represent minutes (0.5 = 30 minutes))" },
+		{Commands.pause,"pause -- pauses or unpauses the game" },
 		{Commands.viewselectedtiles,"viewselectedtiles -- sets the map overlay to highlight all selected tiles" },
 		{Commands.viewnormal,"viewnormal -- sets the map overlay to normal gameplay settings" },
 		{Commands.viewregions,"viewregions -- sets the map overlay to colour individual regions (region colour is random)" },
@@ -200,8 +216,6 @@ public class DebugManager : MonoBehaviour {
 			}
 			commandFunctions[selectedCommand](selectedCommand,commandStringSplit.Skip(1).ToList());
 		}
-
-		debugInput.Select();
 	}
 
 	private float charsPerLine = 70;
@@ -302,18 +316,30 @@ public class DebugManager : MonoBehaviour {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
-		commandFunctions.Add(Commands.spawntraders, delegate (Commands selectedCommand, List<string> parameters) {
-			if (parameters.Count == 1) {
+		commandFunctions.Add(Commands.spawncaravans, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 3) {
 				int numberToSpawn = 1;
 				if (int.TryParse(parameters[0], out numberToSpawn)) {
-					int oldNumTraders = colonistM.traders.Count;
-					for (int i = 0; i < numberToSpawn; i++) {
-						colonistM.SpawnTrader();
+					ColonistManager.CaravanTypeEnum caravanType = ColonistManager.CaravanTypeEnum.Foot;
+					try {
+						caravanType = (ColonistManager.CaravanTypeEnum)Enum.Parse(typeof(ColonistManager.CaravanTypeEnum), parameters[1]);
+					} catch (ArgumentException) {
+						OutputToConsole("ERROR: Unknown caravan type: " + parameters[1] + ".");
+						return;
 					}
-					if (oldNumTraders + numberToSpawn == colonistM.traders.Count) {
-						OutputToConsole("SUCCESS: Spawned " + numberToSpawn + " traders.");
+					int maxNumTraders = 4;
+					if (int.TryParse(parameters[2], out maxNumTraders)) {
+						int oldNumCaravans = colonistM.caravans.Count;
+						for (int i = 0; i < numberToSpawn; i++) {
+							colonistM.SpawnCaravan(caravanType, maxNumTraders);
+						}
+						if (oldNumCaravans + numberToSpawn == colonistM.caravans.Count) {
+							OutputToConsole("SUCCESS: Spawned " + numberToSpawn + " caravans.");
+						} else {
+							OutputToConsole("ERROR: Unable to spawn caravans. Spawned " + (colonistM.caravans.Count - oldNumCaravans) + " caravans.");
+						}
 					} else {
-						OutputToConsole("ERROR: Unable to spawn traders. Spawned " + (colonistM.traders.Count - oldNumTraders) + " traders.");
+						OutputToConsole("ERROR: Unable to parse maxNumTraders as int.");
 					}
 				} else {
 					OutputToConsole("ERROR: Invalid number of colonists.");
@@ -622,6 +648,41 @@ public class DebugManager : MonoBehaviour {
 		commandFunctions.Add(Commands.selecttilemouse, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				selecttilemouse_Toggle = !selecttilemouse_Toggle;
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
+		commandFunctions.Add(Commands.viewtileproperty, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 1) {
+				foreach (TileManager.Tile tile in selectedTiles) {
+					Type type = tile.GetType();
+					if (type != null) {
+						System.Reflection.PropertyInfo propertyInfo = type.GetProperty(parameters[0]);
+						if (propertyInfo != null) {
+							object value = propertyInfo.GetValue(tile, null);
+							if (value != null) {
+								OutputToConsole(tile.position + ": \"" + value.ToString() + "\"");
+							} else {
+								OutputToConsole("ERROR: Value is null on propertyInfo for " + tile.position + ".");
+							}
+						} else {
+							System.Reflection.FieldInfo fieldInfo = type.GetField(parameters[0]);
+							if (fieldInfo != null) {
+								object value = fieldInfo.GetValue(tile);
+								if (value != null) {
+									OutputToConsole(tile.position + ": \"" + value.ToString() + "\"");
+								} else {
+									OutputToConsole("ERROR: Value is null on fieldInfo for " + tile.position + ".");
+								}
+							} else {
+								OutputToConsole("ERROR: propertyInfo/fieldInfo is null on type for (" + parameters[0] + ").");
+							}
+						}
+					} else {
+						OutputToConsole("ERROR: type is null on tile.");
+					}
+					//OutputToConsole(tile.GetType().GetProperty(parameters[0]).GetValue(tile, null).ToString());
+				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
@@ -958,6 +1019,13 @@ public class DebugManager : MonoBehaviour {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
+		commandFunctions.Add(Commands.pause, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 0) {
+				timeM.TogglePause();
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
 		commandFunctions.Add(Commands.viewselectedtiles, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				if (selectedTiles.Count <= 0) {
@@ -1051,22 +1119,59 @@ public class DebugManager : MonoBehaviour {
 		commandFunctions.Add(Commands.viewrivers, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				foreach (TileManager.Map.River river in tileM.map.rivers) {
+					Color riverColour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
 					foreach (TileManager.Tile tile in river.tiles) {
 						tile.sr.sprite = whiteSquare;
-						tile.sr.color = Color.blue;
+						tile.sr.color = riverColour;
 					}
 					river.tiles[0].sr.color = Color.red;
 					river.tiles[river.tiles.Count - 1].sr.color = Color.green;
 				}
+				OutputToConsole("Showing " + tileM.map.rivers.Count + " rivers.");
 			} else if (parameters.Count == 1) {
 				if (int.TryParse(parameters[0], out viewRiverAtIndex)) {
 					if (viewRiverAtIndex >= 0 && viewRiverAtIndex < tileM.map.rivers.Count) {
+						Color riverColour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
 						foreach (TileManager.Tile tile in tileM.map.rivers[viewRiverAtIndex].tiles) {
 							tile.sr.sprite = whiteSquare;
-							tile.sr.color = Color.blue;
+							tile.sr.color = riverColour;
 						}
 						tileM.map.rivers[viewRiverAtIndex].tiles[0].sr.color = Color.red;
 						tileM.map.rivers[viewRiverAtIndex].tiles[tileM.map.rivers[viewRiverAtIndex].tiles.Count - 1].sr.color = Color.green;
+						OutputToConsole("Showing river " + (viewRiverAtIndex + 1) + " of " + tileM.map.rivers.Count + " rivers.");
+					} else {
+						OutputToConsole("ERROR: River index out of range.");
+					}
+				} else {
+					OutputToConsole("ERROR: Unable to parse river index as int.");
+				}
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
+		commandFunctions.Add(Commands.viewlargerivers, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 0) {
+				foreach (TileManager.Map.River river in tileM.map.largeRivers) {
+					Color riverColour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
+					foreach (TileManager.Tile tile in river.tiles) {
+						tile.sr.sprite = whiteSquare;
+						tile.sr.color = riverColour;
+					}
+					river.tiles[0].sr.color = Color.red;
+					river.tiles[river.tiles.Count - 1].sr.color = Color.green;
+				}
+				OutputToConsole("Showing " + tileM.map.largeRivers.Count + " large rivers.");
+			} else if (parameters.Count == 1) {
+				if (int.TryParse(parameters[0], out viewRiverAtIndex)) {
+					if (viewRiverAtIndex >= 0 && viewRiverAtIndex < tileM.map.largeRivers.Count) {
+						Color riverColour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
+						foreach (TileManager.Tile tile in tileM.map.largeRivers[viewRiverAtIndex].tiles) {
+							tile.sr.sprite = whiteSquare;
+							tile.sr.color = riverColour;
+						}
+						tileM.map.largeRivers[viewRiverAtIndex].tiles[0].sr.color = Color.red;
+						tileM.map.largeRivers[viewRiverAtIndex].tiles[tileM.map.largeRivers[viewRiverAtIndex].tiles.Count - 1].sr.color = Color.green;
+						OutputToConsole("Showing river " + (viewRiverAtIndex + 1) + " of " + tileM.map.largeRivers.Count + " large rivers.");
 					} else {
 						OutputToConsole("ERROR: River index out of range.");
 					}
@@ -1089,8 +1194,10 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewregionblocks, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Map.Region region in tileM.map.regionBlocks) {
+				foreach (TileManager.Map.RegionBlock region in tileM.map.regionBlocks) {
 					region.ColourRegion(resourceM.whiteSquareSprite);
+					TileManager.Tile averageTile = tileM.map.GetTileFromPosition(region.averagePosition);
+					averageTile.sr.color = UIManager.GetColour(UIManager.Colours.White);
 				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
@@ -1098,8 +1205,10 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewsquareregionblocks, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Map.Region region in tileM.map.squareRegionBlocks) {
+				foreach (TileManager.Map.RegionBlock region in tileM.map.squareRegionBlocks) {
 					region.ColourRegion(resourceM.whiteSquareSprite);
+					TileManager.Tile averageTile = tileM.map.GetTileFromPosition(region.averagePosition);
+					averageTile.sr.color = UIManager.GetColour(UIManager.Colours.White);
 				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");

@@ -28,78 +28,37 @@ public class TileManager : MonoBehaviour {
 		SandHole, Snow, SnowIce, SnowStone, SnowHole, Stone, StoneIce, StoneWater, StoneThinGrass, StoneSand, StoneSnow, StoneHole, Granite, Limestone, Marble, Sandstone, Slate, Clay, ClayWater
 	};
 
-	List<TileTypes> WaterEquivalentTileTypes = new List<TileTypes>() {
+	public static readonly List<TileTypes> waterEquivalentTileTypes = new List<TileTypes>() {
 		TileTypes.GrassWater, TileTypes.SnowIce, TileTypes.StoneIce, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.ClayWater
 	};
-	public List<TileTypes> GetWaterEquivalentTileTypes() {
-		return WaterEquivalentTileTypes;
-	}
-
-	List<TileTypes> LiquidWaterEquivalentTileTypes = new List<TileTypes>() {
+	public static readonly List<TileTypes> liquidWaterEquivalentTileTypes = new List<TileTypes>() {
 		TileTypes.GrassWater, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.ClayWater
 	};
-	public List<TileTypes> GetLiquidWaterEquivalentTileTypes() {
-		return LiquidWaterEquivalentTileTypes;
-	}
-
-	List<TileTypes> StoneEquivalentTileTypes = new List<TileTypes>() {
+	public static readonly List<TileTypes> stoneEquivalentTileTypes = new List<TileTypes>() {
 		TileTypes.Stone, TileTypes.Granite, TileTypes.Limestone, TileTypes.Marble, TileTypes.Sandstone, TileTypes.Slate
 	};
-	public List<TileTypes> GetStoneEquivalentTileTypes() {
-		return StoneEquivalentTileTypes;
-	}
-
-	List<TileTypes> DirtBaseTileTypes = new List<TileTypes>() {
-		TileTypes.Dirt, TileTypes.DirtDryGrass, TileTypes.DirtGrass, TileTypes.DirtThinGrass, TileTypes.Mud,
-		TileTypes.Grass, TileTypes.ThickGrass, TileTypes.ColdGrass, TileTypes.DryGrass, TileTypes.StoneThinGrass
+	public static readonly List<TileTypes> dirtBaseTileTypes = new List<TileTypes>() {
+		TileTypes.Dirt, TileTypes.DirtDryGrass, TileTypes.DirtGrass, TileTypes.DirtThinGrass, TileTypes.Mud, TileTypes.Grass, TileTypes.ThickGrass, TileTypes.ColdGrass, TileTypes.DryGrass, TileTypes.StoneThinGrass
 	};
-	public List<TileTypes> GetDirtBaseTileTypes() {
-		return DirtBaseTileTypes;
-	}
-
-	List<TileTypes> PlantableTileTypes = new List<TileTypes>() {
-		TileTypes.Dirt, TileTypes.Mud, TileTypes.DirtGrass, TileTypes.DirtThinGrass, TileTypes.DirtDryGrass, TileTypes.Grass, TileTypes.ThickGrass,
-		TileTypes.DryGrass, TileTypes.ColdGrass, TileTypes.Sand, TileTypes.Snow, TileTypes.SnowStone, TileTypes.StoneThinGrass, TileTypes.StoneSand, TileTypes.StoneSnow
+	public static readonly List<TileTypes> plantableTileTypes = new List<TileTypes>() {
+		TileTypes.Dirt, TileTypes.Mud, TileTypes.DirtGrass, TileTypes.DirtThinGrass, TileTypes.DirtDryGrass, TileTypes.Grass, TileTypes.ThickGrass, TileTypes.DryGrass, TileTypes.ColdGrass, TileTypes.Sand, TileTypes.Snow, TileTypes.SnowStone, TileTypes.StoneThinGrass, TileTypes.StoneSand, TileTypes.StoneSnow
 	};
-	public List<TileTypes> GetPlantableTileTypes() {
-		return PlantableTileTypes;
-	}
-
-	List<TileTypes> BitmaskingTileTypes = new List<TileTypes>() {
-		TileTypes.GrassWater, TileTypes.SnowIce, TileTypes.StoneIce, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.Stone,
-		TileTypes.DirtHole, TileTypes.StoneHole, TileTypes.SnowHole, TileTypes.SandHole, TileTypes.ClayWater
+	public static readonly List<TileTypes> bitmaskingTileTypes = new List<TileTypes>() {
+		TileTypes.GrassWater, TileTypes.SnowIce, TileTypes.StoneIce, TileTypes.DirtWater, TileTypes.SandWater, TileTypes.DryGrassWater, TileTypes.ColdGrassWater, TileTypes.StoneWater, TileTypes.Stone, TileTypes.DirtHole, TileTypes.StoneHole, TileTypes.SnowHole, TileTypes.SandHole, TileTypes.ClayWater
 	};
-	public List<TileTypes> GetBitmaskingTileTypes() {
-		return BitmaskingTileTypes;
-	}
-
-	List<TileTypes> HoleTileTypes = new List<TileTypes>() {
+	public static readonly List<TileTypes> holeTileTypes = new List<TileTypes>() {
 		TileTypes.DirtHole, TileTypes.StoneHole, TileTypes.SandHole, TileTypes.SnowHole
 	};
-	public List<TileTypes> GetHoleTileTypes() {
-		return HoleTileTypes;
-	}
-
-	List<TileTypes> ResourceTileTypes = new List<TileTypes>() {
+	public static readonly List<TileTypes> resourceTileTypes = new List<TileTypes>() {
 		TileTypes.Clay, TileTypes.ClayWater
 	};
-	public List<TileTypes> GetResourceTileTypes() {
-		return ResourceTileTypes;
-	}
 
-	Dictionary<TileTypes, TileTypes> GroundToWaterResourceMap = new Dictionary<TileTypes, TileTypes>() {
+	public static readonly Dictionary<TileTypes, TileTypes> groundToWaterResourceMap = new Dictionary<TileTypes, TileTypes>() {
 		{ TileTypes.Clay, TileTypes.ClayWater }
 	};
-	public Dictionary<TileTypes, TileTypes> GetGroundToWaterResourceMap() {
-		return GroundToWaterResourceMap;
-	}
-
-	Dictionary<TileTypes, TileTypes> WaterToGroundResourceMap = new Dictionary<TileTypes, TileTypes>() {
+	public static readonly Dictionary<TileTypes, TileTypes> waterToGroundResourceMap = new Dictionary<TileTypes, TileTypes>() {
 		{ TileTypes.ClayWater, TileTypes.Clay }
 	};
-	public Dictionary<TileTypes, TileTypes> GetWaterToGroundResourceMap() {
-		return WaterToGroundResourceMap;
-	}
 
 	public List<TileType> tileTypes = new List<TileType>();
 
@@ -128,20 +87,20 @@ public class TileManager : MonoBehaviour {
 			baseSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Tiles/" + name + "/" + name + "-base").ToList();
 			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Tiles/" + name + "/" + name + "-bitmask").ToList();
 
-			if (tm.LiquidWaterEquivalentTileTypes.Contains(type)) {
+			if (liquidWaterEquivalentTileTypes.Contains(type)) {
 				riverSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Tiles/" + name + "/" + name + "-river").ToList();
 			}
 		}
 	}
 
 	public void CreateTileTypes() {
-		List<string> stringTileTypes = Resources.Load<TextAsset>(@"Data/tiletypes").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
+		List<string> stringTileTypes = Resources.Load<TextAsset>(@"Data/tileTypes").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
 		foreach (string stringTileType in stringTileTypes) {
 			List<string> stringTileTypeData = stringTileType.Split('/').ToList();
 			tileTypes.Add(new TileType(stringTileTypeData, this));
 		}
 		foreach (TileType tileType in tileTypes) {
-			tileType.name = uiM.SplitByCapitals(tileType.name);
+			tileType.name = UIManager.SplitByCapitals(tileType.name);
 		}
 	}
 
@@ -153,7 +112,7 @@ public class TileManager : MonoBehaviour {
 
 	public void InitializeResourceVeinValidTileFunctions() {
 		resourceVeinValidTileFunctions.Add(TileTypes.Clay, delegate (Tile tile) {
-			if (((WaterEquivalentTileTypes.Contains(tile.tileType.type) && tile.horizontalSurroundingTiles.Find(t => t != null && !WaterEquivalentTileTypes.Contains(t.tileType.type)) != null) || (!WaterEquivalentTileTypes.Contains(tile.tileType.type))) && (!StoneEquivalentTileTypes.Contains(tile.tileType.type))) {
+			if (((waterEquivalentTileTypes.Contains(tile.tileType.type) && tile.horizontalSurroundingTiles.Find(t => t != null && !waterEquivalentTileTypes.Contains(t.tileType.type)) != null) || (!waterEquivalentTileTypes.Contains(tile.tileType.type))) && (!stoneEquivalentTileTypes.Contains(tile.tileType.type))) {
 				if (tile.temperature >= -30) {
 					return true;
 				}
@@ -181,11 +140,12 @@ public class TileManager : MonoBehaviour {
 
 		public TileType tileType;
 		public TileType waterType;
+		public TileType stoneType;
 		public TileType holeType;
 
 		public ResourceManager.Resource groundResource;
 
-		public Biome(List<string> biomeData, TileManager tileM, ResourceManager resourceM, UIManager uiM) {
+		public Biome(List<string> biomeData, TileManager tileM, ResourceManager resourceM) {
 			type = (BiomeTypes)System.Enum.Parse(typeof(BiomeTypes), biomeData[0]);
 			name = type.ToString();
 
@@ -204,7 +164,7 @@ public class TileManager : MonoBehaviour {
 				}
 			}
 
-			colour = uiM.HexToColor(biomeData[5]);
+			colour = UIManager.HexToColor(biomeData[5]);
 		}
 	}
 
@@ -212,10 +172,10 @@ public class TileManager : MonoBehaviour {
 		List<string> stringBiomeTypes = Resources.Load<TextAsset>(@"Data/biomes").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
 		foreach (string stringBiomeType in stringBiomeTypes) {
 			List<string> stringBiomeData = stringBiomeType.Split('/').ToList();
-			biomes.Add(new Biome(stringBiomeData, this, resourceM, uiM));
+			biomes.Add(new Biome(stringBiomeData, this, resourceM));
 		}
 		foreach (Biome biome in biomes) {
-			biome.name = uiM.SplitByCapitals(biome.name);
+			biome.name = UIManager.SplitByCapitals(biome.name);
 		}
 	}
 
@@ -372,7 +332,7 @@ public class TileManager : MonoBehaviour {
 			if (bitmask) {
 				map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList());
 			}
-			if (plant != null && !map.tileM.PlantableTileTypes.Contains(tileType.type)) {
+			if (plant != null && !plantableTileTypes.Contains(tileType.type)) {
 				map.smallPlants.Remove(plant);
 				Destroy(plant.obj);
 				plant = null;
@@ -517,14 +477,14 @@ public class TileManager : MonoBehaviour {
 
 		public void SetBiome(Biome biome) {
 			this.biome = biome;
-			if (!map.tileM.StoneEquivalentTileTypes.Contains(tileType.type)) {
-				if (!map.tileM.WaterEquivalentTileTypes.Contains(tileType.type)) {
+			if (!stoneEquivalentTileTypes.Contains(tileType.type)) {
+				if (!waterEquivalentTileTypes.Contains(tileType.type)) {
 					SetTileType(biome.tileType, false, false, false, false);
 				} else {
 					SetTileType(biome.waterType, false, false, false, false);
 				}
 			}
-			if (map.tileM.PlantableTileTypes.Contains(tileType.type)) {
+			if (plantableTileTypes.Contains(tileType.type)) {
 				SetPlant(false, null);
 			}
 		}
@@ -721,16 +681,16 @@ public class TileManager : MonoBehaviour {
 		}
 
 		public ResourceManager.Resource GetResource() {
-			if (map.tileM.GetResourceTileTypes().Contains(tileType.type)) {
-				if (map.tileM.GetWaterEquivalentTileTypes().Contains(tileType.type)) {
-					if (map.tileM.GetWaterToGroundResourceMap().ContainsKey(tileType.type)) {
-						return map.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), map.tileM.GetTileTypeByEnum(map.tileM.GetWaterToGroundResourceMap()[tileType.type]).type.ToString()));
+			if (resourceTileTypes.Contains(tileType.type)) {
+				if (waterEquivalentTileTypes.Contains(tileType.type)) {
+					if (waterToGroundResourceMap.ContainsKey(tileType.type)) {
+						return map.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), map.tileM.GetTileTypeByEnum(waterToGroundResourceMap[tileType.type]).type.ToString()));
 					}
 				} else {
 					return map.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), tileType.type.ToString()));
 				}
 			} else {
-				if (map.tileM.GetStoneEquivalentTileTypes().Contains(tileType.type)) {
+				if (stoneEquivalentTileTypes.Contains(tileType.type)) {
 					return map.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)System.Enum.Parse(typeof(ResourceManager.ResourcesEnum), tileType.type.ToString()));
 				} else {
 					return biome.groundResource;
@@ -760,10 +720,13 @@ public class TileManager : MonoBehaviour {
 		public int temperatureRange;
 		public float planetDistance;
 		public float temperatureOffset;
+		public bool randomOffsets;
 		public float averageTemperature;
 		public float averagePrecipitation;
 		public Dictionary<TileTypes, float> terrainTypeHeights;
 		public List<int> surroundingPlanetTileHeightDirections;
+		public bool river;
+		public List<int> surroundingPlanetTileRivers;
 		public Vector2 planetTilePosition;
 
 		public bool preventEdgeTouching;
@@ -782,15 +745,17 @@ public class TileManager : MonoBehaviour {
 			int temperatureRange,
 			float planetDistance,
 			float temperatureOffset,
+			bool randomOffsets,
 			float averageTemperature,
 			float averagePrecipitation,
 			Dictionary<TileTypes, float> terrainTypeHeights,
 			List<int> surroundingPlanetTileHeightDirections,
+			bool river,
+			List<int> surroundingPlanetTileRivers,
 			bool preventEdgeTouching,
 			int primaryWindDirection,
 			Vector2 planetTilePosition
-			) {
-
+		) {
 			if (mapSeed < 0) {
 				mapSeed = Random.Range(0, int.MaxValue);
 			}
@@ -805,10 +770,13 @@ public class TileManager : MonoBehaviour {
 			this.temperatureRange = temperatureRange;
 			this.planetDistance = planetDistance;
 			this.temperatureOffset = temperatureOffset;
+			this.randomOffsets = randomOffsets;
 			this.averageTemperature = averageTemperature;
 			this.averagePrecipitation = averagePrecipitation;
 			this.terrainTypeHeights = terrainTypeHeights;
 			this.surroundingPlanetTileHeightDirections = surroundingPlanetTileHeightDirections;
+			this.river = river;
+			this.surroundingPlanetTileRivers = surroundingPlanetTileRivers;
 			this.preventEdgeTouching = preventEdgeTouching;
 			this.primaryWindDirection = primaryWindDirection;
 			this.planetTilePosition = planetTilePosition;
@@ -931,8 +899,7 @@ public class TileManager : MonoBehaviour {
 		public IEnumerator CreateMap() {
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Map", "Creating Tiles"); yield return null; }
 			CreateTiles();
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Map", "Validating"); yield return null; }
-			Bitmasking(tiles);
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Map", "Validating"); yield return null; Bitmasking(tiles); }
 
 			if (mapData.preventEdgeTouching) {
 				PreventEdgeTouching();
@@ -952,23 +919,26 @@ public class TileManager : MonoBehaviour {
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Tile Type"); yield return null; }
 			SetTileRegions(true);
 
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", ("Reducing Terrain Noise - " + Mathf.RoundToInt(mapData.mapSize / 5f))); yield return null; }
-			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f), new List<TileTypes>() { TileTypes.GrassWater, TileTypes.Stone, TileTypes.Grass });
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", ("Reducing Terrain Noise - " + Mathf.RoundToInt(mapData.mapSize / 2f))); yield return null; }
-			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypes>() { TileTypes.GrassWater });
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Walkability"); yield return null; }
-			SetTileRegions(false);
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Validating"); yield return null; }
-			Bitmasking(tiles);
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Reducing Terrain Noise"); yield return null; }
+			ReduceNoise();
 
 			if (mapData.actualMap) {
-				uiM.UpdateLoadingStateText("Rivers", "Determining Drainage Basins"); yield return null;
-				DetermineDrainageBasins();
-				uiM.UpdateLoadingStateText("Rivers", "Determining River Paths"); yield return null;
-				CreateRivers();
-				uiM.UpdateLoadingStateText("Rivers", "Validating"); yield return null;
-				Bitmasking(tiles);
+				uiM.UpdateLoadingStateText("Rivers", "Determining Large River Paths"); yield return null;
+				CreateLargeRivers();
+				uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Walkability"); yield return null;
+				SetTileRegions(false);
+				uiM.UpdateLoadingStateText("Terrain", "Reducing Terrain Noise"); yield return null;
+				ReduceNoise();
 			}
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Walkability"); yield return null; }
+			SetTileRegions(false);
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Terrain", "Validating"); yield return null; Bitmasking(tiles); }
+
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Rivers", "Determining Drainage Basins"); yield return null; }
+			DetermineDrainageBasins();
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Rivers", "Determining River Paths"); yield return null; }
+			CreateRivers();
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Rivers", "Validating"); yield return null; Bitmasking(tiles); }
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Calculating Temperature"); yield return null; }
 			CalculateTemperature();
@@ -987,8 +957,7 @@ public class TileManager : MonoBehaviour {
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Setting Biomes"); yield return null; }
 			SetBiomes();
-			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Validating"); yield return null; }
-			Bitmasking(tiles);
+			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Biomes", "Validating"); yield return null; Bitmasking(tiles); }
 
 			if (mapData.actualMap) { uiM.UpdateLoadingStateText("Region Blocks", "Determining Region Blocks"); yield return null; }
 			CreateRegionBlocks();
@@ -1183,7 +1152,7 @@ public class TileManager : MonoBehaviour {
 
 			public void ColourRegion(Sprite whiteSquareSprite) {
 				Sprite whiteSquare = whiteSquareSprite;
-				foreach (Tile tile in this.tiles) {
+				foreach (Tile tile in tiles) {
 					tile.sr.sprite = whiteSquare;
 					tile.sr.color = colour;
 				}
@@ -1284,9 +1253,9 @@ public class TileManager : MonoBehaviour {
 			}
 		}
 
-		private int regionBlockSize = 10;
 		public List<RegionBlock> squareRegionBlocks = new List<RegionBlock>();
 		public void CreateRegionBlocks() {
+			int regionBlockSize = Mathf.RoundToInt(mapData.mapSize / 10f);
 
 			regionBlocks.Clear();
 			squareRegionBlocks.Clear();
@@ -1435,9 +1404,9 @@ public class TileManager : MonoBehaviour {
 		public void RecalculateRegionsAtTile(Tile tile) {
 			if (!tile.walkable) {
 				List<Tile> orderedSurroundingTiles = new List<Tile>() {
-				tile.surroundingTiles[0],tile.surroundingTiles[4],tile.surroundingTiles[1],tile.surroundingTiles[5],
-				tile.surroundingTiles[2],tile.surroundingTiles[6],tile.surroundingTiles[3],tile.surroundingTiles[7]
-			};
+					tile.surroundingTiles[0], tile.surroundingTiles[4], tile.surroundingTiles[1], tile.surroundingTiles[5],
+					tile.surroundingTiles[2], tile.surroundingTiles[6], tile.surroundingTiles[3], tile.surroundingTiles[7]
+				};
 				List<List<Tile>> separateTileGroups = new List<List<Tile>>();
 				int groupIndex = 0;
 				for (int i = 0; i < orderedSurroundingTiles.Count; i++) {
@@ -1488,7 +1457,12 @@ public class TileManager : MonoBehaviour {
 			}
 		}
 
-		void ReduceNoise(int removeRegionsBelowSize, List<TileTypes> typesToRemove) {
+		public void ReduceNoise() {
+			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f), new List<TileTypes>() { TileTypes.GrassWater, TileTypes.Stone, TileTypes.Grass });
+			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypes>() { TileTypes.GrassWater });
+		}
+
+		private void ReduceNoise(int removeRegionsBelowSize, List<TileTypes> typesToRemove) {
 			foreach (Region region in regions) {
 				if (typesToRemove.Contains(region.tileType.type)) {
 					if (region.tiles.Count < removeRegionsBelowSize) {
@@ -1515,14 +1489,18 @@ public class TileManager : MonoBehaviour {
 		}
 
 		public List<River> rivers = new List<River>();
+		public List<River> largeRivers = new List<River>();
 
 		public Dictionary<Region, Tile> drainageBasins = new Dictionary<Region, Tile>();
 		public int drainageBasinID = 0;
 
 		void DetermineDrainageBasins() {
+			drainageBasins.Clear();
+			drainageBasinID = 0;
+
 			List<Tile> tilesByHeight = tiles.OrderBy(tile => tile.height).ToList();
 			foreach (Tile tile in tilesByHeight) {
-				if (!tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type) && tile.drainageBasin == null) {
+				if (!stoneEquivalentTileTypes.Contains(tile.tileType.type) && tile.drainageBasin == null) {
 					Region drainageBasin = new Region(null, drainageBasinID);
 					drainageBasinID += 1;
 
@@ -1540,9 +1518,9 @@ public class TileManager : MonoBehaviour {
 						drainageBasin.tiles.Add(currentTile);
 						currentTile.drainageBasin = drainageBasin;
 
-						foreach (Tile nTile in currentTile.surroundingTiles) {
-							if (nTile != null && !checkedTiles.Contains(nTile) && !tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type) && nTile.drainageBasin == null) {
-								if (nTile.height >= currentTile.height) {
+						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+							if (nTile != null && !checkedTiles.Contains(nTile) && !stoneEquivalentTileTypes.Contains(nTile.tileType.type) && nTile.drainageBasin == null) {
+								if (nTile.height * 1.2f >= currentTile.height) {
 									frontier.Add(nTile);
 									checkedTiles.Add(nTile);
 								}
@@ -1558,21 +1536,54 @@ public class TileManager : MonoBehaviour {
 			public Tile startTile;
 			public Tile endTile;
 			public List<Tile> tiles;
+			public int expandRadius;
+			public bool ignoreStone;
 
-			public River(Tile startTile, Tile endTile, List<Tile> tiles) {
+			public River(Tile startTile, Tile endTile, int expandRadius, bool ignoreStone, Map map) {
 				this.startTile = startTile;
 				this.endTile = endTile;
-				this.tiles = tiles;
+				this.expandRadius = expandRadius;
+				this.ignoreStone = ignoreStone;
+
+				tiles = map.RiverPathfinding(startTile, endTile, expandRadius, ignoreStone);
+			}
+		}
+
+		void CreateLargeRivers() {
+			largeRivers.Clear();
+			if (mapData.river) {
+				int riverEndRiverIndex = mapData.surroundingPlanetTileRivers.OrderByDescending(i => i).ToList()[0];
+				int riverEndListIndex = mapData.surroundingPlanetTileRivers.IndexOf(riverEndRiverIndex);
+
+				List<Tile> validEndTiles = sortedEdgeTiles[riverEndListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverEndListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverEndListIndex][sortedEdgeTiles[riverEndListIndex].Count - 1].obj.transform.position) >= 10).ToList();
+				Tile riverEndTile = validEndTiles[Random.Range(0, validEndTiles.Count)];
+
+				int riverStartListIndex = 0;
+				foreach (int riverStartRiverIndex in mapData.surroundingPlanetTileRivers) {
+					if (riverStartRiverIndex != -1 && riverStartRiverIndex != riverEndRiverIndex) {
+						int expandRadius = Random.Range(1, 3) * Mathf.CeilToInt(mapData.mapSize / 100f);
+						List<Tile> validStartTiles = sortedEdgeTiles[riverStartListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][sortedEdgeTiles[riverStartListIndex].Count - 1].obj.transform.position) >= 10).ToList();
+						Tile riverStartTile = validStartTiles[Random.Range(0, validStartTiles.Count)];
+						River river = new River(riverStartTile, riverEndTile, expandRadius, true, this);
+						if (river.tiles.Count > 0) {
+							largeRivers.Add(river);
+						} else {
+							Debug.LogWarning("Large River has no tiles. startTile: " + riverStartTile.obj.transform.position + " endTile: " + riverEndTile.obj.transform.position);
+						}
+					}
+					riverStartListIndex += 1;
+				}
 			}
 		}
 
 		void CreateRivers() {
+			rivers.Clear();
 			Dictionary<Tile, Tile> riverStartTiles = new Dictionary<Tile, Tile>();
 			foreach (KeyValuePair<Region, Tile> kvp in drainageBasins) {
 				Region drainageBasin = kvp.Key;
-				if (drainageBasin.tiles.Find(o => tileM.WaterEquivalentTileTypes.Contains(o.tileType.type)) != null && drainageBasin.tiles.Find(o => o.horizontalSurroundingTiles.Find(o2 => o2 != null && tileM.StoneEquivalentTileTypes.Contains(o2.tileType.type)) != null) != null) {
+				if (drainageBasin.tiles.Find(o => waterEquivalentTileTypes.Contains(o.tileType.type)) != null && drainageBasin.tiles.Find(o => o.horizontalSurroundingTiles.Find(o2 => o2 != null && stoneEquivalentTileTypes.Contains(o2.tileType.type)) != null) != null) {
 					foreach (Tile tile in drainageBasin.tiles) {
-						if (tile.walkable && !tileM.WaterEquivalentTileTypes.Contains(tile.tileType.type) && tile.horizontalSurroundingTiles.Find(o => o != null && tileM.StoneEquivalentTileTypes.Contains(o.tileType.type)) != null) {
+						if (tile.walkable && !waterEquivalentTileTypes.Contains(tile.tileType.type) && tile.horizontalSurroundingTiles.Find(o => o != null && stoneEquivalentTileTypes.Contains(o.tileType.type)) != null) {
 							riverStartTiles.Add(tile, kvp.Value);
 						}
 					}
@@ -1592,13 +1603,16 @@ public class TileManager : MonoBehaviour {
 				}
 				removeTiles.Clear();
 
-				List<Tile> riverTiles = RiverPathfinding(riverStartTile, riverEndTile);
-
-				rivers.Add(new River(riverStartTile, riverEndTile, riverTiles));
+				River river = new River(riverStartTile, riverEndTile, 0, false, this);
+				if (river.tiles.Count > 0) {
+					rivers.Add(river);
+				} else {
+					Debug.LogWarning("River has no tiles. startTile: " + riverStartTile.obj.transform.position + " endTile: " + riverEndTile.obj.transform.position);
+				}
 			}
 		}
 
-		public List<Tile> RiverPathfinding(Tile riverStartTile, Tile riverEndTile) {
+		public List<Tile> RiverPathfinding(Tile riverStartTile, Tile riverEndTile, int expandRadius, bool ignoreStone) {
 			PathManager.PathfindingTile currentTile = new PathManager.PathfindingTile(riverStartTile, null, 0);
 
 			List<PathManager.PathfindingTile> checkedTiles = new List<PathManager.PathfindingTile>();
@@ -1612,57 +1626,17 @@ public class TileManager : MonoBehaviour {
 				currentTile = frontier[0];
 				frontier.RemoveAt(0);
 
-				if (tileM.WaterEquivalentTileTypes.Contains(currentTile.tile.tileType.type) || (currentTile.tile.horizontalSurroundingTiles.Find(tile => tile != null && tileM.WaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key == null) != null)) {
-					Tile foundOtherRiverAtTile = null;
-					River foundOtherRiver = null;
-					bool expandRiver = true; // false: SET TO FALSE TO ENABLE RIVER EXPANSION
+				if (currentTile.tile == riverEndTile || (expandRadius == 0 && (waterEquivalentTileTypes.Contains(currentTile.tile.tileType.type) || (currentTile.tile.horizontalSurroundingTiles.Find(tile => tile != null && waterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key == null) != null)))) {
 					while (currentTile != null) {
 						river.Add(currentTile.tile);
 						currentTile.tile.SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater), false, false, false, true);
-						if (!expandRiver) {
-							KeyValuePair<Tile, River> kvp = RiversContainTile(currentTile.tile);
-							if (kvp.Key != null) {
-								foundOtherRiverAtTile = kvp.Key;
-								foundOtherRiver = kvp.Value;
-								expandRiver = true;
-								print("Expanding river at " + foundOtherRiverAtTile.obj.transform.position);
-							}
-						}
 						currentTile = currentTile.cameFrom;
-					}
-					if (foundOtherRiver != null && foundOtherRiver.tiles.Count > 1) {
-						int riverTileIndex = 1;
-						while (expandRiver) {
-							Tile riverTile = foundOtherRiver.tiles[riverTileIndex];
-							if (riverTile == foundOtherRiverAtTile) {
-								break;
-							}
-							int maxExpandRadius = 3;
-							List<Tile> expandFrontier = new List<Tile>() {
-								riverTile
-							};
-							List<Tile> checkedExpandTiles = new List<Tile>() {
-								riverTile
-							};
-							while (expandFrontier.Count > 0) {
-								Tile expandTile = expandFrontier[0];
-								expandFrontier.RemoveAt(0);
-								expandTile.SetTileType(tileM.GetTileTypeByEnum(TileTypes.GrassWater), false, false, false, true);
-								foreach (Tile nTile in expandTile.surroundingTiles) {
-									if (nTile != null && !checkedExpandTiles.Contains(nTile) && !tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type) && Vector2.Distance(nTile.obj.transform.position, riverTile.obj.transform.position) <= maxExpandRadius) {
-										expandFrontier.Add(nTile);
-										checkedExpandTiles.Add(nTile);
-									}
-								}
-							}
-							riverTileIndex += 1;
-						}
 					}
 					break;
 				}
 
 				foreach (Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
-					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && !tileM.StoneEquivalentTileTypes.Contains(nTile.tileType.type)) {
+					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (ignoreStone || !stoneEquivalentTileTypes.Contains(nTile.tileType.type))) {
 						if (rivers.Find(otherRiver => otherRiver.tiles.Find(riverTile => nTile == riverTile) != null) != null) {
 							frontier.Clear();
 							frontier.Add(new PathManager.PathfindingTile(nTile, currentTile, 0));
@@ -1677,7 +1651,60 @@ public class TileManager : MonoBehaviour {
 				}
 				frontier = frontier.OrderBy(frontierTile => frontierTile.cost).ToList();
 			}
+
+			if (river.Count == 0) {
+				return river;
+			}
+
+			if (expandRadius > 0) {
+				float expandedExpandRadius = expandRadius * Random.Range(2f, 4f);
+				List<Tile> riverAdditions = new List<Tile>();
+				riverAdditions.AddRange(river);
+				foreach (Tile riverTile in river) {
+					riverTile.SetTileHeight(CalculateLargeRiverTileHeight(expandRadius, 0));
+
+					List<Tile> expandFrontier = new List<Tile>() { riverTile };
+					List<Tile> checkedExpandTiles = new List<Tile>() { riverTile };
+					while (expandFrontier.Count > 0) {
+						Tile expandTile = expandFrontier[0];
+						expandFrontier.RemoveAt(0);
+						float distanceExpandTileRiverTile = Vector2.Distance(expandTile.obj.transform.position, riverTile.obj.transform.position);
+						float newRiverHeight = CalculateLargeRiverTileHeight(expandRadius, distanceExpandTileRiverTile);
+						float newRiverBankHeight = CalculateLargeRiverBankTileHeight(expandRadius, distanceExpandTileRiverTile);
+						if (distanceExpandTileRiverTile <= expandRadius) {
+							if (!riverAdditions.Contains(expandTile)) {
+								riverAdditions.Add(expandTile);
+								expandTile.SetTileHeight(newRiverHeight);
+							}
+						} else if (!riverAdditions.Contains(expandTile) && expandTile.height > newRiverBankHeight) {
+							expandTile.SetTileHeight(newRiverBankHeight);
+						}
+						foreach (Tile nTile in expandTile.surroundingTiles) {
+							if (nTile != null && !checkedExpandTiles.Contains(nTile) && (ignoreStone || !stoneEquivalentTileTypes.Contains(nTile.tileType.type))) {
+								if (Vector2.Distance(nTile.obj.transform.position, riverTile.obj.transform.position) <= expandedExpandRadius) {
+									expandFrontier.Add(nTile);
+									checkedExpandTiles.Add(nTile);
+								}
+							}
+						}
+					}
+				}
+				river.AddRange(riverAdditions);
+			}
+
 			return river;
+		}
+
+		private float CalculateLargeRiverTileHeight(int expandRadius, float distanceExpandTileRiverTile) {
+			float height = (mapData.terrainTypeHeights[TileTypes.GrassWater] / expandRadius) * distanceExpandTileRiverTile;//(2 * mapData.terrainTypeHeights[TileTypes.GrassWater]) * (distanceExpandTileRiverTile / expandedExpandRadius);
+			height -= 0.01f;
+			return Mathf.Clamp(height, 0f, 1f);
+		}
+
+		private float CalculateLargeRiverBankTileHeight(int expandRadius, float distanceExpandTileRiverTile) {
+			float height = CalculateLargeRiverTileHeight(expandRadius, distanceExpandTileRiverTile / 2f);
+			height += (mapData.terrainTypeHeights[TileTypes.GrassWater] / 2f);
+			return Mathf.Clamp(height, 0f, 1f);
 		}
 
 		public KeyValuePair<Tile, River> RiversContainTile(Tile tile) {
@@ -1691,14 +1718,14 @@ public class TileManager : MonoBehaviour {
 			return new KeyValuePair<Tile, River>(null, null);
 		}
 
-		public float TemperatureFromMapLatitude(float yPos, float temperatureRange, float temperatureOffset, int mapSize) {
-			return ((-2 * Mathf.Abs((yPos - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureRange / 50f)))) + temperatureRange) + temperatureOffset;
+		public float TemperatureFromMapLatitude(float yPos, float temperatureRange, float temperatureOffset, int mapSize, bool randomOffset) {
+			return ((-2 * Mathf.Abs((yPos - (mapSize / 2f)) / ((mapSize / 100f) / (temperatureRange / 50f)))) + temperatureRange) + temperatureOffset + (randomOffset ? Random.Range(-50f, 50f) : 0);
 		}
 
 		void CalculateTemperature() {
 			foreach (Tile tile in tiles) {
 				if (mapData.planetTemperature) {
-					tile.temperature = TemperatureFromMapLatitude(tile.position.y, mapData.temperatureRange, mapData.temperatureOffset, mapData.mapSize);
+					tile.temperature = TemperatureFromMapLatitude(tile.position.y, mapData.temperatureRange, mapData.temperatureOffset, mapData.mapSize, mapData.randomOffsets);
 				} else {
 					tile.temperature = mapData.averageTemperature;
 				}
@@ -1709,7 +1736,8 @@ public class TileManager : MonoBehaviour {
 		}
 
 		void AverageTileTemperatures() {
-			for (int i = 0; i < 3; i++) {
+			int numPasses = 3; // 3
+			for (int i = 0; i < numPasses; i++) {
 				List<float> averageTileTemperatures = new List<float>();
 
 				foreach (Tile tile in tiles) {
@@ -1732,16 +1760,16 @@ public class TileManager : MonoBehaviour {
 			}
 		}
 
-		private Dictionary<int, int> oppositeDirectionTileMap = new Dictionary<int, int>() { { 0, 2 }, { 1, 3 }, { 2, 0 }, { 3, 1 }, { 4, 6 }, { 5, 7 }, { 6, 4 }, { 7, 5 } };
-		private Dictionary<int, List<float>> windStrengthMap = new Dictionary<int, List<float>>() {
-			{ 0,new List<float>(){ 1.0f,0.6f,0.1f,0.6f,0.8f,0.2f,0.2f,0.8f } },
-			{ 1,new List<float>(){ 0.6f,1.0f,0.6f,0.1f,0.8f,0.8f,0.2f,0.2f } },
-			{ 2,new List<float>(){ 0.1f,0.6f,1.0f,0.6f,0.2f,0.8f,0.8f,0.2f } },
-			{ 3,new List<float>(){ 0.6f,0.1f,0.6f,1.0f,0.2f,0.2f,0.8f,0.8f } },
-			{ 4,new List<float>(){ 0.8f,0.8f,0.2f,0.2f,1.0f,0.6f,0.1f,0.6f } },
-			{ 5,new List<float>(){ 0.2f,0.8f,0.8f,0.2f,0.6f,1.0f,0.6f,0.1f } },
-			{ 6,new List<float>(){ 0.2f,0.2f,0.8f,0.8f,0.1f,0.6f,1.0f,0.6f } },
-			{ 7,new List<float>(){ 0.8f,0.2f,0.2f,0.8f,0.6f,0.1f,0.6f,1.0f } }
+		private List<int> oppositeDirectionTileMap = new List<int>() { 2, 3, 0, 1, 6, 7, 4, 5 };
+		private List<List<float>> windStrengthMap = new List<List<float>>() {
+			new List<float>(){ 1.0f,0.6f,0.1f,0.6f,0.8f,0.2f,0.2f,0.8f },
+			new List<float>(){ 0.6f,1.0f,0.6f,0.1f,0.8f,0.8f,0.2f,0.2f },
+			new List<float>(){ 0.1f,0.6f,1.0f,0.6f,0.2f,0.8f,0.8f,0.2f },
+			new List<float>(){ 0.6f,0.1f,0.6f,1.0f,0.2f,0.2f,0.8f,0.8f },
+			new List<float>(){ 0.8f,0.8f,0.2f,0.2f,1.0f,0.6f,0.1f,0.6f },
+			new List<float>(){ 0.2f,0.8f,0.8f,0.2f,0.6f,1.0f,0.6f,0.1f },
+			new List<float>(){ 0.2f,0.2f,0.8f,0.8f,0.1f,0.6f,1.0f,0.6f },
+			new List<float>(){ 0.8f,0.2f,0.2f,0.8f,0.6f,0.1f,0.6f,1.0f }
 		};
 
 		public int primaryWindDirection = -1;
@@ -1814,7 +1842,6 @@ public class TileManager : MonoBehaviour {
 			foreach (Tile tile in tiles) {
 				if (Mathf.RoundToInt(mapData.averagePrecipitation) != -1) {
 					tile.SetPrecipitation((tile.GetPrecipitation() + mapData.averagePrecipitation) / 2f);
-					//tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), mapData.averagePrecipitation, 1f));
 				}
 				tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), 0f, 1f));
 			}
@@ -1824,18 +1851,18 @@ public class TileManager : MonoBehaviour {
 			if (planet) {
 				if (previousTile != null) {
 					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
-					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+					if (liquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
 						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * (mapData.mapSize / 5f));
-					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.25f);
-					} else {
+					} else if (stoneEquivalentTileTypes.Contains(tile.tileType.type)) {
 						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.9f);
+					} else {
+						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.95f);
 					}
 				} else {
-					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+					if (liquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
 						tile.SetPrecipitation(1f);
-					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.SetPrecipitation(0f);
+					} else if (stoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.SetPrecipitation(1f);
 					} else {
 						tile.SetPrecipitation(0.1f);
 					}
@@ -1843,22 +1870,22 @@ public class TileManager : MonoBehaviour {
 			} else {
 				if (previousTile != null) {
 					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
-					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+					if (liquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
 						float waterMultiplier = (mapData.mapSize / 5f);
 						if (RiversContainTile(tile).Value != null) {
 							waterMultiplier *= 5;
 						}
 						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * waterMultiplier);
-					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * tile.height);
+					} else if (stoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * Random.Range(0.95f, 0.99f));
 					} else {
-						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.95f);
+						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * Random.Range(0.98f, 1f));
 					}
 				} else {
-					if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
+					if (liquidWaterEquivalentTileTypes.Contains(tile.tileType.type)) {
 						tile.SetPrecipitation(1f);
-					} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-						tile.SetPrecipitation(0f);
+					} else if (stoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+						tile.SetPrecipitation(1f);
 					} else {
 						tile.SetPrecipitation(mapData.averagePrecipitation);
 					}
@@ -1873,7 +1900,7 @@ public class TileManager : MonoBehaviour {
 		}
 
 		void AverageTilePrecipitations() {
-			int numPasses = 2;
+			int numPasses = 5;
 			for (int i = 0; i < numPasses; i++) {
 				List<float> averageTilePrecipitations = new List<float>();
 
@@ -1960,7 +1987,7 @@ public class TileManager : MonoBehaviour {
 		public void SetRoofs() {
 			float roofHeightMultiplier = 1.25f;
 			foreach (Tile tile in tiles) {
-				if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type) && tile.height >= mapData.terrainTypeHeights[TileTypes.Stone] * roofHeightMultiplier) {
+				if (stoneEquivalentTileTypes.Contains(tile.tileType.type) && tile.height >= mapData.terrainTypeHeights[TileTypes.Stone] * roofHeightMultiplier) {
 					tile.roof = true;
 				} else {
 					tile.roof = false;
@@ -1990,7 +2017,7 @@ public class TileManager : MonoBehaviour {
 			};
 			List<Tile> stoneTiles = new List<Tile>();
 			foreach (Tile tile in tiles) {
-				if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+				if (stoneEquivalentTileTypes.Contains(tile.tileType.type)) {
 					stoneTiles.Add(tile);
 				}
 			}
@@ -2005,7 +2032,7 @@ public class TileManager : MonoBehaviour {
 			};
 			List<Tile> coastTiles = new List<Tile>();
 			foreach (Tile tile in tiles) {
-				if (tileM.WaterEquivalentTileTypes.Contains(tile.tileType.type) && tile.surroundingTiles.Find(t => t != null && !tileM.WaterEquivalentTileTypes.Contains(t.tileType.type)) != null) {
+				if (waterEquivalentTileTypes.Contains(tile.tileType.type) && tile.surroundingTiles.Find(t => t != null && !waterEquivalentTileTypes.Contains(t.tileType.type)) != null) {
 					coastTiles.Add(tile);
 				}
 			}
@@ -2019,7 +2046,7 @@ public class TileManager : MonoBehaviour {
 		void PlaceResourceVeins(ResourceVeinData resourceVeinData, List<Tile> mediumTiles) {
 			List<Tile> previousVeinStartTiles = new List<Tile>();
 			for (int i = 0; i < resourceVeinData.numVeins; i++) {
-				List<Tile> validVeinStartTiles = mediumTiles.Where(tile => !tileM.ResourceTileTypes.Contains(tile.tileType.type) && tileM.resourceVeinValidTileFunctions[resourceVeinData.tileType](tile)).ToList();
+				List<Tile> validVeinStartTiles = mediumTiles.Where(tile => !resourceTileTypes.Contains(tile.tileType.type) && tileM.resourceVeinValidTileFunctions[resourceVeinData.tileType](tile)).ToList();
 				foreach (Tile previousVeinStartTile in previousVeinStartTiles) {
 					List<Tile> removeTiles = new List<Tile>();
 					foreach (Tile validVeinStartTile in validVeinStartTiles) {
@@ -2049,14 +2076,14 @@ public class TileManager : MonoBehaviour {
 						frontier.RemoveAt(0);
 						checkedTiles.Add(currentTile);
 
-						if (tileM.WaterEquivalentTileTypes.Contains(currentTile.tileType.type)) {
-							currentTile.SetTileType(tileM.GetTileTypeByEnum(tileM.GroundToWaterResourceMap[resourceVeinData.tileType]), true, false, false, false);
+						if (waterEquivalentTileTypes.Contains(currentTile.tileType.type)) {
+							currentTile.SetTileType(tileM.GetTileTypeByEnum(groundToWaterResourceMap[resourceVeinData.tileType]), true, false, false, false);
 						} else {
 							currentTile.SetTileType(tileM.GetTileTypeByEnum(resourceVeinData.tileType), true, false, false, false);
 						}
 
 						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
-							if (nTile != null && !checkedTiles.Contains(nTile) && !tileM.ResourceTileTypes.Contains(nTile.tileType.type)) {
+							if (nTile != null && !checkedTiles.Contains(nTile) && !resourceTileTypes.Contains(nTile.tileType.type)) {
 								if (tileM.resourceVeinValidTileFunctions[resourceVeinData.tileType](nTile)) {
 									frontier.Add(nTile);
 								}
@@ -2073,19 +2100,45 @@ public class TileManager : MonoBehaviour {
 			}
 		}
 
-		Dictionary<int, int> bitmaskMap = new Dictionary<int, int>() {
-		{ 19,16 },{ 23,17 },{ 27,18 },{ 31,19 },{ 38,20 },{ 39,21 },{ 46,22 },
-		{ 47,23 },{ 55,24 },{ 63,25 },{ 76,26 },{ 77,27 },{ 78,28 },{ 79,29 },
-		{ 95,30 },{ 110,31 },{ 111,32 },{ 127,33 },{ 137,34 },{ 139,35 },{ 141,36 },
-		{ 143,37 },{ 155,38 },{ 159,39 },{ 175,40 },{ 191,41 },{ 205,42 },{ 207,43 },
-		{ 223,44 },{ 239,45 },{ 255,46 }
-	};
-		Dictionary<int, List<int>> diagonalCheckMap = new Dictionary<int, List<int>>() {
-		{4,new List<int>() {0,1 } },
-		{5,new List<int>() {1,2 } },
-		{6,new List<int>() {2,3 } },
-		{7,new List<int>() {3,0 } }
-	};
+		public static readonly Dictionary<int, int> bitmaskMap = new Dictionary<int, int>() {
+			{ 19, 16 },
+			{ 23, 17 },
+			{ 27, 18 },
+			{ 31, 19 },
+			{ 38, 20 },
+			{ 39, 21 },
+			{ 46, 22 },
+			{ 47, 23 },
+			{ 55, 24 },
+			{ 63, 25 },
+			{ 76, 26 },
+			{ 77, 27 },
+			{ 78, 28 },
+			{ 79, 29 },
+			{ 95, 30 },
+			{ 110, 31 },
+			{ 111, 32 },
+			{ 127, 33 },
+			{ 137, 34 },
+			{ 139, 35 },
+			{ 141, 36 },
+			{ 143, 37 },
+			{ 155, 38 },
+			{ 159, 39 },
+			{ 175, 40 },
+			{ 191, 41 },
+			{ 205, 42 },
+			{ 207, 43 },
+			{ 223, 44 },
+			{ 239, 45 },
+			{ 255, 46 }
+		};
+		public static readonly Dictionary<int, List<int>> diagonalCheckMap = new Dictionary<int, List<int>>() {
+			{ 4, new List<int>() { 0, 1 } },
+			{ 5, new List<int>() { 1, 2 } },
+			{ 6, new List<int>() { 2, 3 } },
+			{ 7, new List<int>() { 3, 0 } }
+		};
 
 		int BitSum(List<TileTypes> compareTileTypes, List<Tile> tilesToSum, bool includeMapEdge) {
 			int sum = 0;
@@ -2129,13 +2182,13 @@ public class TileManager : MonoBehaviour {
 				sum = BitSum(customCompareTileTypes, surroundingTilesToUse, includeMapEdge);
 			} else {
 				if (RiversContainTile(tile).Key != null) {
-					sum = BitSum(tileM.WaterEquivalentTileTypes, surroundingTilesToUse, false);
-				} else if (tileM.WaterEquivalentTileTypes.Contains(tile.tileType.type)) {
-					sum = BitSum(tileM.WaterEquivalentTileTypes, surroundingTilesToUse, includeMapEdge);
-				} else if (tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type)) {
-					sum = BitSum(tileM.StoneEquivalentTileTypes, surroundingTilesToUse, includeMapEdge);
-				} else if (tileM.HoleTileTypes.Contains(tile.tileType.type)) {
-					sum = BitSum(tileM.HoleTileTypes, surroundingTilesToUse, false);
+					sum = BitSum(waterEquivalentTileTypes, surroundingTilesToUse, false);
+				} else if (waterEquivalentTileTypes.Contains(tile.tileType.type)) {
+					sum = BitSum(waterEquivalentTileTypes, surroundingTilesToUse, includeMapEdge);
+				} else if (stoneEquivalentTileTypes.Contains(tile.tileType.type)) {
+					sum = BitSum(stoneEquivalentTileTypes, surroundingTilesToUse, includeMapEdge);
+				} else if (holeTileTypes.Contains(tile.tileType.type)) {
+					sum = BitSum(holeTileTypes, surroundingTilesToUse, false);
 				} else {
 					sum = BitSum(new List<TileTypes>() { tile.tileType.type }, surroundingTilesToUse, includeMapEdge);
 				}
@@ -2144,10 +2197,14 @@ public class TileManager : MonoBehaviour {
 				if (sum >= 16) {
 					sum = bitmaskMap[sum];
 				}
-				if (tileM.LiquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key != null) {
+				if (liquidWaterEquivalentTileTypes.Contains(tile.tileType.type) && RiversContainTile(tile).Key != null) {
 					tile.sr.sprite = tile.tileType.riverSprites[sum];
 				} else {
-					tile.sr.sprite = tile.tileType.bitmaskSprites[sum];
+					try {
+						tile.sr.sprite = tile.tileType.bitmaskSprites[sum];
+					} catch (System.ArgumentOutOfRangeException) {
+						Debug.LogWarning("BitmaskTile Error: Index " + sum + " does not exist in bitmaskSprites. " + tile.obj.transform.position + " " + tile.tileType.type + " " + tile.tileType.bitmaskSprites.Count);
+					}
 				}
 			} else {
 				if (tile.tileType.baseSprites.Count > 0 && !tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
@@ -2159,7 +2216,7 @@ public class TileManager : MonoBehaviour {
 		public void Bitmasking(List<Tile> tilesToBitmask) {
 			foreach (Tile tile in tilesToBitmask) {
 				if (tile != null) {
-					if (tileM.BitmaskingTileTypes.Contains(tile.tileType.type)) {
+					if (bitmaskingTileTypes.Contains(tile.tileType.type)) {
 						BitmaskTile(tile, true, false, null, true);
 					} else {
 						if (!tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
@@ -2174,9 +2231,9 @@ public class TileManager : MonoBehaviour {
 		void BitmaskRiverStartTiles() {
 			foreach (River river in rivers) {
 				List<TileTypes> compareTileTypes = new List<TileTypes>();
-				compareTileTypes.AddRange(tileM.WaterEquivalentTileTypes);
-				compareTileTypes.AddRange(tileM.StoneEquivalentTileTypes);
-				BitmaskTile(river.startTile, false, true, compareTileTypes, false);
+				compareTileTypes.AddRange(waterEquivalentTileTypes);
+				compareTileTypes.AddRange(stoneEquivalentTileTypes);
+				BitmaskTile(river.startTile, false, true, compareTileTypes, false/*river.expandRadius > 0*/);
 			}
 		}
 
@@ -2190,14 +2247,16 @@ public class TileManager : MonoBehaviour {
 				visibleRegionBlocks.Clear();
 				lastOrthographicSize = Mathf.RoundToInt(cameraM.cameraComponent.orthographicSize);
 				centreRegionBlock = newCentreRegionBlock;
+				float maxVisibleRegionBlockDistance = cameraM.cameraComponent.orthographicSize * ((float)Screen.width / Screen.height);
 				List<RegionBlock> frontier = new List<RegionBlock>() { centreRegionBlock };
 				List<RegionBlock> checkedBlocks = new List<RegionBlock>() { centreRegionBlock };
 				while (frontier.Count > 0) {
 					RegionBlock currentRegionBlock = frontier[0];
 					frontier.RemoveAt(0);
 					visibleRegionBlocks.Add(currentRegionBlock);
+					float currentRegionBlockCameraDistance = Vector2.Distance(currentRegionBlock.averagePosition, cameraM.cameraGO.transform.position);
 					foreach (RegionBlock nBlock in currentRegionBlock.surroundingRegionBlocks) {
-						if (Vector2.Distance(currentRegionBlock.averagePosition, cameraM.cameraGO.transform.position) <= cameraM.cameraComponent.orthographicSize * ((float)Screen.width / Screen.height)) {
+						if (currentRegionBlockCameraDistance <= maxVisibleRegionBlockDistance) {
 							if (!checkedBlocks.Contains(nBlock)) {
 								frontier.Add(nBlock);
 								checkedBlocks.Add(nBlock);
@@ -2242,21 +2301,21 @@ public class TileManager : MonoBehaviour {
 		}
 
 		public bool TileBlocksLight(Tile tile) {
-			if (tile.GetAllObjectInstances().Find(toi => resourceM.GetLightBlockingTileObjects().Contains(toi.prefab.type)) != null) {
+			if (tile.GetAllObjectInstances().Find(toi => ResourceManager.lightBlockingTileObjects.Contains(toi.prefab.type)) != null) {
 				return true;
 			}
-			if (tileM.GetStoneEquivalentTileTypes().Contains(tile.tileType.type)) {
+			if (stoneEquivalentTileTypes.Contains(tile.tileType.type)) {
 				return true;
 			}
 			return false;
 		}
 
 		public bool TileCanShadowTiles(Tile tile) {
-			return (TileBlocksLight(tile) && tile.surroundingTiles.Find(nTile => nTile != null && !TileBlocksLight(nTile)) != null) || (tile.roof && !tileM.StoneEquivalentTileTypes.Contains(tile.tileType.type));
+			return (TileBlocksLight(tile) && tile.surroundingTiles.Find(nTile => nTile != null && !TileBlocksLight(nTile)) != null) || (tile.roof && !stoneEquivalentTileTypes.Contains(tile.tileType.type));
 		}
 
 		public bool TileCanBeShadowed(Tile tile) {
-			return (!TileBlocksLight(tile) && tile.GetAllObjectInstances().Find(instance => !resourceM.GetLightBlockingTileObjects().Contains(instance.prefab.type)) != null ? true : !TileBlocksLight(tile));
+			return (!TileBlocksLight(tile) && tile.GetAllObjectInstances().Find(instance => !ResourceManager.lightBlockingTileObjects.Contains(instance.prefab.type)) != null ? true : !TileBlocksLight(tile));
 		}
 
 		private Dictionary<int, Vector2> shadowDirectionAtHour = new Dictionary<int, Vector2>();
