@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class TimeManager : MonoBehaviour {
 
@@ -28,7 +26,7 @@ public class TimeManager : MonoBehaviour {
 	private float timer = 0;
 
 	private int minute = 0;
-	private int hour = 8;
+	private int hour = 7;
 	private int day = 1;
 	private int month = 1;
 	private int year = 1;
@@ -127,7 +125,7 @@ public class TimeManager : MonoBehaviour {
 	}
 
 	private float CalculateTileBrightnessTime() {
-		return (float)System.Math.Round(hour + (minute / 60f),2);
+		return (float)System.Math.Round(hour + (minute / 60f), 2);
 	}
 
 	public void SetTime(float time) {

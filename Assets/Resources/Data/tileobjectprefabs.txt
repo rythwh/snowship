@@ -41,6 +41,8 @@
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>1.0,1.0
 			<MaxIntegrity>2500
+	<SubGroup>
+		Fences
 		<Object>
 			<Type>WoodenFence
 			<TimeToBuild>10
@@ -463,6 +465,24 @@
 			<Layer>0
 			<AddToTileWhenBuilt>false
 		<Object>
+			<Type>Sleep
+			<TimeToBuild>0
+			<JobType>Sleep
+			<Layer>0
+			<AddToTileWhenBuilt>false
+		<Object>
+			<Type>CollectWater
+			<TimeToBuild>5
+			<JobType>CollectWater
+			<Layer>0
+			<AddToTileWhenBuilt>false
+		<Object>
+			<Type>Drink
+			<TimeToBuild>5
+			<JobType>Eat
+			<Layer>0
+			<AddToTileWhenBuilt>false
+		<Object>
 			<Type>CollectFood
 			<TimeToBuild>5
 			<JobType>CollectFood
@@ -472,12 +492,6 @@
 			<Type>Eat
 			<TimeToBuild>5
 			<JobType>Eat
-			<Layer>0
-			<AddToTileWhenBuilt>false
-		<Object>
-			<Type>Sleep
-			<TimeToBuild>0
-			<JobType>Sleep
 			<Layer>0
 			<AddToTileWhenBuilt>false
 		<Object>
