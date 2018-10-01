@@ -789,6 +789,7 @@ public class TileManager : MonoBehaviour {
 
 	public void PreInitialize() {
 		resourceM.CreateResources();
+		resourceM.CreateClothingPrefabs();
 		resourceM.CreateTileObjectPrefabs();
 		resourceM.CreatePlantGroups();
 
@@ -873,7 +874,7 @@ public class TileManager : MonoBehaviour {
 				ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypes>() { TileTypes.GrassWater });
 				SetTileRegions(false);
 				DetermineDrainageBasins();
-				CreateRivers();
+				//CreateRivers();
 				CalculateTemperature();
 				CalculatePrecipitation();
 				SetBiomes();
@@ -1534,18 +1535,25 @@ public class TileManager : MonoBehaviour {
 
 		public class River {
 			public Tile startTile;
+			public Tile centreTile;
 			public Tile endTile;
-			public List<Tile> tiles;
+			public List<Tile> tiles = new List<Tile>();
 			public int expandRadius;
 			public bool ignoreStone;
 
-			public River(Tile startTile, Tile endTile, int expandRadius, bool ignoreStone, Map map) {
+			public River(Tile startTile, Tile centreTile, Tile endTile, int expandRadius, bool ignoreStone, Map map) {
 				this.startTile = startTile;
+				this.centreTile = centreTile;
 				this.endTile = endTile;
 				this.expandRadius = expandRadius;
 				this.ignoreStone = ignoreStone;
 
-				tiles = map.RiverPathfinding(startTile, endTile, expandRadius, ignoreStone);
+				if (centreTile != null) {
+					tiles.AddRange(map.RiverPathfinding(startTile, centreTile, expandRadius, ignoreStone));
+					tiles.AddRange(map.RiverPathfinding(centreTile, endTile, expandRadius, ignoreStone));
+				} else {
+					tiles = map.RiverPathfinding(startTile, endTile, expandRadius, ignoreStone);
+				}
 			}
 		}
 
@@ -1564,7 +1572,8 @@ public class TileManager : MonoBehaviour {
 						int expandRadius = Random.Range(1, 3) * Mathf.CeilToInt(mapData.mapSize / 100f);
 						List<Tile> validStartTiles = sortedEdgeTiles[riverStartListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][sortedEdgeTiles[riverStartListIndex].Count - 1].obj.transform.position) >= 10).ToList();
 						Tile riverStartTile = validStartTiles[Random.Range(0, validStartTiles.Count)];
-						River river = new River(riverStartTile, riverEndTile, expandRadius, true, this);
+						List<Tile> possibleCentreTiles = tiles.Where(t => Vector2.Distance(new Vector2(mapData.mapSize / 2f, mapData.mapSize / 2f), t.obj.transform.position) < mapData.mapSize / 5f).ToList();
+						River river = new River(riverStartTile, possibleCentreTiles[Random.Range(0, possibleCentreTiles.Count)], riverEndTile, expandRadius, true, this);
 						if (river.tiles.Count > 0) {
 							largeRivers.Add(river);
 						} else {
@@ -1603,7 +1612,7 @@ public class TileManager : MonoBehaviour {
 				}
 				removeTiles.Clear();
 
-				River river = new River(riverStartTile, riverEndTile, 0, false, this);
+				River river = new River(riverStartTile, null, riverEndTile, 0, false, this);
 				if (river.tiles.Count > 0) {
 					rivers.Add(river);
 				} else {

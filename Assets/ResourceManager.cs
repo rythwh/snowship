@@ -1,7 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class ResourceManager : MonoBehaviour {
@@ -17,16 +18,20 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	public GameObject tilePrefab;
+	public GameObject humanPrefab;
 	public Sprite selectionCornersSprite;
 	public Sprite whiteSquareSprite;
+	public Sprite clearSquareSprite;
 	public GameObject planetTilePrefab;
 	public GameObject tileImage;
 	public GameObject objectDataPanel;
 
 	public void GetResourceReferences() {
 		tilePrefab = Resources.Load<GameObject>(@"Prefabs/Tile");
+		humanPrefab = Resources.Load<GameObject>(@"Prefabs/Human");
 		selectionCornersSprite = Resources.Load<Sprite>(@"UI/selectionCorners");
 		whiteSquareSprite = Resources.Load<Sprite>(@"UI/white-square");
+		clearSquareSprite = Resources.Load<Sprite>(@"UI/clear-square");
 		planetTilePrefab = Resources.Load<GameObject>(@"UI/UIElements/PlanetTile");
 		tileImage = Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage");
 		objectDataPanel = Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel");
@@ -140,7 +145,7 @@ public class ResourceManager : MonoBehaviour {
 
 						switch (label) {
 							case "Type":
-								type = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum), value);
+								type = (ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), value);
 								break;
 							case "Weight":
 								weight = float.Parse(value);
@@ -191,7 +196,7 @@ public class ResourceManager : MonoBehaviour {
 							case "RequiredResources":
 								foreach (string requiredResourceString in value.Split(',')) {
 									string resourceName = requiredResourceString.Split(':')[0];
-									ResourcesEnum resourceType = (ResourcesEnum)System.Enum.Parse(typeof(ResourcesEnum), resourceName);
+									ResourcesEnum resourceType = (ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), resourceName);
 									float amount = float.Parse(requiredResourceString.Split(':')[1]);
 									requiredResources.Add(resourceType,amount);
 								}
@@ -755,6 +760,127 @@ public class ResourceManager : MonoBehaviour {
 			}
 		}
 		return returnResources;
+	}
+
+	public List<ClothingPrefab> clothingPrefabs = new List<ClothingPrefab>();
+
+	public class ClothingPrefab {
+		public ColonistManager.Human.Appearance type;
+		public string name;
+		public int insulation;
+		public int waterResistance;
+		public List<string> colours;
+
+		public List<List<Sprite>> moveSprites = new List<List<Sprite>>();
+
+		public ClothingPrefab(ColonistManager.Human.Appearance type, string name, int insulation, int waterResistance, List<string> colours, int typeIndex) {
+			this.type = type;
+			this.name = name;
+			this.insulation = insulation;
+			this.waterResistance = waterResistance;
+			this.colours = colours;
+
+			for (int i = 0; i < 4; i++) {
+				moveSprites.Add(Resources.LoadAll<Sprite>(@"Sprites/Clothes/" + type + "/clothes-" + type.ToString().ToLower() + "-" + i).Skip(typeIndex).Take(colours.Count).ToList());
+			}
+		}
+	}
+
+	public void CreateClothingPrefabs() {
+		List<string> clothingDataStringList = Resources.Load<TextAsset>(@"Data/clothes").text.Replace("\t", string.Empty).Split(new string[] { "<Clothing>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+		foreach (string singleClothingDataString in clothingDataStringList) {
+
+			ColonistManager.Human.Appearance type = ColonistManager.Human.Appearance.Hat;
+			string name = string.Empty;
+			int insulation = 0;
+			int waterResistance = 0;
+			List<string> colours = new List<string>();
+			List<ResourceAmount> requiredResources = new List<ResourceAmount>();
+
+			List<string> singleClothingDataLineStringList = singleClothingDataString.Split('\n').ToList();
+			foreach (string singleClothingDataLineString in singleClothingDataLineStringList.Skip(1)) {
+				if (!string.IsNullOrEmpty(singleClothingDataLineString)) {
+
+					string label = singleClothingDataLineString.Split('>')[0].Replace("<", string.Empty);
+					string value = singleClothingDataLineString.Split('>')[1];
+
+					switch (label) {
+						case "Type":
+							type = (ColonistManager.Human.Appearance)System.Enum.Parse(typeof(ColonistManager.Human.Appearance), value);
+							break;
+						case "Name":
+							name = UIManager.RemoveNonAlphanumericChars(value);
+							break;
+						case "Insulation":
+							insulation = int.Parse(value);
+							break;
+						case "WaterResistance":
+							waterResistance = int.Parse(value);
+							break;
+						case "Colours":
+							if (!string.IsNullOrEmpty(UIManager.RemoveNonAlphanumericChars(value))) {
+								foreach (string colour in value.Split(',')) {
+									colours.Add(UIManager.RemoveNonAlphanumericChars(colour));
+								}
+							}
+							break;
+						case "RequiredResources":
+							if (!string.IsNullOrEmpty(UIManager.RemoveNonAlphanumericChars(value))) {
+								foreach (string requiredResourceString in value.Split(',')) {
+									Resource resource = GetResourceByEnum((ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), requiredResourceString.Split(':')[0]));
+									int amount = int.Parse(requiredResourceString.Split(':')[1]);
+									requiredResources.Add(new ResourceAmount(resource, amount));
+								}
+							}
+							break;
+						default:
+							print("Unknown clothing label: \"" + singleClothingDataLineString + "\"");
+							break;
+					}
+				}
+			}
+
+			ClothingPrefab clothingPrefab = new ClothingPrefab(type, name, insulation, waterResistance, colours, clothingPrefabs.Sum(c => c.colours.Count));
+			clothingPrefabs.Add(clothingPrefab);
+
+			//foreach (string colour in clothingPrefab.colours) {
+			//	clothingInstances.Add(new ClothingInstance(clothingPrefab, colour, null));
+			//}
+		}
+	}
+
+	public List<ClothingPrefab> GetClothingPrefabsByAppearance(ColonistManager.Human.Appearance appearance) {
+		return clothingPrefabs.FindAll(c => c.type == appearance);
+	}
+
+	public List<ClothingInstance> clothingInstances = new List<ClothingInstance>();
+
+	public class ClothingInstance {
+		public ClothingPrefab clothingPrefab;
+		public string colour;
+		public string name;
+		public ColonistManager.Human human;
+		public List<Sprite> moveSprites = new List<Sprite>();
+
+		public ClothingInstance(ClothingPrefab clothingPrefab, string colour, ColonistManager.Human human) {
+			this.clothingPrefab = clothingPrefab;
+			this.colour = colour;
+			this.human = human;
+
+			name = UIManager.SplitByCapitals(colour + clothingPrefab.name);
+
+			for (int i = 0; i < 4; i++) {
+				moveSprites.Add(clothingPrefab.moveSprites[i][clothingPrefab.colours.IndexOf(colour)]);
+			}
+
+			if (human != null) {
+				human.ChangeClothing(clothingPrefab.type, this);
+			}
+		}
+	}
+
+	public List<ClothingInstance> GetClothingInstancesByAppearance(ColonistManager.Human.Appearance appearance) {
+		return clothingInstances.FindAll(c => c.clothingPrefab.type == appearance);
 	}
 
 	public enum TileObjectPrefabGroupsEnum {
@@ -1660,16 +1786,16 @@ public class ResourceManager : MonoBehaviour {
 
 			SpriteRenderer pSR = obj.GetComponent<SpriteRenderer>();
 
-			small = (randomSmall ? Random.Range(0f, 1f) < 0.1f : smallValue);
+			small = (randomSmall ? UnityEngine.Random.Range(0f, 1f) < 0.1f : smallValue);
 
 			harvestResource = null;
 			if (giveHarvestResource) {
 				if (group.type == PlantGroupsEnum.WideTree && !small) {
-					if (Random.Range(0f, 1f) <= 0.05f) {
+					if (UnityEngine.Random.Range(0f, 1f) <= 0.05f) {
 						harvestResource = resourceM.GetResourceByEnum(ResourcesEnum.Apple);
 					}
 				} else if (group.type == PlantGroupsEnum.Bush && !small) {
-					if (Random.Range(0f, 1f) <= 0.05f) {
+					if (UnityEngine.Random.Range(0f, 1f) <= 0.05f) {
 						harvestResource = resourceM.GetResourceByEnum(ResourcesEnum.Blueberry);
 					}
 				}
@@ -1678,12 +1804,12 @@ public class ResourceManager : MonoBehaviour {
 				harvestResource = specificHarvestResource;
 			}
 
-			pSR.sprite = (small ? group.smallPlants[Random.Range(0, group.smallPlants.Count)] : group.fullPlants[Random.Range(0, group.fullPlants.Count)]);
+			pSR.sprite = (small ? group.smallPlants[UnityEngine.Random.Range(0, group.smallPlants.Count)] : group.fullPlants[UnityEngine.Random.Range(0, group.fullPlants.Count)]);
 			if (harvestResource != null) {
 				name = harvestResource.name + " " + name;
 				if (group.harvestResourceSprites.ContainsKey(harvestResource.type)) {
 					if (group.harvestResourceSprites[harvestResource.type].ContainsKey(small)) {
-						pSR.sprite = group.harvestResourceSprites[harvestResource.type][small][Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
+						pSR.sprite = group.harvestResourceSprites[harvestResource.type][small][UnityEngine.Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
 					}
 				}
 			}
@@ -1702,7 +1828,7 @@ public class ResourceManager : MonoBehaviour {
 		public List<ResourceAmount> GetResources() {
 			List<ResourceAmount> resourcesToReturn = new List<ResourceAmount>();
 			foreach (ResourceAmount resourceAmount in group.returnResources) {
-				int amount = Mathf.Clamp(resourceAmount.amount + Random.Range(-2, 2), 1, int.MaxValue);
+				int amount = Mathf.Clamp(resourceAmount.amount + UnityEngine.Random.Range(-2, 2), 1, int.MaxValue);
 				if (small && amount > 0) {
 					amount = Mathf.CeilToInt(amount / 2f);
 				}
@@ -1711,9 +1837,9 @@ public class ResourceManager : MonoBehaviour {
 			if (harvestResource != null) {
 				int randomRangeAmount = 1;
 				if (harvestResource.type == ResourcesEnum.Apple) {
-					randomRangeAmount = Random.Range(1, 6);
+					randomRangeAmount = UnityEngine.Random.Range(1, 6);
 				} else if (harvestResource.type == ResourcesEnum.Blueberry) {
-					randomRangeAmount = Random.Range(5, 20);
+					randomRangeAmount = UnityEngine.Random.Range(5, 20);
 				}
 				int amount = Mathf.Clamp(randomRangeAmount, 1, int.MaxValue);
 				if (small && amount > 0) {
@@ -1726,11 +1852,11 @@ public class ResourceManager : MonoBehaviour {
 
 		public void Grow(List<Plant> smallPlants) {
 			small = false;
-			obj.GetComponent<SpriteRenderer>().sprite = group.fullPlants[Random.Range(0, group.fullPlants.Count)];
+			obj.GetComponent<SpriteRenderer>().sprite = group.fullPlants[UnityEngine.Random.Range(0, group.fullPlants.Count)];
 			if (harvestResource != null) {
 				if (group.harvestResourceSprites.ContainsKey(harvestResource.type)) {
 					if (group.harvestResourceSprites[harvestResource.type].ContainsKey(small)) {
-						obj.GetComponent<SpriteRenderer>().sprite = group.harvestResourceSprites[harvestResource.type][small][Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
+						obj.GetComponent<SpriteRenderer>().sprite = group.harvestResourceSprites[harvestResource.type][small][UnityEngine.Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
 					}
 				}
 			}
@@ -1742,14 +1868,14 @@ public class ResourceManager : MonoBehaviour {
 		if (guaranteedTree) {
 			List<PlantGroupsEnum> biomePlantGroupsEnums = biome.vegetationChances.Keys.Where(group => group != PlantGroupsEnum.DeadTree).ToList();
 			if (biomePlantGroupsEnums.Count > 0) {
-				return GetPlantGroupByEnum(biomePlantGroupsEnums[Random.Range(0, biomePlantGroupsEnums.Count)]);
+				return GetPlantGroupByEnum(biomePlantGroupsEnums[UnityEngine.Random.Range(0, biomePlantGroupsEnums.Count)]);
 			} else {
 				return null;
 			}
 		} else {
 			foreach (KeyValuePair<PlantGroupsEnum, float> kvp in biome.vegetationChances) {
 				PlantGroupsEnum plantGroup = kvp.Key;
-				if (Random.Range(0f, 1f) < biome.vegetationChances[plantGroup]) {
+				if (UnityEngine.Random.Range(0f, 1f) < biome.vegetationChances[plantGroup]) {
 					return GetPlantGroupByEnum(plantGroup);
 				}
 			}
@@ -1810,7 +1936,7 @@ public class ResourceManager : MonoBehaviour {
 
 			seedType = prefab.resourcesToBuild[0].resource.type;
 			name = (UIManager.SplitByCapitals(seedType.ToString()).Split(' ')[0]).Replace(" ", "") + " Farm";
-			maxGrowthTime = farmGrowTime[seedType] * Random.Range(0.9f, 1.1f);
+			maxGrowthTime = farmGrowTime[seedType] * UnityEngine.Random.Range(0.9f, 1.1f);
 
 			growProgressSprites = prefab.bitmaskSprites;
 			maxSpriteIndex = growProgressSprites.Count - 1;

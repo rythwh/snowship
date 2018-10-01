@@ -1124,8 +1124,10 @@ public class DebugManager : MonoBehaviour {
 						tile.sr.sprite = whiteSquare;
 						tile.sr.color = riverColour;
 					}
-					river.tiles[0].sr.color = Color.red;
-					river.tiles[river.tiles.Count - 1].sr.color = Color.green;
+					river.tiles[0].sr.color = UIManager.GetColour(UIManager.Colours.DarkRed);
+					river.endTile.sr.color = UIManager.GetColour(UIManager.Colours.LightRed);
+					river.tiles[river.tiles.Count - 1].sr.color = UIManager.GetColour(UIManager.Colours.DarkGreen);
+					river.startTile.sr.color = UIManager.GetColour(UIManager.Colours.LightGreen);
 				}
 				OutputToConsole("Showing " + tileM.map.rivers.Count + " rivers.");
 			} else if (parameters.Count == 1) {
@@ -1136,8 +1138,10 @@ public class DebugManager : MonoBehaviour {
 							tile.sr.sprite = whiteSquare;
 							tile.sr.color = riverColour;
 						}
-						tileM.map.rivers[viewRiverAtIndex].tiles[0].sr.color = Color.red;
-						tileM.map.rivers[viewRiverAtIndex].tiles[tileM.map.rivers[viewRiverAtIndex].tiles.Count - 1].sr.color = Color.green;
+						tileM.map.rivers[viewRiverAtIndex].tiles[0].sr.color = UIManager.GetColour(UIManager.Colours.DarkRed);
+						tileM.map.rivers[viewRiverAtIndex].endTile.sr.color = UIManager.GetColour(UIManager.Colours.LightRed);
+						tileM.map.rivers[viewRiverAtIndex].tiles[tileM.map.rivers[viewRiverAtIndex].tiles.Count - 1].sr.color = UIManager.GetColour(UIManager.Colours.DarkGreen);
+						tileM.map.rivers[viewRiverAtIndex].startTile.sr.color = UIManager.GetColour(UIManager.Colours.LightGreen);
 						OutputToConsole("Showing river " + (viewRiverAtIndex + 1) + " of " + tileM.map.rivers.Count + " rivers.");
 					} else {
 						OutputToConsole("ERROR: River index out of range.");
@@ -1157,8 +1161,11 @@ public class DebugManager : MonoBehaviour {
 						tile.sr.sprite = whiteSquare;
 						tile.sr.color = riverColour;
 					}
-					river.tiles[0].sr.color = Color.red;
-					river.tiles[river.tiles.Count - 1].sr.color = Color.green;
+					river.tiles[0].sr.color = UIManager.GetColour(UIManager.Colours.DarkRed);
+					river.endTile.sr.color = UIManager.GetColour(UIManager.Colours.LightRed);
+					river.tiles[river.tiles.Count - 1].sr.color = UIManager.GetColour(UIManager.Colours.DarkGreen);
+					river.startTile.sr.color = UIManager.GetColour(UIManager.Colours.LightGreen);
+					river.centreTile.sr.color = UIManager.GetColour(UIManager.Colours.LightBlue);
 				}
 				OutputToConsole("Showing " + tileM.map.largeRivers.Count + " large rivers.");
 			} else if (parameters.Count == 1) {
@@ -1169,8 +1176,11 @@ public class DebugManager : MonoBehaviour {
 							tile.sr.sprite = whiteSquare;
 							tile.sr.color = riverColour;
 						}
-						tileM.map.largeRivers[viewRiverAtIndex].tiles[0].sr.color = Color.red;
-						tileM.map.largeRivers[viewRiverAtIndex].tiles[tileM.map.largeRivers[viewRiverAtIndex].tiles.Count - 1].sr.color = Color.green;
+						tileM.map.largeRivers[viewRiverAtIndex].tiles[0].sr.color = UIManager.GetColour(UIManager.Colours.DarkRed);
+						tileM.map.largeRivers[viewRiverAtIndex].endTile.sr.color = UIManager.GetColour(UIManager.Colours.LightRed);
+						tileM.map.largeRivers[viewRiverAtIndex].tiles[tileM.map.largeRivers[viewRiverAtIndex].tiles.Count - 1].sr.color = UIManager.GetColour(UIManager.Colours.DarkGreen);
+						tileM.map.largeRivers[viewRiverAtIndex].startTile.sr.color = UIManager.GetColour(UIManager.Colours.LightGreen);
+						tileM.map.largeRivers[viewRiverAtIndex].centreTile.sr.color = UIManager.GetColour(UIManager.Colours.LightBlue);
 						OutputToConsole("Showing river " + (viewRiverAtIndex + 1) + " of " + tileM.map.largeRivers.Count + " large rivers.");
 					} else {
 						OutputToConsole("ERROR: River index out of range.");
