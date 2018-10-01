@@ -62,6 +62,66 @@ TextureImporter:
     21300114: clothes-tops-base_27
     21300116: clothes-tops-base_28
     21300118: clothes-tops-base_29
+    21300120: clothes-tops-0_0
+    21300122: clothes-tops-0_1
+    21300124: clothes-tops-0_2
+    21300126: clothes-tops-0_3
+    21300128: clothes-tops-0_4
+    21300130: clothes-tops-0_5
+    21300132: clothes-tops-0_6
+    21300134: clothes-tops-0_7
+    21300136: clothes-tops-0_8
+    21300138: clothes-tops-0_9
+    21300140: clothes-tops-0_10
+    21300142: clothes-tops-0_11
+    21300144: clothes-tops-0_12
+    21300146: clothes-tops-0_13
+    21300148: clothes-tops-0_14
+    21300150: clothes-tops-0_15
+    21300152: clothes-tops-0_16
+    21300154: clothes-tops-0_17
+    21300156: clothes-tops-0_18
+    21300158: clothes-tops-0_19
+    21300160: clothes-tops-0_20
+    21300162: clothes-tops-0_21
+    21300164: clothes-tops-0_22
+    21300166: clothes-tops-0_23
+    21300168: clothes-tops-0_24
+    21300170: clothes-tops-0_25
+    21300172: clothes-tops-0_26
+    21300174: clothes-tops-0_27
+    21300176: clothes-tops-0_28
+    21300178: clothes-tops-0_29
+    21300180: clothes-top-0_0
+    21300182: clothes-top-0_1
+    21300184: clothes-top-0_2
+    21300186: clothes-top-0_3
+    21300188: clothes-top-0_4
+    21300190: clothes-top-0_5
+    21300192: clothes-top-0_6
+    21300194: clothes-top-0_7
+    21300196: clothes-top-0_8
+    21300198: clothes-top-0_9
+    21300200: clothes-top-0_10
+    21300202: clothes-top-0_11
+    21300204: clothes-top-0_12
+    21300206: clothes-top-0_13
+    21300208: clothes-top-0_14
+    21300210: clothes-top-0_15
+    21300212: clothes-top-0_16
+    21300214: clothes-top-0_17
+    21300216: clothes-top-0_18
+    21300218: clothes-top-0_19
+    21300220: clothes-top-0_20
+    21300222: clothes-top-0_21
+    21300224: clothes-top-0_22
+    21300226: clothes-top-0_23
+    21300228: clothes-top-0_24
+    21300230: clothes-top-0_25
+    21300232: clothes-top-0_26
+    21300234: clothes-top-0_27
+    21300236: clothes-top-0_28
+    21300238: clothes-top-0_29
   externalObjects: {}
   serializedVersion: 7
   mipmaps:
@@ -144,11 +204,11 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: clothes-tops-base_0
+      name: clothes-top-0_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -158,17 +218,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c982b3d61a00c18418542c3eb7dc1870
+      spriteID: 62d0db5207790764494b02de4ffae268
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_1
+      name: clothes-top-0_1
       rect:
         serializedVersion: 2
         x: 32
-        y: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -178,17 +238,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 55f7712b35d439c4abb7086f229d063c
+      spriteID: c6282f736ea9c9043a44b49e167dc1f7
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_2
+      name: clothes-top-0_2
       rect:
         serializedVersion: 2
         x: 64
-        y: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -198,17 +258,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 55480acba1da3f446b58019ee0bb8a16
+      spriteID: f197820454076ef4a8f44092de9e43db
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_3
+      name: clothes-top-0_3
       rect:
         serializedVersion: 2
         x: 96
-        y: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -218,17 +278,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a4697a4f8f76f134c925ae7e78d73295
+      spriteID: b7b60213081d2f14abeb94fbef767161
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_4
+      name: clothes-top-0_4
       rect:
         serializedVersion: 2
         x: 128
-        y: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -238,17 +298,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cc52c13dc36353d41b79622af33b2c53
+      spriteID: 50290a62444899d44994eb50b7f1c755
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_5
+      name: clothes-top-0_5
       rect:
         serializedVersion: 2
         x: 160
-        y: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -258,17 +318,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5d1f4e1497a15084b9ceacfa7ddce9ba
+      spriteID: 05d1a0f2910a2464dafdada203c7d8cf
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_6
+      name: clothes-top-0_6
       rect:
         serializedVersion: 2
         x: 192
-        y: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -278,17 +338,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6019f67872207d54c938253c190b07fd
+      spriteID: 8dc0642722089f64f8c7b654fde374f8
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_7
+      name: clothes-top-0_7
       rect:
         serializedVersion: 2
         x: 224
-        y: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -298,17 +358,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: daeec8f801e6584488cc81d27743d73c
+      spriteID: ceea81364bbcffa429ca1dd00ec4a00c
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_8
+      name: clothes-top-0_8
       rect:
         serializedVersion: 2
         x: 256
-        y: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -318,17 +378,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5df5bebb0d9b85d49b47a342d2e4556d
+      spriteID: 5d0632d244ad88643a6f8ef05f13ca16
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_9
+      name: clothes-top-0_9
       rect:
         serializedVersion: 2
         x: 288
-        y: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -338,17 +398,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e567d4f0c662ce340b1e2c26d818131c
+      spriteID: 1a53990550eb2be448c6a780ed16fb16
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_10
+      name: clothes-top-0_10
       rect:
         serializedVersion: 2
-        x: 320
-        y: 96
+        x: 0
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -358,17 +418,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6afcef783987bf1438d9918a9c367f46
+      spriteID: 8710f598c71fa724db093a927cb27fe5
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_11
+      name: clothes-top-0_11
       rect:
         serializedVersion: 2
-        x: 352
-        y: 96
+        x: 32
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -378,17 +438,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 37ff3eb277d578a41a03da0c407d55ed
+      spriteID: 4eaef00d62d69f946894f401f2ca3c76
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_12
+      name: clothes-top-0_12
       rect:
         serializedVersion: 2
-        x: 384
-        y: 96
+        x: 64
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -398,17 +458,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 17b309916c5daf64f846e18fc777c159
+      spriteID: b12863dccbc69b942a9e2650a7975296
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_13
+      name: clothes-top-0_13
       rect:
         serializedVersion: 2
-        x: 416
-        y: 96
+        x: 96
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -418,17 +478,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 43d49626968edb448aab952e94f32fff
+      spriteID: eaa645db11262b54b9acdbecfcbc9b95
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_14
+      name: clothes-top-0_14
       rect:
         serializedVersion: 2
-        x: 448
-        y: 96
+        x: 128
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -438,17 +498,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e82f6622606acc841b1bd00edd6f1870
+      spriteID: f855521fe773a35448f9e01d4e4be3ee
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_15
+      name: clothes-top-0_15
       rect:
         serializedVersion: 2
-        x: 480
-        y: 96
+        x: 160
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -458,17 +518,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3f253bfd80d4e4e429c2930e75e5ea1b
+      spriteID: a7818d960986a714fb9a424ba96755e9
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_16
+      name: clothes-top-0_16
       rect:
         serializedVersion: 2
-        x: 512
-        y: 96
+        x: 192
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -478,17 +538,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c857d489a8947a849a952b8d90b1d3e1
+      spriteID: 6519fb35ae2e4814e91787ec9a7bf0ed
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_17
+      name: clothes-top-0_17
       rect:
         serializedVersion: 2
-        x: 544
-        y: 96
+        x: 224
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -498,17 +558,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a5c2af81ecd25e843b4e720e9fcc27fc
+      spriteID: c679bf05925b3ef439fd5d0327d995d2
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_18
+      name: clothes-top-0_18
       rect:
         serializedVersion: 2
-        x: 576
-        y: 96
+        x: 256
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -518,17 +578,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6e39b91b01343d3499aad40ad614b6f8
+      spriteID: 701e5538e0f7c5e49b223ab69c7f2ca5
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_19
+      name: clothes-top-0_19
       rect:
         serializedVersion: 2
-        x: 608
-        y: 96
+        x: 288
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -538,17 +598,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a24d1f75bec73c2419c0e0e65e71d9cc
+      spriteID: ec9a55a6f5d93534ca9e2e22bb6c4c60
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_20
+      name: clothes-top-0_20
       rect:
         serializedVersion: 2
-        x: 640
-        y: 96
+        x: 0
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -558,17 +618,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9c07ca36a4a191445aca8161dee6c822
+      spriteID: 915c3543e3054fb47a11cf58dd0ba1bc
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_21
+      name: clothes-top-0_21
       rect:
         serializedVersion: 2
-        x: 672
-        y: 96
+        x: 32
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -578,17 +638,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c92da6023be1e3b4489c50ce93007b1d
+      spriteID: 52a913c1ebec6f1419ca201195aecc8a
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_22
+      name: clothes-top-0_22
       rect:
         serializedVersion: 2
-        x: 704
-        y: 96
+        x: 64
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -598,17 +658,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: decbbd55fe380ad43a5ad497bc3aafd9
+      spriteID: cb43a33e6e180fb48969536abf9dfa36
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_23
+      name: clothes-top-0_23
       rect:
         serializedVersion: 2
-        x: 736
-        y: 96
+        x: 96
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -618,17 +678,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: bddaf39ec89c27a45b91cefe4387f822
+      spriteID: a4efbf45935c64d4485fd103bdadbcba
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_24
+      name: clothes-top-0_24
       rect:
         serializedVersion: 2
-        x: 768
-        y: 96
+        x: 128
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -638,17 +698,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 39a672fb1be2d1a408f875c15499e159
+      spriteID: 09e0c3aa1f84c214981eadc85358df6b
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_25
+      name: clothes-top-0_25
       rect:
         serializedVersion: 2
-        x: 800
-        y: 96
+        x: 160
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -658,17 +718,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8c20bd7f89289914d86b6192499ffae7
+      spriteID: c44a1bd7ee9fbf14cae56729d6663d41
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_26
+      name: clothes-top-0_26
       rect:
         serializedVersion: 2
-        x: 832
-        y: 96
+        x: 192
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -678,17 +738,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8a048f3e921584740b88bbe1c392bb90
+      spriteID: 623abb144b834174aa0fc504b82490d2
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_27
+      name: clothes-top-0_27
       rect:
         serializedVersion: 2
-        x: 864
-        y: 96
+        x: 224
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -698,17 +758,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3613d5d3359f5404aa60304af9c64edc
+      spriteID: a66d9be8e9740944cbe4bdec48bd8dc8
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_28
+      name: clothes-top-0_28
       rect:
         serializedVersion: 2
-        x: 896
-        y: 96
+        x: 256
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -718,17 +778,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7f373bc759b815c4c9e1e601a421646d
+      spriteID: c17457a6bc5d37c4cac20ccfb84e93d6
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: clothes-tops-base_29
+      name: clothes-top-0_29
       rect:
         serializedVersion: 2
-        x: 928
-        y: 96
+        x: 288
+        y: 0
         width: 32
         height: 32
       alignment: 0
@@ -738,7 +798,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1c0c12a6344a09e4fbf2e2c2ec34fc98
+      spriteID: 928049f57038ed744a5f3731dc1a6b47
       vertices: []
       indices: 
       edges: []

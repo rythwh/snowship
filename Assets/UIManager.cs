@@ -149,6 +149,8 @@ public class UIManager : MonoBehaviour {
 	private GameObject selectedColonistInventoryPanel;
 	private GameObject selectedColonistClothingPanel;
 	private GameObject selectedColonistClothingSelectionPanel;
+	private KeyValuePair<GameObject, GameObject> availableClothingTitleAndList;
+	private KeyValuePair<GameObject, GameObject> takenClothingTitleAndList;
 
 	private GameObject selectedTraderMenu;
 	private GameObject tradeMenu;
@@ -324,19 +326,14 @@ public class UIManager : MonoBehaviour {
 		selectedColonistClothingPanel = selectedColonistInformationPanel.transform.Find("SelectedTab-Panel/Clothing-Panel").gameObject;
 		selectedColonistClothingSelectionPanel = selectedColonistClothingPanel.transform.Find("ClothingSelection-Panel").gameObject;
 		selectedColonistClothingSelectionPanel.transform.Find("Return-Button").GetComponent<Button>().onClick.AddListener(delegate { selectedColonistClothingSelectionPanel.SetActive(!selectedColonistClothingSelectionPanel.activeSelf); });
-
-		GameObject hatButton = selectedColonistClothingPanel.transform.Find("Hat-Button").gameObject;
-		hatButton.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedColonistClothingSelectionPanel(hatButton); });
-		GameObject topButton = selectedColonistClothingPanel.transform.Find("Top-Button").gameObject;
-		topButton.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedColonistClothingSelectionPanel(topButton); });
-		GameObject bottomsButton = selectedColonistClothingPanel.transform.Find("Bottoms-Button").gameObject;
-		bottomsButton.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedColonistClothingSelectionPanel(bottomsButton); });
-		GameObject scarfButton = selectedColonistClothingPanel.transform.Find("Scarf-Button").gameObject;
-		scarfButton.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedColonistClothingSelectionPanel(scarfButton); });
-		GameObject glovesButton = selectedColonistClothingPanel.transform.Find("Gloves-Button").gameObject;
-		glovesButton.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedColonistClothingSelectionPanel(glovesButton); });
-		GameObject shoesButton = selectedColonistClothingPanel.transform.Find("Shoes-Button").gameObject;
-		shoesButton.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedColonistClothingSelectionPanel(shoesButton); });
+		availableClothingTitleAndList = new KeyValuePair<GameObject, GameObject>(
+			selectedColonistClothingSelectionPanel.transform.Find("ClothingSelection-ScrollPanel/ClothingList-Panel/ClothesAvailableTitle-Panel").gameObject,
+			selectedColonistClothingSelectionPanel.transform.Find("ClothingSelection-ScrollPanel/ClothingList-Panel/ClothesAvailable-Panel").gameObject
+		);
+		takenClothingTitleAndList = new KeyValuePair<GameObject, GameObject>(
+			selectedColonistClothingSelectionPanel.transform.Find("ClothingSelection-ScrollPanel/ClothingList-Panel/ClothesTakenTitle-Panel").gameObject,
+			selectedColonistClothingSelectionPanel.transform.Find("ClothingSelection-ScrollPanel/ClothingList-Panel/ClothesTaken-Panel").gameObject
+		);
 
 		selectedColonistNeedsSkillsTabButton = selectedColonistInformationPanel.transform.Find("TabButton-Panel/NeedsSkills-Button").gameObject;
 		selectedColonistNeedsSkillsTabButton.GetComponent<Button>().onClick.AddListener(delegate { SetSelectedColonistTab(selectedColonistNeedsSkillsTabButton); });
@@ -1602,6 +1599,8 @@ public class UIManager : MonoBehaviour {
 
 	public void SetSelectedColonistInformation() {
 		if (colonistM.selectedHuman != null && colonistM.selectedHuman is ColonistManager.Colonist) {
+			ColonistManager.Colonist selectedColonist = (ColonistManager.Colonist)colonistM.selectedHuman;
+
 			selectedColonistInformationPanel.SetActive(true);
 
 			selectedColonistInformationPanel.transform.Find("ColonistName-Text").GetComponent<Text>().text = colonistM.selectedHuman.name + " (" + colonistM.selectedHuman.gender.ToString()[0] + ")";
@@ -1612,7 +1611,8 @@ public class UIManager : MonoBehaviour {
 			RemakeSelectedColonistNeeds();
 			RemakeSelectedColonistHappinessModifiers();
 			RemakeSelectedColonistSkills();
-			RemakeSelectedColonistInventory();
+			RemakeSelectedColonistInventory(selectedColonist);
+			RemakeSelectedColonistClothing(selectedColonist);
 		} else {
 			selectedColonistInformationPanel.SetActive(false);
 
@@ -1645,6 +1645,23 @@ public class UIManager : MonoBehaviour {
 				selectedColonistInventoryElements.Clear();
 			}
 		}
+	}
+
+	public void SetSelectedColonistTab(GameObject tabButtonClicked) {
+		bool needsSkillsClicked = tabButtonClicked == selectedColonistNeedsSkillsTabButton;
+		bool inventoryClicked = tabButtonClicked == selectedColonistInventoryTabButton;
+		bool clothingClicked = tabButtonClicked == selectedColonistClothingTabButton;
+
+		selectedColonistNeedsSkillsPanel.SetActive(needsSkillsClicked);
+		selectedColonistNeedsSkillsTabButtonLinkPanel.SetActive(needsSkillsClicked);
+		selectedColonistHappinessModifiersPanel.SetActive(false);
+
+		selectedColonistInventoryPanel.SetActive(inventoryClicked);
+		selectedColonistInventoryTabButtonLinkPanel.SetActive(inventoryClicked);
+
+		selectedColonistClothingPanel.SetActive(clothingClicked);
+		selectedColonistClothingTabButtonLinkPanel.SetActive(clothingClicked);
+		selectedColonistClothingSelectionPanel.SetActive(false);
 	}
 
 	public void RemakeSelectedColonistNeeds() {
@@ -1688,7 +1705,7 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
-	public void RemakeSelectedColonistInventory() {
+	public void RemakeSelectedColonistInventory(ColonistManager.Colonist selectedColonist) {
 		foreach (ReservedResourcesColonistElement reservedResourcesColonistElement in selectedColonistReservedResourcesColonistElements) {
 			foreach (ReservedResourceElement reservedResourceElement in reservedResourcesColonistElement.reservedResourceElements) {
 				Destroy(reservedResourceElement.obj);
@@ -1706,6 +1723,97 @@ public class UIManager : MonoBehaviour {
 		}
 		foreach (ResourceManager.ResourceAmount ra in colonistM.selectedHuman.inventory.resources) {
 			selectedColonistInventoryElements.Add(new InventoryElement(ra, selectedColonistInventoryPanel.transform.Find("Inventory-ScrollPanel/InventoryList-Panel")));
+		}
+
+		Button emptyInventoryButton = selectedColonistInventoryPanel.transform.Find("EmptyInventory-Button").GetComponent<Button>();
+		emptyInventoryButton.onClick.RemoveAllListeners();
+		emptyInventoryButton.onClick.AddListener(delegate { selectedColonist.EmptyInventory(selectedColonist.FindValidContainersToEmptyInventory()); });
+	}
+
+	public void RemakeSelectedColonistClothing(ColonistManager.Colonist selectedColonist) {
+		selectedColonistClothingPanel.transform.Find("ColonistBody-Image").GetComponent<Image>().sprite = selectedColonist.moveSprites[0];
+
+		foreach (KeyValuePair<ColonistManager.Human.Appearance, ResourceManager.ClothingInstance> appearanceToClothingInstanceKVP in selectedColonist.clothes) {
+			Sprite clothingSprite = resourceM.clearSquareSprite;
+			string clothingName = "None";
+			if (selectedColonist.clothes[appearanceToClothingInstanceKVP.Key] != null) {
+				clothingSprite = selectedColonist.clothes[appearanceToClothingInstanceKVP.Key].moveSprites[0];
+				clothingName = selectedColonist.clothes[appearanceToClothingInstanceKVP.Key].name;
+			}
+			selectedColonistClothingPanel.transform.Find("ColonistBody-Image/Colonist" + appearanceToClothingInstanceKVP.Key + "-Image").GetComponent<Image>().sprite = clothingSprite;
+
+			Button clothingTypeButton = selectedColonistClothingPanel.transform.Find("ClothingButtons-List/" + appearanceToClothingInstanceKVP.Key + "-Button").GetComponent<Button>();
+			clothingTypeButton.interactable = resourceM.GetClothingInstancesByAppearance(appearanceToClothingInstanceKVP.Key).Count > 0 || selectedColonist.clothes[appearanceToClothingInstanceKVP.Key] != null;
+			clothingTypeButton.onClick.RemoveAllListeners();
+			clothingTypeButton.onClick.AddListener(delegate { SetSelectedColonistClothingSelectionPanel(appearanceToClothingInstanceKVP.Key, selectedColonist); });
+
+			clothingTypeButton.transform.Find("Name").GetComponent<Text>().text = clothingName;
+			clothingTypeButton.transform.Find("Image").GetComponent<Image>().sprite = clothingSprite;
+		}
+
+		selectedColonistClothingSelectionPanel.SetActive(false);
+	}
+
+	private List<ClothingElement> availableClothingElements = new List<ClothingElement>();
+	private List<ClothingElement> takenClothingElements = new List<ClothingElement>();
+
+	public void SetSelectedColonistClothingSelectionPanel(ColonistManager.Human.Appearance clothingType, ColonistManager.Colonist selectedColonist) {
+		selectedColonistClothingSelectionPanel.SetActive(true);
+
+		selectedColonistClothingSelectionPanel.transform.Find("SelectClothes-Text").GetComponent<Text>().text = "Select " + clothingType;
+
+		Button disrobeButton = selectedColonistClothingSelectionPanel.transform.Find("Disrobe-Button").GetComponent<Button>();
+		disrobeButton.interactable = selectedColonist.clothes[clothingType] != null;
+		disrobeButton.onClick.RemoveAllListeners();
+		disrobeButton.onClick.AddListener(delegate {
+			selectedColonist.ChangeClothing(clothingType, null);
+			selectedColonistClothingSelectionPanel.SetActive(false);
+			SetSelectedColonistInformation();
+		});
+
+		foreach (ClothingElement clothingElement in availableClothingElements) {
+			Destroy(clothingElement.obj);
+		}
+		availableClothingElements.Clear();
+		foreach (ClothingElement clothingElement in takenClothingElements) {
+			Destroy(clothingElement.obj);
+		}
+		takenClothingElements.Clear();
+
+		List<ResourceManager.ClothingInstance> clothes = resourceM.GetClothingInstancesByAppearance(clothingType);
+		foreach (ResourceManager.ClothingInstance clothing in clothes) {
+			if (clothing.human == null) {
+				availableClothingElements.Add(new ClothingElement(clothing, colonistM.selectedHuman, availableClothingTitleAndList.Value.transform, this));
+			} else if (clothing.human != selectedColonist) {
+				takenClothingElements.Add(new ClothingElement(clothing, colonistM.selectedHuman, takenClothingTitleAndList.Value.transform, this));
+			}
+		}
+
+		availableClothingTitleAndList.Key.SetActive(availableClothingElements.Count > 0);
+		availableClothingTitleAndList.Value.SetActive(availableClothingElements.Count > 0);
+		takenClothingTitleAndList.Key.SetActive(takenClothingElements.Count > 0);
+		takenClothingTitleAndList.Value.SetActive(takenClothingElements.Count > 0);
+	}
+
+	public class ClothingElement {
+		public ResourceManager.ClothingInstance clothingInstance;
+		public ColonistManager.Human human;
+		public GameObject obj;
+
+		public ClothingElement(ResourceManager.ClothingInstance clothingInstance, ColonistManager.Human human, Transform parent, UIManager uiM) {
+			this.clothingInstance = clothingInstance;
+
+			obj = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ClothingElement-Panel"), parent, false);
+
+			obj.transform.Find("Name").GetComponent<Text>().text = clothingInstance.name;
+			obj.transform.Find("Image").GetComponent<Image>().sprite = clothingInstance.moveSprites[0];
+			obj.transform.Find("InsulationWaterResistance").GetComponent<Text>().text = "INS " + clothingInstance.clothingPrefab.insulation + " / WR " + clothingInstance.clothingPrefab.waterResistance;
+
+			obj.GetComponent<Button>().onClick.AddListener(delegate {
+				human.ChangeClothing(clothingInstance.clothingPrefab.type, clothingInstance);
+				uiM.selectedColonistClothingSelectionPanel.SetActive(false);
+				uiM.SetSelectedColonistInformation();
+			});
 		}
 	}
 
@@ -1786,45 +1894,6 @@ public class UIManager : MonoBehaviour {
 					selectedColonistHappinessModifierElements.Remove(happinessModifierElement);
 				}
 				removeHME.Clear();
-			}
-		}
-	}
-
-	public void SetSelectedColonistTab(GameObject tabButtonClicked) {
-		bool needsSkillsClicked = tabButtonClicked == selectedColonistNeedsSkillsTabButton;
-		bool inventoryClicked = tabButtonClicked == selectedColonistInventoryTabButton;
-		bool clothingClicked = tabButtonClicked == selectedColonistClothingTabButton;
-
-		selectedColonistNeedsSkillsPanel.SetActive(needsSkillsClicked);
-		selectedColonistNeedsSkillsTabButtonLinkPanel.SetActive(needsSkillsClicked);
-		selectedColonistHappinessModifiersPanel.SetActive(false);
-
-		selectedColonistInventoryPanel.SetActive(inventoryClicked);
-		selectedColonistInventoryTabButtonLinkPanel.SetActive(inventoryClicked);
-
-		selectedColonistClothingPanel.SetActive(clothingClicked);
-		selectedColonistClothingTabButtonLinkPanel.SetActive(clothingClicked);
-		selectedColonistClothingSelectionPanel.SetActive(false);
-	}
-
-	public void SetSelectedColonistClothingSelectionPanel(GameObject clothingTypeButton) {
-		selectedColonistClothingSelectionPanel.SetActive(clothingTypeButton != null);
-
-		if (clothingTypeButton == null) {
-			return;
-		} else {
-			if (clothingTypeButton.name == "Hat-Button") {
-				// Find all hats available and on colonists and populate grid
-			} else if (clothingTypeButton.name == "Top-Button") {
-				// Find all tops available and on colonists and populate grid
-			} else if (clothingTypeButton.name == "Bottoms-Button") {
-				// Find all bottoms available and on colonists and populate grid
-			} else if (clothingTypeButton.name == "Scarf-Button") {
-				// Find all scarves available and on colonists and populate grid
-			} else if (clothingTypeButton.name == "Gloves-Button") {
-				// Find all gloves available and on colonists and populate grid
-			} else if (clothingTypeButton.name == "Shoes-Button") {
-				// Find all shoes available and on colonists and populate grid
 			}
 		}
 	}
@@ -1995,7 +2064,6 @@ public class UIManager : MonoBehaviour {
 			obj.transform.Find("JobInfo/Type").GetComponent<Text>().text = SplitByCapitals(job.prefab.jobType.ToString());
 			obj.GetComponent<Button>().onClick.AddListener(delegate {
 				cameraM.SetCameraPosition(job.tile.obj.transform.position);
-				cameraM.SetCameraZoom(5);
 			});
 
 			if (job.priority > 0) {
@@ -2661,7 +2729,6 @@ public class UIManager : MonoBehaviour {
 
 			obj.GetComponent<Button>().onClick.AddListener(delegate {
 				cameraM.SetCameraPosition(instance.obj.transform.position);
-				cameraM.SetCameraZoom(5);
 			});
 
 			ResourceManager.Container container = resourceM.containers.Find(findContainer => findContainer.parentObject == instance);

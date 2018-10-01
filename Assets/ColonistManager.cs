@@ -53,6 +53,33 @@ public class ColonistManager : MonoBehaviour {
 		InitializeHappinessModifierFunctions();
 	}
 
+	void Update() {
+		if (tileM.generated) {
+			SetSelectedHumanFromClick();
+		}
+		foreach (Colonist colonist in colonists) {
+			colonist.Update();
+			if (colonist.dead) {
+				deadColonists.Add(colonist);
+			}
+		}
+		foreach (Colonist deadColonist in deadColonists) {
+			deadColonist.Die();
+		}
+		deadColonists.Clear();
+
+		if (!timeM.GetPaused()) {
+			jobM.GiveJobsToColonists();
+		}
+		if (Input.GetKey(KeyCode.F) && selectedHuman != null) {
+			cameraM.SetCameraPosition(selectedHuman.obj.transform.position);
+		}
+
+		foreach (Trader trader in traders) {
+			trader.Update();
+		}
+	}
+
 	public List<Life> animals = new List<Life>();
 
 	public class Life {
@@ -89,9 +116,9 @@ public class ColonistManager : MonoBehaviour {
 
 		public Gender gender;
 
-		public enum Gender { Male, Female };
-
 		public bool dead = false;
+
+		public enum Gender { Male, Female };
 
 		public Life(TileManager.Tile spawnTile, float startingHealth) {
 			GetScriptReferences();
@@ -102,6 +129,8 @@ public class ColonistManager : MonoBehaviour {
 			obj = Instantiate(spawnTile.map.resourceM.tilePrefab, overTile.obj.transform.position, Quaternion.identity);
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 10; // Life Sprite
 
+			previousPosition = obj.transform.position;
+
 			health = startingHealth;
 		}
 
@@ -109,15 +138,7 @@ public class ColonistManager : MonoBehaviour {
 			return (Gender)UnityEngine.Random.Range(0, Enum.GetNames(typeof(Gender)).Length);
 		}
 
-		private static readonly Dictionary<int,int> moveSpritesMap = new Dictionary<int,int>() {
-			{16,1 },{32,0 },{64,0 },{128,1}
-		};
-		private float moveTimer;
-		public int startPathLength = 0;
-		public List<TileManager.Tile> path = new List<TileManager.Tile>();
-		public float moveSpeedMultiplier = 1f;
-
-		public void Update() {
+		public virtual void Update() {
 			overTileChanged = false;
 			TileManager.Tile newOverTile = tileM.map.GetTileFromPosition(obj.transform.position);
 			if (overTile != newOverTile) {
@@ -125,58 +146,74 @@ public class ColonistManager : MonoBehaviour {
 				overTile = newOverTile;
 				SetColour(overTile.sr.color);
 			}
-			MoveToTile(null,false);
+			MoveToTile(null, false);
+			SetMoveSprite();
 		}
 
-		private Vector2 oldPosition;
+		private static readonly List<int> moveSpriteIndices = new List<int>() {
+			1,
+			2,
+			0,
+			3,
+			1,
+			0,
+			0,
+			1
+		};
+		private float moveTimer;
+		public int startPathLength = 0;
+		public List<TileManager.Tile> path = new List<TileManager.Tile>();
+		public float moveSpeedMultiplier = 1f;
+		private Vector2 previousPosition;
+
 		public bool MoveToTile(TileManager.Tile tile, bool allowEndTileNonWalkable) {
 			if (tile != null) {
 				startPathLength = 0;
-				path = pathM.FindPathToTile(overTile,tile,allowEndTileNonWalkable);
+				path = pathM.FindPathToTile(overTile, tile, allowEndTileNonWalkable);
 				startPathLength = path.Count;
-				if (path.Count > 0) {
-					SetMoveSprite();
-				}
 				moveTimer = 0;
-				oldPosition = obj.transform.position;
+				previousPosition = obj.transform.position;
 			}
 			if (path.Count > 0) {
-				
-				obj.transform.position = Vector2.Lerp(oldPosition,path[0].obj.transform.position,moveTimer);
+
+				obj.transform.position = Vector2.Lerp(previousPosition, path[0].obj.transform.position, moveTimer);
 
 				if (moveTimer >= 1f) {
-					oldPosition = obj.transform.position;
+					previousPosition = obj.transform.position;
 					obj.transform.position = path[0].obj.transform.position;
 					moveTimer = 0;
 					path.RemoveAt(0);
-					if (path.Count > 0) {
-						SetMoveSprite();
-					}
 				} else {
 					moveTimer += 2 * timeM.deltaTime * overTile.walkSpeed * moveSpeedMultiplier;
 				}
 			} else {
-				obj.GetComponent<SpriteRenderer>().sprite = moveSprites[0];
 				path.Clear();
+				if (!Mathf.Approximately(Vector2.Distance(obj.transform.position, overTile.obj.transform.position), 0.01f)) {
+					path.Add(overTile);
+					moveTimer = 0;
+				}
 				return true;
 			}
 			return false;
 		}
 
-		public void SetMoveSprite() {
-			int bitsum = 0;
-			for (int i = 0; i < overTile.surroundingTiles.Count; i++) {
-				if (overTile.surroundingTiles[i] == path[0]) {
-					bitsum = Mathf.RoundToInt(Mathf.Pow(2,i));
+		public int CalculateMoveSpriteIndex() {
+			int moveSpriteIndex = 0;
+			if (path.Count > 0) {
+				TileManager.Tile previousTile = tileM.map.GetTileFromPosition(previousPosition);
+				if (previousTile != path[0]) {
+					moveSpriteIndex = previousTile.surroundingTiles.IndexOf(path[0]);
+					moveSpriteIndex = moveSpriteIndices[moveSpriteIndex];
 				}
 			}
-			if (bitsum >= 16) {
-				bitsum = moveSpritesMap[bitsum];
-			}
-			obj.GetComponent<SpriteRenderer>().sprite = moveSprites[bitsum];
+			return moveSpriteIndex;
 		}
 
-		public void SetColour(Color newColour) {
+		private void SetMoveSprite() {
+			obj.GetComponent<SpriteRenderer>().sprite = moveSprites[CalculateMoveSpriteIndex()];
+		}
+
+		public virtual void SetColour(Color newColour) {
 			obj.GetComponent<SpriteRenderer>().color = new Color(newColour.r,newColour.g,newColour.b,1f);
 		}
 
@@ -192,7 +229,7 @@ public class ColonistManager : MonoBehaviour {
 			}
 		}
 
-		public void Die() {
+		public virtual void Die() {
 			Destroy(obj);
 		}
 	}
@@ -216,12 +253,24 @@ public class ColonistManager : MonoBehaviour {
 
 	public List<List<Sprite>> humanMoveSprites = new List<List<Sprite>>();
 
+	public Human selectedHuman;
+	private GameObject selectedHumanIndicator;
+
 	public class Human : Life {
 
 		public string name;
 		public GameObject nameCanvas;
+		public GameObject humanObj;
 
-		public Dictionary<Appearance, int> appearanceIndices;
+		public Dictionary<Appearance, int> bodyIndices;
+		public Dictionary<Appearance, ResourceManager.ClothingInstance> clothes = new Dictionary<Appearance, ResourceManager.ClothingInstance>() {
+			{ Appearance.Hat, null },
+			{ Appearance.Top, null },
+			{ Appearance.Bottoms, null },
+			{ Appearance.Scarf, null },
+			{ Appearance.Gloves, null },
+			{ Appearance.Shoes, null },
+		};
 
 		// Carrying Item
 
@@ -231,32 +280,33 @@ public class ColonistManager : MonoBehaviour {
 		public enum Appearance { Skin, Hair, Hat, Top, Bottoms, Scarf, Gloves, Shoes };
 
 		public Human(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
-			appearanceIndices = GetHumanLookIndices(gender);
+			bodyIndices = GetBodyIndices(gender);
 
-			moveSprites = colonistM.humanMoveSprites[appearanceIndices[Appearance.Skin]];
+			moveSprites = colonistM.humanMoveSprites[bodyIndices[Appearance.Skin]];
 
-			inventory = new ResourceManager.Inventory(this,null,50);
+			inventory = new ResourceManager.Inventory(this, null, 50);
 
 			name = colonistM.GetName(gender);
 
 			obj.name = "Human: " + name;
 
-			nameCanvas = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"),obj.transform,false);
+			nameCanvas = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"), obj.transform, false);
 			SetNameCanvas(name);
+
+			humanObj = Instantiate(resourceM.humanPrefab, obj.transform, false);
+			int appearanceIndex = 1;
+			foreach (Appearance appearance in clothes.Keys) {
+				humanObj.transform.Find(appearance.ToString()).GetComponent<SpriteRenderer>().sortingOrder = obj.GetComponent<SpriteRenderer>().sortingOrder + appearanceIndex;
+				appearanceIndex += 1;
+			}
 		}
 
-		public static Dictionary<Appearance, int> GetHumanLookIndices(Gender gender) {
-			Dictionary<Appearance, int> appearanceIndices = new Dictionary<Appearance, int>() {
-			{ Appearance.Skin, UnityEngine.Random.Range(0,3) },
-			{ Appearance.Hair, UnityEngine.Random.Range(0,0) },
-			{ Appearance.Hat, UnityEngine.Random.Range(0,0) },
-			{ Appearance.Top, UnityEngine.Random.Range(0,0) },
-			{ Appearance.Bottoms, UnityEngine.Random.Range(0,0) },
-			{ Appearance.Scarf, UnityEngine.Random.Range(0,0) },
-			{ Appearance.Gloves, UnityEngine.Random.Range(0,0) },
-			{ Appearance.Shoes, UnityEngine.Random.Range(0,0) }
-		};
-			return appearanceIndices;
+		public static Dictionary<Appearance, int> GetBodyIndices(Gender gender) {
+			Dictionary<Appearance, int> bodyIndices = new Dictionary<Appearance, int>() {
+				{ Appearance.Skin, UnityEngine.Random.Range(0,3) },
+				{ Appearance.Hair, UnityEngine.Random.Range(0,0) }
+			};
+			return bodyIndices;
 		}
 
 		public void SetNameCanvas(string name) {
@@ -272,14 +322,55 @@ public class ColonistManager : MonoBehaviour {
 			nameCanvas.transform.Find("NameBackground-Image").GetComponent<RectTransform>().sizeDelta = new Vector2(textWidthPixels / 2.8f, 20);
 		}
 
-		public new void Update() {
+		public override void Update() {
 			base.Update();
+
 			nameCanvas.transform.Find("NameBackground-Image").localScale = Vector2.one * Mathf.Clamp(cameraM.cameraComponent.orthographicSize,2,10) * 0.0025f;
 			nameCanvas.transform.Find("NameBackground-Image/HealthIndicator-Image").GetComponent<Image>().color = Color.Lerp(UIManager.GetColour(UIManager.Colours.LightRed), UIManager.GetColour(UIManager.Colours.LightGreen), health);
+
+			SetMoveSprite();
 		}
 
 		public void SetNameColour(Color nameColour) {
 			nameCanvas.transform.Find("NameBackground-Image/NameColour-Image").GetComponent<Image>().color = nameColour;
+		}
+
+		public void ChangeClothing(Appearance appearance, ResourceManager.ClothingInstance clothingInstance) {
+			if (clothes[appearance] != null) {
+				if (clothes[appearance].human != null) {
+					if (clothes[appearance].human != this) {
+						clothes[appearance].human.ChangeClothing(appearance, null);
+					}
+					clothes[appearance].human = null;
+				}
+			}
+
+			clothes[appearance] = clothingInstance;
+			if (clothingInstance != null) {
+				clothingInstance.human = this;
+				humanObj.transform.Find(appearance.ToString()).GetComponent<SpriteRenderer>().sprite = clothingInstance.moveSprites[0];
+			} else {
+				humanObj.transform.Find(appearance.ToString()).GetComponent<SpriteRenderer>().sprite = resourceM.clearSquareSprite;
+			}
+
+			SetColour(overTile.sr.color);
+		}
+
+		public override void SetColour(Color newColour) {
+			base.SetColour(newColour);
+			
+			foreach (Appearance appearance in clothes.Keys) {
+				humanObj.transform.Find(appearance.ToString()).GetComponent<SpriteRenderer>().color = new Color(newColour.r, newColour.g, newColour.b, 1f);
+			}
+		}
+
+		private void SetMoveSprite() {
+			int moveSpriteIndex = CalculateMoveSpriteIndex();
+			foreach (KeyValuePair<Appearance, ResourceManager.ClothingInstance> appearanceToClothingInstanceKVP in clothes) {
+				if (appearanceToClothingInstanceKVP.Value != null) {
+					humanObj.transform.Find(appearanceToClothingInstanceKVP.Key.ToString()).GetComponent<SpriteRenderer>().sprite = appearanceToClothingInstanceKVP.Value.moveSprites[moveSpriteIndex];
+				}
+			}
 		}
 	}
 
@@ -1219,6 +1310,8 @@ public class ColonistManager : MonoBehaviour {
 
 	public List<Colonist> colonists = new List<Colonist>();
 
+	private List<Colonist> deadColonists = new List<Colonist>();
+
 	public class Colonist : Human {
 
 		public bool playerMoved;
@@ -1268,7 +1361,7 @@ public class ColonistManager : MonoBehaviour {
 			oldProfession = colonistM.professions.Find(findProfession => findProfession.type == ProfessionTypeEnum.Nothing);
 		}
 
-		public new void Update() {
+		public override void Update() {
 			moveSpeedMultiplier = (-((inventory.CountResources() - inventory.maxAmount) / (float)inventory.maxAmount)) + 1;
 			moveSpeedMultiplier = Mathf.Clamp(moveSpeedMultiplier, 0.1f, 1f);
 
@@ -1312,8 +1405,9 @@ public class ColonistManager : MonoBehaviour {
 			}
 		}
 
-		public new void Die() {
+		public override void Die() {
 			base.Die();
+
 			ReturnJob();
 			colonistM.colonists.Remove(this);
 			uiM.SetColonistElements();
@@ -1652,7 +1746,7 @@ public class ColonistManager : MonoBehaviour {
 		public void LoadColonistData(
 			Vector2 position,
 			string name,
-			Dictionary<Appearance, int> appearanceIndices,
+			Dictionary<Appearance, int> bodyIndices,
 			float health,
 			Profession profession,
 			Profession oldProfession,
@@ -1673,8 +1767,8 @@ public class ColonistManager : MonoBehaviour {
 				this.name = name;
 				SetNameCanvas(name);
 
-				moveSprites = colonistM.humanMoveSprites[appearanceIndices[Appearance.Skin]];
-				this.appearanceIndices = appearanceIndices;
+				moveSprites = colonistM.humanMoveSprites[bodyIndices[Appearance.Skin]];
+				this.bodyIndices = bodyIndices;
 
 				ChangeHealthValue(-(this.health - health));
 
@@ -1770,41 +1864,6 @@ public class ColonistManager : MonoBehaviour {
 		colonists.Add(colonist);
 		uiM.SetColonistElements();
 		tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
-	}
-
-	public Human selectedHuman;
-	private GameObject selectedHumanIndicator;
-
-	private List<Colonist> deadColonists = new List<Colonist>();
-
-	void Update() {
-		if (tileM.generated) {
-			SetSelectedHumanFromClick();
-		}
-		foreach (Colonist colonist in colonists) {
-			colonist.Update();
-			if (colonist.dead) {
-				deadColonists.Add(colonist);
-			}
-		}
-		foreach (Colonist deadColonist in deadColonists) {
-			deadColonist.Die();
-		}
-		deadColonists.Clear();
-
-		if (!timeM.GetPaused()) {
-			jobM.GiveJobsToColonists();
-		}
-		if (Input.GetKeyDown(KeyCode.F) && selectedHuman != null) {
-			cameraM.SetCameraZoom(5);
-		}
-		if (Input.GetKey(KeyCode.F) && selectedHuman != null) {
-			cameraM.SetCameraPosition(selectedHuman.obj.transform.position);
-		}
-
-		foreach (Trader trader in traders) {
-			trader.Update();
-		}
 	}
 
 	public List<Trader> traders = new List<Trader>(); // TODO Remove Caravan from map and delete its traders from this list
