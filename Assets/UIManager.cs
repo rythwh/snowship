@@ -2975,7 +2975,7 @@ public class UIManager : MonoBehaviour {
 				selectFuelResourcePanel = obj.transform.Find("SelectFuelResource-Panel").gameObject;
 				selectFuelResourceList = selectFuelResourcePanel.transform.Find("SelectFuelResource-ScrollPanel/SelectFuelResourceList-Panel").gameObject;
 
-				foreach (ResourceManager.ResourcesEnum fuelEnum in resourceM.GetFuelResources()) {
+				foreach (ResourceManager.ResourcesEnum fuelEnum in ResourceManager.fuelResources) {
 					ResourceManager.Resource fuelResource = resourceM.GetResourceByEnum(fuelEnum);
 
 					GameObject selectFuelResourceButton = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/SelectFuelResource-Panel"), selectFuelResourceList.transform, false);
@@ -3014,7 +3014,7 @@ public class UIManager : MonoBehaviour {
 
 			obj.transform.Find("SelectedManufacturingTileObjectSprite-Panel/SelectedManufacturingTileObjectSprite-Image").GetComponent<Image>().sprite = selectedMTO.parentObject.obj.GetComponent<SpriteRenderer>().sprite;
 
-			foreach (ResourceManager.ResourcesEnum resourceEnum in resourceM.GetManufacturableResources()) {
+			foreach (ResourceManager.ResourcesEnum resourceEnum in ResourceManager.manufacturableResources) {
 				ResourceManager.Resource resource = resourceM.GetResourceByEnum(resourceEnum);
 
 				if (resource.requiredMTOs.Contains(selectedMTO.parentObject.prefab) || (resource.requiredMTOs.Count <= 0 && resource.requiredMTOSubGroups.Contains(selectedMTO.parentObject.prefab.tileObjectPrefabSubGroup))) {
