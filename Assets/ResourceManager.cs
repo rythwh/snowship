@@ -69,20 +69,14 @@ public class ResourceManager : MonoBehaviour {
 		GoldCoin, SilverCoin, BronzeCoin
 	};
 
-	List<ResourcesEnum> manufacturableResources = new List<ResourcesEnum>() {
+	public static readonly List<ResourcesEnum> manufacturableResources = new List<ResourcesEnum>() {
 		ResourcesEnum.Wood, ResourcesEnum.Firewood, ResourcesEnum.Brick, ResourcesEnum.Glass, ResourcesEnum.Cloth, ResourcesEnum.BakedPotato, ResourcesEnum.BakedApple,
 		ResourcesEnum.Gold, ResourcesEnum.Silver, ResourcesEnum.Bronze, ResourcesEnum.Iron, ResourcesEnum.GoldCoin, ResourcesEnum.SilverCoin, ResourcesEnum.BronzeCoin
 	};
-	public List<ResourcesEnum> GetManufacturableResources() {
-		return manufacturableResources;
-	}
 
-	List<ResourcesEnum> fuelResources = new List<ResourcesEnum>() {
+	public static readonly List<ResourcesEnum> fuelResources = new List<ResourcesEnum>() {
 		ResourcesEnum.Log, ResourcesEnum.Wood, ResourcesEnum.Firewood
 	};
-	public List<ResourcesEnum> GetFuelResources() {
-		return fuelResources;
-	}
 
 	public void CreateResources() {
 		List<string> resourceGroupsData = Resources.Load<TextAsset>(@"Data/resources").text.Replace("\t", string.Empty).Split(new string[] { "<Group>" }, System.StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -228,6 +222,10 @@ public class ResourceManager : MonoBehaviour {
 	}
 
 	public List<Resource> resources = new List<Resource>();
+
+	public Resource GetResourceByEnum(ResourcesEnum resourceEnum) {
+		return resources.Find(resource => resource.type == resourceEnum);
+	}
 
 	public class Resource {
 		public ResourcesEnum type;
@@ -463,9 +461,11 @@ public class ResourceManager : MonoBehaviour {
 		}
 	}
 
-	public Resource GetResourceByEnum(ResourcesEnum resourceEnum) {
-		return resources.Find(resource => resource.type == resourceEnum);
-	}
+	//public class Material : Resource {
+	//	public Material(ResourceGroup group, ResourcesEnum type, float weight, Price price) : base(group, type, weight, price) {
+
+	//	}
+	//}
 
 	public class ResourceAmount {
 		public Resource resource;
@@ -498,8 +498,6 @@ public class ResourceManager : MonoBehaviour {
 		public Resource.Price caravanResourcePrice;
 
 		public ColonistManager.Caravan caravan;
-
-		public UIManager.TradeResourceElement tradeResourceElement;
 
 		public TradeResourceAmount(Resource resource, int caravanAmount, Resource.Price caravanResourcePrice, ColonistManager.Caravan caravan) {
 			this.resource = resource;
@@ -536,7 +534,17 @@ public class ResourceManager : MonoBehaviour {
 		}
 	}
 
-	
+	public class ConfirmedTradeResourceAmount {
+		public TradeResourceAmount tradeResourceAmount;
+		public int tradeAmount;
+		public int amountRemaining;
+
+		public ConfirmedTradeResourceAmount(TradeResourceAmount tradeResourceAmount, int tradeAmount) {
+			this.tradeResourceAmount = tradeResourceAmount;
+			this.tradeAmount = tradeAmount;
+			amountRemaining = tradeAmount;
+		}
+	}
 
 	public void CreateResource(Resource resource, int amount, TileObjectInstance manufacturingTileObject) {
 		for (int i = 0; i < amount; i++) {
@@ -926,10 +934,10 @@ public class ResourceManager : MonoBehaviour {
 		TileObjectPrefabsEnum.WoodenTable
 	};
 
-	public static readonly List<TileObjectPrefabsEnum> FloorEquivalentTileObjects = new List<TileObjectPrefabsEnum>() {
+	public static readonly List<TileObjectPrefabsEnum> floorEquivalentTileObjects = new List<TileObjectPrefabsEnum>() {
 		TileObjectPrefabsEnum.StoneFloor, TileObjectPrefabsEnum.WoodenFloor, TileObjectPrefabsEnum.BrickFloor
 	};
-	public static readonly List<TileObjectPrefabsEnum> WallEquivalentTileObjects = new List<TileObjectPrefabsEnum>() {
+	public static readonly List<TileObjectPrefabsEnum> wallEquivalentTileObjects = new List<TileObjectPrefabsEnum>() {
 		TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall, TileObjectPrefabsEnum.WoodenFence, TileObjectPrefabsEnum.BrickWall
 	};
 
@@ -2058,10 +2066,10 @@ public class ResourceManager : MonoBehaviour {
 			sum = BitSumTileObjects(customCompareTileObjectTypes,(includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
 		} else {
 			if (compareEquivalentTileObjects) {
-				if (FloorEquivalentTileObjects.Contains(objectInstance.prefab.type)) {
-					sum = BitSumTileObjects(FloorEquivalentTileObjects,(includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
-				} else if (WallEquivalentTileObjects.Contains(objectInstance.prefab.type)) {
-					sum = BitSumTileObjects(WallEquivalentTileObjects,(includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+				if (floorEquivalentTileObjects.Contains(objectInstance.prefab.type)) {
+					sum = BitSumTileObjects(floorEquivalentTileObjects,(includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+				} else if (wallEquivalentTileObjects.Contains(objectInstance.prefab.type)) {
+					sum = BitSumTileObjects(wallEquivalentTileObjects,(includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
 				} else {
 					sum = BitSumTileObjects(new List<TileObjectPrefabsEnum>() { objectInstance.prefab.type },(includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
 				}

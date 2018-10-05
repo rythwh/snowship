@@ -1870,8 +1870,6 @@ public class ColonistManager : MonoBehaviour {
 
 	public class Trader : Human {
 
-		public string originLocation; // This should be changed to a "Location" object (to be created in TileManager?) that stores info
-
 		public Caravan caravan;
 
 		public Trader(TileManager.Tile spawnTile, float startingHealth, Caravan caravan) : base(spawnTile, startingHealth) {
@@ -1950,11 +1948,13 @@ public class ColonistManager : MonoBehaviour {
 		public int amount;
 		public CaravanTypeEnum caravanType;
 
+		public string originLocation; // This should be changed to a "Location" object (to be created in TileManager?) that stores info
+
 		public ResourceManager.Inventory inventory;
 
 		public List<ResourceManager.TradeResourceAmount> resourcesToTrade = new List<ResourceManager.TradeResourceAmount>();
 
-		public List<List<ResourceManager.TradeResourceAmount>> confirmedResourcesToTrade = new List<List<ResourceManager.TradeResourceAmount>>();
+		public List<ResourceManager.ConfirmedTradeResourceAmount> confirmedResourcesToTrade = new List<ResourceManager.ConfirmedTradeResourceAmount>();
 
 		public Caravan(int amount, CaravanTypeEnum caravanType, List<TileManager.Tile> spawnTiles, ResourceManager resourceM) {
 			this.resourceM = resourceM;
@@ -2034,7 +2034,9 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void ConfirmTrade() {
-			confirmedResourcesToTrade.Add(new List<ResourceManager.TradeResourceAmount>(resourcesToTrade));
+			foreach (ResourceManager.TradeResourceAmount tradeResourceAmount in resourcesToTrade) {
+				confirmedResourcesToTrade.Add(new ResourceManager.ConfirmedTradeResourceAmount(tradeResourceAmount, tradeResourceAmount.GetTradeAmount()));
+			}
 			resourcesToTrade.Clear();
 		}
 	}
