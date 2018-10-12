@@ -8,38 +8,17 @@ using System;
 
 public class PersistenceManager : MonoBehaviour {
 
-	public const int gameVersion = 3;
-	public const int saveVersion = 2;
-
-	private Dictionary<int, string> gameVersionStrings = new Dictionary<int, string>() {
-		{ 1, "2018.1" },
-		{ 2, "2018.1.1" },
-		{ 3, "2018.2" }
-	};
-	public string GetGameVersionString(int gameVersion) {
-		if (gameVersionStrings.ContainsKey(gameVersion)) {
-			return gameVersionStrings[gameVersion];
-		} else if (gameVersion == -1) {
-			return "Unsupported";
-		} else {
-			return "Unsupported " + gameVersion;
-		}
-	}
-
 	private CameraManager cameraM; // Save the camera zoom and position
 	private ColonistManager colonistM; // Save all instances of colonists, humans, life, etc.
 	private JobManager jobM; // Save all non-taken jobs
+	private ResourceManager resourceM; // Save the object data
 	private TileManager tileM; // Save the tile data
 	private TimeManager timeM; // Save the date/time
 	private UIManager uiM; // Save the planet data
-	private ResourceManager resourceM; // Save the object data
-
-	private string settingsFilePath;
 
 	public SettingsState settingsState;
 
 	void Awake() {
-
 		cameraM = GetComponent<CameraManager>();
 		colonistM = GetComponent<ColonistManager>();
 		jobM = GetComponent<JobManager>();
@@ -48,16 +27,21 @@ public class PersistenceManager : MonoBehaviour {
 		uiM = GetComponent<UIManager>();
 		resourceM = GetComponent<ResourceManager>();
 
-		settingsFilePath = Application.persistentDataPath + "/Settings/settings.snowship";
 		settingsState = new SettingsState(uiM);
 		if (!LoadSettings()) {
 			SaveSettings();
 		}
-		settingsState.SetSettings();
+		settingsState.ApplySettings();
+
+		print(GenerateDateTimeString());
 	}
+
+	// Settings Saving
 
 	public class SettingsState {
 		private UIManager uiM;
+
+		private string filePath;
 
 		public Resolution resolution;
 		public int resolutionWidth;
@@ -77,31 +61,67 @@ public class PersistenceManager : MonoBehaviour {
 			scaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
 		}
 
-		public void SetSettings() {
+		public enum Setting {
+			ResolutionWidth,
+			ResolutionHeight,
+			RefreshRate,
+			Fullscreen,
+			ScaleMode
+		}
+
+		private static readonly Dictionary<Setting, Func<SettingsState, string>> settingToStringFunctions = new Dictionary<Setting, Func<SettingsState, string>>() {
+			{ Setting.ResolutionWidth, new Func<SettingsState, string>(delegate (SettingsState settingsState) { return settingsState.resolutionWidth.ToString(); }) },
+			{ Setting.ResolutionHeight, new Func<SettingsState, string>(delegate (SettingsState settingsState) { return settingsState.resolutionHeight.ToString(); }) },
+			{ Setting.RefreshRate, new Func<SettingsState, string>(delegate (SettingsState settingsState) { return settingsState.refreshRate.ToString(); }) },
+			{ Setting.Fullscreen, new Func<SettingsState, string>(delegate (SettingsState settingsState) { return settingsState.fullscreen.ToString(); }) },
+			{ Setting.ScaleMode, new Func<SettingsState, string>(delegate (SettingsState settingsState) { return settingsState.scaleMode.ToString(); }) }
+		};
+
+		private static readonly Dictionary<Setting, Action<SettingsState, string>> stringToSettingFunctions = new Dictionary<Setting, Action<SettingsState, string>>() {
+			{ Setting.ResolutionWidth, new Action<SettingsState, string>(delegate (SettingsState settingsState, string value) { settingsState.resolutionWidth = int.Parse(value); }) },
+			{ Setting.ResolutionHeight, new Action<SettingsState, string>(delegate (SettingsState settingsState, string value) { settingsState.resolutionHeight = int.Parse(value); }) },
+			{ Setting.RefreshRate, new Action<SettingsState, string>(delegate (SettingsState settingsState, string value) { settingsState.refreshRate = int.Parse(value); }) },
+			{ Setting.Fullscreen, new Action<SettingsState, string>(delegate (SettingsState settingsState, string value) { settingsState.fullscreen = bool.Parse(value); }) },
+			{ Setting.ScaleMode, new Action<SettingsState, string>(delegate (SettingsState settingsState, string value) { settingsState.scaleMode = (CanvasScaler.ScaleMode)Enum.Parse(typeof(CanvasScaler.ScaleMode), value); }) }
+		};
+
+		public void ApplySettings() {
 			Screen.SetResolution(resolutionWidth, resolutionHeight, fullscreen, refreshRate);
 
 			uiM.canvas.GetComponent<CanvasScaler>().uiScaleMode = scaleMode;
 		}
+
+		public void LoadSetting(Setting setting, string value) {
+			stringToSettingFunctions[setting](this, value);
+		}
+
+		public void SaveSetting(Setting setting, StreamWriter file) {
+			file.WriteLine("<" + setting + ">" + settingToStringFunctions[setting](this));
+		}
 	}
 
-	public void ApplySettings(bool closeAfterApplying) {
-		if (closeAfterApplying) {
-			uiM.ToggleSettingsMenu();
-		}
-		settingsState.SetSettings();
-		SaveSettings();
+	public string GenerateSettingsDirectoryPath() {
+		return Application.persistentDataPath + "/Settings/";
+	}
+
+	public string GenerateSettingsFilePath() {
+		return GenerateSettingsDirectoryPath() + "settings.snowship";
 	}
 
 	public void SaveSettings() {
-		Directory.CreateDirectory(Application.persistentDataPath + "/Settings/");
+		Directory.CreateDirectory(GenerateSettingsDirectoryPath());
+
+		string settingsFilePath = GenerateSettingsFilePath();
 		FileStream createFile = File.Create(settingsFilePath);
 		createFile.Close();
+
 		File.WriteAllText(settingsFilePath, string.Empty);
+
 		StreamWriter file = new StreamWriter(settingsFilePath);
 
-		file.WriteLine(settingsState.resolutionWidth + "," + settingsState.resolutionHeight + "," + settingsState.refreshRate);
-		file.WriteLine(settingsState.fullscreen);
-		file.WriteLine(settingsState.scaleMode.ToString());
+		foreach (SettingsState.Setting setting in Enum.GetValues(typeof(SettingsState.Setting))) {
+			settingsState.SaveSetting(setting, file);
+		}
 
 		file.Close();
 	}
@@ -109,60 +129,196 @@ public class PersistenceManager : MonoBehaviour {
 	public bool LoadSettings() {
 		StreamReader file = null;
 		try {
-			file = new StreamReader(settingsFilePath);
+			file = new StreamReader(GenerateSettingsFilePath());
 			if (file == null) {
 				return false;
 			}
 		} catch (Exception) {
 			return false;
 		}
-		List<string> lines = file.ReadToEnd().Split('\n').ToList();
-		for (int i = 0; i < lines.Count; i++) {
-			string line = lines[i];
-			if (!string.IsNullOrEmpty(line)) {
-				switch (i) {
-					case 0:
-						settingsState.resolutionWidth = int.Parse(line.Split(',')[0]);
-						settingsState.resolutionHeight = int.Parse(line.Split(',')[1]);
-						settingsState.refreshRate = int.Parse(line.Split(',')[2]);
-						settingsState.resolution = uiM.GetResolutionByDimensions(settingsState.resolutionWidth, settingsState.resolutionHeight, settingsState.refreshRate);
-						break;
-					case 1:
-						settingsState.fullscreen = bool.Parse(line);
-						break;
-					case 2:
-						settingsState.scaleMode = (CanvasScaler.ScaleMode)Enum.Parse(typeof(CanvasScaler.ScaleMode), line);
-						break;
-				}
-			}
+
+		foreach (string settingsFileLine in file.ReadToEnd().Split('\n')) {
+			SettingsState.Setting setting = (SettingsState.Setting)Enum.Parse(typeof(SettingsState.Setting), settingsFileLine.Split('>')[0].Replace("<", string.Empty));
+			string value = settingsFileLine.Split('>')[1];
+
+			settingsState.LoadSetting(setting, value);
 		}
+
 		file.Close();
+
 		return true;
 	}
 
-	/* https://stackoverflow.com/questions/13266496/easily-write-a-whole-class-instance-to-xml-file-and-read-back-in */
+	public void ApplySettings(bool closeAfterApplying) {
+		if (closeAfterApplying) {
+			uiM.ToggleSettingsMenu();
+		}
+		settingsState.ApplySettings();
+		SaveSettings();
+	}
 
-	public string GenerateSaveFileName() {
+	// Game Saving
+
+	public class UniverseState {
+		public static readonly string saveVersion = "2018.2";
+		public static readonly string gameVersion = "2018.2";
+	}
+
+	public string GenerateDateTimeString() {
 		DateTime now = DateTime.Now;
-		string dateTime = now.Year + "y" + now.Month + "m" + now.Day + "d" + now.Hour + "h" + now.Minute + "m" + now.Second + "s" + now.Millisecond + "m";
-		string fileName = "snowship-save-" + uiM.colonyName + "-" + dateTime + "-" + gameVersion + "-" + saveVersion + ".snowship";
-		return fileName;
+		string dateTime = string.Format(
+			"%s%s%s%s%s%s%s",
+			now.Year.ToString().PadLeft(4),
+			now.Month.ToString().PadLeft(2),
+			now.Day.ToString().PadLeft(2),
+			now.Hour.ToString().PadLeft(4),
+			now.Minute.ToString().PadLeft(2),
+			now.Second.ToString().PadLeft(2),
+			now.Millisecond.ToString().PadLeft(4)
+		);
+		return dateTime;
 	}
 
-	public string GenerateSavePath(string fileName) {
-		return Application.persistentDataPath + "/Saves/" + fileName;
+	IEnumerator CreateScreenshot(string fileName) {
+		GameObject canvas = GameObject.Find("Canvas");
+		canvas.SetActive(false);
+		yield return new WaitForEndOfFrame();
+		ScreenCapture.CaptureScreenshot(fileName.Split('.')[0] + ".png");
+		canvas.SetActive(true);
 	}
+
+	public string GenerateUniversesPath() {
+		return Application.persistentDataPath + "/Universes";
+	}
+
+	public void CreateUniversesDirectory() {
+		string universesPath = GenerateUniversesPath();
+		Directory.CreateDirectory(universesPath);
+	}
+
+	public void CreateUniverseDirectory() {
+		string universePath = universesPath + "/Universe-" + dateTimeString;
+		Directory.CreateDirectory(universePath);
+	}
+
+	public void CreatePlanetsDirectory() {
+
+	}
+
+	public void CreatePlanetDirectory() {
+
+	}
+
+	public void CreateColoniesDirectory() {
+
+	}
+
+	public void CreateColonyDirectory() {
+
+	}
+
+	public void CreateSavesDirectory() {
+
+	}
+
+	public void CreateSaveDirectory() {
+
+	}
+
+	public void SaveConfiguration() {
+
+	}
+
+	public void SaveUniverse() {
+
+	}
+
+	public void SavePlanet() {
+
+	}
+
+	public void SaveColony() {
+
+	}
+
+	public void SaveOriginalTiles() {
+
+	}
+
+	public void SaveModifiedTiles() {
+
+	}
+
+	public void SaveCamera() {
+
+	}
+
+	public void SaveCaravans() {
+
+	}
+
+	public void SaveClothes() {
+
+	}
+
+	public void SaveColonists() {
+
+	}
+
+	public void SaveContainers() {
+
+	}
+
+	public void SaveFarms() {
+
+	}
+
+	public void SaveRivers() {
+
+	}
+
+	public void SaveManufacturingObjects() {
+
+	}
+
+	public void SaveObjects() {
+
+	}
+
+	public void SaveResources() {
+
+	}
+
+	public void SaveTime() {
+
+	}
+
+	// OLD SAVE GAME METHODS
 
 	public void SaveGame(string fileName) {
-		fileName = GenerateSavePath(fileName);
+		string universesPath = GenerateUniversesPath();
+		string dateTimeString = GenerateDateTimeString();
 
-		string directory = GenerateSavePath(string.Empty);
-		Directory.CreateDirectory(directory);
+		string universePath = universesPath + "/Universe-" + dateTimeString;
+		Directory.CreateDirectory(universePath);
+
+		string planetsPath = universePath + "/Planets";
+		Directory.CreateDirectory(planetsPath);
+
+		string planetPath = planetsPath + "/PlanetName" + dateTimeString;
+		Directory.CreateDirectory(planetPath);
+
+		string coloniesPath = planetPath + "/Colonies";
+		Directory.CreateDirectory(coloniesPath);
+
+		string savesPath = universePath + "/Saves";
+		Directory.CreateDirectory(savesPath);
+
 		StreamWriter file = new StreamWriter(fileName);
 
 		string versionData = "Version";
-		versionData += "/SaveVersion," + saveVersion;
-		versionData += "/GameVersion," + gameVersion;
+		//versionData += "/SaveVersion," + saveVersion;
+		//versionData += "/GameVersion," + gameVersion;
 		file.WriteLine(versionData);
 
 		string saveFileFormatData = "Format";
@@ -296,14 +452,6 @@ public class PersistenceManager : MonoBehaviour {
 		file.Close();
 
 		StartCoroutine(CreateScreenshot(fileName));
-	}
-
-	IEnumerator CreateScreenshot(string fileName) {
-		GameObject canvas = GameObject.Find("Canvas");
-		canvas.SetActive(false);
-		yield return new WaitForEndOfFrame();
-		ScreenCapture.CaptureScreenshot(fileName.Split('.')[0] + ".png");
-		canvas.SetActive(true);
 	}
 
 	public string GetPlanetTileDataString(UIManager.PlanetTile planetTile) {
