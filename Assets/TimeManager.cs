@@ -1,16 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
-public class TimeManager : MonoBehaviour {
-
-	private UIManager uiM;
-	private TileManager tileM;
-	private DebugManager debugM;
-
-	void Awake() {
-		uiM = GetComponent<UIManager>();
-		tileM = GetComponent<TileManager>();
-		debugM = GetComponent<DebugManager>();
-	}
+public class TimeManager : BaseManager {
 
 	private bool paused;
 
@@ -37,10 +28,10 @@ public class TimeManager : MonoBehaviour {
 
 	public float tileBrightnessTime = 0;
 
-	void Update() {
+	public override void Update() {
 		tileBrightnessTime = CalculateTileBrightnessTime();
-		if (tileM.generated) {
-			if (Input.GetKeyDown(KeyCode.Alpha1) && !uiM.pauseMenu.activeSelf && !debugM.debugMode) {
+		if (GameManager.tileM.mapState == TileManager.MapState.Generated) {
+			if (Input.GetKeyDown(KeyCode.Alpha1) && !GameManager.uiM.pauseMenu.activeSelf && !GameManager.uiM.playerTyping) {
 				if (timeModifier > 0) {
 					timeModifier -= 1;
 					if (timeModifier <= 0) {
@@ -48,7 +39,7 @@ public class TimeManager : MonoBehaviour {
 					}
 				}
 			}
-			if (Input.GetKeyDown(KeyCode.Alpha2) && !uiM.pauseMenu.activeSelf && !debugM.debugMode) {
+			if (Input.GetKeyDown(KeyCode.Alpha2) && !GameManager.uiM.pauseMenu.activeSelf && !GameManager.uiM.playerTyping) {
 				timeModifier += 1;
 			}
 			timeModifier = Mathf.Clamp(timeModifier, 0, 5);
@@ -56,7 +47,7 @@ public class TimeManager : MonoBehaviour {
 				TogglePause();
 			}
 			pauseTimeModifier = Mathf.Clamp(pauseTimeModifier, 0, 5);
-			if (Input.GetKeyDown(KeyCode.Space) && !uiM.pauseMenu.activeSelf && !debugM.debugMode) {
+			if (Input.GetKeyDown(KeyCode.Space) && !GameManager.uiM.pauseMenu.activeSelf && !GameManager.uiM.playerTyping) {
 				TogglePause();
 			}
 			deltaTime = Time.deltaTime * timeModifier;
@@ -67,7 +58,7 @@ public class TimeManager : MonoBehaviour {
 				minute += 1;
 				timer = 0;
 				if (minute % 10 == 0) {
-					tileM.map.SetTileBrightness(tileBrightnessTime);
+					GameManager.colonyM.colony.map.SetTileBrightness(tileBrightnessTime);
 				}
 				minuteChanged = true;
 				if (minute >= 60) {
@@ -89,7 +80,7 @@ public class TimeManager : MonoBehaviour {
 			}
 			isDay = (hour >= 6 && hour <= 18);
 
-			uiM.UpdateDateTimeInformation(minute, hour, day, month, year, isDay);
+			GameManager.uiM.UpdateDateTimeInformation(minute, hour, day, month, year, isDay);
 		}
 	}
 
@@ -120,12 +111,8 @@ public class TimeManager : MonoBehaviour {
 		return Mathf.FloorToInt(1 + (12 - (1 - hour)) % 12);
 	}
 
-	public int GetHour() {
-		return hour;
-	}
-
 	private float CalculateTileBrightnessTime() {
-		return (float)System.Math.Round(hour + (minute / 60f), 2);
+		return (float)Math.Round(hour + (minute / 60f), 2);
 	}
 
 	public void SetTime(float time) {
@@ -138,9 +125,43 @@ public class TimeManager : MonoBehaviour {
 		return (day + "," + month + "," + year);
 	}
 
-	public void SetDate(int day, int month, int year) {
+	public int GetMinute() {
+		return minute;
+	}
+
+	public void SetMinute(int minute) {
+		this.minute = minute;
+	}
+
+	public int GetHour() {
+		return hour;
+	}
+
+	public void SetHour(int hour) {
+		this.hour = hour;
+	}
+
+	public int GetDay() {
+		return day;
+	}
+
+	public void SetDay(int day) {
 		this.day = day;
+	}
+
+	public int GetMonth() {
+		return month;
+	}
+
+	public void SetMonth(int month) {
 		this.month = month;
+	}
+
+	public int GetYear() {
+		return year;
+	}
+
+	public void SetYear(int year) {
 		this.year = year;
 	}
 }

@@ -34,11 +34,13 @@
 		<Price>10:B
 	<Resource>
 		<Type>Log
+		<Classes>Fuel
 		<Weight>1
 		<Price>2:B
 		<FuelEnergy>10
 	<Resource>
 		<Type>Wood
+		<Classes>Manufacturable,Fuel
 		<Weight>0.25
 		<Price>10:B
 		<FuelEnergy>15
@@ -48,6 +50,7 @@
 		<RequiredResources>Log:0.25
 	<Resource>
 		<Type>Firewood
+		<Classes>Manufacturable,Fuel
 		<Weight>0.125
 		<Price>25:B
 		<FuelEnergy>25
@@ -97,6 +100,7 @@
 	Metals
 	<Resource>
 		<Type>Gold
+		<Classes>Manufacturable
 		<Weight>1
 		<Price>10:G
 		<RequiredMTOSubGroups>Furnaces
@@ -104,6 +108,7 @@
 		<RequiredResources>GoldOre:1
 	<Resource>
 		<Type>Silver
+		<Classes>Manufacturable
 		<Weight>1
 		<Price>10:S
 		<RequiredMTOSubGroups>Furnaces
@@ -111,6 +116,7 @@
 		<RequiredResources>SilverOre:1
 	<Resource>
 		<Type>Bronze
+		<Classes>Manufacturable
 		<Weight>1
 		<Price>10:B
 		<RequiredMTOSubGroups>Furnaces
@@ -118,6 +124,7 @@
 		<RequiredResources>BronzeOre:1
 	<Resource>
 		<Type>Iron
+		<Classes>Manufacturable
 		<Weight>1
 		<Price>2:S
 		<RequiredMTOSubGroups>Furnaces
@@ -127,6 +134,7 @@
 	Materials
 	<Resource>
 		<Type>Brick
+		<Classes>Manufacturable
 		<Weight>0.5
 		<Price>50:B
 		<RequiredMTOSubGroups>Furnaces
@@ -134,6 +142,7 @@
 		<RequiredResources>Clay:2
 	<Resource>
 		<Type>Glass
+		<Classes>Manufacturable
 		<Weight>0.5
 		<Price>5:S
 		<RequiredMTOSubGroups>Furnaces
@@ -145,6 +154,7 @@
 		<Price>25:B
 	<Resource>
 		<Type>Cloth
+		<Classes>Manufacturable,Fuel
 		<Weight>0.2
 		<Price>2:S
 		<RequiredMTOSubGroups>Processing
@@ -187,39 +197,45 @@
 	Foods
 	<Resource>
 		<Type>Potato
+		<Classes>Food
 		<Weight>0.1
 		<Price>20:B
 		<Nutrition>10
 	<Resource>
 		<Type>BakedPotato
+		<Classes>Food,Manufacturable
 		<Weight>0.1
 		<Price>50:B
-		<Nutrition>25
 		<RequiredMTOSubGroups>Furnaces
 		<RequiredEnergy>50
 		<RequiredResources>Potato:1
+		<Nutrition>25
 	<Resource>
 		<Type>Blueberry
+		<Classes>Food
 		<Weight>0.01
 		<Price>1:B
 		<Nutrition>1
 	<Resource>
 		<Type>Apple
+		<Classes>Food
 		<Weight>0.1
 		<Price>30:B
 		<Nutrition>10
 	<Resource>
 		<Type>BakedApple
+		<Classes>Food,Manufacturable
 		<Weight>0.1
 		<Price>45:B
-		<Nutrition>15
 		<RequiredMTOSubGroups>Furnaces
 		<RequiredEnergy>20
 		<RequiredResources>Apple:1
+		<Nutrition>15
 <Group>
 	Coins
 	<Resource>
 		<Type>GoldCoin
+		<Classes>Manufacturable
 		<Weight>0.1
 		<Price>1:G
 		<RequiredMTOSubGroups>Processing
@@ -228,6 +244,7 @@
 		<RequiredResources>Gold:0.1
 	<Resource>
 		<Type>SilverCoin
+		<Classes>Manufacturable
 		<Weight>0.1
 		<Price>1:S
 		<RequiredMTOSubGroups>Processing
@@ -236,9 +253,40 @@
 		<RequiredResources>Silver:0.1
 	<Resource>
 		<Type>BronzeCoin
+		<Classes>Manufacturable
 		<Weight>0.1
 		<Price>1:B
 		<RequiredMTOSubGroups>Processing
 		<RequiredMTOs>Anvil
 		<RequiredEnergy>0
 		<RequiredResources>Bronze:0.1
+<Group>
+	Clothing
+		<Resource>
+			<Type>WhiteSweater
+			<Classes>Manufacturable,Clothing
+			<Weight>1
+			<Price>1:S
+			<RequiredMTOSubGroups>Processing
+			<RequiredMTOs>Loom
+			<RequiredEnergy>0
+			<RequiredResources>Cloth:5
+			<Appearance>Top
+			<ClothingType>Sweater
+			<Insulation>10
+			<WaterResistance>10
+			<Colours>Cyan,Green,Blue,Purple,Navy,Yellow,Orange,Red,White,Gray
+		<Resource>
+			<Type>WhiteShirt
+			<Classes>Manufacturable,Clothing
+			<Weight>0.5
+			<Price>25:B
+			<RequiredMTOSubGroups>Processing
+			<RequiredMTOs>Loom
+			<RequiredEnergy>0
+			<RequiredResources>Cloth:2
+			<Appearance>Top
+			<ClothingType>Shirt
+			<Insulation>2
+			<WaterResistance>2
+			<Colours>Cyan,Green,Blue,Purple,Navy,Yellow,Orange,Red,White,Gray

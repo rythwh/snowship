@@ -105,6 +105,7 @@
 		Containers
 		<Object>
 			<Type>Basket
+			<InstanceType>Container
 			<TimeToBuild>5
 			<ResourcesToBuild>Wood:1
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -119,6 +120,7 @@
 			<MaxInventoryAmount>100
 		<Object>
 			<Type>WoodenChest
+			<InstanceType>Container
 			<TimeToBuild>10
 			<ResourcesToBuild>Wood:3
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -133,6 +135,7 @@
 			<MaxInventoryAmount>250
 		<Object>
 			<Type>WoodenDrawers
+			<InstanceType>Container
 			<TimeToBuild>15
 			<ResourcesToBuild>Wood:4
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -149,6 +152,7 @@
 		Beds
 		<Object>
 			<Type>WoodenBed
+			<InstanceType>SleepSpot
 			<TimeToBuild>10
 			<ResourcesToBuild>Wood:4,Cloth:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -195,6 +199,7 @@
 		Lights
 		<Object>
 			<Type>Torch
+			<InstanceType>LightSource
 			<TimeToBuild>5
 			<ResourcesToBuild>Wood:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -210,6 +215,7 @@
 			<LightColour>E67E22
 		<Object>
 			<Type>WoodenLamp
+			<InstanceType>LightSource
 			<TimeToBuild>10
 			<ResourcesToBuild>Wood:1,Glass:1
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -229,6 +235,7 @@
 		Furnaces
 		<Object>
 			<Type>StoneFurnace
+			<InstanceType>ManufacturingTileObject
 			<TimeToBuild>10
 			<ResourcesToBuild>Stone:5
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -244,6 +251,7 @@
 		Processing
 		<Object>
 			<Type>CottonGin
+			<InstanceType>ManufacturingTileObject
 			<TimeToBuild>30
 			<ResourcesToBuild>Wood:6,Iron:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -258,6 +266,7 @@
 			<MultiTilePositions>0,0;1,0
 		<Object>
 			<Type>SplittingBlock
+			<InstanceType>ManufacturingTileObject
 			<TimeToBuild>5
 			<ResourcesToBuild>Stone:1
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -271,6 +280,7 @@
 			<MaxIntegrity>500
 		<Object>
 			<Type>SplittingLog
+			<InstanceType>ManufacturingTileObject
 			<TimeToBuild>5
 			<ResourcesToBuild>Log:1
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -284,6 +294,7 @@
 			<MaxIntegrity>200
 		<Object>
 			<Type>Anvil
+			<InstanceType>ManufacturingTileObject
 			<TimeToBuild>15
 			<ResourcesToBuild>Iron:2
 			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
@@ -295,12 +306,27 @@
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.6,0.35
 			<MaxIntegrity>1000
+		<Object>
+			<Type>Loom
+			<InstanceType>ManufacturingTileObject
+			<TimeToBuild>15
+			<ResourcesToBuild>Wood:3,Iron:1
+			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+			<JobType>Build
+			<Flammability>0.5
+			<Walkable>true
+			<WalkSpeed>0.5
+			<Layer>2
+			<AddToTileWhenBuilt>true
+			<BlockingAmount>0.5,0.5
+			<MaxIntegrity>50
 <Group>
 	Farm
 	<SubGroup>
 		PlantFarm
 		<Object>
 			<Type>WheatFarm
+			<InstanceType>Farm
 			<TimeToBuild>5
 			<ResourcesToBuild>WheatSeed:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs
@@ -314,6 +340,7 @@
 			<MaxIntegrity>10
 		<Object>
 			<Type>PotatoFarm
+			<InstanceType>Farm
 			<TimeToBuild>5
 			<ResourcesToBuild>Potato:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs
@@ -327,6 +354,7 @@
 			<MaxIntegrity>10
 		<Object>
 			<Type>CottonFarm
+			<InstanceType>Farm
 			<TimeToBuild>5
 			<ResourcesToBuild>CottonSeed:1
 			<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs
