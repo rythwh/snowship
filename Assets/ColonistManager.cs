@@ -1,62 +1,11 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
-public class ColonistManager : MonoBehaviour {
+public class ColonistManager : BaseManager {
 
-	private TileManager tileM;
-	private CameraManager cameraM;
-	private UIManager uiM;
-	private ResourceManager resourceM;
-	private PathManager pathM;
-	private JobManager jobM;
-	private TimeManager timeM;
-
-	private void GetScriptReferences() {
-		tileM = GetComponent<TileManager>();
-		cameraM = GetComponent<CameraManager>();
-		uiM = GetComponent<UIManager>();
-		resourceM = GetComponent<ResourceManager>();
-		pathM = GetComponent<PathManager>();
-		jobM = GetComponent<JobManager>();
-		timeM = GetComponent<TimeManager>();
-	}
-
-	public List<string> maleNames = new List<string>();
-	public List<string> femaleNames = new List<string>();
-
-	void Awake() {
-		GetScriptReferences();
-
-		List<string> maleNamesRaw = Resources.Load<TextAsset>(@"Data/namesMale").text.Split(' ').ToList();
-		foreach (string name in maleNamesRaw) {
-			maleNames.Add(name.ToLower());
-		}
-		List<string> femaleNamesRaw = Resources.Load<TextAsset>(@"Data/namesFemale").text.Split(' ').ToList();
-		foreach (string name in femaleNamesRaw) {
-			femaleNames.Add(name.ToLower());
-		}
-
-		for (int i = 0; i < 3; i++) {
-			List<Sprite> innerHumanMoveSprites = Resources.LoadAll<Sprite>(@"Sprites/Colonists/colonists-body-base-" + i).ToList();
-			humanMoveSprites.Add(innerHumanMoveSprites);
-		}
-
-		CreateColonistSkills();
-		CreateColonistProfessions();
-		CreateColonistNeeds();
-		CreateHappinessModifiers();
-
-		InitializeNeedsValueFunctions();
-		InitializeHappinessModifierFunctions();
-	}
-
-	void Update() {
-		if (tileM.generated) {
-			SetSelectedHumanFromClick();
-		}
+	public override void Update() {
 		foreach (Colonist colonist in colonists) {
 			colonist.Update();
 			if (colonist.dead) {
@@ -68,353 +17,8 @@ public class ColonistManager : MonoBehaviour {
 		}
 		deadColonists.Clear();
 
-		if (!timeM.GetPaused()) {
-			jobM.GiveJobsToColonists();
-		}
-		if (Input.GetKey(KeyCode.F) && selectedHuman != null) {
-			cameraM.SetCameraPosition(selectedHuman.obj.transform.position);
-		}
-
-		foreach (Trader trader in traders) {
-			trader.Update();
-		}
-	}
-
-	public List<Life> animals = new List<Life>();
-
-	public class Life {
-
-		public TileManager tileM;
-		public PathManager pathM;
-		public TimeManager timeM;
-		public ColonistManager colonistM;
-		public JobManager jobM;
-		public ResourceManager resourceM;
-		public UIManager uiM;
-		public CameraManager cameraM;
-
-		void GetScriptReferences() {
-			GameObject GM = GameObject.Find("GM");
-
-			tileM = GM.GetComponent<TileManager>();
-			pathM = GM.GetComponent<PathManager>();
-			timeM = GM.GetComponent<TimeManager>();
-			colonistM = GM.GetComponent<ColonistManager>();
-			jobM = GM.GetComponent<JobManager>();
-			resourceM = GM.GetComponent<ResourceManager>();
-			uiM = GM.GetComponent<UIManager>();
-			cameraM = GM.GetComponent<CameraManager>();
-		}
-
-		public float health;
-
-		public GameObject obj;
-
-		public bool overTileChanged = false;
-		public TileManager.Tile overTile;
-		public List<Sprite> moveSprites = new List<Sprite>();
-
-		public Gender gender;
-
-		public bool dead = false;
-
-		public enum Gender { Male, Female };
-
-		public Life(TileManager.Tile spawnTile, float startingHealth) {
-			GetScriptReferences();
-
-			gender = GetRandomGender();
-
-			overTile = spawnTile;
-			obj = Instantiate(spawnTile.map.resourceM.tilePrefab, overTile.obj.transform.position, Quaternion.identity);
-			obj.GetComponent<SpriteRenderer>().sortingOrder = 10; // Life Sprite
-
-			previousPosition = obj.transform.position;
-
-			health = startingHealth;
-		}
-
-		public static Gender GetRandomGender() {
-			return (Gender)UnityEngine.Random.Range(0, Enum.GetNames(typeof(Gender)).Length);
-		}
-
-		public virtual void Update() {
-			overTileChanged = false;
-			TileManager.Tile newOverTile = tileM.map.GetTileFromPosition(obj.transform.position);
-			if (overTile != newOverTile) {
-				overTileChanged = true;
-				overTile = newOverTile;
-				SetColour(overTile.sr.color);
-			}
-			MoveToTile(null, false);
-			SetMoveSprite();
-		}
-
-		private static readonly List<int> moveSpriteIndices = new List<int>() {
-			1,
-			2,
-			0,
-			3,
-			1,
-			0,
-			0,
-			1
-		};
-		private float moveTimer;
-		public int startPathLength = 0;
-		public List<TileManager.Tile> path = new List<TileManager.Tile>();
-		public float moveSpeedMultiplier = 1f;
-		private Vector2 previousPosition;
-
-		public bool MoveToTile(TileManager.Tile tile, bool allowEndTileNonWalkable) {
-			if (tile != null) {
-				startPathLength = 0;
-				path = pathM.FindPathToTile(overTile, tile, allowEndTileNonWalkable);
-				startPathLength = path.Count;
-				moveTimer = 0;
-				previousPosition = obj.transform.position;
-			}
-			if (path.Count > 0) {
-
-				obj.transform.position = Vector2.Lerp(previousPosition, path[0].obj.transform.position, moveTimer);
-
-				if (moveTimer >= 1f) {
-					previousPosition = obj.transform.position;
-					obj.transform.position = path[0].obj.transform.position;
-					moveTimer = 0;
-					path.RemoveAt(0);
-				} else {
-					moveTimer += 2 * timeM.deltaTime * overTile.walkSpeed * moveSpeedMultiplier;
-				}
-			} else {
-				path.Clear();
-				if (!Mathf.Approximately(Vector2.Distance(obj.transform.position, overTile.obj.transform.position), 0.01f)) {
-					path.Add(overTile);
-					moveTimer = 0;
-				}
-				return true;
-			}
-			return false;
-		}
-
-		public int CalculateMoveSpriteIndex() {
-			int moveSpriteIndex = 0;
-			if (path.Count > 0) {
-				TileManager.Tile previousTile = tileM.map.GetTileFromPosition(previousPosition);
-				if (previousTile != path[0]) {
-					moveSpriteIndex = previousTile.surroundingTiles.IndexOf(path[0]);
-					moveSpriteIndex = moveSpriteIndices[moveSpriteIndex];
-				}
-			}
-			return moveSpriteIndex;
-		}
-
-		private void SetMoveSprite() {
-			obj.GetComponent<SpriteRenderer>().sprite = moveSprites[CalculateMoveSpriteIndex()];
-		}
-
-		public virtual void SetColour(Color newColour) {
-			obj.GetComponent<SpriteRenderer>().color = new Color(newColour.r,newColour.g,newColour.b,1f);
-		}
-
-		public void ChangeHealthValue(float amount) {
-			dead = false;
-			health += amount;
-			if (health > 1f) {
-				health = 1f;
-			} else if (health <= 0f) {
-				Die();
-				health = 0f;
-				dead = true;
-			}
-		}
-
-		public virtual void Die() {
-			Destroy(obj);
-		}
-	}
-
-	public string GetName(Life.Gender gender) {
-		string chosenName = "NAME";
-		List<string> names = (gender == Life.Gender.Male ? maleNames : femaleNames);
-		List<string> validNames = names.Where(name => colonists.Find(colonistWithName => colonistWithName.name.ToLower() == name.ToLower()) == null).ToList();
-		if (validNames.Count > 0) {
-			chosenName = validNames[UnityEngine.Random.Range(0, validNames.Count)];
-		} else {
-			chosenName = names[UnityEngine.Random.Range(0, names.Count)];
-		}
-		string tempName = chosenName.Take(1).ToList()[0].ToString().ToUpper();
-		foreach (char character in chosenName.Skip(1)) {
-			tempName += character;
-		}
-		chosenName = tempName;
-		return chosenName;
-	}
-
-	public List<List<Sprite>> humanMoveSprites = new List<List<Sprite>>();
-
-	public Human selectedHuman;
-	private GameObject selectedHumanIndicator;
-
-	public class Human : Life {
-
-		public string name;
-		public GameObject nameCanvas;
-		public GameObject humanObj;
-
-		public Dictionary<Appearance, int> bodyIndices;
-		public Dictionary<Appearance, ResourceManager.ClothingInstance> clothes = new Dictionary<Appearance, ResourceManager.ClothingInstance>() {
-			{ Appearance.Hat, null },
-			{ Appearance.Top, null },
-			{ Appearance.Bottoms, null },
-			{ Appearance.Scarf, null },
-			{ Appearance.Gloves, null },
-			{ Appearance.Shoes, null },
-		};
-
-		// Carrying Item
-
-		// Inventory
-		public ResourceManager.Inventory inventory;
-
-		public enum Appearance { Skin, Hair, Hat, Top, Bottoms, Scarf, Gloves, Shoes };
-
-		public Human(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
-			bodyIndices = GetBodyIndices(gender);
-
-			moveSprites = colonistM.humanMoveSprites[bodyIndices[Appearance.Skin]];
-
-			inventory = new ResourceManager.Inventory(this, null, 50);
-
-			name = colonistM.GetName(gender);
-
-			obj.name = "Human: " + name;
-
-			nameCanvas = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"), obj.transform, false);
-			SetNameCanvas(name);
-
-			humanObj = Instantiate(resourceM.humanPrefab, obj.transform, false);
-			int appearanceIndex = 1;
-			foreach (Appearance appearance in clothes.Keys) {
-				humanObj.transform.Find(appearance.ToString()).GetComponent<SpriteRenderer>().sortingOrder = obj.GetComponent<SpriteRenderer>().sortingOrder + appearanceIndex;
-				appearanceIndex += 1;
-			}
-		}
-
-		public static Dictionary<Appearance, int> GetBodyIndices(Gender gender) {
-			Dictionary<Appearance, int> bodyIndices = new Dictionary<Appearance, int>() {
-				{ Appearance.Skin, UnityEngine.Random.Range(0,3) },
-				{ Appearance.Hair, UnityEngine.Random.Range(0,0) }
-			};
-			return bodyIndices;
-		}
-
-		public void SetNameCanvas(string name) {
-			Font nameCanvasFont = Resources.Load<Font>(@"UI/Fonts/Quicksand/Quicksand-Bold");
-			nameCanvas.transform.Find("NameBackground-Image/Name-Text").GetComponent<Text>().text = name;
-			Canvas.ForceUpdateCanvases(); // The charInfo.advance is not calculated until the text is rendered
-			int textWidthPixels = 0;
-			foreach (char character in name) {
-				CharacterInfo charInfo;
-				nameCanvasFont.GetCharacterInfo(character, out charInfo, 48, FontStyle.Normal);
-				textWidthPixels += charInfo.advance;
-			}
-			nameCanvas.transform.Find("NameBackground-Image").GetComponent<RectTransform>().sizeDelta = new Vector2(textWidthPixels / 2.8f, 20);
-		}
-
-		public override void Update() {
-			base.Update();
-
-			nameCanvas.transform.Find("NameBackground-Image").localScale = Vector2.one * Mathf.Clamp(cameraM.cameraComponent.orthographicSize,2,10) * 0.0025f;
-			nameCanvas.transform.Find("NameBackground-Image/HealthIndicator-Image").GetComponent<Image>().color = Color.Lerp(UIManager.GetColour(UIManager.Colours.LightRed), UIManager.GetColour(UIManager.Colours.LightGreen), health);
-
-			SetMoveSprite();
-		}
-
-		public void SetNameColour(Color nameColour) {
-			nameCanvas.transform.Find("NameBackground-Image/NameColour-Image").GetComponent<Image>().color = nameColour;
-		}
-
-		public void ChangeClothing(Appearance appearance, ResourceManager.ClothingInstance clothingInstance) {
-			if (clothes[appearance] != null) {
-				if (clothes[appearance].human != null) {
-					if (clothes[appearance].human != this) {
-						clothes[appearance].human.ChangeClothing(appearance, null);
-					}
-					clothes[appearance].human = null;
-				}
-			}
-
-			clothes[appearance] = clothingInstance;
-			if (clothingInstance != null) {
-				clothingInstance.human = this;
-				humanObj.transform.Find(appearance.ToString()).GetComponent<SpriteRenderer>().sprite = clothingInstance.moveSprites[0];
-			} else {
-				humanObj.transform.Find(appearance.ToString()).GetComponent<SpriteRenderer>().sprite = resourceM.clearSquareSprite;
-			}
-
-			SetColour(overTile.sr.color);
-		}
-
-		public override void SetColour(Color newColour) {
-			base.SetColour(newColour);
-			
-			foreach (Appearance appearance in clothes.Keys) {
-				humanObj.transform.Find(appearance.ToString()).GetComponent<SpriteRenderer>().color = new Color(newColour.r, newColour.g, newColour.b, 1f);
-			}
-		}
-
-		private void SetMoveSprite() {
-			int moveSpriteIndex = CalculateMoveSpriteIndex();
-			foreach (KeyValuePair<Appearance, ResourceManager.ClothingInstance> appearanceToClothingInstanceKVP in clothes) {
-				if (appearanceToClothingInstanceKVP.Value != null) {
-					humanObj.transform.Find(appearanceToClothingInstanceKVP.Key.ToString()).GetComponent<SpriteRenderer>().sprite = appearanceToClothingInstanceKVP.Value.moveSprites[moveSpriteIndex];
-				}
-			}
-		}
-	}
-
-	private void SetSelectedHumanFromClick() {
-		Vector2 mousePosition = cameraM.cameraComponent.ScreenToWorldPoint(Input.mousePosition);
-		if (Input.GetMouseButtonDown(0) && !uiM.IsPointerOverUI()) {
-			List<Human> humans = new List<Human>();
-			humans.AddRange(colonists.ToArray());
-			humans.AddRange(traders.ToArray());
-			Human newSelectedHuman = humans.Find(human => Vector2.Distance(human.obj.transform.position, mousePosition) < 0.5f);
-			if (newSelectedHuman != null) {
-				SetSelectedHuman(newSelectedHuman);
-			} else if (selectedHuman != null && selectedHuman is Colonist) {
-				((Colonist)selectedHuman).PlayerMoveToTile(tileM.map.GetTileFromPosition(mousePosition));
-			}
-		}
-		if (Input.GetMouseButtonDown(1)) {
-			SetSelectedHuman(null);
-		}
-	}
-
-	public void SetSelectedHuman(Human human) {
-		selectedHuman = human;
-
-		SetSelectedHumanIndicator();
-
-		uiM.SetSelectedColonistInformation();
-		uiM.SetSelectedTraderMenu();
-		uiM.SetRightListPanelSize();
-	}
-
-	void SetSelectedHumanIndicator() {
-		if (selectedHumanIndicator != null) {
-			Destroy(selectedHumanIndicator);
-		}
-		if (selectedHuman != null) {
-			selectedHumanIndicator = Instantiate(resourceM.tilePrefab, selectedHuman.obj.transform, false);
-			selectedHumanIndicator.name = "SelectedHumanIndicator";
-			selectedHumanIndicator.transform.localScale = new Vector2(1f, 1f) * 1.2f;
-
-			SpriteRenderer sCISR = selectedHumanIndicator.GetComponent<SpriteRenderer>();
-			sCISR.sprite = resourceM.selectionCornersSprite;
-			sCISR.sortingOrder = 20; // Selected Colonist Indicator Sprite
-			sCISR.color = new Color(1f, 1f, 1f, 0.75f);
+		if (!GameManager.timeM.GetPaused()) {
+			GameManager.jobM.GiveJobsToColonists();
 		}
 	}
 
@@ -425,21 +29,21 @@ public class ColonistManager : MonoBehaviour {
 		public SkillTypeEnum type;
 		public string name;
 
-		public Dictionary<JobManager.JobTypesEnum,float> affectedJobTypes = new Dictionary<JobManager.JobTypesEnum,float>();
+		public Dictionary<JobManager.JobTypesEnum, float> affectedJobTypes = new Dictionary<JobManager.JobTypesEnum, float>();
 
 		public SkillPrefab(List<string> data) {
-			type = (SkillTypeEnum)Enum.Parse(typeof(SkillTypeEnum),data[0]);
+			type = (SkillTypeEnum)Enum.Parse(typeof(SkillTypeEnum), data[0]);
 			name = type.ToString();
 
 			foreach (string affectedJobTypeString in data[1].Split(';')) {
 				List<string> affectedJobTypeData = affectedJobTypeString.Split(',').ToList();
-				affectedJobTypes.Add((JobManager.JobTypesEnum)Enum.Parse(typeof(JobManager.JobTypesEnum),affectedJobTypeData[0]),float.Parse(affectedJobTypeData[1]));
+				affectedJobTypes.Add((JobManager.JobTypesEnum)Enum.Parse(typeof(JobManager.JobTypesEnum), affectedJobTypeData[0]), float.Parse(affectedJobTypeData[1]));
 			}
 		}
 	}
 
 	public SkillPrefab GetSkillPrefabFromString(string skillTypeString) {
-		return skillPrefabs.Find(skillPrefab => skillPrefab.type == (SkillTypeEnum)Enum.Parse(typeof(SkillTypeEnum),skillTypeString));
+		return skillPrefabs.Find(skillPrefab => skillPrefab.type == (SkillTypeEnum)Enum.Parse(typeof(SkillTypeEnum), skillTypeString));
 	}
 
 	public class SkillInstance {
@@ -460,7 +64,7 @@ public class ColonistManager : MonoBehaviour {
 				level = startingLevel;
 			}
 
-			currentExperience = UnityEngine.Random.Range(0,100);
+			currentExperience = UnityEngine.Random.Range(0, 100);
 			nextLevelExperience = 100 + (10 * level);
 			AddExperience(0);
 		}
@@ -472,9 +76,9 @@ public class ColonistManager : MonoBehaviour {
 				currentExperience = (currentExperience - nextLevelExperience);
 				nextLevelExperience = 100 + (10 * level);
 			}
-			colonist.jobM.UpdateColonistJobCosts(colonist);
-			if (colonist.colonistM.selectedHuman == colonist) {
-				colonist.uiM.RemakeSelectedColonistSkills();
+			GameManager.jobM.UpdateColonistJobCosts(colonist);
+			if (GameManager.humanM.selectedHuman == colonist) {
+				GameManager.uiM.RemakeSelectedColonistSkills();
 			}
 		}
 
@@ -485,8 +89,8 @@ public class ColonistManager : MonoBehaviour {
 
 	public List<SkillPrefab> skillPrefabs = new List<SkillPrefab>();
 
-	void CreateColonistSkills() {
-		List<string> stringSkills = Resources.Load<TextAsset>(@"Data/colonistSkills").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('`').ToList();
+	public void CreateColonistSkills() {
+		List<string> stringSkills = Resources.Load<TextAsset>(@"Data/colonistSkills").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
 		foreach (string stringSkill in stringSkills) {
 			List<string> stringSkillData = stringSkill.Split('/').ToList();
 			skillPrefabs.Add(new SkillPrefab(stringSkillData));
@@ -508,25 +112,25 @@ public class ColonistManager : MonoBehaviour {
 
 		public SkillPrefab primarySkill;
 
-		public Dictionary<SkillPrefab,int> skillRandomMaxValues = new Dictionary<SkillPrefab,int>();
+		public Dictionary<SkillPrefab, int> skillRandomMaxValues = new Dictionary<SkillPrefab, int>();
 
 		public List<Colonist> colonistsInProfessionAtStart = new List<Colonist>();
 		public List<Colonist> colonistsInProfession = new List<Colonist>();
 
-		public Profession(List<string> data, ColonistManager colonistM) {
-			type = (ProfessionTypeEnum)Enum.Parse(typeof(ProfessionTypeEnum),data[0]);
+		public Profession(List<string> data) {
+			type = (ProfessionTypeEnum)Enum.Parse(typeof(ProfessionTypeEnum), data[0]);
 			name = type.ToString();
 
 			description = data[1];
 
 			int primarySkillString = 0;
-			if (!int.TryParse(data[2],out primarySkillString)) {
-				primarySkill = colonistM.GetSkillPrefabFromString(data[2]);
+			if (!int.TryParse(data[2], out primarySkillString)) {
+				primarySkill = GameManager.colonistM.GetSkillPrefabFromString(data[2]);
 			}
 
 			foreach (string skillRandomMaxValueData in data[3].Split(';')) {
 				List<string> skillRandomMaxValue = skillRandomMaxValueData.Split(',').ToList();
-				skillRandomMaxValues.Add(colonistM.GetSkillPrefabFromString(skillRandomMaxValue[0]),int.Parse(skillRandomMaxValue[1]));
+				skillRandomMaxValues.Add(GameManager.colonistM.GetSkillPrefabFromString(skillRandomMaxValue[0]), int.Parse(skillRandomMaxValue[1]));
 			}
 		}
 
@@ -543,11 +147,11 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	void CreateColonistProfessions() {
-		List<string> stringProfessions = Resources.Load<TextAsset>(@"Data/colonistProfessions").text.Replace("\n",string.Empty).Replace("\t",string.Empty).Split('`').ToList();
+	public void CreateColonistProfessions() {
+		List<string> stringProfessions = Resources.Load<TextAsset>(@"Data/colonistProfessions").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
 		foreach (string stringProfession in stringProfessions) {
 			List<string> stringProfessionData = stringProfession.Split('/').ToList();
-			professions.Add(new Profession(stringProfessionData,this));
+			professions.Add(new Profession(stringProfessionData));
 		}
 		foreach (Profession profession in professions) {
 			profession.name = UIManager.SplitByCapitals(profession.name);
@@ -585,7 +189,7 @@ public class ColonistManager : MonoBehaviour {
 		public Colonist colonist;
 		public TraitPrefab prefab;
 
-		public TraitInstance(Colonist colonist,TraitPrefab prefab) {
+		public TraitInstance(Colonist colonist, TraitPrefab prefab) {
 			this.colonist = colonist;
 			this.prefab = prefab;
 		}
@@ -609,12 +213,12 @@ public class ColonistManager : MonoBehaviour {
 		{ JobManager.JobTypesEnum.Eat, NeedsEnum.Food }
 	};
 
-	public Dictionary<NeedsEnum,Func<NeedInstance,float>> needsValueSpecialIncreases = new Dictionary<NeedsEnum,Func<NeedInstance,float>>();
+	public Dictionary<NeedsEnum, Func<NeedInstance, float>> needsValueSpecialIncreases = new Dictionary<NeedsEnum, Func<NeedInstance, float>>();
 
 	public void InitializeNeedsValueSpecialIncreases() {
 		needsValueSpecialIncreases.Add(NeedsEnum.Rest, delegate (NeedInstance need) {
 			float totalSpecialIncrease = 0;
-			if (!timeM.isDay) {
+			if (!GameManager.timeM.isDay) {
 				totalSpecialIncrease += 0.05f;
 			}
 			HappinessModifierInstance hmi = need.colonist.happinessModifiers.Find(findHMI => findHMI.prefab.group.type == HappinessModifierGroupsEnum.Rest);
@@ -653,33 +257,31 @@ public class ColonistManager : MonoBehaviour {
 				needIncreaseAmount *= need.prefab.traitsAffectingThisNeed[trait.prefab.type];
 			}
 		}
-		need.ChangeValue((needIncreaseAmount + (needsValueSpecialIncreases.ContainsKey(need.prefab.type) ? needsValueSpecialIncreases[need.prefab.type](need) : 0)) * timeM.deltaTime);
+		need.ChangeValue((needIncreaseAmount + (needsValueSpecialIncreases.ContainsKey(need.prefab.type) ? needsValueSpecialIncreases[need.prefab.type](need) : 0)) * GameManager.timeM.deltaTime);
 	}
 
-	KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>> FindClosestFood(Colonist colonist, float minimumNutritionRequired,bool takeFromOtherColonists,bool eatAnything) {
-		List<KeyValuePair<KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>>,int>> resourcesPerInventory = new List<KeyValuePair<KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>>,int>>();
-		foreach (ResourceManager.Container container in resourceM.containers.Where(c => c.parentObject.tile.region == colonist.overTile.region).OrderBy(c => pathM.RegionBlockDistance(colonist.overTile.regionBlock,c.parentObject.tile.regionBlock,true,true,false))) {
-			if (container.inventory.resources.Find(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods) != null) {
-				List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
-				int totalNutrition = 0;
-				foreach (ResourceManager.ResourceAmount ra in container.inventory.resources.Where(ra => ra.resource.resourceGroup.type == ResourceManager.ResourceGroupsEnum.Foods).OrderBy(ra => ra.resource.nutrition).ToList()) {
-					int numReserved = 0;
-					for (int i = 0; i < ra.amount; i++) {
-						numReserved += 1;
-						totalNutrition += ra.resource.nutrition;
-						if (totalNutrition >= minimumNutritionRequired) {
-							break;
-						}
-					}
-					resourcesToReserve.Add(new ResourceManager.ResourceAmount(ra.resource,numReserved));
+	KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>> FindClosestFood(Colonist colonist, float minimumNutritionRequired, bool takeFromOtherColonists, bool eatAnything) {
+		List<KeyValuePair<KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>, int>> resourcesPerInventory = new List<KeyValuePair<KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>, int>>();
+		int totalNutrition = 0;
+		foreach (ResourceManager.Container container in GameManager.resourceM.containers.Where(c => c.tile.region == colonist.overTile.region).OrderBy(c => PathManager.RegionBlockDistance(colonist.overTile.regionBlock, c.tile.regionBlock, true, true, false))) {
+			List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
+			foreach (ResourceManager.ResourceAmount ra in container.inventory.resources.Where(ra => ra.resource.resourceClasses.Contains(ResourceManager.ResourceClass.Food)).OrderBy(ra => ((ResourceManager.Food)ra.resource).nutrition).ToList()) {
+				int numReserved = 0;
+				for (int i = 0; i < ra.amount; i++) {
+					numReserved += 1;
+					totalNutrition += ((ResourceManager.Food)ra.resource).nutrition;
 					if (totalNutrition >= minimumNutritionRequired) {
 						break;
 					}
 				}
+				resourcesToReserve.Add(new ResourceManager.ResourceAmount(ra.resource, numReserved));
 				if (totalNutrition >= minimumNutritionRequired) {
-					resourcesPerInventory.Add(new KeyValuePair<KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>>,int>(new KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>>(container.inventory,resourcesToReserve),totalNutrition));
 					break;
 				}
+			}
+			if (totalNutrition >= minimumNutritionRequired) {
+				resourcesPerInventory.Add(new KeyValuePair<KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>, int>(new KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>(container.inventory, resourcesToReserve), totalNutrition));
+				break;
 			}
 		}
 		if (takeFromOtherColonists) {
@@ -688,7 +290,7 @@ public class ColonistManager : MonoBehaviour {
 		if (resourcesPerInventory.Count > 0) {
 			return resourcesPerInventory[0].Key;
 		} else {
-			return new KeyValuePair<ResourceManager.Inventory,List<ResourceManager.ResourceAmount>>(null,null);
+			return new KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>(null, null);
 		}
 	}
 
@@ -701,8 +303,8 @@ public class ColonistManager : MonoBehaviour {
 				if (closestFood.Key.container != null) {
 					ResourceManager.Container container = closestFood.Key.container;
 					container.inventory.ReserveResources(resourcesToReserve, need.colonist);
-					JobManager.Job job = new JobManager.Job(container.parentObject.tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.CollectFood), 0);
-					need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, job, null, null, jobM, pathM));
+					JobManager.Job job = new JobManager.Job(container.tile, GameManager.resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.CollectFood), 0);
+					need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, job, null, null));
 					return true;
 				} else if (closestFood.Key.human != null) {
 					// TODO
@@ -711,7 +313,7 @@ public class ColonistManager : MonoBehaviour {
 				}
 			}
 		} else {
-			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(need.colonist.overTile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat), 0), null, null, jobM, pathM));
+			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(need.colonist.overTile, GameManager.resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Eat), 0), null, null));
 			return true;
 		}
 		return false;
@@ -720,7 +322,7 @@ public class ColonistManager : MonoBehaviour {
 	public int FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum resourceGroup, Colonist colonist, bool worldTotal, bool includeOtherColonists) {
 		if (worldTotal) {
 			int total = 0;
-			foreach (ResourceManager.Resource resource in resourceM.resources) {
+			foreach (ResourceManager.Resource resource in GameManager.resourceM.resources) {
 				if (resource.resourceGroup.type == resourceGroup) {
 					total += resource.GetWorldTotalAmount();
 				}
@@ -736,7 +338,7 @@ public class ColonistManager : MonoBehaviour {
 			total += amountOnThisColonist;
 
 			int amountUnreservedInContainers = 0;
-			foreach (ResourceManager.Resource resource in resourceM.resources.Where(r => r.resourceGroup.type == resourceGroup)) {
+			foreach (ResourceManager.Resource resource in GameManager.resourceM.resources.Where(r => r.resourceGroup.type == resourceGroup)) {
 				amountUnreservedInContainers += resource.GetUnreservedContainerTotalAmount();
 			}
 			total += amountUnreservedInContainers;
@@ -760,17 +362,17 @@ public class ColonistManager : MonoBehaviour {
 	}
 
 	public bool GetSleep(NeedInstance need, bool sleepAnywhere) {
-		if (resourceM.sleepSpots.Count > 0) {
-			List<ResourceManager.SleepSpot> validSleepSpots = resourceM.sleepSpots.Where(sleepSpot => sleepSpot.occupyingColonist == null && sleepSpot.parentObject.tile.region == need.colonist.overTile.region).ToList();
+		if (GameManager.resourceM.sleepSpots.Count > 0) {
+			List<ResourceManager.SleepSpot> validSleepSpots = GameManager.resourceM.sleepSpots.Where(sleepSpot => sleepSpot.occupyingColonist == null && sleepSpot.tile.region == need.colonist.overTile.region).ToList();
 			if (validSleepSpots.Count > 0) {
-				ResourceManager.SleepSpot chosenSleepSpot = validSleepSpots.OrderByDescending(sleepSpot => sleepSpot.parentObject.prefab.restComfortAmount / (pathM.RegionBlockDistance(need.colonist.overTile.regionBlock, sleepSpot.parentObject.tile.regionBlock, true, true, false) + 1)).ToList()[0];
+				ResourceManager.SleepSpot chosenSleepSpot = validSleepSpots.OrderByDescending(sleepSpot => sleepSpot.prefab.restComfortAmount / (PathManager.RegionBlockDistance(need.colonist.overTile.regionBlock, sleepSpot.tile.regionBlock, true, true, false) + 1)).ToList()[0];
 				chosenSleepSpot.StartSleeping(need.colonist);
-				need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(chosenSleepSpot.parentObject.tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Sleep), 0), null, null, jobM, pathM));
+				need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(chosenSleepSpot.tile, GameManager.resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Sleep), 0), null, null));
 				return true;
 			}
 		}
 		if (sleepAnywhere) {
-			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(need.colonist.overTile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Sleep), 0), null, null, jobM, pathM));
+			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(need.colonist.overTile, GameManager.resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.Sleep), 0), null, null));
 			return true;
 		}
 		return false;
@@ -779,12 +381,12 @@ public class ColonistManager : MonoBehaviour {
 	public Dictionary<NeedsEnum, Func<NeedInstance, bool>> needsValueFunctions = new Dictionary<NeedsEnum, Func<NeedInstance, bool>>();
 
 	public void InitializeNeedsValueFunctions() {
-		needsValueFunctions.Add(NeedsEnum.Food,delegate (NeedInstance need) {
+		needsValueFunctions.Add(NeedsEnum.Food, delegate (NeedInstance need) {
 			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.CollectFood || need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Eat)) {
 				if (need.prefab.critValueAction && need.GetValue() >= need.prefab.critValue) {
-					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * timeM.deltaTime);
-					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,false,false) > 0) { // true, true
-						if (timeM.minuteChanged) {
+					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * GameManager.timeM.deltaTime);
+					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods, need.colonist, false, false) > 0) { // true, true
+						if (GameManager.timeM.minuteChanged) {
 							need.colonist.ReturnJob();
 							return GetFood(need, false, false); // true, true - TODO use these once implemented
 						}
@@ -792,8 +394,8 @@ public class ColonistManager : MonoBehaviour {
 					return false;
 				}
 				if (need.prefab.maxValueAction && need.GetValue() >= need.prefab.maxValue) {
-					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods,need.colonist,false,false) > 0) { // false, true
-						if (timeM.minuteChanged && UnityEngine.Random.Range(0f, 1f) < ((need.GetValue() - need.prefab.maxValue) / (need.prefab.critValue - need.prefab.maxValue))) {
+					if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods, need.colonist, false, false) > 0) { // false, true
+						if (GameManager.timeM.minuteChanged && UnityEngine.Random.Range(0f, 1f) < ((need.GetValue() - need.prefab.maxValue) / (need.prefab.critValue - need.prefab.maxValue))) {
 							need.colonist.ReturnJob();
 							return GetFood(need, false, false); // true, false - TODO use these once implemented
 						}
@@ -803,7 +405,7 @@ public class ColonistManager : MonoBehaviour {
 				if (need.prefab.minValueAction && need.GetValue() >= need.prefab.minValue) {
 					if (need.colonist.job == null) {
 						if (FindAvailableResourceAmount(ResourceManager.ResourceGroupsEnum.Foods, need.colonist, false, false) > 0) {
-							if (timeM.minuteChanged && UnityEngine.Random.Range(0f, 1f) < ((need.GetValue() - need.prefab.minValue) / (need.prefab.maxValue - need.prefab.minValue))) {
+							if (GameManager.timeM.minuteChanged && UnityEngine.Random.Range(0f, 1f) < ((need.GetValue() - need.prefab.minValue) / (need.prefab.maxValue - need.prefab.minValue))) {
 								need.colonist.ReturnJob();
 								return GetFood(need, false, false);
 							}
@@ -817,7 +419,7 @@ public class ColonistManager : MonoBehaviour {
 		needsValueFunctions.Add(NeedsEnum.Water, delegate (NeedInstance need) {
 			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.CollectWater || need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Drink)) {
 				if (need.prefab.critValueAction && need.GetValue() >= need.prefab.critValue) {
-					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * timeM.deltaTime);
+					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * GameManager.timeM.deltaTime);
 					// TODO Find Water Here (Maximum Priority)
 					return false;
 				}
@@ -834,18 +436,18 @@ public class ColonistManager : MonoBehaviour {
 			}
 			return false;
 		});
-		needsValueFunctions.Add(NeedsEnum.Rest,delegate (NeedInstance need) {
+		needsValueFunctions.Add(NeedsEnum.Rest, delegate (NeedInstance need) {
 			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Sleep)) {
 				if (need.prefab.critValueAction && need.GetValue() >= need.prefab.critValue) {
-					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * timeM.deltaTime);
-					if (timeM.minuteChanged) {
+					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * GameManager.timeM.deltaTime);
+					if (GameManager.timeM.minuteChanged) {
 						need.colonist.ReturnJob();
 						GetSleep(need, true);
 					}
 					return false;
 				}
 				if (need.prefab.maxValueAction && need.GetValue() >= need.prefab.maxValue) {
-					if (timeM.minuteChanged && UnityEngine.Random.Range(0f, 1f) < ((need.GetValue() - need.prefab.maxValue) / (need.prefab.critValue - need.prefab.maxValue))) {
+					if (GameManager.timeM.minuteChanged && UnityEngine.Random.Range(0f, 1f) < ((need.GetValue() - need.prefab.maxValue) / (need.prefab.critValue - need.prefab.maxValue))) {
 						need.colonist.ReturnJob();
 						GetSleep(need, true);
 					}
@@ -853,42 +455,42 @@ public class ColonistManager : MonoBehaviour {
 				}
 				if (need.prefab.minValueAction && need.GetValue() >= need.prefab.minValue) {
 					if (need.colonist.job == null) {
-						if (timeM.minuteChanged && UnityEngine.Random.Range(0f, 1f) < ((need.GetValue() - need.prefab.minValue) / (need.prefab.maxValue - need.prefab.minValue))) {
+						if (GameManager.timeM.minuteChanged && UnityEngine.Random.Range(0f, 1f) < ((need.GetValue() - need.prefab.minValue) / (need.prefab.maxValue - need.prefab.minValue))) {
 							need.colonist.ReturnJob();
 							GetSleep(need, false);
 						}
-						
+
 					}
 					return false;
 				}
 			}
 			return false;
 		});
-		needsValueFunctions.Add(NeedsEnum.Clothing,delegate (NeedInstance need) {
+		needsValueFunctions.Add(NeedsEnum.Clothing, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		});
-		needsValueFunctions.Add(NeedsEnum.Shelter,delegate (NeedInstance need) {
+		needsValueFunctions.Add(NeedsEnum.Shelter, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		});
-		needsValueFunctions.Add(NeedsEnum.Temperature,delegate (NeedInstance need) {
+		needsValueFunctions.Add(NeedsEnum.Temperature, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		});
-		needsValueFunctions.Add(NeedsEnum.Safety,delegate (NeedInstance need) {
+		needsValueFunctions.Add(NeedsEnum.Safety, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		});
-		needsValueFunctions.Add(NeedsEnum.Social,delegate (NeedInstance need) {
+		needsValueFunctions.Add(NeedsEnum.Social, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		});
-		needsValueFunctions.Add(NeedsEnum.Esteem,delegate (NeedInstance need) {
+		needsValueFunctions.Add(NeedsEnum.Esteem, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		});
-		needsValueFunctions.Add(NeedsEnum.Relaxation,delegate (NeedInstance need) {
+		needsValueFunctions.Add(NeedsEnum.Relaxation, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		});
@@ -950,7 +552,7 @@ public class ColonistManager : MonoBehaviour {
 
 		public int priority;
 
-		public Dictionary<TraitsEnum,float> traitsAffectingThisNeed = new Dictionary<TraitsEnum,float>();
+		public Dictionary<TraitsEnum, float> traitsAffectingThisNeed = new Dictionary<TraitsEnum, float>();
 
 		public List<JobManager.JobTypesEnum> relatedJobs = new List<JobManager.JobTypesEnum>();
 
@@ -1012,7 +614,7 @@ public class ColonistManager : MonoBehaviour {
 		private float value = 0;
 		private int roundedValue = 0;
 
-		public NeedInstance(Colonist colonist,NeedPrefab prefab) {
+		public NeedInstance(Colonist colonist, NeedPrefab prefab) {
 			this.colonist = colonist;
 			this.prefab = prefab;
 		}
@@ -1026,8 +628,8 @@ public class ColonistManager : MonoBehaviour {
 			value = newValue;
 			Mathf.Clamp(value, 0, prefab.clampValue);
 			roundedValue = Mathf.RoundToInt((value / prefab.clampValue) * 100);
-			if (colonist.colonistM.selectedHuman == colonist && Mathf.RoundToInt((oldValue / prefab.clampValue) * 100) != roundedValue) {
-				colonist.uiM.RemakeSelectedColonistNeeds();
+			if (GameManager.humanM.selectedHuman == colonist && Mathf.RoundToInt((oldValue / prefab.clampValue) * 100) != roundedValue) {
+				GameManager.uiM.RemakeSelectedColonistNeeds();
 			}
 		}
 
@@ -1040,7 +642,7 @@ public class ColonistManager : MonoBehaviour {
 		}
 	}
 
-	void CreateColonistNeeds() {
+	public void CreateColonistNeeds() {
 		List<string> needDataStringList = Resources.Load<TextAsset>(@"Data/colonistNeeds").text.Replace("\t", string.Empty).Split(new string[] { "<Need>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
 		foreach (string singleNeedDataString in needDataStringList) {
 
@@ -1121,7 +723,7 @@ public class ColonistManager : MonoBehaviour {
 							}
 							break;
 						default:
-							print("Unknown need label: \"" + singleNeedDataLineString + "\"");
+							MonoBehaviour.print("Unknown need label: \"" + singleNeedDataLineString + "\"");
 							break;
 					}
 				}
@@ -1270,14 +872,14 @@ public class ColonistManager : MonoBehaviour {
 							}
 							break;
 						default:
-							print("Unknown happiness modifier label: \"" + stringHappinessModifierSingle + "\"");
+							MonoBehaviour.print("Unknown happiness modifier label: \"" + stringHappinessModifierSingle + "\"");
 							break;
 					}
 				}
 			}
 
 			if (string.IsNullOrEmpty(name) || effectAmount == 0 || effectLengthSeconds == 0) {
-				print("Potential issue parsing happiness modifier: " + stringHappinessModifier);
+				MonoBehaviour.print("Potential issue parsing happiness modifier: " + stringHappinessModifier);
 			}
 		}
 	}
@@ -1303,8 +905,8 @@ public class ColonistManager : MonoBehaviour {
 			timer = prefab.effectLengthSeconds;
 		}
 
-		public void Update(TimeManager timeM) {
-			timer -= 1 * timeM.deltaTime;
+		public void Update() {
+			timer -= 1 * GameManager.timeM.deltaTime;
 		}
 	}
 
@@ -1312,7 +914,7 @@ public class ColonistManager : MonoBehaviour {
 
 	private List<Colonist> deadColonists = new List<Colonist>();
 
-	public class Colonist : Human {
+	public class Colonist : HumanManager.Human {
 
 		public bool playerMoved;
 
@@ -1343,22 +945,24 @@ public class ColonistManager : MonoBehaviour {
 		public Colonist(TileManager.Tile spawnTile, Profession profession, float startingHealth) : base(spawnTile, startingHealth) {
 			SetNameColour(UIManager.GetColour(UIManager.Colours.LightGreen));
 
-			obj.transform.SetParent(GameObject.Find("ColonistParent").transform,false);
+			obj.transform.SetParent(GameObject.Find("ColonistParent").transform, false);
 
 			this.profession = profession;
 			profession.colonistsInProfessionAtStart.Add(this);
 			profession.colonistsInProfession.Add(this);
 
-			foreach (SkillPrefab skillPrefab in colonistM.skillPrefabs) {
-				skills.Add(new SkillInstance(this,skillPrefab,true,0));
+			foreach (SkillPrefab skillPrefab in GameManager.colonistM.skillPrefabs) {
+				skills.Add(new SkillInstance(this, skillPrefab, true, 0));
 			}
 
-			foreach (NeedPrefab needPrefab in colonistM.needPrefabs) {
-				needs.Add(new NeedInstance(this,needPrefab));
+			foreach (NeedPrefab needPrefab in GameManager.colonistM.needPrefabs) {
+				needs.Add(new NeedInstance(this, needPrefab));
 			}
 			needs = needs.OrderBy(need => need.prefab.priority).ToList();
 
-			oldProfession = colonistM.professions.Find(findProfession => findProfession.type == ProfessionTypeEnum.Nothing);
+			oldProfession = GameManager.colonistM.professions.Find(findProfession => findProfession.type == ProfessionTypeEnum.Nothing);
+
+			GameManager.colonistM.colonists.Add(this);
 		}
 
 		public override void Update() {
@@ -1380,21 +984,21 @@ public class ColonistManager : MonoBehaviour {
 			UpdateHappiness();
 
 			if (overTileChanged) {
-				jobM.UpdateColonistJobCosts(this);
+				GameManager.jobM.UpdateColonistJobCosts(this);
 			}
 
 			if (job != null) {
 				if (!job.started && overTile == job.tile) {
 					StartJob();
 				}
-				if (job.started && overTile == job.tile && !Mathf.Approximately(job.jobProgress,0)) {
+				if (job.started && overTile == job.tile && !Mathf.Approximately(job.jobProgress, 0)) {
 					WorkJob();
 				}
 			}
 			if (job == null) {
 				if (path.Count <= 0) {
 					List<ResourceManager.Container> validEmptyInventoryContainers = FindValidContainersToEmptyInventory();
-					if ((inventory.CountResources() >= inventory.maxAmount && jobM.GetColonistJobsCountForColonist(this) == 0) && validEmptyInventoryContainers.Count > 0) {
+					if ((inventory.CountResources() >= inventory.maxAmount && GameManager.jobM.GetColonistJobsCountForColonist(this) == 0) && validEmptyInventoryContainers.Count > 0) {
 						EmptyInventory(validEmptyInventoryContainers);
 					} else {
 						Wander();
@@ -1409,39 +1013,39 @@ public class ColonistManager : MonoBehaviour {
 			base.Die();
 
 			ReturnJob();
-			colonistM.colonists.Remove(this);
-			uiM.SetColonistElements();
-			uiM.SetJobElements();
-			foreach (ResourceManager.Container container in resourceM.containers) {
+			GameManager.colonistM.colonists.Remove(this);
+			GameManager.uiM.SetColonistElements();
+			GameManager.uiM.SetJobElements();
+			foreach (ResourceManager.Container container in GameManager.resourceM.containers) {
 				container.inventory.ReleaseReservedResources(this);
 			}
-			if (colonistM.selectedHuman == this) {
-				colonistM.SetSelectedHuman(null);
+			if (GameManager.humanM.selectedHuman == this) {
+				GameManager.humanM.SetSelectedHuman(null);
 			}
-			jobM.UpdateAllColonistJobCosts();
+			GameManager.jobM.UpdateAllColonistJobCosts();
 		}
 
 		public List<ResourceManager.Container> FindValidContainersToEmptyInventory() {
-			return resourceM.containers.Where(container => container.parentObject.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
+			return GameManager.resourceM.containers.Where(container => container.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
 		}
 
 		public void EmptyInventory(List<ResourceManager.Container> validContainers) {
 			if (inventory.CountResources() > 0 && validContainers.Count > 0) {
-				ResourceManager.Container closestContainer = validContainers.OrderBy(container => pathM.RegionBlockDistance(container.parentObject.tile.regionBlock, overTile.regionBlock, true, true, false)).ToList()[0];
-				SetJob(new JobManager.ColonistJob(this, new JobManager.Job(closestContainer.parentObject.tile, resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory), 0), null, null, jobM, pathM));
+				ResourceManager.Container closestContainer = validContainers.OrderBy(container => PathManager.RegionBlockDistance(container.tile.regionBlock, overTile.regionBlock, true, true, false)).ToList()[0];
+				SetJob(new JobManager.ColonistJob(this, new JobManager.Job(closestContainer.tile, GameManager.resourceM.GetTileObjectPrefabByEnum(ResourceManager.TileObjectPrefabsEnum.EmptyInventory), 0), null, null));
 			}
 		}
 
 		private void UpdateNeeds() {
 			foreach (NeedInstance need in needs) {
-				colonistM.CalculateNeedValue(need);
+				GameManager.colonistM.CalculateNeedValue(need);
 				bool checkNeed = false;
 				if (need.colonist.job == null) {
 					checkNeed = true;
 				} else {
-					if (colonistM.needRelatedJobs.Contains(need.colonist.job.prefab.jobType)) {
-						if (colonistM.jobToNeedMap.ContainsKey(need.colonist.job.prefab.jobType)) {
-							if (need.prefab.priority < colonistM.GetNeedPrefabFromEnum(colonistM.jobToNeedMap[need.colonist.job.prefab.jobType]).priority) {
+					if (GameManager.colonistM.needRelatedJobs.Contains(need.colonist.job.prefab.jobType)) {
+						if (GameManager.colonistM.jobToNeedMap.ContainsKey(need.colonist.job.prefab.jobType)) {
+							if (need.prefab.priority < GameManager.colonistM.GetNeedPrefabFromEnum(GameManager.colonistM.jobToNeedMap[need.colonist.job.prefab.jobType]).priority) {
 								checkNeed = true;
 							}
 						} else {
@@ -1452,7 +1056,7 @@ public class ColonistManager : MonoBehaviour {
 					}
 				}
 				if (checkNeed) {
-					if (colonistM.needsValueFunctions[need.prefab.type](need)) {
+					if (GameManager.colonistM.needsValueFunctions[need.prefab.type](need)) {
 						break;
 					}
 				}
@@ -1460,13 +1064,13 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void UpdateHappinessModifiers() {
-			foreach (HappinessModifierGroup happinessModifierGroup in colonistM.happinessModifierGroups) {
-				colonistM.happinessModifierFunctions[happinessModifierGroup.type](this);
+			foreach (HappinessModifierGroup happinessModifierGroup in GameManager.colonistM.happinessModifierGroups) {
+				GameManager.colonistM.happinessModifierFunctions[happinessModifierGroup.type](this);
 			}
 
 			for (int i = 0; i < happinessModifiers.Count; i++) {
 				HappinessModifierInstance happinessModifier = happinessModifiers[i];
-				happinessModifier.Update(timeM);
+				happinessModifier.Update();
 				if (happinessModifier.timer <= 0) {
 					RemoveHappinessModifier(happinessModifier.prefab.type);
 					i -= 1;
@@ -1475,21 +1079,21 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void AddHappinessModifier(HappinessModifiersEnum happinessModifierEnum) {
-			HappinessModifierInstance hmi = new HappinessModifierInstance(this, colonistM.GetHappinessModifierPrefabFromEnum(happinessModifierEnum));
+			HappinessModifierInstance hmi = new HappinessModifierInstance(this, GameManager.colonistM.GetHappinessModifierPrefabFromEnum(happinessModifierEnum));
 			HappinessModifierInstance sameGroupHMI = happinessModifiers.Find(findHMI => hmi.prefab.group.type == findHMI.prefab.group.type);
 			if (sameGroupHMI != null) {
 				RemoveHappinessModifier(sameGroupHMI.prefab.type);
 			}
 			happinessModifiers.Add(hmi);
-			if (colonistM.selectedHuman == this) {
-				uiM.RemakeSelectedColonistHappinessModifiers();
+			if (GameManager.humanM.selectedHuman == this) {
+				GameManager.uiM.RemakeSelectedColonistHappinessModifiers();
 			}
 		}
 
 		public void RemoveHappinessModifier(HappinessModifiersEnum happinessModifierEnum) {
 			happinessModifiers.Remove(happinessModifiers.Find(findHMI => findHMI.prefab.type == happinessModifierEnum));
-			if (colonistM.selectedHuman == this) {
-				uiM.RemakeSelectedColonistHappinessModifiers();
+			if (GameManager.humanM.selectedHuman == this) {
+				GameManager.uiM.RemakeSelectedColonistHappinessModifiers();
 			}
 		}
 
@@ -1500,20 +1104,20 @@ public class ColonistManager : MonoBehaviour {
 
 			float targetHappiness = Mathf.Clamp(baseHappiness + happinessModifiersSum, 0, 100);
 			float happinessChangeAmount = ((targetHappiness - effectiveHappiness) / (effectiveHappiness <= 0f ? 1f : effectiveHappiness));
-			effectiveHappiness += happinessChangeAmount * timeM.deltaTime;
+			effectiveHappiness += happinessChangeAmount * GameManager.timeM.deltaTime;
 			effectiveHappiness = Mathf.Clamp(effectiveHappiness, 0, 100);
 		}
 
-		private float wanderTimer = UnityEngine.Random.Range(10f,20f);
+		private float wanderTimer = UnityEngine.Random.Range(10f, 20f);
 		private void Wander() {
 			if (wanderTimer <= 0) {
-				List<TileManager.Tile> validWanderTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable && tile.tileType.buildable && colonistM.colonists.Find(colonist => colonist.overTile == tile) == null).ToList();
+				List<TileManager.Tile> validWanderTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable && tile.tileType.buildable && GameManager.colonistM.colonists.Find(colonist => colonist.overTile == tile) == null).ToList();
 				if (validWanderTiles.Count > 0) {
-					MoveToTile(validWanderTiles[UnityEngine.Random.Range(0,validWanderTiles.Count)],false);
+					MoveToTile(validWanderTiles[UnityEngine.Random.Range(0, validWanderTiles.Count)], false);
 				}
-				wanderTimer = UnityEngine.Random.Range(10f,20f);
+				wanderTimer = UnityEngine.Random.Range(10f, 20f);
 			} else {
-				wanderTimer -= 1 * timeM.deltaTime;
+				wanderTimer -= 1 * GameManager.timeM.deltaTime;
 			}
 		}
 
@@ -1523,12 +1127,12 @@ public class ColonistManager : MonoBehaviour {
 			job.containerPickups = colonistJob.containerPickups;
 			if (reserveResourcesInContainerPickups && (job.containerPickups != null && job.containerPickups.Count > 0)) {
 				foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
-					containerPickup.container.inventory.ReserveResources(containerPickup.resourcesToPickup,this);
+					containerPickup.container.inventory.ReserveResources(containerPickup.resourcesToPickup, this);
 				}
 			}
-			job.SetColonist(this,resourceM,colonistM,jobM,pathM);
-			MoveToTile(job.tile,!job.tile.walkable);
-			uiM.SetJobElements();
+			job.SetColonist(this);
+			MoveToTile(job.tile, !job.tile.walkable);
+			GameManager.uiM.SetJobElements();
 		}
 
 		public void StartJob() {
@@ -1545,13 +1149,13 @@ public class ColonistManager : MonoBehaviour {
 
 			job.colonistBuildTime = job.jobProgress;
 
-			uiM.SetJobElements();
+			GameManager.uiM.SetJobElements();
 		}
 
 		public void WorkJob() {
 
 			if (job.prefab.jobType == JobManager.JobTypesEnum.HarvestFarm && job.tile.farm == null) {
-				job.jobUIElement.Remove(uiM);
+				job.jobUIElement.Remove();
 				job.Remove();
 				job = null;
 				return;
@@ -1560,9 +1164,9 @@ public class ColonistManager : MonoBehaviour {
 				job.prefab.jobType == JobManager.JobTypesEnum.CollectFood ||
 				job.prefab.jobType == JobManager.JobTypesEnum.PickupResources) {
 
-				ResourceManager.Container containerOnTile = resourceM.containers.Find(container => container.parentObject.tile == job.tile);
+				ResourceManager.Container containerOnTile = GameManager.resourceM.containers.Find(container => container.tile == job.tile);
 				if (containerOnTile == null) {
-					job.jobUIElement.Remove(uiM);
+					job.jobUIElement.Remove();
 					job.Remove();
 					job = null;
 					return;
@@ -1570,35 +1174,35 @@ public class ColonistManager : MonoBehaviour {
 			} else if (job.prefab.jobType == JobManager.JobTypesEnum.Sleep) {
 				float currentRestValue = needs.Find(need => need.prefab.type == NeedsEnum.Rest).GetValue();
 				float originalRestValue = currentRestValue / (job.jobProgress / job.colonistBuildTime);
-				needs.Find(need => need.prefab.type == NeedsEnum.Rest).SetValue(originalRestValue * ((job.jobProgress - 1f * timeM.deltaTime) / job.colonistBuildTime));
+				needs.Find(need => need.prefab.type == NeedsEnum.Rest).SetValue(originalRestValue * ((job.jobProgress - 1f * GameManager.timeM.deltaTime) / job.colonistBuildTime));
 			}
 
 			if (job.activeTileObject != null) {
-				job.activeTileObject.SetActiveSprite(true,job);
+				job.activeTileObject.SetActiveSprite(true, job);
 			}
 
-			job.jobProgress -= 1 * timeM.deltaTime;
+			job.jobProgress -= 1 * GameManager.timeM.deltaTime;
 
-			if (job.jobProgress <= 0 || Mathf.Approximately(job.jobProgress,0)) {
+			if (job.jobProgress <= 0 || Mathf.Approximately(job.jobProgress, 0)) {
 				job.jobProgress = 0;
 				if (job.activeTileObject != null) {
-					job.activeTileObject.SetActiveSprite(false,job);
+					job.activeTileObject.SetActiveSprite(false, job);
 				}
 				FinishJob();
 				return;
 			}
 
-			job.jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,((job.colonistBuildTime - job.jobProgress) / job.colonistBuildTime));
+			job.jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((job.colonistBuildTime - job.jobProgress) / job.colonistBuildTime));
 		}
 
 		public void FinishJob() {
 			JobManager.Job finishedJob = job;
 			job = null;
 
-			Destroy(finishedJob.jobPreview);
+			MonoBehaviour.Destroy(finishedJob.jobPreview);
 			if (finishedJob.prefab.addToTileWhenBuilt) {
-				finishedJob.tile.SetTileObject(finishedJob.prefab,finishedJob.rotationIndex);
-				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+				finishedJob.tile.SetTileObject(GameManager.resourceM.CreateTileObjectInstance(finishedJob.prefab, finishedJob.tile, finishedJob.rotationIndex, true));
+				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 1f);
 				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).FinishCreation();
 				if (finishedJob.prefab.canRotate) {
 					finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().sprite = finishedJob.prefab.bitmaskSprites[finishedJob.rotationIndex];
@@ -1612,12 +1216,12 @@ public class ColonistManager : MonoBehaviour {
 
 			MoveToClosestWalkableTile(true);
 
-			jobM.finishJobFunctions[finishedJob.prefab.jobType](this,finishedJob);
+			GameManager.jobM.finishJobFunctions[finishedJob.prefab.jobType](this, finishedJob);
 
-			jobM.UpdateSingleColonistJobs(this);
-			uiM.SetJobElements();
-			uiM.UpdateSelectedColonistInformation();
-			uiM.UpdateSelectedContainerInfo();
+			GameManager.jobM.UpdateSingleColonistJobs(this);
+			GameManager.uiM.SetJobElements();
+			GameManager.uiM.UpdateSelectedColonistInformation();
+			GameManager.uiM.UpdateSelectedContainerInfo();
 
 			if (storedJob != null) {
 				Update();
@@ -1625,30 +1229,30 @@ public class ColonistManager : MonoBehaviour {
 		}
 
 		public void ReturnJob() {
-			foreach (ResourceManager.Container container in resourceM.containers) {
+			foreach (ResourceManager.Container container in GameManager.resourceM.containers) {
 				container.inventory.ReleaseReservedResources(this);
 			}
 			if (storedJob != null) {
-				if (colonistM.jobToNeedMap.ContainsKey(storedJob.prefab.jobType)) {
+				if (GameManager.colonistM.jobToNeedMap.ContainsKey(storedJob.prefab.jobType)) {
 					storedJob.Remove();
 					if (storedJob.jobUIElement != null) {
-						storedJob.jobUIElement.Remove(uiM);
+						storedJob.jobUIElement.Remove();
 					}
 					storedJob = null;
 					if (job != null) {
-						if (colonistM.jobToNeedMap.ContainsKey(job.prefab.jobType)) {
+						if (GameManager.colonistM.jobToNeedMap.ContainsKey(job.prefab.jobType)) {
 							job.Remove();
 							if (job.jobUIElement != null) {
-								job.jobUIElement.Remove(uiM);
+								job.jobUIElement.Remove();
 							}
 						}
 						job = null;
 					}
 					return;
 				}
-				jobM.AddExistingJob(storedJob);
+				GameManager.jobM.AddExistingJob(storedJob);
 				if (storedJob.jobUIElement != null) {
-					storedJob.jobUIElement.Remove(uiM);
+					storedJob.jobUIElement.Remove();
 				}
 				if (storedJob.jobPreview != null) {
 					storedJob.jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.25f);
@@ -1656,7 +1260,7 @@ public class ColonistManager : MonoBehaviour {
 				storedJob = null;
 				if (job != null) {
 					if (job.jobUIElement != null) {
-						job.jobUIElement.Remove(uiM);
+						job.jobUIElement.Remove();
 					}
 					if (job.jobPreview != null) {
 						job.jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.25f);
@@ -1664,17 +1268,17 @@ public class ColonistManager : MonoBehaviour {
 					job = null;
 				}
 			} else if (job != null) {
-				if (colonistM.jobToNeedMap.ContainsKey(job.prefab.jobType)) {
+				if (GameManager.colonistM.jobToNeedMap.ContainsKey(job.prefab.jobType)) {
 					job.Remove();
 					if (job.jobUIElement != null) {
-						job.jobUIElement.Remove(uiM);
+						job.jobUIElement.Remove();
 					}
 					job = null;
 					return;
 				}
-				jobM.AddExistingJob(job);
+				GameManager.jobM.AddExistingJob(job);
 				if (job.jobUIElement != null) {
-					job.jobUIElement.Remove(uiM);
+					job.jobUIElement.Remove();
 				}
 				if (job.jobPreview != null) {
 					job.jobPreview.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.25f);
@@ -1687,7 +1291,7 @@ public class ColonistManager : MonoBehaviour {
 			if (careIfOvertileIsWalkable ? !overTile.walkable : true) {
 				List<TileManager.Tile> walkableSurroundingTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
 				if (walkableSurroundingTiles.Count > 0) {
-					MoveToTile(walkableSurroundingTiles[UnityEngine.Random.Range(0,walkableSurroundingTiles.Count)],false);
+					MoveToTile(walkableSurroundingTiles[UnityEngine.Random.Range(0, walkableSurroundingTiles.Count)], false);
 				} else {
 					walkableSurroundingTiles.Clear();
 					List<TileManager.Tile> potentialWalkableSurroundingTiles = new List<TileManager.Tile>();
@@ -1698,12 +1302,12 @@ public class ColonistManager : MonoBehaviour {
 					}
 					walkableSurroundingTiles = potentialWalkableSurroundingTiles.Where(tile => tile.surroundingTiles.Find(nTile => !nTile.walkable && nTile.regionBlock == overTile.regionBlock) != null).ToList();
 					if (walkableSurroundingTiles.Count > 0) {
-						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
-						MoveToTile(walkableSurroundingTiles[0],false);
+						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position, overTile.obj.transform.position)).ToList();
+						MoveToTile(walkableSurroundingTiles[0], false);
 					} else {
-						List<TileManager.Tile> validTiles = tileM.map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position,overTile.obj.transform.position)).ToList();
+						List<TileManager.Tile> validTiles = GameManager.colonyM.colony.map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position, overTile.obj.transform.position)).ToList();
 						if (validTiles.Count > 0) {
-							MoveToTile(validTiles[0],false);
+							MoveToTile(validTiles[0], false);
 						}
 					}
 				}
@@ -1714,9 +1318,9 @@ public class ColonistManager : MonoBehaviour {
 			playerMoved = true;
 			ReturnJob();
 			if (job != null) {
-				MoveToTile(tile,false);
+				MoveToTile(tile, false);
 			} else {
-				MoveToTile(tile,false);
+				MoveToTile(tile, false);
 			}
 		}
 
@@ -1762,38 +1366,38 @@ public class ColonistManager : MonoBehaviour {
 			bool playerMoved,
 			TileManager.Tile pathEnd) {
 
-				obj.transform.position = position;
+			obj.transform.position = position;
 
-				this.name = name;
-				SetNameCanvas(name);
+			this.name = name;
+			SetNameCanvas(name);
 
-				moveSprites = colonistM.humanMoveSprites[bodyIndices[Appearance.Skin]];
-				this.bodyIndices = bodyIndices;
+			moveSprites = GameManager.humanM.humanMoveSprites[bodyIndices[Appearance.Skin]];
+			this.bodyIndices = bodyIndices;
 
-				ChangeHealthValue(-(this.health - health));
+			ChangeHealthValue(-(this.health - health));
 
-				ChangeProfession(oldProfession);
-				ChangeProfession(profession);
+			ChangeProfession(oldProfession);
+			ChangeProfession(profession);
 
-				this.inventory = inventory;
+			this.inventory = inventory;
 
-				if (storedJob != null) {
-					SetJob(new JobManager.ColonistJob(this, storedJob, storedJob.colonistResources, storedJob.containerPickups, jobM, pathM));
-				} else if (job != null) {
-					SetJob(new JobManager.ColonistJob(this, job, job.colonistResources, job.containerPickups, jobM, pathM));
-				}
+			if (storedJob != null) {
+				SetJob(new JobManager.ColonistJob(this, storedJob, storedJob.colonistResources, storedJob.containerPickups));
+			} else if (job != null) {
+				SetJob(new JobManager.ColonistJob(this, job, job.colonistResources, job.containerPickups));
+			}
 
-				this.skills = skills;
-				this.traits = traits;
-				this.needs = needs;
+			this.skills = skills;
+			this.traits = traits;
+			this.needs = needs;
 
-				this.baseHappiness = baseHappiness;
-				this.effectiveHappiness = effectiveHappiness;
-				this.happinessModifiers = happinessModifiers;
+			this.baseHappiness = baseHappiness;
+			this.effectiveHappiness = effectiveHappiness;
+			this.happinessModifiers = happinessModifiers;
 
-				if (playerMoved) {
-					PlayerMoveToTile(pathEnd);
-				}
+			if (playerMoved) {
+				PlayerMoveToTile(pathEnd);
+			}
 		}
 	}
 
@@ -1805,25 +1409,25 @@ public class ColonistManager : MonoBehaviour {
 			averageColonistPosition = new Vector2(averageColonistPosition.x + colonist.obj.transform.position.x, averageColonistPosition.y + colonist.obj.transform.position.y);
 		}
 		averageColonistPosition /= colonists.Count;
-		cameraM.SetCameraPosition(averageColonistPosition);
+		GameManager.cameraM.SetCameraPosition(averageColonistPosition);
 
 		// TEMPORARY COLONIST TESTING STUFF
-		colonists[UnityEngine.Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.WheatSeed), UnityEngine.Random.Range(5, 11));
-		colonists[UnityEngine.Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Potato), UnityEngine.Random.Range(5, 11));
-		colonists[UnityEngine.Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.CottonSeed), UnityEngine.Random.Range(5, 11));
+		colonists[UnityEngine.Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.WheatSeed), UnityEngine.Random.Range(5, 11));
+		colonists[UnityEngine.Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.Potato), UnityEngine.Random.Range(5, 11));
+		colonists[UnityEngine.Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourcesEnum.CottonSeed), UnityEngine.Random.Range(5, 11));
 	}
 
 	public void SpawnColonists(int amount) {
 		if (amount > 0) {
-			int mapSize = tileM.map.mapData.mapSize;
+			int mapSize = GameManager.colonyM.colony.map.mapData.mapSize;
 			for (int i = 0; i < amount; i++) {
-				List<TileManager.Tile> walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
+				List<TileManager.Tile> walkableTilesByDistanceToCentre = GameManager.colonyM.colony.map.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 				if (walkableTilesByDistanceToCentre.Count <= 0) {
-					foreach (TileManager.Tile tile in tileM.map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
-						tile.SetTileType(tileM.GetTileTypeByEnum(TileManager.TileTypes.Grass), true, true, true, true);
+					foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
+						tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileManager.TileTypes.Grass), true, true, true, true);
 					}
-					tileM.map.Bitmasking(tileM.map.tiles);
-					walkableTilesByDistanceToCentre = tileM.map.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
+					GameManager.colonyM.colony.map.Bitmasking(GameManager.colonyM.colony.map.tiles);
+					walkableTilesByDistanceToCentre = GameManager.colonyM.colony.map.tiles.Where(o => o.walkable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 				}
 
 				List<TileManager.Tile> validSpawnTiles = new List<TileManager.Tile>();
@@ -1854,190 +1458,11 @@ public class ColonistManager : MonoBehaviour {
 				}
 				TileManager.Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[UnityEngine.Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[UnityEngine.Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
 
-				Colonist colonist = new Colonist(colonistSpawnTile, professions[UnityEngine.Random.Range(0, professions.Count)], 1);
-				AddColonist(colonist);
+				new Colonist(colonistSpawnTile, professions[UnityEngine.Random.Range(0, professions.Count)], 1);
+
+				GameManager.uiM.SetColonistElements();
+				GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
 			}
-		}
-	}
-
-	public void AddColonist(Colonist colonist) {
-		colonists.Add(colonist);
-		uiM.SetColonistElements();
-		tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
-	}
-
-	public List<Trader> traders = new List<Trader>(); // TODO Remove Caravan from map and delete its traders from this list
-
-	public class Trader : Human {
-
-		public Caravan caravan;
-
-		public Trader(TileManager.Tile spawnTile, float startingHealth, Caravan caravan) : base(spawnTile, startingHealth) {
-			this.caravan = caravan;
-
-			SetNameColour(UIManager.GetColour(UIManager.Colours.LightPurple));
-			obj.transform.SetParent(GameObject.Find("TraderParent").transform, false);
-			MoveToTile(colonistM.colonists[0].overTile, false);
-		}
-	}
-
-	private float traderTimer = 0; // The time since the last trader visited
-	private static readonly int traderTimeMin = 1440; // Traders will only come once every traderTimeMin in-game minutes
-	private static readonly int traderTimeMax = 10080; // Traders will definitely come if the traderTimer is greater than traderTimeMax
-	public void UpdateTraders() {
-		traderTimer += timeM.deltaTime;
-		if (traderTimer > traderTimeMin && timeM.minuteChanged) {
-			if (UnityEngine.Random.Range(0f, 1f) < ((traderTimer - traderTimeMin) / (traderTimeMax - traderTimeMin))) {
-				traderTimer = 0;
-				SpawnCaravan(CaravanTypeEnum.Foot, 4);
-			}
-		}
-	}
-
-	public List<Caravan> caravans = new List<Caravan>();
-
-	public void SpawnCaravan(CaravanTypeEnum caravanType, int maxNumTraders) {
-		List<TileManager.Tile> validSpawnTiles = null;
-		if (caravanType == CaravanTypeEnum.Foot || caravanType == CaravanTypeEnum.Wagon) {
-			validSpawnTiles = tileM.map.edgeTiles.Where(tile => tile.walkable && !TileManager.liquidWaterEquivalentTileTypes.Contains(tile.tileType.type)).ToList();
-		} else if (caravanType == CaravanTypeEnum.Boat) {
-			validSpawnTiles = new List<TileManager.Tile>(); // TODO Implement boat caravans
-		}
-		if (validSpawnTiles.Count > 0) {
-			TileManager.Tile targetSpawnTile = validSpawnTiles[UnityEngine.Random.Range(0, validSpawnTiles.Count)];
-
-			List<TileManager.Tile> edgeTilesConnectedToTargetSpawnTile = new List<TileManager.Tile>();
-
-			List<TileManager.Tile> spawnTilesFrontier = new List<TileManager.Tile>() { targetSpawnTile };
-			List<TileManager.Tile> spawnTilesChecked = new List<TileManager.Tile>();
-			while (spawnTilesFrontier.Count > 0) {
-				TileManager.Tile currentTile = spawnTilesFrontier[0];
-				spawnTilesFrontier.RemoveAt(0);
-				spawnTilesChecked.Add(currentTile);
-				edgeTilesConnectedToTargetSpawnTile.Add(currentTile);
-				foreach (TileManager.Tile nTile in currentTile.horizontalSurroundingTiles) {
-					if (!spawnTilesChecked.Contains(nTile) && validSpawnTiles.Contains(nTile)) {
-						spawnTilesFrontier.Add(nTile);
-					}
-				}
-			}
-
-			if (edgeTilesConnectedToTargetSpawnTile.Count > 0) {
-				int numTraders = UnityEngine.Random.Range(1, maxNumTraders + 1);
-				List<TileManager.Tile> edgeTilesCloseToTargetSpawnTile = edgeTilesConnectedToTargetSpawnTile.Where(tile => Vector2.Distance(tile.obj.transform.position, targetSpawnTile.obj.transform.position) <= numTraders * 2).ToList();
-				if (edgeTilesCloseToTargetSpawnTile.Count > 0) {
-					if (edgeTilesCloseToTargetSpawnTile.Count < numTraders) {
-						numTraders = edgeTilesCloseToTargetSpawnTile.Count;
-					}
-					Caravan newCaravan = new Caravan(numTraders, CaravanTypeEnum.Foot, edgeTilesCloseToTargetSpawnTile, resourceM);
-					caravans.Add(newCaravan);
-					traders.AddRange(newCaravan.traders);
-
-					uiM.SetCaravanElements();
-				}
-			}
-		}
-	}
-
-	public enum CaravanTypeEnum { Foot, Wagon, Boat };
-
-	public class Caravan {
-		private ResourceManager resourceM;
-
-		public List<Trader> traders = new List<Trader>();
-		public int amount;
-		public CaravanTypeEnum caravanType;
-
-		public string originLocation; // This should be changed to a "Location" object (to be created in TileManager?) that stores info
-
-		public ResourceManager.Inventory inventory;
-
-		public List<ResourceManager.TradeResourceAmount> resourcesToTrade = new List<ResourceManager.TradeResourceAmount>();
-
-		public List<ResourceManager.ConfirmedTradeResourceAmount> confirmedResourcesToTrade = new List<ResourceManager.ConfirmedTradeResourceAmount>();
-
-		public Caravan(int amount, CaravanTypeEnum caravanType, List<TileManager.Tile> spawnTiles, ResourceManager resourceM) {
-			this.resourceM = resourceM;
-
-			this.amount = amount;
-			this.caravanType = caravanType;
-			for (int i = 0; i < amount && spawnTiles.Count > 0; i++) {
-				TileManager.Tile spawnTile = spawnTiles[UnityEngine.Random.Range(0, spawnTiles.Count)];
-				SpawnTrader(spawnTile);
-				spawnTiles.Remove(spawnTile);
-			}
-
-			inventory = new ResourceManager.Inventory(null, null, int.MaxValue);
-
-			foreach (ResourceManager.Resource resource in resourceM.resources) {
-				if (UnityEngine.Random.Range(0, 100) < 50) {
-					inventory.ChangeResourceAmount(resource, UnityEngine.Random.Range(0, 50));
-				}
-			}
-		}
-
-		public void SpawnTrader(TileManager.Tile spawnTile) {
-			traders.Add(new Trader(spawnTile, 1f, this));
-		}
-
-		public List<ResourceManager.TradeResourceAmount> GetTradeResourceAmounts() {
-			List<ResourceManager.TradeResourceAmount> tradeResourceAmounts = new List<ResourceManager.TradeResourceAmount>();
-			tradeResourceAmounts.AddRange(resourcesToTrade);
-
-			List<ResourceManager.ResourceAmount> caravanResourceAmounts = inventory.resources;
-			List<ResourceManager.ResourceAmount> colonyResourceAmounts = resourceM.GetFilteredResources(true, false, true, false);
-
-			foreach (ResourceManager.ResourceAmount resourceAmount in caravanResourceAmounts) {
-				ResourceManager.TradeResourceAmount existingTradeResourceAmount = tradeResourceAmounts.Find(tra => tra.resource == resourceAmount.resource);
-				if (existingTradeResourceAmount == null) {
-					tradeResourceAmounts.Add(new ResourceManager.TradeResourceAmount(resourceAmount.resource, resourceAmount.amount, DeterminePriceForResource(resourceAmount.resource), this));
-				} else {
-					existingTradeResourceAmount.Update();
-				}
-			}
-
-			foreach (ResourceManager.ResourceAmount resourceAmount in colonyResourceAmounts) {
-				ResourceManager.TradeResourceAmount existingTradeResourceAmount = tradeResourceAmounts.Find(tra => tra.resource == resourceAmount.resource);
-				if (existingTradeResourceAmount == null) {
-					tradeResourceAmounts.Add(new ResourceManager.TradeResourceAmount(resourceAmount.resource, 0, DeterminePriceForResource(resourceAmount.resource), this));
-				} else {
-					existingTradeResourceAmount.Update();
-				}
-			}
-
-			tradeResourceAmounts = tradeResourceAmounts.OrderByDescending(tra => tra.caravanAmount).ThenByDescending(tra => tra.resource.GetAvailableAmount()).ThenBy(tra => tra.resource.name).ToList();
-
-			return tradeResourceAmounts;
-		}
-
-		public bool DetermineImportanceForResource(ResourceManager.Resource resource) {
-			return false; // TODO This needs to be implemented once the originLocation is properly implemented (see above)
-		}
-
-		public ResourceManager.Resource.Price DeterminePriceForResource(ResourceManager.Resource resource) {
-			// TODO This needs to be implemented once the originLocation is properly implemented and use DetermineImportanceForResource(...)
-			//return new ResourceManager.Resource.Price(UnityEngine.Random.Range(0, 100), UnityEngine.Random.Range(0, 100), UnityEngine.Random.Range(0, 100));
-			return resource.price;
-		}
-
-		public void SetSelectedResource(ResourceManager.TradeResourceAmount tradeResourceAmount) {
-			ResourceManager.TradeResourceAmount existingTradeResourceAmount = resourcesToTrade.Find(tra => tra.resource == tradeResourceAmount.resource);
-			if (existingTradeResourceAmount == null) {
-				resourcesToTrade.Add(tradeResourceAmount);
-			} else {
-				if (existingTradeResourceAmount.GetTradeAmount() == 0) {
-					resourcesToTrade.Remove(tradeResourceAmount);
-				} else {
-					existingTradeResourceAmount.SetTradeAmount(tradeResourceAmount.GetTradeAmount());
-				}
-			}
-		}
-
-		public void ConfirmTrade() {
-			foreach (ResourceManager.TradeResourceAmount tradeResourceAmount in resourcesToTrade) {
-				confirmedResourcesToTrade.Add(new ResourceManager.ConfirmedTradeResourceAmount(tradeResourceAmount, tradeResourceAmount.GetTradeAmount()));
-			}
-			resourcesToTrade.Clear();
 		}
 	}
 }

@@ -1,24 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
-public class CameraManager : MonoBehaviour {
-
-	private TileManager tileM;
-	private DebugManager debugM;
-	private UIManager uiM;
-
-	private void GetScriptReferences() {
-		tileM = GetComponent<TileManager>();
-		debugM = GetComponent<DebugManager>();
-		uiM = GetComponent<UIManager>();
-	}
+public class CameraManager : BaseManager {
 
 	public GameObject cameraGO;
 	public Camera cameraComponent;
 
-	private int minOrthoSize = 1;
-	private int maxOrthoSize = 20;
+	public override void Awake() {
+		cameraGO = GameObject.Find("Camera");
+		cameraComponent = cameraGO.GetComponent<Camera>();
+	}
+
+	private readonly int minOrthoSize = 1;
+	private readonly int maxOrthoSize = 20;
 
 	public int GetMinOrthoSize() {
 		return minOrthoSize;
@@ -28,33 +22,33 @@ public class CameraManager : MonoBehaviour {
 		return maxOrthoSize;
 	}
 
-	void Awake() {
-		GetScriptReferences();
-
-		cameraGO = GameObject.Find("Camera");
-		cameraComponent = cameraGO.GetComponent<Camera>();
+	public Vector2 GetCameraPosition() {
+		return cameraGO.transform.position;
 	}
 
-	/* Called by GM.TileManager after it gets the mapSize */
 	public void SetCameraPosition(Vector2 position) {
 		cameraGO.transform.position = position;
+	}
+
+	public float GetCameraZoom() {
+		return cameraComponent.orthographicSize;
 	}
 
 	public void SetCameraZoom(float newOrthoSize) {
 		cameraComponent.orthographicSize = newOrthoSize;
 	}
 
-	void Update() {
-		if (tileM.generated && !uiM.pauseMenu.activeSelf && !debugM.debugMode) {
-			cameraGO.transform.Translate(new Vector2(Input.GetAxis("Horizontal"),Input.GetAxis("Vertical")) * cameraComponent.orthographicSize * Time.deltaTime);
+	public override void Update() {
+		if (GameManager.tileM.mapState == TileManager.MapState.Generated && !GameManager.uiM.pauseMenu.activeSelf && !GameManager.uiM.playerTyping) {
+			cameraGO.transform.Translate(new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")) * cameraComponent.orthographicSize * Time.deltaTime);
 			if (Input.GetMouseButton(2)) {
 				cameraGO.transform.Translate(new Vector2(-Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y")) * cameraComponent.orthographicSize * Time.deltaTime);
 			}
-			cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x,0,tileM.map.mapData.mapSize),Mathf.Clamp(cameraGO.transform.position.y,0,tileM.map.mapData.mapSize));
+			cameraGO.transform.position = new Vector2(Mathf.Clamp(cameraGO.transform.position.x, 0, GameManager.colonyM.colony.map.mapData.mapSize), Mathf.Clamp(cameraGO.transform.position.y, 0, GameManager.colonyM.colony.map.mapData.mapSize));
 
-			if (!uiM.IsPointerOverUI()) {
+			if (!GameManager.uiM.IsPointerOverUI()) {
 				cameraComponent.orthographicSize -= Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") + (Input.GetAxis("KeyboardZoom") / 10f), -1f, 1f) * cameraComponent.orthographicSize * Time.deltaTime * 100;
-				if (debugM.debugMode) {
+				if (GameManager.debugM.debugMode) {
 					cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize, minOrthoSize, maxOrthoSize * 25);
 				} else {
 					cameraComponent.orthographicSize = Mathf.Clamp(cameraComponent.orthographicSize, minOrthoSize, maxOrthoSize);

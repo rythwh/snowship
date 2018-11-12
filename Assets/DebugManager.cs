@@ -1,40 +1,19 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
-using System;
 
-public class DebugManager : MonoBehaviour {
-
-	private ColonistManager colonistM;
-	private ResourceManager resourceM;
-	private UIManager uiM;
-	private TileManager tileM;
-	private CameraManager cameraM;
-	private TimeManager timeM;
-
-	private void GetScriptReferences() {
-		colonistM = GetComponent<ColonistManager>();
-		resourceM = GetComponent<ResourceManager>();
-		uiM = GetComponent<UIManager>();
-		tileM = GetComponent<TileManager>();
-		cameraM = GetComponent<CameraManager>();
-		timeM = GetComponent<TimeManager>();
-	}
+public class DebugManager : BaseManager {
 
 	private GameObject debugPanel;
 	private GameObject debugInputObj;
-	private InputField debugInput;
+	public InputField debugInput;
 
 	private GameObject debugConsole;
 	private GameObject debugConsoleList;
 
-	private Sprite whiteSquare;
-
-	void Awake() {
-		GetScriptReferences();
-
+	public override void Awake() {
 		debugPanel = GameObject.Find("Debug-Panel");
 
 		debugInputObj = debugPanel.transform.Find("DebugCommand-Input").gameObject;
@@ -49,25 +28,23 @@ public class DebugManager : MonoBehaviour {
 
 		debugPanel.SetActive(false);
 
-		whiteSquare = resourceM.whiteSquareSprite;
-
 		CreateCommandFunctions();
 	}
 
 	public bool debugMode;
 
-	void Update() {
-		if (tileM.generated && (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.BackQuote))) {
+	public override void Update() {
+		if (GameManager.tileM.mapState == TileManager.MapState.Generated && (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.BackQuote))) {
 			debugMode = !debugMode;
 			ToggleDebugUI();
 			SelectDebugInput();
 		}
 		if (debugMode) {
-			if (selecttilemouse_Toggle) {
-				selecttilemouse_Update();
+			if (selectTileMouseToggle) {
+				SelectTileMouseUpdate();
 			}
-			if (togglesuncycle_Toggle) {
-				togglesuncycle_Update();
+			if (toggleSunCycleToggle) {
+				ToggleSunCycleUpdate();
 			}
 		}
 	}
@@ -87,40 +64,40 @@ public class DebugManager : MonoBehaviour {
 
 	private enum Commands {
 		help,                   // help (commandName)						-- without (commandName): lists all commands. with (commandName), shows syntax/description of the specified command
-		clear,					// clear									-- clear the console
+		clear,                  // clear									-- clear the console
 		selecthuman,            // selecthuman <name>						-- sets the selected human to the first human named <name>
-		spawncolonists,			// spawncolonists <numToSpawn>				-- spawns <numToSpawn> colonists to join the colony
+		spawncolonists,         // spawncolonists <numToSpawn>				-- spawns <numToSpawn> colonists to join the colony
 		spawncaravans,          // spawncaravans <numToSpawn> <caravanType> <maxNumTraders> 
-		//																	-- spawns <numToSpawn> caravans of the <caravanType> type with a maximum number of <maxNumTraders> traders
-		sethealth,				// sethealth <amount>						-- sets the health of the selected colonist to <amount>
+								//											-- spawns <numToSpawn> caravans of the <caravanType> type with a maximum number of <maxNumTraders> traders
+		sethealth,              // sethealth <amount>						-- sets the health of the selected colonist to <amount>
 		setneed,                // setneed <name> <amount>					-- sets the need named <name> on the selected colonist to <amount>
-		cia,					// changeinvamt								-- shortcut to "changinvamt"
+		cia,                    // changeinvamt								-- shortcut to "changinvamt"
 		changeinvamt,           // changeinvamt || cia <resourceName> <amount> (allColonists) (allContainers)
-		//																	-- adds the amount of the resource named <resourceName> to <amount> to a selected colonist, container,
-		//																	   or all colonists (allColonists = true), or all containers (allContainers = true)
-		listresources,			// listresources							-- lists all resources
+								//											-- adds the amount of the resource named <resourceName> to <amount> to a selected colonist, container,
+								//											or all colonists (allColonists = true), or all containers (allContainers = true)
+		listresources,          // listresources							-- lists all resources
 		selectcontainer,        // selectcontainer <index>					-- sets the selected container to the container at <index> in the list of containers
 		selecttiles,            // selecttiles <x(,rangeX)> <y,(rangeY)>	-- without (rangeX/Y): select tile at <x> <y>. with (rangeX/Y): select all tiles between <x> -> (rangeX) <y> -> (rangeY)
 		selecttilemouse,        // selecttilemouse							-- toggle continous selection of the tile at the mouse position
 		viewtileproperty,       // viewtileproperty <variableName>			-- view the value of the variable with name <variableName>
 		deselecttiles,          // deselecttiles							-- deselect all selected tiles
-		deselectunwalkable,		// deselectunwalkabletiles					-- deselect all tiles in the selection that are unwalkable
-		deselectwalkable,		// deselectwalkabletiles					-- deselect all tiles in the selection that are walkable
+		deselectunwalkable,     // deselectunwalkabletiles					-- deselect all tiles in the selection that are unwalkable
+		deselectwalkable,       // deselectwalkabletiles					-- deselect all tiles in the selection that are walkable
 		deselectunbuildable,    // deselectunbuildable						-- deselect all tiles in the selection that are unbuildable
 		deselectbuildable,      // deselectbuildable						-- deselect all tiles in the selection that are buildable
 		changetiletype,         // changetiletype <tileType>				-- changes the tile type of the selected tile(s) to <tileType>
-		listtiletypes,			// listtiletypes							-- lists all tile types
+		listtiletypes,          // listtiletypes							-- lists all tile types
 		changetileobj,          // changetileobj <tileObj> (rotationIndex)	-- changes the tile object of the selected tile(s) to <tileObj> with (rotationIndex) (int - value depends on obj)
-		removetileobj,			// removetileobj (layer)					-- without (layer): removes all tile objects on the selected tile(s). with (layer): removes the tile object at (layer)
-		listtileobjs,			// listtileobjs								-- lists all tile objs
-		changetileplant,		// changetileplant <plantType> <small>		-- changes the tile plant of the selected tile(s) to <plantType> and size large if (small = false), otherwise small
-		removetileplant,		// removetileplant							-- removes the tile plant of the selected tile(s)
-		listtileplants,			// listtileplants							-- lists all tile plants
+		removetileobj,          // removetileobj (layer)					-- without (layer): removes all tile objects on the selected tile(s). with (layer): removes the tile object at (layer)
+		listtileobjs,           // listtileobjs								-- lists all tile objs
+		changetileplant,        // changetileplant <plantType> <small>		-- changes the tile plant of the selected tile(s) to <plantType> and size large if (small = false), otherwise small
+		removetileplant,        // removetileplant							-- removes the tile plant of the selected tile(s)
+		listtileplants,         // listtileplants							-- lists all tile plants
 		campos,                 // campos <x> <y>							-- sets the camera position to <x> <y>
 		camzoom,                // camzoom <zoom>							-- sets the camera orthographic size to <zoom>
 		togglesuncycle,         // togglesuncycle							-- toggle the day/night (sun) cycle (i.e. the changing of tile brightnesses every N in-game minutes)
 		settime,                // settime <time>							-- sets the in-game time to <time> (time = float between 0 and 23, decimals represent minutes (0.5 = 30 minutes))
-		pause,					// pause									-- pauses or unpauses the game
+		pause,                  // pause									-- pauses or unpauses the game
 		viewselectedtiles,      // viewselectedtiles						-- sets the map overlay to highlight all selected tiles
 		viewnormal,             // viewnormal								-- sets the map overlay to normal gameplay settings
 		viewregions,            // viewregions								-- sets the map overlay to colour individual regions (region colour is random)
@@ -137,7 +114,7 @@ public class DebugManager : MonoBehaviour {
 		viewshadowsfrom,        // viewshadowsfrom							-- highlights all tiles that affect the brightness of the selected tile through the day (green = earlier, pink = later)
 		viewshadowsto,          // viewshadowsto							-- highlights all tiles that the selected tile affects the brightness of through the day (green = earlier, pink = later)
 		viewblockingtiles,      // viewblockingtiles						-- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)
-		viewroofs,				// viewroofs								-- higlights all tiles with a roof above it
+		viewroofs,              // viewroofs								-- higlights all tiles with a roof above it
 		save,                   // save (filename)							-- without (filename): saves the name normally. with (filename): saves the game to the specified file name. will overwrite
 		load                    // load (filename)							-- without (filename): loads the most recent save. with (filename): loads the file named (filename). will not save first
 	};
@@ -214,16 +191,16 @@ public class DebugManager : MonoBehaviour {
 				OutputToConsole("ERROR: Unknown command: " + commandString);
 				return;
 			}
-			commandFunctions[selectedCommand](selectedCommand,commandStringSplit.Skip(1).ToList());
+			commandFunctions[selectedCommand](selectedCommand, commandStringSplit.Skip(1).ToList());
 		}
 	}
 
-	private float charsPerLine = 70;
-	private int textBoxSizePerLine = 17;
+	private static readonly float charsPerLine = 70;
+	private static readonly int textBoxSizePerLine = 17;
 
 	private void OutputToConsole(string outputString) {
 		if (!string.IsNullOrEmpty(outputString)) {
-			GameObject outputTextBox = Instantiate(Resources.Load<GameObject>(@"UI/UIElements/CommandOutputText-Panel"), debugConsoleList.transform, false);
+			GameObject outputTextBox = MonoBehaviour.Instantiate(Resources.Load<GameObject>(@"UI/UIElements/CommandOutputText-Panel"), debugConsoleList.transform, false);
 
 			int lines = Mathf.CeilToInt(outputString.Length / charsPerLine);
 
@@ -234,21 +211,21 @@ public class DebugManager : MonoBehaviour {
 		}
 	}
 
-	private Dictionary<Commands, Action<Commands,List<string>>> commandFunctions = new Dictionary<Commands, Action<Commands,List<string>>>();
+	private Dictionary<Commands, Action<Commands, List<string>>> commandFunctions = new Dictionary<Commands, Action<Commands, List<string>>>();
 
 	private List<TileManager.Tile> selectedTiles = new List<TileManager.Tile>();
-	private bool selecttilemouse_Toggle;
+	private bool selectTileMouseToggle;
 
-	private void selecttilemouse_Update() {
+	private void SelectTileMouseUpdate() {
 		selectedTiles.Clear();
-		selectedTiles.Add(uiM.mouseOverTile);
+		selectedTiles.Add(GameManager.uiM.mouseOverTile);
 	}
 
-	private bool togglesuncycle_Toggle;
+	private bool toggleSunCycleToggle;
 	private float holdHour = 12;
 
-	public void togglesuncycle_Update() {
-		tileM.map.SetTileBrightness(holdHour);
+	public void ToggleSunCycleUpdate() {
+		GameManager.colonyM.colony.map.SetTileBrightness(holdHour);
 	}
 
 	private int viewRiverAtIndex = 0;
@@ -278,18 +255,18 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.clear, delegate (Commands selectedCommand, List<string> parameters) {
 			foreach (Transform child in debugConsoleList.transform) {
-				Destroy(child.gameObject);
+				MonoBehaviour.Destroy(child.gameObject);
 			}
 			debugConsoleList.GetComponent<RectTransform>().anchoredPosition = new Vector2(10, 0);
 			debugConsole.transform.Find("Scrollbar").GetComponent<Scrollbar>().value = 0;
 		});
 		commandFunctions.Add(Commands.selecthuman, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 1) {
-				ColonistManager.Human selectedHuman = (ColonistManager.Human)colonistM.colonists.Find(colonist => colonist.name == parameters[0]) ?? colonistM.traders.Find(colonist => colonist.name == parameters[0]);
+				HumanManager.Human selectedHuman = GameManager.humanM.humans.Find(human => human.name == parameters[0]);
 				if (selectedHuman != null) {
-					colonistM.SetSelectedHuman(selectedHuman);
-					if (colonistM.selectedHuman == selectedHuman) {
-						OutputToConsole("SUCCESS: Selected " + colonistM.selectedHuman.name + ".");
+					GameManager.humanM.SetSelectedHuman(selectedHuman);
+					if (GameManager.humanM.selectedHuman == selectedHuman) {
+						OutputToConsole("SUCCESS: Selected " + GameManager.humanM.selectedHuman.name + ".");
 					}
 				} else {
 					OutputToConsole("ERROR: Invalid colonist name: " + parameters[0]);
@@ -302,12 +279,12 @@ public class DebugManager : MonoBehaviour {
 			if (parameters.Count == 1) {
 				int numberToSpawn = 1;
 				if (int.TryParse(parameters[0], out numberToSpawn)) {
-					int oldNumColonists = colonistM.colonists.Count;
-					colonistM.SpawnColonists(numberToSpawn);
-					if (oldNumColonists + numberToSpawn == colonistM.colonists.Count) {
+					int oldNumColonists = GameManager.colonistM.colonists.Count;
+					GameManager.colonistM.SpawnColonists(numberToSpawn);
+					if (oldNumColonists + numberToSpawn == GameManager.colonistM.colonists.Count) {
 						OutputToConsole("SUCCESS: Spawned " + numberToSpawn + " colonists.");
 					} else {
-						OutputToConsole("ERROR: Unable to spawn colonists. Spawned " + (colonistM.colonists.Count - oldNumColonists) + " colonists.");
+						OutputToConsole("ERROR: Unable to spawn colonists. Spawned " + (GameManager.colonistM.colonists.Count - oldNumColonists) + " colonists.");
 					}
 				} else {
 					OutputToConsole("ERROR: Invalid number of colonists.");
@@ -320,23 +297,23 @@ public class DebugManager : MonoBehaviour {
 			if (parameters.Count == 3) {
 				int numberToSpawn = 1;
 				if (int.TryParse(parameters[0], out numberToSpawn)) {
-					ColonistManager.CaravanTypeEnum caravanType = ColonistManager.CaravanTypeEnum.Foot;
+					CaravanManager.CaravanTypeEnum caravanType = CaravanManager.CaravanTypeEnum.Foot;
 					try {
-						caravanType = (ColonistManager.CaravanTypeEnum)Enum.Parse(typeof(ColonistManager.CaravanTypeEnum), parameters[1]);
+						caravanType = (CaravanManager.CaravanTypeEnum)Enum.Parse(typeof(CaravanManager.CaravanTypeEnum), parameters[1]);
 					} catch (ArgumentException) {
 						OutputToConsole("ERROR: Unknown caravan type: " + parameters[1] + ".");
 						return;
 					}
 					int maxNumTraders = 4;
 					if (int.TryParse(parameters[2], out maxNumTraders)) {
-						int oldNumCaravans = colonistM.caravans.Count;
+						int oldNumCaravans = GameManager.caravanM.caravans.Count;
 						for (int i = 0; i < numberToSpawn; i++) {
-							colonistM.SpawnCaravan(caravanType, maxNumTraders);
+							GameManager.caravanM.SpawnCaravan(caravanType, maxNumTraders);
 						}
-						if (oldNumCaravans + numberToSpawn == colonistM.caravans.Count) {
+						if (oldNumCaravans + numberToSpawn == GameManager.caravanM.caravans.Count) {
 							OutputToConsole("SUCCESS: Spawned " + numberToSpawn + " caravans.");
 						} else {
-							OutputToConsole("ERROR: Unable to spawn caravans. Spawned " + (colonistM.caravans.Count - oldNumCaravans) + " caravans.");
+							OutputToConsole("ERROR: Unable to spawn caravans. Spawned " + (GameManager.caravanM.caravans.Count - oldNumCaravans) + " caravans.");
 						}
 					} else {
 						OutputToConsole("ERROR: Unable to parse maxNumTraders as int.");
@@ -353,12 +330,12 @@ public class DebugManager : MonoBehaviour {
 				float newHealth = 0;
 				if (float.TryParse(parameters[0], out newHealth)) {
 					if (newHealth >= 0 && newHealth <= 1) {
-						if (colonistM.selectedHuman != null) {
-							colonistM.selectedHuman.health = newHealth;
-							if (colonistM.selectedHuman.health == newHealth) {
-								OutputToConsole("SUCCESS: " + colonistM.selectedHuman.name + "'s health is now " + colonistM.selectedHuman.health + ".");
+						if (GameManager.humanM.selectedHuman != null) {
+							GameManager.humanM.selectedHuman.health = newHealth;
+							if (GameManager.humanM.selectedHuman.health == newHealth) {
+								OutputToConsole("SUCCESS: " + GameManager.humanM.selectedHuman.name + "'s health is now " + GameManager.humanM.selectedHuman.health + ".");
 							} else {
-								OutputToConsole("ERROR: Unable to change " + colonistM.selectedHuman.name + "'s health.");
+								OutputToConsole("ERROR: Unable to change " + GameManager.humanM.selectedHuman.name + "'s health.");
 							}
 						} else {
 							OutputToConsole("ERROR: No human selected.");
@@ -375,11 +352,11 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.setneed, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 2) {
-				ColonistManager.NeedPrefab needPrefab = colonistM.needPrefabs.Find(need => need.name == parameters[0]);
+				ColonistManager.NeedPrefab needPrefab = GameManager.colonistM.needPrefabs.Find(need => need.name == parameters[0]);
 				if (needPrefab != null) {
-					if (colonistM.selectedHuman != null) {
-						if (colonistM.selectedHuman is ColonistManager.Colonist) {
-							ColonistManager.Colonist selectedColonist = (ColonistManager.Colonist)colonistM.selectedHuman;
+					if (GameManager.humanM.selectedHuman != null) {
+						if (GameManager.humanM.selectedHuman is ColonistManager.Colonist) {
+							ColonistManager.Colonist selectedColonist = (ColonistManager.Colonist)GameManager.humanM.selectedHuman;
 							ColonistManager.NeedInstance needInstance = selectedColonist.needs.Find(need => need.prefab == needPrefab);
 							if (needInstance != null) {
 								float newNeedValue = 0;
@@ -418,24 +395,24 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.changeinvamt, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 2) {
-				ResourceManager.Resource resource = resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
+				ResourceManager.Resource resource = GameManager.resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
 				if (resource != null) {
-					if (colonistM.selectedHuman != null || uiM.selectedContainer != null) {
-						if (colonistM.selectedHuman != null) {
+					if (GameManager.humanM.selectedHuman != null || GameManager.uiM.selectedContainer != null) {
+						if (GameManager.humanM.selectedHuman != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								colonistM.selectedHuman.inventory.ChangeResourceAmount(resource, amount);
-								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to " + colonistM.selectedHuman + ".");
+								GameManager.humanM.selectedHuman.inventory.ChangeResourceAmount(resource, amount);
+								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to " + GameManager.humanM.selectedHuman + ".");
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
 							}
 						} else {
 							OutputToConsole("No colonist selected, skipping.");
 						}
-						if (uiM.selectedContainer != null) {
+						if (GameManager.uiM.selectedContainer != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								uiM.selectedContainer.inventory.ChangeResourceAmount(resource, amount);
+								GameManager.uiM.selectedContainer.inventory.ChangeResourceAmount(resource, amount);
 								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to container.");
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
@@ -446,10 +423,10 @@ public class DebugManager : MonoBehaviour {
 					} else {
 						int amount = 0;
 						if (int.TryParse(parameters[1], out amount)) {
-							foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+							foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
 								colonist.inventory.ChangeResourceAmount(resource, amount);
 							}
-							foreach (ResourceManager.Container container in resourceM.containers) {
+							foreach (ResourceManager.Container container in GameManager.resourceM.containers) {
 								container.inventory.ChangeResourceAmount(resource, amount);
 							}
 							OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to all colonists and all containers.");
@@ -464,11 +441,11 @@ public class DebugManager : MonoBehaviour {
 				bool allColonists = false;
 				if (bool.TryParse(parameters[2], out allColonists)) {
 					if (allColonists) {
-						ResourceManager.Resource resource = resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
+						ResourceManager.Resource resource = GameManager.resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
 						if (resource != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+								foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
 									colonist.inventory.ChangeResourceAmount(resource, amount);
 								}
 							} else {
@@ -485,11 +462,11 @@ public class DebugManager : MonoBehaviour {
 				bool allColonists = false;
 				if (bool.TryParse(parameters[2], out allColonists)) {
 					if (allColonists) {
-						ResourceManager.Resource resource = resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
+						ResourceManager.Resource resource = GameManager.resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
 						if (resource != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								foreach (ColonistManager.Colonist colonist in colonistM.colonists) {
+								foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
 									colonist.inventory.ChangeResourceAmount(resource, amount);
 								}
 							} else {
@@ -505,11 +482,11 @@ public class DebugManager : MonoBehaviour {
 				bool allContainers = false;
 				if (bool.TryParse(parameters[3], out allContainers)) {
 					if (allContainers) {
-						ResourceManager.Resource resource = resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
+						ResourceManager.Resource resource = GameManager.resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
 						if (resource != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								foreach (ResourceManager.Container container in resourceM.containers) {
+								foreach (ResourceManager.Container container in GameManager.resourceM.containers) {
 									container.inventory.ChangeResourceAmount(resource, amount);
 								}
 							} else {
@@ -528,7 +505,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.listresources, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (ResourceManager.Resource resource in resourceM.resources) {
+				foreach (ResourceManager.Resource resource in GameManager.resourceM.resources) {
 					OutputToConsole(resource.type.ToString());
 				}
 			} else {
@@ -539,8 +516,8 @@ public class DebugManager : MonoBehaviour {
 			if (parameters.Count == 1) {
 				int index = -1;
 				if (int.TryParse(parameters[0], out index)) {
-					if (index >= 0 && index < resourceM.containers.Count) {
-						uiM.SetSelectedContainer(resourceM.containers[index]);
+					if (index >= 0 && index < GameManager.resourceM.containers.Count) {
+						GameManager.uiM.SetSelectedContainer(GameManager.resourceM.containers[index]);
 					} else {
 						OutputToConsole("ERROR: Container index out of range.");
 					}
@@ -558,8 +535,8 @@ public class DebugManager : MonoBehaviour {
 				if (int.TryParse(parameters[0], out startX)) {
 					int startY = 0;
 					if (int.TryParse(parameters[1], out startY)) {
-						if (startX >= 0 && startY >= 0 && startX < tileM.map.mapData.mapSize && startY < tileM.map.mapData.mapSize) {
-							selectedTiles.Add(tileM.map.GetTileFromPosition(new Vector2(startX, startY)));
+						if (startX >= 0 && startY >= 0 && startX < GameManager.colonyM.colony.map.mapData.mapSize && startY < GameManager.colonyM.colony.map.mapData.mapSize) {
+							selectedTiles.Add(GameManager.colonyM.colony.map.GetTileFromPosition(new Vector2(startX, startY)));
 						} else {
 							OutputToConsole("ERROR: Positions out of range.");
 						}
@@ -569,10 +546,10 @@ public class DebugManager : MonoBehaviour {
 							string endYString = parameters[1].Split(',')[1];
 							int endY = 0;
 							if (int.TryParse(startYString, out startY) && int.TryParse(endYString, out endY)) {
-								if (startX >= 0 && startY >= 0 && endY >= 0 && startX < tileM.map.mapData.mapSize && startY < tileM.map.mapData.mapSize && endY < tileM.map.mapData.mapSize) {
+								if (startX >= 0 && startY >= 0 && endY >= 0 && startX < GameManager.colonyM.colony.map.mapData.mapSize && startY < GameManager.colonyM.colony.map.mapData.mapSize && endY < GameManager.colonyM.colony.map.mapData.mapSize) {
 									if (startY <= endY) {
 										for (int y = startY; y <= endY; y++) {
-											selectedTiles.Add(tileM.map.GetTileFromPosition(new Vector2(startX, y)));
+											selectedTiles.Add(GameManager.colonyM.colony.map.GetTileFromPosition(new Vector2(startX, y)));
 										}
 									} else {
 										OutputToConsole("ERROR: Starting y position is greater than ending y position.");
@@ -595,10 +572,10 @@ public class DebugManager : MonoBehaviour {
 						if (int.TryParse(startXString, out startX) && int.TryParse(endXString, out endX)) {
 							int startY = 0;
 							if (int.TryParse(parameters[1], out startY)) {
-								if (startX >= 0 && startY >= 0 && endX >= 0 && startX < tileM.map.mapData.mapSize && startY < tileM.map.mapData.mapSize && endX < tileM.map.mapData.mapSize) {
+								if (startX >= 0 && startY >= 0 && endX >= 0 && startX < GameManager.colonyM.colony.map.mapData.mapSize && startY < GameManager.colonyM.colony.map.mapData.mapSize && endX < GameManager.colonyM.colony.map.mapData.mapSize) {
 									if (startX <= endX) {
 										for (int x = startX; x <= endX; x++) {
-											selectedTiles.Add(tileM.map.GetTileFromPosition(new Vector2(x, startY)));
+											selectedTiles.Add(GameManager.colonyM.colony.map.GetTileFromPosition(new Vector2(x, startY)));
 										}
 									} else {
 										OutputToConsole("ERROR: Starting x position is greater than ending x position.");
@@ -612,11 +589,11 @@ public class DebugManager : MonoBehaviour {
 									string endYString = parameters[1].Split(',')[1];
 									int endY = 0;
 									if (int.TryParse(startYString, out startY) && int.TryParse(endYString, out endY)) {
-										if (startX >= 0 && startY >= 0 && endX >= 0 && endY >= 0 && startX < tileM.map.mapData.mapSize && startY < tileM.map.mapData.mapSize && endX < tileM.map.mapData.mapSize && endY < tileM.map.mapData.mapSize) {
+										if (startX >= 0 && startY >= 0 && endX >= 0 && endY >= 0 && startX < GameManager.colonyM.colony.map.mapData.mapSize && startY < GameManager.colonyM.colony.map.mapData.mapSize && endX < GameManager.colonyM.colony.map.mapData.mapSize && endY < GameManager.colonyM.colony.map.mapData.mapSize) {
 											if (startX <= endX && startY <= endY) {
 												for (int y = startY; y <= endY; y++) {
 													for (int x = startX; x <= endX; x++) {
-														selectedTiles.Add(tileM.map.GetTileFromPosition(new Vector2(x, y)));
+														selectedTiles.Add(GameManager.colonyM.colony.map.GetTileFromPosition(new Vector2(x, y)));
 													}
 												}
 											} else {
@@ -647,7 +624,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.selecttilemouse, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				selecttilemouse_Toggle = !selecttilemouse_Toggle;
+				selectTileMouseToggle = !selectTileMouseToggle;
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
@@ -771,16 +748,16 @@ public class DebugManager : MonoBehaviour {
 		commandFunctions.Add(Commands.changetiletype, delegate (Commands selectedCommand, List<string> parameters) {
 			int counter = 0;
 			if (parameters.Count == 1) {
-				TileManager.TileType tileType = tileM.tileTypes.Find(tt => tt.type.ToString() == parameters[0]);
+				TileManager.TileType tileType = GameManager.tileM.tileTypes.Find(tt => tt.type.ToString() == parameters[0]);
 				if (tileType != null) {
 					if (selectedTiles.Count > 0) {
 						foreach (TileManager.Tile tile in selectedTiles) {
 							bool previousWalkableState = tile.walkable;
 							tile.SetTileType(tileType, true, true, true, false);
 							if (!previousWalkableState && tile.walkable) {
-								tileM.map.RemoveTileBrightnessEffect(tile);
+								GameManager.colonyM.colony.map.RemoveTileBrightnessEffect(tile);
 							} else if (previousWalkableState && !tile.walkable) {
-								tileM.map.DetermineShadowTiles(new List<TileManager.Tile>() { tile }, true);
+								GameManager.colonyM.colony.map.DetermineShadowTiles(new List<TileManager.Tile>() { tile }, true);
 							}
 							counter += 1;
 						}
@@ -797,7 +774,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.listtiletypes, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.TileType tileType in tileM.tileTypes) {
+				foreach (TileManager.TileType tileType in GameManager.tileM.tileTypes) {
 					OutputToConsole(tileType.type.ToString());
 				}
 			} else {
@@ -807,7 +784,7 @@ public class DebugManager : MonoBehaviour {
 		commandFunctions.Add(Commands.changetileobj, delegate (Commands selectedCommand, List<string> parameters) {
 			int counter = 0;
 			if (parameters.Count == 2) {
-				ResourceManager.TileObjectPrefab tileObjectPrefab = resourceM.tileObjectPrefabs.Find(top => top.type.ToString() == parameters[0]);
+				ResourceManager.TileObjectPrefab tileObjectPrefab = GameManager.resourceM.tileObjectPrefabs.Find(top => top.type.ToString() == parameters[0]);
 				if (tileObjectPrefab != null) {
 					int rotation = 0;
 					if (int.TryParse(parameters[1], out rotation)) {
@@ -815,10 +792,10 @@ public class DebugManager : MonoBehaviour {
 							if (selectedTiles.Count > 0) {
 								foreach (TileManager.Tile tile in selectedTiles) {
 									if (tile.objectInstances.ContainsKey(tileObjectPrefab.layer) && tile.objectInstances[tileObjectPrefab.layer] != null) {
-										resourceM.RemoveTileObjectInstance(tile.objectInstances[tileObjectPrefab.layer]);
+										GameManager.resourceM.RemoveTileObjectInstance(tile.objectInstances[tileObjectPrefab.layer]);
 										tile.RemoveTileObjectAtLayer(tileObjectPrefab.layer);
 									}
-									tile.SetTileObject(tileObjectPrefab, rotation);
+									tile.SetTileObject(GameManager.resourceM.CreateTileObjectInstance(tileObjectPrefab, tile, rotation, true));
 									tile.GetObjectInstanceAtLayer(tileObjectPrefab.layer).FinishCreation();
 									counter += 1;
 								}
@@ -835,15 +812,15 @@ public class DebugManager : MonoBehaviour {
 					OutputToConsole("ERROR: Unable to parse tile object.");
 				}
 			} else if (parameters.Count == 1) {
-				ResourceManager.TileObjectPrefab tileObjectPrefab = resourceM.tileObjectPrefabs.Find(top => top.type.ToString() == parameters[0]);
+				ResourceManager.TileObjectPrefab tileObjectPrefab = GameManager.resourceM.tileObjectPrefabs.Find(top => top.type.ToString() == parameters[0]);
 				if (tileObjectPrefab != null) {
 					if (selectedTiles.Count > 0) {
 						foreach (TileManager.Tile tile in selectedTiles) {
 							if (tile.objectInstances.ContainsKey(tileObjectPrefab.layer) && tile.objectInstances[tileObjectPrefab.layer] != null) {
-								resourceM.RemoveTileObjectInstance(tile.objectInstances[tileObjectPrefab.layer]);
+								GameManager.resourceM.RemoveTileObjectInstance(tile.objectInstances[tileObjectPrefab.layer]);
 								tile.RemoveTileObjectAtLayer(tileObjectPrefab.layer);
 							}
-							tile.SetTileObject(tileObjectPrefab, 0);
+							tile.SetTileObject(GameManager.resourceM.CreateTileObjectInstance(tileObjectPrefab, tile, 0, true));
 							tile.GetObjectInstanceAtLayer(tileObjectPrefab.layer).FinishCreation();
 							counter += 1;
 						}
@@ -856,7 +833,7 @@ public class DebugManager : MonoBehaviour {
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
-			tileM.map.RemoveTileBrightnessEffect(null);
+			GameManager.colonyM.colony.map.RemoveTileBrightnessEffect(null);
 			OutputToConsole("Changed " + counter + " tile objects.");
 		});
 		commandFunctions.Add(Commands.removetileobj, delegate (Commands selectedCommand, List<string> parameters) {
@@ -869,7 +846,7 @@ public class DebugManager : MonoBehaviour {
 							removeTOIs.Add(toiKVP.Value);
 						}
 						foreach (ResourceManager.TileObjectInstance toi in removeTOIs) {
-							resourceM.RemoveTileObjectInstance(tile.objectInstances[toi.prefab.layer]);
+							GameManager.resourceM.RemoveTileObjectInstance(tile.objectInstances[toi.prefab.layer]);
 							tile.RemoveTileObjectAtLayer(toi.prefab.layer);
 						}
 						counter += 1;
@@ -883,7 +860,7 @@ public class DebugManager : MonoBehaviour {
 					if (selectedTiles.Count > 0) {
 						foreach (TileManager.Tile tile in selectedTiles) {
 							if (tile.objectInstances.ContainsKey(layer) && tile.objectInstances[layer] != null) {
-								resourceM.RemoveTileObjectInstance(tile.objectInstances[layer]);
+								GameManager.resourceM.RemoveTileObjectInstance(tile.objectInstances[layer]);
 								tile.RemoveTileObjectAtLayer(layer);
 								counter += 1;
 							}
@@ -901,7 +878,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.listtileobjs, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (ResourceManager.TileObjectPrefab top in resourceM.tileObjectPrefabs) {
+				foreach (ResourceManager.TileObjectPrefab top in GameManager.resourceM.tileObjectPrefabs) {
 					OutputToConsole(top.type.ToString());
 				}
 			} else {
@@ -911,14 +888,14 @@ public class DebugManager : MonoBehaviour {
 		commandFunctions.Add(Commands.changetileplant, delegate (Commands selectedCommand, List<string> parameters) {
 			int counter = 0;
 			if (parameters.Count == 2) {
-				ResourceManager.PlantGroup plantGroup = resourceM.plantGroups.Find(pg => pg.type.ToString() == parameters[0]);
+				ResourceManager.PlantGroup plantGroup = GameManager.resourceM.plantGroups.Find(pg => pg.type.ToString() == parameters[0]);
 				if (plantGroup != null) {
 					bool small = false;
 					if (bool.TryParse(parameters[1], out small)) {
 						if (selectedTiles.Count > 0) {
 							foreach (TileManager.Tile tile in selectedTiles) {
-								tile.SetPlant(false, new ResourceManager.Plant(plantGroup, tile, false, small, tileM.map.smallPlants,true,null,resourceM));
-							tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
+								tile.SetPlant(false, new ResourceManager.Plant(plantGroup, tile, false, small, GameManager.colonyM.colony.map.smallPlants, true, null));
+								GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
 								if (tile.plant != null) {
 									counter += 1;
 								}
@@ -957,7 +934,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.listtileplants, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (ResourceManager.PlantGroup plantGroup in resourceM.plantGroups) {
+				foreach (ResourceManager.PlantGroup plantGroup in GameManager.resourceM.plantGroups) {
 					OutputToConsole(plantGroup.type.ToString());
 				}
 			} else {
@@ -970,7 +947,7 @@ public class DebugManager : MonoBehaviour {
 				if (int.TryParse(parameters[0], out camX)) {
 					int camY = 0;
 					if (int.TryParse(parameters[1], out camY)) {
-						cameraM.SetCameraPosition(new Vector2(camX, camY));
+						GameManager.cameraM.SetCameraPosition(new Vector2(camX, camY));
 					} else {
 						OutputToConsole("ERROR: Unable to parse camera y position as int.");
 					}
@@ -985,7 +962,7 @@ public class DebugManager : MonoBehaviour {
 			if (parameters.Count == 1) {
 				float camZoom = 0;
 				if (float.TryParse(parameters[0], out camZoom)) {
-					cameraM.SetCameraZoom(camZoom);
+					GameManager.cameraM.SetCameraZoom(camZoom);
 				} else {
 					OutputToConsole("ERROR: Unable to parse camera zoom as float.");
 				}
@@ -995,8 +972,8 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.togglesuncycle, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				holdHour = timeM.tileBrightnessTime;
-				togglesuncycle_Toggle = !togglesuncycle_Toggle;
+				holdHour = GameManager.timeM.tileBrightnessTime;
+				toggleSunCycleToggle = !toggleSunCycleToggle;
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
@@ -1007,8 +984,8 @@ public class DebugManager : MonoBehaviour {
 				if (float.TryParse(parameters[0], out time)) {
 					if (time >= 0 && time < 24) {
 						holdHour = time;
-						timeM.SetTime(time);
-						tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
+						GameManager.timeM.SetTime(time);
+						GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
 					} else {
 						OutputToConsole("ERROR: Time out of range.");
 					}
@@ -1021,7 +998,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.pause, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				timeM.TogglePause();
+				GameManager.timeM.TogglePause();
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
@@ -1032,7 +1009,7 @@ public class DebugManager : MonoBehaviour {
 					OutputToConsole("No tiles are currently selected.");
 				} else {
 					foreach (TileManager.Tile tile in selectedTiles) {
-						tile.sr.sprite = whiteSquare;
+						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 						tile.sr.color = Color.blue;
 					}
 				}
@@ -1042,19 +1019,23 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewnormal, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Tile tile in tileM.map.tiles) {
+				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
 					tile.sr.color = Color.white;
 				}
-				tileM.map.Bitmasking(tileM.map.tiles);
-				tileM.map.SetTileBrightness(timeM.tileBrightnessTime);
+				GameManager.colonyM.colony.map.Bitmasking(GameManager.colonyM.colony.map.tiles);
+				GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
 		commandFunctions.Add(Commands.viewregions, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Map.Region region in tileM.map.regions) {
-					region.ColourRegion(resourceM.whiteSquareSprite);
+				foreach (TileManager.Map.Region region in GameManager.colonyM.colony.map.regions) {
+					Color colour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1f);
+					foreach (TileManager.Tile tile in region.tiles) {
+						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
+						tile.sr.color = colour;
+					}
 				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
@@ -1062,8 +1043,8 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewheightmap, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Tile tile in tileM.map.tiles) {
-					tile.sr.sprite = whiteSquare;
+				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
+					tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 					tile.sr.color = new Color(tile.height, tile.height, tile.height, 1f);
 				}
 			} else {
@@ -1072,8 +1053,8 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewprecipitation, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Tile tile in tileM.map.tiles) {
-					tile.sr.sprite = whiteSquare;
+				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
+					tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 					tile.sr.color = new Color(tile.GetPrecipitation(), tile.GetPrecipitation(), tile.GetPrecipitation(), 1f);
 				}
 			} else {
@@ -1082,8 +1063,8 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewtemperature, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Tile tile in tileM.map.tiles) {
-					tile.sr.sprite = whiteSquare;
+				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
+					tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 					tile.sr.color = new Color((tile.temperature + 50f) / 100f, (tile.temperature + 50f) / 100f, (tile.temperature + 50f) / 100f, 1f);
 				}
 			} else {
@@ -1092,8 +1073,8 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewbiomes, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Tile tile in tileM.map.tiles) {
-					tile.sr.sprite = whiteSquare;
+				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
+					tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 					if (tile.biome != null) {
 						tile.sr.color = tile.biome.colour;
 					} else {
@@ -1106,10 +1087,11 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewdrainagebasins, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (KeyValuePair<TileManager.Map.Region, TileManager.Tile> kvp in tileM.map.drainageBasins) {
+				foreach (KeyValuePair<TileManager.Map.Region, TileManager.Tile> kvp in GameManager.colonyM.colony.map.drainageBasins) {
+					Color colour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1f);
 					foreach (TileManager.Tile tile in kvp.Key.tiles) {
-						tile.sr.sprite = whiteSquare;
-						tile.sr.color = kvp.Key.colour;
+						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
+						tile.sr.color = colour;
 					}
 				}
 			} else {
@@ -1118,10 +1100,10 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewrivers, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Map.River river in tileM.map.rivers) {
+				foreach (TileManager.Map.River river in GameManager.colonyM.colony.map.rivers) {
 					Color riverColour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
 					foreach (TileManager.Tile tile in river.tiles) {
-						tile.sr.sprite = whiteSquare;
+						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 						tile.sr.color = riverColour;
 					}
 					river.tiles[0].sr.color = UIManager.GetColour(UIManager.Colours.DarkRed);
@@ -1129,20 +1111,20 @@ public class DebugManager : MonoBehaviour {
 					river.tiles[river.tiles.Count - 1].sr.color = UIManager.GetColour(UIManager.Colours.DarkGreen);
 					river.startTile.sr.color = UIManager.GetColour(UIManager.Colours.LightGreen);
 				}
-				OutputToConsole("Showing " + tileM.map.rivers.Count + " rivers.");
+				OutputToConsole("Showing " + GameManager.colonyM.colony.map.rivers.Count + " rivers.");
 			} else if (parameters.Count == 1) {
 				if (int.TryParse(parameters[0], out viewRiverAtIndex)) {
-					if (viewRiverAtIndex >= 0 && viewRiverAtIndex < tileM.map.rivers.Count) {
+					if (viewRiverAtIndex >= 0 && viewRiverAtIndex < GameManager.colonyM.colony.map.rivers.Count) {
 						Color riverColour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
-						foreach (TileManager.Tile tile in tileM.map.rivers[viewRiverAtIndex].tiles) {
-							tile.sr.sprite = whiteSquare;
+						foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.rivers[viewRiverAtIndex].tiles) {
+							tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 							tile.sr.color = riverColour;
 						}
-						tileM.map.rivers[viewRiverAtIndex].tiles[0].sr.color = UIManager.GetColour(UIManager.Colours.DarkRed);
-						tileM.map.rivers[viewRiverAtIndex].endTile.sr.color = UIManager.GetColour(UIManager.Colours.LightRed);
-						tileM.map.rivers[viewRiverAtIndex].tiles[tileM.map.rivers[viewRiverAtIndex].tiles.Count - 1].sr.color = UIManager.GetColour(UIManager.Colours.DarkGreen);
-						tileM.map.rivers[viewRiverAtIndex].startTile.sr.color = UIManager.GetColour(UIManager.Colours.LightGreen);
-						OutputToConsole("Showing river " + (viewRiverAtIndex + 1) + " of " + tileM.map.rivers.Count + " rivers.");
+						GameManager.colonyM.colony.map.rivers[viewRiverAtIndex].tiles[0].sr.color = UIManager.GetColour(UIManager.Colours.DarkRed);
+						GameManager.colonyM.colony.map.rivers[viewRiverAtIndex].endTile.sr.color = UIManager.GetColour(UIManager.Colours.LightRed);
+						GameManager.colonyM.colony.map.rivers[viewRiverAtIndex].tiles[GameManager.colonyM.colony.map.rivers[viewRiverAtIndex].tiles.Count - 1].sr.color = UIManager.GetColour(UIManager.Colours.DarkGreen);
+						GameManager.colonyM.colony.map.rivers[viewRiverAtIndex].startTile.sr.color = UIManager.GetColour(UIManager.Colours.LightGreen);
+						OutputToConsole("Showing river " + (viewRiverAtIndex + 1) + " of " + GameManager.colonyM.colony.map.rivers.Count + " rivers.");
 					} else {
 						OutputToConsole("ERROR: River index out of range.");
 					}
@@ -1155,10 +1137,10 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewlargerivers, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Map.River river in tileM.map.largeRivers) {
+				foreach (TileManager.Map.River river in GameManager.colonyM.colony.map.largeRivers) {
 					Color riverColour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
 					foreach (TileManager.Tile tile in river.tiles) {
-						tile.sr.sprite = whiteSquare;
+						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 						tile.sr.color = riverColour;
 					}
 					river.tiles[0].sr.color = UIManager.GetColour(UIManager.Colours.DarkRed);
@@ -1167,21 +1149,21 @@ public class DebugManager : MonoBehaviour {
 					river.startTile.sr.color = UIManager.GetColour(UIManager.Colours.LightGreen);
 					river.centreTile.sr.color = UIManager.GetColour(UIManager.Colours.LightBlue);
 				}
-				OutputToConsole("Showing " + tileM.map.largeRivers.Count + " large rivers.");
+				OutputToConsole("Showing " + GameManager.colonyM.colony.map.largeRivers.Count + " large rivers.");
 			} else if (parameters.Count == 1) {
 				if (int.TryParse(parameters[0], out viewRiverAtIndex)) {
-					if (viewRiverAtIndex >= 0 && viewRiverAtIndex < tileM.map.largeRivers.Count) {
+					if (viewRiverAtIndex >= 0 && viewRiverAtIndex < GameManager.colonyM.colony.map.largeRivers.Count) {
 						Color riverColour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
-						foreach (TileManager.Tile tile in tileM.map.largeRivers[viewRiverAtIndex].tiles) {
-							tile.sr.sprite = whiteSquare;
+						foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.largeRivers[viewRiverAtIndex].tiles) {
+							tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 							tile.sr.color = riverColour;
 						}
-						tileM.map.largeRivers[viewRiverAtIndex].tiles[0].sr.color = UIManager.GetColour(UIManager.Colours.DarkRed);
-						tileM.map.largeRivers[viewRiverAtIndex].endTile.sr.color = UIManager.GetColour(UIManager.Colours.LightRed);
-						tileM.map.largeRivers[viewRiverAtIndex].tiles[tileM.map.largeRivers[viewRiverAtIndex].tiles.Count - 1].sr.color = UIManager.GetColour(UIManager.Colours.DarkGreen);
-						tileM.map.largeRivers[viewRiverAtIndex].startTile.sr.color = UIManager.GetColour(UIManager.Colours.LightGreen);
-						tileM.map.largeRivers[viewRiverAtIndex].centreTile.sr.color = UIManager.GetColour(UIManager.Colours.LightBlue);
-						OutputToConsole("Showing river " + (viewRiverAtIndex + 1) + " of " + tileM.map.largeRivers.Count + " large rivers.");
+						GameManager.colonyM.colony.map.largeRivers[viewRiverAtIndex].tiles[0].sr.color = UIManager.GetColour(UIManager.Colours.DarkRed);
+						GameManager.colonyM.colony.map.largeRivers[viewRiverAtIndex].endTile.sr.color = UIManager.GetColour(UIManager.Colours.LightRed);
+						GameManager.colonyM.colony.map.largeRivers[viewRiverAtIndex].tiles[GameManager.colonyM.colony.map.largeRivers[viewRiverAtIndex].tiles.Count - 1].sr.color = UIManager.GetColour(UIManager.Colours.DarkGreen);
+						GameManager.colonyM.colony.map.largeRivers[viewRiverAtIndex].startTile.sr.color = UIManager.GetColour(UIManager.Colours.LightGreen);
+						GameManager.colonyM.colony.map.largeRivers[viewRiverAtIndex].centreTile.sr.color = UIManager.GetColour(UIManager.Colours.LightBlue);
+						OutputToConsole("Showing river " + (viewRiverAtIndex + 1) + " of " + GameManager.colonyM.colony.map.largeRivers.Count + " large rivers.");
 					} else {
 						OutputToConsole("ERROR: River index out of range.");
 					}
@@ -1194,8 +1176,8 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewwalkspeed, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Tile tile in tileM.map.tiles) {
-					tile.sr.sprite = whiteSquare;
+				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
+					tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 					tile.sr.color = new Color(tile.walkSpeed, tile.walkSpeed, tile.walkSpeed, 1f);
 				}
 			} else {
@@ -1204,9 +1186,13 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewregionblocks, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Map.RegionBlock region in tileM.map.regionBlocks) {
-					region.ColourRegion(resourceM.whiteSquareSprite);
-					TileManager.Tile averageTile = tileM.map.GetTileFromPosition(region.averagePosition);
+				foreach (TileManager.Map.RegionBlock region in GameManager.colonyM.colony.map.regionBlocks) {
+					Color colour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1f);
+					foreach (TileManager.Tile tile in region.tiles) {
+						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
+						tile.sr.color = colour;
+					}
+					TileManager.Tile averageTile = GameManager.colonyM.colony.map.GetTileFromPosition(region.averagePosition);
 					averageTile.sr.color = UIManager.GetColour(UIManager.Colours.White);
 				}
 			} else {
@@ -1215,9 +1201,13 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewsquareregionblocks, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Map.RegionBlock region in tileM.map.squareRegionBlocks) {
-					region.ColourRegion(resourceM.whiteSquareSprite);
-					TileManager.Tile averageTile = tileM.map.GetTileFromPosition(region.averagePosition);
+				foreach (TileManager.Map.RegionBlock region in GameManager.colonyM.colony.map.squareRegionBlocks) {
+					Color colour = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1f);
+					foreach (TileManager.Tile tile in region.tiles) {
+						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
+						tile.sr.color = colour;
+					}
+					TileManager.Tile averageTile = GameManager.colonyM.colony.map.GetTileFromPosition(region.averagePosition);
 					averageTile.sr.color = UIManager.GetColour(UIManager.Colours.White);
 				}
 			} else {
@@ -1226,7 +1216,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewshadowsfrom, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				tileM.map.SetTileBrightness(12);
+				GameManager.colonyM.colony.map.SetTileBrightness(12);
 				if (selectedTiles.Count > 0) {
 					foreach (TileManager.Tile tile in selectedTiles) {
 						foreach (KeyValuePair<int, Dictionary<TileManager.Tile, float>> shadowsFromKVP in tile.shadowsFrom) {
@@ -1244,7 +1234,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewshadowsto, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				tileM.map.SetTileBrightness(12);
+				GameManager.colonyM.colony.map.SetTileBrightness(12);
 				if (selectedTiles.Count > 0) {
 					foreach (TileManager.Tile tile in selectedTiles) {
 						foreach (KeyValuePair<int, List<TileManager.Tile>> shadowsToKVP in tile.shadowsTo) {
@@ -1262,7 +1252,7 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewblockingtiles, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				tileM.map.SetTileBrightness(12);
+				GameManager.colonyM.colony.map.SetTileBrightness(12);
 				if (selectedTiles.Count > 0) {
 					foreach (TileManager.Tile tile in selectedTiles) {
 						foreach (KeyValuePair<int, List<TileManager.Tile>> blockingShadowsFromKVP in tile.blockingShadowsFrom) {
@@ -1280,9 +1270,9 @@ public class DebugManager : MonoBehaviour {
 		});
 		commandFunctions.Add(Commands.viewroofs, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.Tile tile in tileM.map.tiles) {
+				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
 					if (tile.roof) {
-						tile.sr.sprite = whiteSquare;
+						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 						tile.sr.color = Color.red;
 					}
 				}
