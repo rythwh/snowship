@@ -37,6 +37,7 @@ public class ResourceManager : BaseManager {
 	}
 
 	public enum ResourceGroupsEnum {
+		None,
 		Natural,
 		Ores,
 		Metals,
@@ -49,6 +50,7 @@ public class ResourceManager : BaseManager {
 	};
 
 	public enum ResourcesEnum {
+		None,
 		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Log, Wood, Firewood, Snow, Sand, Cactus, Leaf, Sap,
 		GoldOre, SilverOre, BronzeOre, IronOre,
 		Gold, Silver, Bronze, Iron,
@@ -1637,7 +1639,7 @@ public class ResourceManager : BaseManager {
 		}
 	}
 
-	public enum PlantGroupsEnum { Cactus, ColourfulBush, ColourfulTree, DeadTree, Bush, SnowTree, ThinTree, WideTree };
+	public enum PlantGroupsEnum { None, Cactus, ColourfulBush, ColourfulTree, DeadTree, Bush, SnowTree, ThinTree, WideTree };
 
 	public static readonly List<PlantGroupsEnum> livingTreesAndBushes = new List<PlantGroupsEnum>() {
 		PlantGroupsEnum.ColourfulBush, PlantGroupsEnum.ColourfulTree, PlantGroupsEnum.Bush, PlantGroupsEnum.SnowTree, PlantGroupsEnum.ThinTree, PlantGroupsEnum.WideTree

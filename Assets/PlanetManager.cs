@@ -185,8 +185,6 @@ public class PlanetManager : BaseManager {
 			public List<int> surroundingPlanetTileHeightDirections = new List<int>();
 			public List<int> surroundingPlanetTileRivers = new List<int>();
 
-			public bool settleable = true;
-
 			public string altitude;
 
 			public PlanetTile(Planet planet, TileManager.Tile tile) {
@@ -202,49 +200,45 @@ public class PlanetManager : BaseManager {
 				River river = planet.RiversContainTile(tile, true).Value;
 				isRiver = river != null;
 
-				if (isRiver || !TileManager.waterEquivalentTileTypes.Contains(tile.tileType.type)) {
-					foreach (TileManager.Tile sTile in tile.horizontalSurroundingTiles) {
-						if (sTile != null) {
-							if (planet.rivers.Find(r => r.tiles.Contains(sTile)) == null) {
-								if (TileManager.waterEquivalentTileTypes.Contains(sTile.tileType.type)) {
-									surroundingPlanetTileHeightDirections.Add(-2);
-								} else if (TileManager.stoneEquivalentTileTypes.Contains(sTile.tileType.type)) {
-									surroundingPlanetTileHeightDirections.Add(5);
-								} else {
-									surroundingPlanetTileHeightDirections.Add(0);
-								}
+				foreach (TileManager.Tile sTile in tile.horizontalSurroundingTiles) {
+					if (sTile != null) {
+						if (planet.rivers.Find(r => r.tiles.Contains(sTile)) == null) {
+							if (TileManager.waterEquivalentTileTypes.Contains(sTile.tileType.type)) {
+								surroundingPlanetTileHeightDirections.Add(-2);
+							} else if (TileManager.stoneEquivalentTileTypes.Contains(sTile.tileType.type)) {
+								surroundingPlanetTileHeightDirections.Add(5);
 							} else {
 								surroundingPlanetTileHeightDirections.Add(0);
 							}
-							if (isRiver) {
-								int nTileRiverIndex = river.tiles.IndexOf(sTile);
-								if (nTileRiverIndex == -1) {
-									foreach (River r in planet.rivers) {
-										if (r != river) {
-											if (r.tiles.Contains(sTile)) {
-												nTileRiverIndex = r.tiles.IndexOf(sTile);
-											}
+						} else {
+							surroundingPlanetTileHeightDirections.Add(0);
+						}
+						if (isRiver) {
+							int nTileRiverIndex = river.tiles.IndexOf(sTile);
+							if (nTileRiverIndex == -1) {
+								foreach (River r in planet.rivers) {
+									if (r != river) {
+										if (r.tiles.Contains(sTile)) {
+											nTileRiverIndex = r.tiles.IndexOf(sTile);
 										}
 									}
 								}
-								if (nTileRiverIndex == -1) {
-									if (river.startTile == tile && TileManager.stoneEquivalentTileTypes.Contains(sTile.tileType.type)) {
-										nTileRiverIndex = 0;
-									} else if (river.endTile == tile && TileManager.waterEquivalentTileTypes.Contains(sTile.tileType.type)) {
-										nTileRiverIndex = int.MaxValue;
-									}
-								}
-								surroundingPlanetTileRivers.Add(nTileRiverIndex);
-							} else {
-								surroundingPlanetTileRivers.Add(-1);
 							}
+							if (nTileRiverIndex == -1) {
+								if (river.startTile == tile && TileManager.stoneEquivalentTileTypes.Contains(sTile.tileType.type)) {
+									nTileRiverIndex = 0;
+								} else if (river.endTile == tile && TileManager.waterEquivalentTileTypes.Contains(sTile.tileType.type)) {
+									nTileRiverIndex = int.MaxValue;
+								}
+							}
+							surroundingPlanetTileRivers.Add(nTileRiverIndex);
 						} else {
-							surroundingPlanetTileHeightDirections.Add(0);
 							surroundingPlanetTileRivers.Add(-1);
 						}
+					} else {
+						surroundingPlanetTileHeightDirections.Add(0);
+						surroundingPlanetTileRivers.Add(-1);
 					}
-				} else {
-					settleable = false;
 				}
 
 				terrainTypeHeights = new Dictionary<TileManager.TileTypes, float>() {

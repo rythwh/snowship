@@ -1470,18 +1470,20 @@ public class TileManager : BaseManager {
 			public int expandRadius;
 			public bool ignoreStone;
 
-			public River(Tile startTile, Tile centreTile, Tile endTile, int expandRadius, bool ignoreStone, Map map) {
+			public River(Tile startTile, Tile centreTile, Tile endTile, int expandRadius, bool ignoreStone, Map map, bool performPathfinding) {
 				this.startTile = startTile;
 				this.centreTile = centreTile;
 				this.endTile = endTile;
 				this.expandRadius = expandRadius;
 				this.ignoreStone = ignoreStone;
 
-				if (centreTile != null) {
-					tiles.AddRange(map.RiverPathfinding(startTile, centreTile, expandRadius, ignoreStone));
-					tiles.AddRange(map.RiverPathfinding(centreTile, endTile, expandRadius, ignoreStone));
-				} else {
-					tiles = map.RiverPathfinding(startTile, endTile, expandRadius, ignoreStone);
+				if (performPathfinding) {
+					if (centreTile != null) {
+						tiles.AddRange(map.RiverPathfinding(startTile, centreTile, expandRadius, ignoreStone));
+						tiles.AddRange(map.RiverPathfinding(centreTile, endTile, expandRadius, ignoreStone));
+					} else {
+						tiles = map.RiverPathfinding(startTile, endTile, expandRadius, ignoreStone);
+					}
 				}
 			}
 		}
@@ -1502,7 +1504,7 @@ public class TileManager : BaseManager {
 						List<Tile> validStartTiles = sortedEdgeTiles[riverStartListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][sortedEdgeTiles[riverStartListIndex].Count - 1].obj.transform.position) >= 10).ToList();
 						Tile riverStartTile = validStartTiles[UnityEngine.Random.Range(0, validStartTiles.Count)];
 						List<Tile> possibleCentreTiles = tiles.Where(t => Vector2.Distance(new Vector2(mapData.mapSize / 2f, mapData.mapSize / 2f), t.obj.transform.position) < mapData.mapSize / 5f).ToList();
-						River river = new River(riverStartTile, possibleCentreTiles[UnityEngine.Random.Range(0, possibleCentreTiles.Count)], riverEndTile, expandRadius, true, this);
+						River river = new River(riverStartTile, possibleCentreTiles[UnityEngine.Random.Range(0, possibleCentreTiles.Count)], riverEndTile, expandRadius, true, this, true);
 						if (river.tiles.Count > 0) {
 							largeRivers.Add(river);
 						} else {
@@ -1541,7 +1543,7 @@ public class TileManager : BaseManager {
 				}
 				removeTiles.Clear();
 
-				River river = new River(riverStartTile, null, riverEndTile, 0, false, this);
+				River river = new River(riverStartTile, null, riverEndTile, 0, false, this, true);
 				if (river.tiles.Count > 0) {
 					rivers.Add(river);
 				} else {
