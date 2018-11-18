@@ -74,6 +74,8 @@ public class ColonyManager : BaseManager {
 		if (!initialized) {
 			this.colony = colony;
 
+			UnityEngine.Random.InitState(colony.mapData.mapSeed);
+
 			//GameManager.tileM.Initialize(colony, TileManager.MapInitializeType.LoadMap);
 		}
 	}

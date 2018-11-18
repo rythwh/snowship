@@ -1,4 +1,8 @@
 <Group>
+	None
+	<Resource>
+		<Type>None
+<Group>
 	Natural
 	<Resource>
 		<Type>Dirt

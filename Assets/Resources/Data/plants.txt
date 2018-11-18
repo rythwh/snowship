@@ -1,4 +1,7 @@
 <PlantGroup>
+	<Type>None
+	<SimpleName>None
+<PlantGroup>
 	<Type>Cactus
 	<SimpleName>Cactus
 	<Seed>CactusSeed

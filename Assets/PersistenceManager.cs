@@ -121,7 +121,7 @@ public class PersistenceManager : BaseManager {
 			if (file == null) {
 				return false;
 			}
-		} catch (Exception) {
+		} catch {
 			return false;
 		}
 
@@ -297,16 +297,37 @@ public class PersistenceManager : BaseManager {
 		Directory.CreateDirectory(universeDirectoryPath);
 		universe.SetDirectory(universeDirectoryPath);
 
-		StreamWriter configurationFile = CreateFileAtDirectory(universeDirectoryPath, "configuration.snowship");
-		SaveConfiguration(configurationFile);
-		configurationFile.Close();
-
-		StreamWriter universeFile = CreateFileAtDirectory(universeDirectoryPath, "universe.snowship");
-		SaveUniverse(universeFile, universe);
-		universeFile.Close();
+		UpdateUniverseSave(universe);
 
 		string planetsDirectoryPath = universeDirectoryPath + "/Planets";
 		Directory.CreateDirectory(planetsDirectoryPath);
+	}
+
+	public void UpdateUniverseSave(UniverseManager.Universe universe) {
+		if (universe == null) {
+			Debug.LogError("Universe to be saved is null.");
+			return;
+		}
+
+		string configurationFilePath = universe.directory + "/configuration.snowship";
+		if (File.Exists(configurationFilePath)) {
+			File.WriteAllText(configurationFilePath, string.Empty);
+		} else {
+			CreateFileAtDirectory(universe.directory, "configuration.snowship").Close();
+		}
+		StreamWriter configurationFile = new StreamWriter(configurationFilePath);
+		SaveConfiguration(configurationFile);
+		configurationFile.Close();
+
+		string universeFilePath = universe.directory + "/universe.snowship";
+		if (File.Exists(universeFilePath)) {
+			File.WriteAllText(universeFilePath, string.Empty);
+		} else {
+			CreateFileAtDirectory(universe.directory, "universe.snowship").Close();
+		}
+		StreamWriter universeFile = new StreamWriter(universeFilePath);
+		SaveUniverse(universeFile, universe);
+		universeFile.Close();
 	}
 
 	public void CreatePlanet(PlanetManager.Planet planet) {
@@ -331,15 +352,40 @@ public class PersistenceManager : BaseManager {
 		Directory.CreateDirectory(planetDirectoryPath);
 		planet.SetDirectory(planetDirectoryPath);
 
-		StreamWriter planetFile = CreateFileAtDirectory(planetDirectoryPath, "planet.snowship");
-		SavePlanet(planetFile, planet);
-		planetFile.Close();
+		UpdatePlanetSave(planet);
 
 		string citiesDirectoryPath = planetDirectoryPath + "/Cities";
 		Directory.CreateDirectory(citiesDirectoryPath);
 
 		string coloniesDirectoryPath = planetDirectoryPath + "/Colonies";
 		Directory.CreateDirectory(coloniesDirectoryPath);
+	}
+
+	public void UpdatePlanetSave(PlanetManager.Planet planet) {
+		if (planet == null) {
+			Debug.LogError("Planet to be saved is null.");
+			return;
+		}
+
+		if (GameManager.universeM.universe == null) {
+			Debug.LogError("Universe to save the planet to is null.");
+			return;
+		}
+
+		if (string.IsNullOrEmpty(GameManager.universeM.universe.directory)) {
+			Debug.LogError("Universe directory is null or empty.");
+			return;
+		}
+
+		string planetFilePath = planet.directory + "/planet.snowship";
+		if (File.Exists(planetFilePath)) {
+			File.WriteAllText(planetFilePath, string.Empty);
+		} else {
+			CreateFileAtDirectory(planet.directory, "planet.snowship").Close();
+		}
+		StreamWriter planetFile = new StreamWriter(planetFilePath);
+		SavePlanet(planetFile, planet);
+		planetFile.Close();
 	}
 
 	public void CreateCity() {
@@ -368,9 +414,7 @@ public class PersistenceManager : BaseManager {
 		Directory.CreateDirectory(colonyDirectoryPath);
 		colony.SetDirectory(colonyDirectoryPath);
 
-		StreamWriter colonyFile = CreateFileAtDirectory(colonyDirectoryPath, "colony.snowship");
-		SaveColony(colonyFile, colony);
-		colonyFile.Close();
+		UpdateColonySave(colony);
 
 		string mapDirectoryPath = colonyDirectoryPath + "/Map";
 		Directory.CreateDirectory(mapDirectoryPath);
@@ -380,11 +424,38 @@ public class PersistenceManager : BaseManager {
 		tilesFile.Close();
 
 		StreamWriter riversFile = CreateFileAtDirectory(mapDirectoryPath, "rivers.snowship");
-		SaveRivers(riversFile);
+		SaveOriginalRivers(riversFile);
 		riversFile.Close();
 
 		string savesDirectoryPath = colonyDirectoryPath + "/Saves";
 		Directory.CreateDirectory(savesDirectoryPath);
+	}
+
+	public void UpdateColonySave(ColonyManager.Colony colony) {
+		if (colony == null) {
+			Debug.LogError("Colony to be saved is null.");
+			return;
+		}
+
+		if (GameManager.planetM.planet == null) {
+			Debug.LogError("Planet to save the colony to is null.");
+			return;
+		}
+
+		if (string.IsNullOrEmpty(GameManager.planetM.planet.directory)) {
+			Debug.LogError("Planet directory is null or empty.");
+			return;
+		}
+
+		string colonyFilePath = colony.directory + "/colony.snowship";
+		if (File.Exists(colonyFilePath)) {
+			File.WriteAllText(colonyFilePath, string.Empty);
+		} else {
+			CreateFileAtDirectory(colony.directory, "colony.snowship").Close();
+		}
+		StreamWriter colonyFile = new StreamWriter(colonyFilePath);
+		SaveColony(colonyFile, colony);
+		colonyFile.Close();
 	}
 
 	public void CreateSave(ColonyManager.Colony colony) {
@@ -419,8 +490,12 @@ public class PersistenceManager : BaseManager {
 			SaveResources(resourcesFile);
 			resourcesFile.Close();
 
+			StreamWriter riversFile = CreateFileAtDirectory(saveDirectoryPath, "rivers.snowship");
+			SaveModifiedRivers(riversFile, LoadRivers(colony.directory + "/Map/rivers.snowship"));
+			riversFile.Close();
+
 			StreamWriter tilesFile = CreateFileAtDirectory(saveDirectoryPath, "tiles.snowship");
-			SaveModifiedTiles(tilesFile, LoadOriginalTiles(colony.directory + "/Map/tiles.snowship"));
+			SaveModifiedTiles(tilesFile, LoadTiles(colony.directory + "/Map/tiles.snowship"));
 			tilesFile.Close();
 
 			StreamWriter timeFile = CreateFileAtDirectory(saveDirectoryPath, "time.snowship");
@@ -428,9 +503,15 @@ public class PersistenceManager : BaseManager {
 			timeFile.Close();
 
 			string lastSaveDateTime = GenerateSaveDateTimeString();
+
 			GameManager.universeM.universe.lastSaveDateTime = lastSaveDateTime;
+			UpdateUniverseSave(GameManager.universeM.universe);
+
 			GameManager.planetM.planet.lastSaveDateTime = lastSaveDateTime;
+			UpdatePlanetSave(GameManager.planetM.planet);
+
 			colony.lastSaveDateTime = lastSaveDateTime;
+			UpdateColonySave(GameManager.colonyM.colony);
 
 			StreamWriter saveFile = CreateFileAtDirectory(saveDirectoryPath, "save.snowship");
 			SaveSave(saveFile, lastSaveDateTime);
@@ -438,7 +519,7 @@ public class PersistenceManager : BaseManager {
 
 			startCoroutineReference.StartCoroutine(CreateScreenshot(saveDirectoryPath + "/screenshot-" + dateTimeString));
 		} catch (Exception e) {
-			Directory.Delete(saveDirectoryPath);
+			//Directory.Delete(saveDirectoryPath);
 			Debug.LogError(e.ToString());
 		}
 	}
@@ -879,7 +960,22 @@ public class PersistenceManager : BaseManager {
 		return persistenceSave;
 	}
 
+	public enum LoadingState {
+		NothingLoaded,
+		LoadingCamera, LoadedCamera,
+		LoadingTime, LoadedTime,
+		LoadingResources, LoadedResources,
+		LoadingMap, LoadedMap,
+		LoadingObjects, LoadedObjects,
+		LoadingCaravans, LoadedCaravans,
+		LoadingJobs, LoadedJobs,
+		LoadingColonists, LoadedColonists
+	}
+
+	public LoadingState loadingState;
+
 	public IEnumerator ApplyLoadedSave(PersistenceSave persistenceSave) {
+		loadingState = LoadingState.NothingLoaded;
 		if (persistenceSave != null) {
 			GameManager.tileM.mapState = TileManager.MapState.Generating;
 
@@ -888,124 +984,52 @@ public class PersistenceManager : BaseManager {
 			GameManager.uiM.SetGameUIActive(false);
 
 			GameManager.colonyM.LoadColony(GameManager.colonyM.colony, false);
-			//while (!GameManager.colonyM.colony.map.created) {
-			//	yield return null;
-			//}
 
 			string saveDirectoryPath = Directory.GetParent(persistenceSave.path).FullName;
 
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Camera"); yield return null;
-			LoadCamera(saveDirectoryPath + "/camera.snowship");
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Time"); yield return null;
-			LoadTime(saveDirectoryPath + "/time.snowship");
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Resources"); yield return null;
-			LoadResources(saveDirectoryPath + "/resources.snowship");
+			loadingState = LoadingState.LoadingCamera;
+			GameManager.uiM.UpdateLoadingStateText("Persistence", "Setting Camera Settings"); yield return null;
+			startCoroutineReference.StartCoroutine(LoadCamera(saveDirectoryPath + "/camera.snowship"));
+			while (loadingState != LoadingState.LoadedCamera) { yield return null; }
 
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Generating Original Map"); yield return null;
+			loadingState = LoadingState.LoadingTime;
+			GameManager.uiM.UpdateLoadingStateText("Persistence", "Setting Time"); yield return null;
+			startCoroutineReference.StartCoroutine(LoadTime(saveDirectoryPath + "/time.snowship"));
+			while (loadingState != LoadingState.LoadedTime) { yield return null; }
 
+			loadingState = LoadingState.LoadingResources;
+			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Resource Data"); yield return null;
+			startCoroutineReference.StartCoroutine(LoadResources(saveDirectoryPath + "/resources.snowship"));
+			while (loadingState != LoadingState.LoadedResources) { yield return null; }
+
+			loadingState = LoadingState.LoadingMap;
+			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Original Map"); yield return null;
 			GameManager.colonyM.colony.map = new TileManager.Map() { mapData = GameManager.colonyM.colony.mapData };
 			TileManager.Map map = GameManager.colonyM.colony.map;
 
-			List<PersistenceTile> persistenceTiles = LoadOriginalTiles(GameManager.colonyM.colony.directory + "/Map/tiles.snowship");
+			List<PersistenceTile> originalTiles = LoadTiles(GameManager.colonyM.colony.directory + "/Map/tiles.snowship");
+			List<PersistenceRiver> originalRivers = LoadRivers(GameManager.colonyM.colony.directory + "/Map/rivers.snowship");
 
-			if (persistenceTiles.Count != Mathf.Pow(map.mapData.mapSize, 2)) {
+			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Modified Map"); yield return null;
+			List<PersistenceTile> modifiedTiles = LoadTiles(saveDirectoryPath + "/tiles.snowship");
+			List<PersistenceRiver> modifiedRivers = LoadRivers(saveDirectoryPath + "/rivers.snowship");
 
-			}
+			GameManager.uiM.UpdateLoadingStateText("Persistence", "Generating Map"); yield return null;
+			startCoroutineReference.StartCoroutine(ApplyLoadedTiles(originalTiles, modifiedTiles, map));
+			startCoroutineReference.StartCoroutine(ApplyLoadedRivers(originalRivers, modifiedRivers, map));
+			while (loadingState != LoadingState.LoadedMap) { yield return null; }
 
-			for (int y = 0; y < map.mapData.mapSize; y++) {
-				List<TileManager.Tile> innerTiles = new List<TileManager.Tile>();
-				for (int x = 0; x < map.mapData.mapSize; x++) {
-					PersistenceTile persistenceTile = persistenceTiles[y * map.mapData.mapSize + x];
-
-					TileManager.Tile tile = new TileManager.Tile(map, new Vector2(x, y), persistenceTile.tileHeight);
-					map.tiles.Add(tile);
-					innerTiles.Add(tile);
-
-					tile.SetTileType(persistenceTile.tileType, false, false, false, false);
-					if (persistenceTile.plantGroup != null) {
-						tile.SetPlant(false, new ResourceManager.Plant(persistenceTile.plantGroup, tile, false, persistenceTile.plantSmall, map.smallPlants, persistenceTile.plantHarvestResource != null, persistenceTile.plantHarvestResource));
-					}
-				}
-				map.sortedTiles.Add(innerTiles);
-			}
-
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Applying Changes to Map"); yield return null;
-			LoadModifiedTiles(saveDirectoryPath + "/tiles.snowship");
-
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Setting Backend Data"); yield return null;
-			map.SetSurroundingTiles();
-			map.SetMapEdgeTiles();
-			map.SetSortedMapEdgeTiles();
-			map.SetTileRegions(false);
-
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Determining Drainage Basins"); yield return null;
-			map.DetermineDrainageBasins();
-
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Setting Biomes"); yield return null;
-			map.CalculateTemperature();
-			map.CalculatePrecipitation();
-			map.SetBiomes(false);
-
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Setting Backend Data"); yield return null;
-			map.CreateRegionBlocks();
-			map.SetRoofs();
-
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Calculating Lighting"); yield return null;
-			map.DetermineShadowDirectionsAtHour();
-			map.DetermineShadowTiles(map.tiles, false);
-			map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
-			map.DetermineVisibleRegionBlocks();
-
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Validating"); yield return null;
-			map.Bitmasking(map.tiles);
-
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Setting Consistent Appearance"); yield return null;
-			for (int i = 0; i < map.tiles.Count; i++) {
-				TileManager.Tile tile = map.tiles[i];
-				PersistenceTile persistenceTile = persistenceTiles[i];
-
-				if (tile.plant != null) {
-					Sprite plantSprite = null;
-					if (tile.plant.small) {
-						plantSprite = persistenceTile.plantGroup.smallSprites.Find(s => s.name == persistenceTile.plantSpriteName);
-					} else {
-						plantSprite = persistenceTile.plantGroup.fullSprites.Find(s => s.name == persistenceTile.plantSpriteName);
-					}
-					if (plantSprite != null) {
-						tile.plant.obj.GetComponent<SpriteRenderer>().sprite = plantSprite;
-					}
-				}
-
-				Sprite tileSprite = null;
-				tileSprite = tile.tileType.baseSprites.Find(s => s.name == persistenceTile.tileSpriteName);
-				if (tileSprite != null) {
-					tile.sr.sprite = tileSprite;
-					continue;
-				}
-
-				tileSprite = tile.tileType.bitmaskSprites.Find(s => s.name == persistenceTile.tileSpriteName);
-				if (tileSprite != null) {
-					tile.sr.sprite = tileSprite;
-					continue;
-				}
-
-				tileSprite = tile.tileType.riverSprites.Find(s => s.name == persistenceTile.tileSpriteName);
-				if (tileSprite != null) {
-					tile.sr.sprite = tileSprite;
-					continue;
-				}
-			}
-
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Objects"); yield return null;
+			loadingState = LoadingState.LoadingObjects;
+			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Object Data"); yield return null;
 			LoadObjects(saveDirectoryPath + "/objects.snowship");
 
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Caravans"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Caravan Data"); yield return null;
 			LoadCaravans(saveDirectoryPath + "/caravans.snowship");
 
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Jobs"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Job Data"); yield return null;
 			LoadJobs(saveDirectoryPath + "/jobs.snowship");
 
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Colonists"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Colonist Data"); yield return null;
 			LoadColonists(saveDirectoryPath + "/colonists.snowship");
 
 			GameManager.tileM.mapState = TileManager.MapState.Generated;
@@ -1017,7 +1041,7 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public enum TileProperty {
-		Tile, Height, TileType, Sprite, Plant, Roof, Dug
+		Tile, Index, Height, TileType, Temperature, Precipitation, Biome, Roof, Dug, Sprite, Plant
 	}
 
 	public enum PlantProperty {
@@ -1025,20 +1049,35 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public class PersistenceTile {
-		public float tileHeight;
+		public int? tileIndex;
+		public float? tileHeight;
 		public TileManager.TileType tileType;
+		public float? tileTemperature;
+		public float? tilePrecipitation;
+		public TileManager.Biome tileBiome;
+		public bool? tileRoof;
+		public bool? tileDug;
 		public string tileSpriteName;
 
 		public ResourceManager.PlantGroup plantGroup;
 		public string plantSpriteName;
-		public bool plantSmall;
-		public float plantGrowthProgress;
+		public bool? plantSmall;
+		public float? plantGrowthProgress;
 		public ResourceManager.Resource plantHarvestResource;
-		public float plantIntegrity;
+		public float? plantIntegrity;
 
-		public PersistenceTile(float tileHeight, TileManager.TileType tileType, string tileSpriteName, ResourceManager.PlantGroup plantGroup, string plantSpriteName, bool plantSmall, float plantGrowthProgress, ResourceManager.Resource plantHarvestResource, float plantIntegrity) {
+		public PersistenceTile(
+			int? tileIndex, float? tileHeight, TileManager.TileType tileType, float? tileTemperature, float? tilePrecipitation, TileManager.Biome tileBiome, bool? tileRoof, bool? tileDug, string tileSpriteName, 
+			ResourceManager.PlantGroup plantGroup, string plantSpriteName, bool? plantSmall, float? plantGrowthProgress, ResourceManager.Resource plantHarvestResource, float? plantIntegrity
+		) {
+			this.tileIndex = tileIndex;
 			this.tileHeight = tileHeight;
 			this.tileType = tileType;
+			this.tileTemperature = tileTemperature;
+			this.tilePrecipitation = tilePrecipitation;
+			this.tileBiome = tileBiome;
+			this.tileRoof = tileRoof;
+			this.tileDug = tileDug;
 			this.tileSpriteName = tileSpriteName;
 
 			this.plantGroup = plantGroup;
@@ -1056,6 +1095,11 @@ public class PersistenceManager : BaseManager {
 
 			file.WriteLine(CreateKeyValueString(TileProperty.Height, tile.height, 1));
 			file.WriteLine(CreateKeyValueString(TileProperty.TileType, tile.tileType.type, 1));
+			file.WriteLine(CreateKeyValueString(TileProperty.Temperature, tile.temperature, 1));
+			file.WriteLine(CreateKeyValueString(TileProperty.Precipitation, tile.GetPrecipitation(), 1));
+			file.WriteLine(CreateKeyValueString(TileProperty.Biome, tile.biome.type, 1));
+			file.WriteLine(CreateKeyValueString(TileProperty.Roof, tile.roof, 1));
+			file.WriteLine(CreateKeyValueString(TileProperty.Dug, tile.dugPreviously, 1));
 			file.WriteLine(CreateKeyValueString(TileProperty.Sprite, tile.sr.sprite.name, 1));
 
 			if (tile.plant != null) {
@@ -1073,33 +1117,57 @@ public class PersistenceManager : BaseManager {
 		}
 	}
 
-	public List<PersistenceTile> LoadOriginalTiles(string path) {
-		List<PersistenceTile> originalTiles = new List<PersistenceTile>();
+	public List<PersistenceTile> LoadTiles(string path) {
+		List<PersistenceTile> persistenceTiles = new List<PersistenceTile>();
 
 		List<KeyValuePair<string, object>> properties = GetKeyValuePairsFromFile(path);
 		foreach (KeyValuePair<string, object> property in properties) {
 			TileProperty key = (TileProperty)Enum.Parse(typeof(TileProperty), property.Key);
 			switch (key) {
 				case TileProperty.Tile:
-					float tileHeight = -1;
+					int? tileIndex = null;
+					float? tileHeight = null;
 					TileManager.TileType tileType = null;
+					float? tileTemperature = null;
+					float? tilePrecipitation = null;
+					TileManager.Biome tileBiome = null;
+					bool? tileRoof = null;
+					bool? tileDug = null;
 					string tileSpriteName = null;
 
 					ResourceManager.PlantGroup plantGroup = null;
 					string plantSpriteName = null;
-					bool plantSmall = false;
-					float plantGrowthProgress = -1;
+					bool? plantSmall = null;
+					float? plantGrowthProgress = null;
 					ResourceManager.Resource plantHarvestResource = null;
-					float plantIntegrity = -1;
+					float? plantIntegrity = null;
 
 					foreach (KeyValuePair<string, object> tileProperty in (List<KeyValuePair<string, object>>)property.Value) {
 						TileProperty tilePropertyKey = (TileProperty)Enum.Parse(typeof(TileProperty), tileProperty.Key);
 						switch (tilePropertyKey) {
+							case TileProperty.Index:
+								tileIndex = int.Parse((string)tileProperty.Value);
+								break;
 							case TileProperty.Height:
 								tileHeight = float.Parse((string)tileProperty.Value);
 								break;
 							case TileProperty.TileType:
 								tileType = GameManager.tileM.GetTileTypeByEnum((TileManager.TileTypes)Enum.Parse(typeof(TileManager.TileTypes), (string)tileProperty.Value));
+								break;
+							case TileProperty.Temperature:
+								tileTemperature = float.Parse((string)tileProperty.Value);
+								break;
+							case TileProperty.Precipitation:
+								tilePrecipitation = float.Parse((string)tileProperty.Value);
+								break;
+							case TileProperty.Biome:
+								tileBiome = GameManager.tileM.biomes.Find(biome => biome.type == (TileManager.BiomeTypes)Enum.Parse(typeof(TileManager.BiomeTypes), (string)tileProperty.Value));
+								break;
+							case TileProperty.Roof:
+								tileRoof = bool.Parse((string)tileProperty.Value);
+								break;
+							case TileProperty.Dug:
+								tileDug = bool.Parse((string)tileProperty.Value);
 								break;
 							case TileProperty.Sprite:
 								tileSpriteName = (string)tileProperty.Value;
@@ -1138,7 +1206,10 @@ public class PersistenceManager : BaseManager {
 						}
 					}
 
-					originalTiles.Add(new PersistenceTile(tileHeight, tileType, tileSpriteName, plantGroup, plantSpriteName, plantSmall, plantGrowthProgress, plantHarvestResource, plantIntegrity));
+					persistenceTiles.Add(new PersistenceTile(
+						tileIndex, tileHeight, tileType, tileTemperature, tilePrecipitation, tileBiome, tileRoof, tileDug, tileSpriteName, 
+						plantGroup, plantSpriteName, plantSmall, plantGrowthProgress, plantHarvestResource, plantIntegrity
+					));
 					break;
 				default:
 					Debug.LogError("Unknown tile property: " + property.Key + " " + property.Value);
@@ -1146,50 +1217,50 @@ public class PersistenceManager : BaseManager {
 			}
 		}
 
-		return originalTiles;
-	}
-
-	public enum RiverProperty {
-		River, LargeRiver, StartTilePosition, CentreTilePosition, EndTilePosition, ExpandRadius, IgnoreStone, TilePositions
-	}
-
-	public void SaveRivers(StreamWriter file) {
-		foreach (TileManager.Map.River river in GameManager.colonyM.colony.map.rivers) {
-			WriteRiverLines(file, river, 0, RiverProperty.River);
-		}
-		foreach (TileManager.Map.River river in GameManager.colonyM.colony.map.largeRivers) {
-			WriteRiverLines(file, river, 0, RiverProperty.LargeRiver);
-		}
-	}
-
-	private void WriteRiverLines(StreamWriter file, TileManager.Map.River river, int startLevel, RiverProperty riverType) {
-		file.WriteLine(CreateKeyValueString(riverType, string.Empty, startLevel));
-
-		file.WriteLine(CreateKeyValueString(RiverProperty.StartTilePosition, FormatVector2ToString(river.startTile.obj.transform.position), startLevel + 1));
-		if (river.centreTile != null) {
-			file.WriteLine(CreateKeyValueString(RiverProperty.CentreTilePosition, FormatVector2ToString(river.centreTile.obj.transform.position), startLevel + 1));
-		}
-		file.WriteLine(CreateKeyValueString(RiverProperty.EndTilePosition, FormatVector2ToString(river.endTile.obj.transform.position), startLevel + 1));
-
-		file.WriteLine(CreateKeyValueString(RiverProperty.ExpandRadius, river.expandRadius, startLevel + 1));
-		file.WriteLine(CreateKeyValueString(RiverProperty.IgnoreStone, river.ignoreStone, startLevel + 1));
-		file.WriteLine(CreateKeyValueString(RiverProperty.TilePositions, string.Join(";", river.tiles.Select(t => FormatVector2ToString(t.obj.transform.position)).ToArray()), startLevel + 1));
+		return persistenceTiles;
 	}
 
 	public void SaveModifiedTiles(StreamWriter file, List<PersistenceTile> originalTiles) {
-		for (int i = 0; i < GameManager.colonyM.colony.map.tiles.Count; i++) {
-			TileManager.Tile tile = GameManager.colonyM.colony.map.tiles[i];
+		TileManager.Map map = GameManager.colonyM.colony.map;
+		if (map.tiles.Count != originalTiles.Count) {
+			Debug.LogError("Loaded tile count " + map.tiles.Count + " and current tile count " + originalTiles.Count + " does not match.");
+		}
+
+		for (int i = 0; i < map.tiles.Count; i++) {
+			TileManager.Tile tile = map.tiles[i];
 			PersistenceTile originalTile = originalTiles[i];
 
 			Dictionary<TileProperty, string> tileDifferences = new Dictionary<TileProperty, string>();
 			Dictionary<PlantProperty, string> plantDifferences = new Dictionary<PlantProperty, string>();
 
-			if (tile.height != originalTile.tileHeight) {
+			if (!Mathf.Approximately(tile.height, originalTile.tileHeight.Value)) {
 				tileDifferences.Add(TileProperty.Height, tile.height.ToString());
 			}
-			if (tile.tileType != originalTile.tileType) {
-				tileDifferences.Add(TileProperty.TileType, tile.tileType.ToString());
+
+			if (tile.tileType.type != originalTile.tileType.type) {
+				tileDifferences.Add(TileProperty.TileType, tile.tileType.type.ToString());
 			}
+
+			if (!Mathf.Approximately(tile.temperature, originalTile.tileTemperature.Value)) {
+				tileDifferences.Add(TileProperty.Temperature, tile.temperature.ToString());
+			}
+
+			if (!Mathf.Approximately(tile.GetPrecipitation(), originalTile.tilePrecipitation.Value)) {
+				tileDifferences.Add(TileProperty.Precipitation, tile.GetPrecipitation().ToString());
+			}
+
+			if (tile.biome.type != originalTile.tileBiome.type) {
+				tileDifferences.Add(TileProperty.Biome, tile.biome.type.ToString());
+			}
+
+			if (tile.roof != originalTile.tileRoof.Value) {
+				tileDifferences.Add(TileProperty.Roof, tile.roof.ToString());
+			}
+
+			if (tile.dugPreviously != originalTile.tileDug.Value) {
+				tileDifferences.Add(TileProperty.Dug, tile.dugPreviously.ToString());
+			}
+
 			if (tile.sr.sprite.name != originalTile.tileSpriteName) {
 				tileDifferences.Add(TileProperty.Sprite, tile.sr.sprite.name);
 			}
@@ -1213,37 +1284,431 @@ public class PersistenceManager : BaseManager {
 
 					plantDifferences.Add(PlantProperty.Type, "None");
 				} else { // Plant has remained, properties potentially changed
-					tileDifferences.Add(TileProperty.Plant, string.Empty);
-
 					if (tile.plant.group.type != originalTile.plantGroup.type) {
 						plantDifferences.Add(PlantProperty.Type, tile.plant.group.type.ToString());
 					}
+
 					if (tile.plant.obj.GetComponent<SpriteRenderer>().sprite.name != originalTile.plantSpriteName) {
 						plantDifferences.Add(PlantProperty.Sprite, tile.plant.obj.GetComponent<SpriteRenderer>().sprite.name);
 					}
-					if (tile.plant.small != originalTile.plantSmall) {
+
+					if (tile.plant.small != originalTile.plantSmall.Value) {
 						plantDifferences.Add(PlantProperty.Small, tile.plant.small.ToString());
 					}
-					if (tile.plant.growthProgress != originalTile.plantGrowthProgress) {
+
+					if (!Mathf.Approximately(tile.plant.growthProgress, originalTile.plantGrowthProgress.Value)) {
 						plantDifferences.Add(PlantProperty.GrowthProgress, tile.plant.growthProgress.ToString());
 					}
+
 					if (tile.plant.harvestResource != originalTile.plantHarvestResource) {
-						if (tile.plant.harvestResource == null) {
-							plantDifferences.Add(PlantProperty.HarvestResource, "None");
-						} else {
+						if (tile.plant.harvestResource != null) {
 							plantDifferences.Add(PlantProperty.HarvestResource, tile.plant.harvestResource.type.ToString());
+						} else {
+							plantDifferences.Add(PlantProperty.HarvestResource, "None");
 						}
 					}
-					if (tile.plant.integrity != originalTile.plantIntegrity) {
+
+					if (tile.plant.integrity != originalTile.plantIntegrity.Value) {
 						plantDifferences.Add(PlantProperty.Integrity, tile.plant.integrity.ToString());
+					}
+
+					if (plantDifferences.Count > 0) {
+						tileDifferences.Add(TileProperty.Plant, string.Empty);
+					}
+				}
+			}
+
+			if (tileDifferences.Count > 0) {
+				file.WriteLine(CreateKeyValueString(TileProperty.Tile, string.Empty, 0));
+				file.WriteLine(CreateKeyValueString(TileProperty.Index, i, 1));
+				foreach (KeyValuePair<TileProperty, string> tileProperty in tileDifferences) {
+					file.WriteLine(CreateKeyValueString(tileProperty.Key, tileProperty.Value, 1));
+					if (tileProperty.Key == TileProperty.Plant) {
+						foreach (KeyValuePair<PlantProperty, string> plantProperty in plantDifferences) {
+							file.WriteLine(CreateKeyValueString(plantProperty.Key, plantProperty.Value, 2));
+						}
 					}
 				}
 			}
 		}
 	}
 
-	public void LoadModifiedTiles(string path) {
-		Debug.LogWarning("Load Modified Tiles");
+	public IEnumerator ApplyLoadedTiles(List<PersistenceTile> originalTiles, List<PersistenceTile> modifiedTiles, TileManager.Map map) {
+		if (originalTiles.Count != Mathf.Pow(map.mapData.mapSize, 2)) {
+			Debug.LogError("Map size " + Mathf.Pow(map.mapData.mapSize, 2) + " and number of persistence tiles " + originalTiles.Count + " does not match.");
+		}
+
+		for (int y = 0; y < map.mapData.mapSize; y++) {
+			List<TileManager.Tile> innerTiles = new List<TileManager.Tile>();
+			for (int x = 0; x < map.mapData.mapSize; x++) {
+				int tileIndex = y * map.mapData.mapSize + x;
+				PersistenceTile originalTile = originalTiles[tileIndex];
+				PersistenceTile modifiedTile = modifiedTiles.Find(mt => mt.tileIndex == tileIndex);
+
+				TileManager.Tile tile = new TileManager.Tile(map, new Vector2(x, y), modifiedTile != null && modifiedTile.tileHeight.HasValue ? modifiedTile.tileHeight.Value : originalTile.tileHeight.Value);
+				map.tiles.Add(tile);
+				innerTiles.Add(tile);
+
+				tile.temperature = modifiedTile != null && modifiedTile.tileTemperature.HasValue ? modifiedTile.tileTemperature.Value : originalTile.tileTemperature.Value;
+				tile.SetPrecipitation(modifiedTile != null && modifiedTile.tilePrecipitation.HasValue ? modifiedTile.tilePrecipitation.Value : originalTile.tilePrecipitation.Value);
+				tile.SetBiome(modifiedTile != null && modifiedTile.tileBiome != null ? modifiedTile.tileBiome : originalTile.tileBiome, false);
+				tile.SetTileType(modifiedTile != null && modifiedTile.tileType != null ? modifiedTile.tileType : originalTile.tileType, false, false, false, false);
+				tile.roof = modifiedTile != null && modifiedTile.tileRoof.HasValue ? modifiedTile.tileRoof.Value : originalTile.tileRoof.Value;
+				tile.dugPreviously = modifiedTile != null && modifiedTile.tileDug.HasValue ? modifiedTile.tileDug.Value : originalTile.tileDug.Value;
+
+				bool originalTileValidPlant = originalTile.plantGroup != null;
+
+				bool modifiedTilePlantGroupExists = modifiedTile != null && modifiedTile.plantGroup != null;
+				bool modifiedTileValidPlant = modifiedTilePlantGroupExists && modifiedTile.plantGroup.type != ResourceManager.PlantGroupsEnum.None;
+				bool plantRemoved = modifiedTilePlantGroupExists && modifiedTile.plantGroup.type == ResourceManager.PlantGroupsEnum.None;
+
+				if (modifiedTileValidPlant || (originalTileValidPlant && !plantRemoved)) {
+					tile.SetPlant(
+						false,
+						new ResourceManager.Plant(
+							modifiedTile != null && modifiedTile.plantGroup != null && modifiedTile.plantGroup.type != ResourceManager.PlantGroupsEnum.None ? modifiedTile.plantGroup : originalTile.plantGroup,
+							tile,
+							false,
+							modifiedTile != null && modifiedTile.plantSmall.HasValue ? modifiedTile.plantSmall.Value : originalTile.plantSmall.Value,
+							map.smallPlants,
+							false,
+							modifiedTile != null && modifiedTile.plantHarvestResource != null && modifiedTile.plantHarvestResource.type != ResourceManager.ResourcesEnum.None ? modifiedTile.plantHarvestResource : originalTile.plantHarvestResource
+						) {
+							integrity = modifiedTile != null && modifiedTile.plantIntegrity.HasValue ? modifiedTile.plantIntegrity.Value : originalTile.plantIntegrity.Value,
+							growthProgress = modifiedTile != null && modifiedTile.plantGrowthProgress.HasValue ? modifiedTile.plantGrowthProgress.Value : originalTile.plantGrowthProgress.Value
+						}
+					);
+				}
+			}
+			map.sortedTiles.Add(innerTiles);
+		}
+
+		GameManager.uiM.UpdateLoadingStateText("Persistence", "Setting Backend Data"); yield return null;
+		map.SetSurroundingTiles();
+		map.SetMapEdgeTiles();
+		map.SetSortedMapEdgeTiles();
+		map.SetTileRegions(false);
+
+		GameManager.uiM.UpdateLoadingStateText("Persistence", "Determining Drainage Basins"); yield return null;
+		map.DetermineDrainageBasins();
+
+		GameManager.uiM.UpdateLoadingStateText("Persistence", "Setting Backend Data"); yield return null;
+		map.CreateRegionBlocks();
+
+		GameManager.uiM.UpdateLoadingStateText("Persistence", "Calculating Lighting"); yield return null;
+		map.DetermineShadowDirectionsAtHour();
+		map.DetermineShadowTiles(map.tiles, false);
+		map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+		map.DetermineVisibleRegionBlocks();
+
+		GameManager.uiM.UpdateLoadingStateText("Persistence", "Validating"); yield return null;
+		map.Bitmasking(map.tiles);
+
+		GameManager.uiM.UpdateLoadingStateText("Persistence", "Setting Consistent Appearance"); yield return null;
+		for (int i = 0; i < map.tiles.Count; i++) {
+			TileManager.Tile tile = map.tiles[i];
+			PersistenceTile originalTile = originalTiles[i];
+			PersistenceTile modifiedTile = modifiedTiles.Find(mf => mf.tileIndex == i);
+
+			Sprite tileSprite = tile.tileType.baseSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.tileSpriteName != null ? modifiedTile.tileSpriteName : originalTile.tileSpriteName));
+			if (tileSprite == null) {
+				tileSprite = tile.tileType.bitmaskSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.tileSpriteName != null ? modifiedTile.tileSpriteName : originalTile.tileSpriteName));
+				if (tileSprite == null) {
+					tileSprite = tile.tileType.riverSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.tileSpriteName != null ? modifiedTile.tileSpriteName : originalTile.tileSpriteName));
+				}
+			}
+			tile.sr.sprite = tileSprite;
+
+			if (tile.plant != null) {
+				Sprite plantSprite = null;
+				if (tile.plant.small) {
+					plantSprite = tile.plant.group.smallSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.plantSpriteName != null ? modifiedTile.plantSpriteName : originalTile.plantSpriteName));
+				} else {
+					plantSprite = tile.plant.group.fullSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.plantSpriteName != null ? modifiedTile.plantSpriteName : originalTile.plantSpriteName));
+				}
+				if (plantSprite == null) {
+					plantSprite = tile.plant.group.harvestResourceSprites[tile.plant.harvestResource.type][tile.plant.small].Find(sprite => sprite.name == (modifiedTile != null && modifiedTile.plantSpriteName != null ? modifiedTile.plantSpriteName : originalTile.plantSpriteName));
+				}
+				tile.plant.obj.GetComponent<SpriteRenderer>().sprite = plantSprite;
+			}
+		}
+
+		loadingState = LoadingState.LoadedMap;
+	}
+
+	public enum RiverProperty {
+		River, Index, Type, SmallRiver, LargeRiver, StartTilePosition, CentreTilePosition, EndTilePosition, ExpandRadius, IgnoreStone, TilePositions, AddedTilePositions, RemovedTilePositions
+	}
+
+	public class PersistenceRiver {
+		public int? riverIndex;
+
+		public RiverProperty? riverType;
+
+		public Vector2? startTilePosition;
+		public Vector2? centreTilePosition;
+		public Vector2? endTilePosition;
+		public int? expandRadius;
+		public bool? ignoreStone;
+		public List<Vector2> tilePositions;
+
+		public List<Vector2> removedTilePositions;
+		public List<Vector2> addedTilePositions;
+
+		public PersistenceRiver(int? riverIndex, RiverProperty? riverType, Vector2? startTilePosition, Vector2? centreTilePosition, Vector2? endTilePosition, int? expandRadius, bool? ignoreStone, List<Vector2> tilePositions, List<Vector2> removedTilePositions, List<Vector2> addedTilePositions) {
+			this.riverIndex = riverIndex;
+
+			this.riverType = riverType;
+
+			this.startTilePosition = startTilePosition;
+			this.centreTilePosition = centreTilePosition;
+			this.endTilePosition = endTilePosition;
+			this.expandRadius = expandRadius;
+			this.ignoreStone = ignoreStone;
+			this.tilePositions = tilePositions;
+
+			this.removedTilePositions = removedTilePositions;
+			this.addedTilePositions = addedTilePositions;
+		}
+	}
+
+	public void SaveOriginalRivers(StreamWriter file) {
+		foreach (TileManager.Map.River river in GameManager.colonyM.colony.map.rivers) {
+			WriteOriginalRiverLines(file, river, 0, RiverProperty.SmallRiver);
+		}
+		foreach (TileManager.Map.River river in GameManager.colonyM.colony.map.largeRivers) {
+			WriteOriginalRiverLines(file, river, 0, RiverProperty.LargeRiver);
+		}
+	}
+
+	private void WriteOriginalRiverLines(StreamWriter file, TileManager.Map.River river, int startLevel, RiverProperty riverType) {
+		file.WriteLine(CreateKeyValueString(RiverProperty.River, string.Empty, startLevel));
+
+		file.WriteLine(CreateKeyValueString(RiverProperty.Type, riverType, startLevel + 1));
+		file.WriteLine(CreateKeyValueString(RiverProperty.StartTilePosition, FormatVector2ToString(river.startTile.position), startLevel + 1));
+		if (river.centreTile != null) {
+			file.WriteLine(CreateKeyValueString(RiverProperty.CentreTilePosition, FormatVector2ToString(river.centreTile.position), startLevel + 1));
+		}
+		file.WriteLine(CreateKeyValueString(RiverProperty.EndTilePosition, FormatVector2ToString(river.endTile.position), startLevel + 1));
+
+		file.WriteLine(CreateKeyValueString(RiverProperty.ExpandRadius, river.expandRadius, startLevel + 1));
+		file.WriteLine(CreateKeyValueString(RiverProperty.IgnoreStone, river.ignoreStone, startLevel + 1));
+		file.WriteLine(CreateKeyValueString(RiverProperty.TilePositions, string.Join(";", river.tiles.Select(t => FormatVector2ToString(t.position)).ToArray()), startLevel + 1));
+	}
+
+	public List<PersistenceRiver> LoadRivers(string path) {
+		List<PersistenceRiver> rivers = new List<PersistenceRiver>();
+
+		List<KeyValuePair<string, object>> properties = GetKeyValuePairsFromFile(path);
+		foreach (KeyValuePair<string, object> property in properties) {
+			RiverProperty key = (RiverProperty)Enum.Parse(typeof(RiverProperty), property.Key);
+			switch (key) {
+				case RiverProperty.River:
+					int? riverIndex = null;
+					RiverProperty? riverType = null;
+					Vector2? startTilePosition = null;
+					Vector2? centreTilePosition = null;
+					Vector2? endTilePosition = null;
+					int? expandRadius = null;
+					bool? ignoreStone = null;
+					List<Vector2> tilePositions = new List<Vector2>();
+					List<Vector2> removedTilePositions = new List<Vector2>();
+					List<Vector2> addedTilePositions = new List<Vector2>();
+
+					foreach (KeyValuePair<string, object> riverProperty in (List<KeyValuePair<string, object>>)property.Value) {
+						RiverProperty riverPropertyKey = (RiverProperty)Enum.Parse(typeof(RiverProperty), riverProperty.Key);
+						switch (riverPropertyKey) {
+							case RiverProperty.Index:
+								riverIndex = int.Parse((string)riverProperty.Value);
+								break;
+							case RiverProperty.Type:
+								riverType = (RiverProperty)Enum.Parse(typeof(RiverProperty), (string)riverProperty.Value);
+								break;
+							case RiverProperty.StartTilePosition:
+								startTilePosition = new Vector2(float.Parse(((string)riverProperty.Value).Split(',')[0]), float.Parse(((string)riverProperty.Value).Split(',')[1]));
+								break;
+							case RiverProperty.CentreTilePosition:
+								if (!((string)riverProperty.Value).Contains("None")) {
+									centreTilePosition = new Vector2(float.Parse(((string)riverProperty.Value).Split(',')[0]), float.Parse(((string)riverProperty.Value).Split(',')[1]));
+								}
+								break;
+							case RiverProperty.EndTilePosition:
+								endTilePosition = new Vector2(float.Parse(((string)riverProperty.Value).Split(',')[0]), float.Parse(((string)riverProperty.Value).Split(',')[1]));
+								break;
+							case RiverProperty.ExpandRadius:
+								expandRadius = int.Parse((string)riverProperty.Value);
+								break;
+							case RiverProperty.IgnoreStone:
+								ignoreStone = bool.Parse((string)riverProperty.Value);
+								break;
+							case RiverProperty.TilePositions:
+								foreach (string vector2String in ((string)riverProperty.Value).Split(';')) {
+									tilePositions.Add(new Vector2(float.Parse(vector2String.Split(',')[0]), float.Parse(vector2String.Split(',')[1])));
+								}
+								break;
+							case RiverProperty.RemovedTilePositions:
+								foreach (string vector2String in ((string)riverProperty.Value).Split(';')) {
+									removedTilePositions.Add(new Vector2(float.Parse(vector2String.Split(',')[0]), float.Parse(vector2String.Split(',')[1])));
+								}
+								break;
+							case RiverProperty.AddedTilePositions:
+								foreach (string vector2String in ((string)riverProperty.Value).Split(';')) {
+									addedTilePositions.Add(new Vector2(float.Parse(vector2String.Split(',')[0]), float.Parse(vector2String.Split(',')[1])));
+								}
+								break;
+							default:
+								Debug.LogError("Unknown river property: " + riverProperty.Key + " " + riverProperty.Value);
+								break;
+						}
+					}
+
+					rivers.Add(new PersistenceRiver(riverIndex, riverType, startTilePosition, centreTilePosition, endTilePosition, expandRadius, ignoreStone, tilePositions, removedTilePositions, addedTilePositions));
+					break;
+				default:
+					Debug.LogError("Unknown river property: " + property.Key + " " + property.Value);
+					break;
+			}
+		}
+
+		return rivers;
+	}
+
+	public void SaveModifiedRivers(StreamWriter file, List<PersistenceRiver> originalRivers) {
+		TileManager.Map map = GameManager.colonyM.colony.map;
+		int numRivers = map.rivers.Count + map.largeRivers.Count;
+		if (originalRivers.Count != numRivers) {
+			Debug.LogError("Loaded river count " + originalRivers.Count + " and current river count " + numRivers + " does not match.");
+		}
+
+		List<PersistenceRiver> originalSmallRivers = originalRivers.Where(river => river.riverType == RiverProperty.SmallRiver).ToList();
+		if (originalSmallRivers.Count != map.rivers.Count) {
+			Debug.LogError("Loaded small river count " + originalSmallRivers.Count + " and current small river count " + map.rivers.Count + " does not match.");
+		}
+		for (int i = 0; i < originalSmallRivers.Count; i++) {
+			WriteModifiedRiverLines(file, map.rivers[i], originalSmallRivers[i], i);
+		}
+
+		List<PersistenceRiver> originalLargeRivers = originalRivers.Where(river => river.riverType == RiverProperty.LargeRiver).ToList();
+		if (originalLargeRivers.Count != map.largeRivers.Count) {
+			Debug.LogError("Loaded large river count " + originalLargeRivers.Count + " and current large river count " + map.largeRivers.Count + " does not match.");
+		}
+		for (int i = 0; i < originalLargeRivers.Count; i++) {
+			WriteModifiedRiverLines(file, map.rivers[i], originalSmallRivers[i], i);
+		}
+	}
+
+	public void WriteModifiedRiverLines(StreamWriter file, TileManager.Map.River river, PersistenceRiver originalRiver, int index) {
+		Dictionary<RiverProperty, string> riverDifferences = new Dictionary<RiverProperty, string>();
+
+		if (river.startTile.position != originalRiver.startTilePosition.Value) {
+			riverDifferences.Add(RiverProperty.StartTilePosition, FormatVector2ToString(river.startTile.position));
+		}
+
+		if (river.centreTile == null) {
+			if (originalRiver.centreTilePosition.HasValue) { // No original centre tile, centre tile was added
+				riverDifferences.Add(RiverProperty.CentreTilePosition, "None");
+			}
+		} else {
+			if (!originalRiver.centreTilePosition.HasValue) { // Original centre tile, centre tile was removed
+				riverDifferences.Add(RiverProperty.CentreTilePosition, FormatVector2ToString(river.centreTile.position));
+			} else { // Centre tile has remained, properties potentially changed
+				if (river.centreTile.position != originalRiver.centreTilePosition.Value) {
+					riverDifferences.Add(RiverProperty.CentreTilePosition, FormatVector2ToString(river.centreTile.position));
+				}
+			}
+		}
+
+		if (river.endTile.position != originalRiver.endTilePosition.Value) {
+			riverDifferences.Add(RiverProperty.EndTilePosition, FormatVector2ToString(river.endTile.position));
+		}
+
+		if (river.expandRadius != originalRiver.expandRadius.Value) {
+			riverDifferences.Add(RiverProperty.ExpandRadius, river.expandRadius.ToString());
+		}
+
+		if (river.ignoreStone != originalRiver.ignoreStone.Value) {
+			riverDifferences.Add(RiverProperty.IgnoreStone, river.ignoreStone.ToString());
+		}
+
+		List<Vector2> riverTilePositions = river.tiles.Select(riverTile => riverTile.position).ToList();
+
+		List<Vector2> addedRiverTiles = new List<Vector2>();
+		foreach (Vector2 riverTilePosition in riverTilePositions) {
+			if (!originalRiver.tilePositions.Contains(riverTilePosition)) {
+				addedRiverTiles.Add(riverTilePosition);
+			}
+		}
+		if (addedRiverTiles.Count > 0) {
+			riverDifferences.Add(RiverProperty.AddedTilePositions, string.Join(";", addedRiverTiles.Select(v2 => FormatVector2ToString(v2)).ToArray()));
+		}
+
+		List<Vector2> removedRiverTiles = new List<Vector2>();
+		foreach (Vector2 originalRiverTilePosition in originalRiver.tilePositions) {
+			if (!riverTilePositions.Contains(originalRiverTilePosition)) {
+				removedRiverTiles.Add(originalRiverTilePosition);
+			}
+		}
+		if (removedRiverTiles.Count > 0) {
+			riverDifferences.Add(RiverProperty.RemovedTilePositions, string.Join(";", removedRiverTiles.Select(v2 => FormatVector2ToString(v2)).ToArray()));
+		}
+
+		if (riverDifferences.Count > 0) {
+			file.WriteLine(CreateKeyValueString(RiverProperty.River, string.Empty, 0));
+			file.WriteLine(CreateKeyValueString(RiverProperty.Index, index, 1));
+			foreach (KeyValuePair<RiverProperty, string> riverProperty in riverDifferences) {
+				file.WriteLine(CreateKeyValueString(riverProperty.Key, riverProperty.Value, 1));
+			}
+		}
+	}
+
+	public IEnumerator ApplyLoadedRivers(List<PersistenceRiver> originalRivers, List<PersistenceRiver> modifiedRivers, TileManager.Map map) {
+		List<TileManager.Map.River> riverList = null;
+		for (int i = 0; i < originalRivers.Count; i++) {
+			PersistenceRiver originalRiver = originalRivers[i];
+			PersistenceRiver modifiedRiver = modifiedRivers.Find(mr => mr.riverIndex == i);
+
+			switch (modifiedRiver != null && modifiedRiver.riverType.HasValue ? modifiedRiver.riverType.Value : originalRiver.riverType.Value) {
+				case RiverProperty.SmallRiver:
+					riverList = map.rivers;
+					break;
+				case RiverProperty.LargeRiver:
+					riverList = map.largeRivers;
+					break;
+				default:
+					Debug.LogError("Invalid river type.");
+					break;
+			}
+
+			List<TileManager.Tile> riverTiles = new List<TileManager.Tile>();
+			foreach (Vector2 riverTilePosition in originalRiver.tilePositions) {
+				riverTiles.Add(map.GetTileFromPosition(riverTilePosition));
+			}
+
+			if (modifiedRiver != null) {
+				foreach (Vector2 removedTilePosition in modifiedRiver.removedTilePositions) {
+					riverTiles.Remove(map.GetTileFromPosition(removedTilePosition));
+				}
+				foreach (Vector2 addedTilePosition in modifiedRiver.addedTilePositions) {
+					riverTiles.Add(map.GetTileFromPosition(addedTilePosition));
+				}
+			}
+
+			riverList.Add(
+				new TileManager.Map.River(
+					modifiedRiver != null && modifiedRiver.startTilePosition.HasValue ? map.GetTileFromPosition(modifiedRiver.startTilePosition.Value) : (originalRiver.startTilePosition.HasValue ? map.GetTileFromPosition(originalRiver.startTilePosition.Value) : null),
+					modifiedRiver != null && modifiedRiver.centreTilePosition.HasValue ? map.GetTileFromPosition(modifiedRiver.centreTilePosition.Value) : (originalRiver.centreTilePosition.HasValue ? map.GetTileFromPosition(originalRiver.centreTilePosition.Value) : null),
+					modifiedRiver != null && modifiedRiver.endTilePosition.HasValue ? map.GetTileFromPosition(modifiedRiver.endTilePosition.Value) : (originalRiver.endTilePosition.HasValue ? map.GetTileFromPosition(originalRiver.endTilePosition.Value) : null),
+					modifiedRiver != null && modifiedRiver.expandRadius.HasValue ? modifiedRiver.expandRadius.Value : originalRiver.expandRadius.Value,
+					modifiedRiver != null && modifiedRiver.ignoreStone.HasValue ? modifiedRiver.ignoreStone.Value : originalRiver.ignoreStone.Value,
+					map,
+					false
+				) {
+					tiles = riverTiles
+				}
+			);
+		}
+
+		yield return null;
 	}
 
 	public enum CameraProperty {
@@ -1255,7 +1720,7 @@ public class PersistenceManager : BaseManager {
 		file.WriteLine(CreateKeyValueString(CameraProperty.Zoom, GameManager.cameraM.GetCameraZoom(), 0));
 	}
 
-	public void LoadCamera(string path) {
+	public IEnumerator LoadCamera(string path) {
 		foreach (KeyValuePair<string, object> property in GetKeyValuePairsFromFile(path)) {
 			CameraProperty key = (CameraProperty)Enum.Parse(typeof(CameraProperty), property.Key);
 			object value = property.Value;
@@ -1271,6 +1736,9 @@ public class PersistenceManager : BaseManager {
 					break;
 			}
 		}
+
+		loadingState = LoadingState.LoadedCamera;
+		yield return null;
 	}
 
 	public enum ResourceAmountProperty {
@@ -1285,35 +1753,124 @@ public class PersistenceManager : BaseManager {
 		Life, Health, Gender, Position, PreviousPosition, PathEndPosition
 	}
 
-	private void WriteLifeLines(StreamWriter file, LifeManager.Life life, int startLevel) {
-		file.WriteLine(CreateKeyValueString(LifeProperty.Health, life.health, startLevel));
-		file.WriteLine(CreateKeyValueString(LifeProperty.Gender, life.gender, startLevel));
-		file.WriteLine(CreateKeyValueString(LifeProperty.Position, FormatVector2ToString(life.obj.transform.position), startLevel));
-		file.WriteLine(CreateKeyValueString(LifeProperty.PreviousPosition, FormatVector2ToString(life.previousPosition), startLevel));
-		if (life.path.Count > 0) {
-			file.WriteLine(CreateKeyValueString(LifeProperty.PathEndPosition, FormatVector2ToString(life.path[life.path.Count - 1].obj.transform.position), startLevel));
+	public class PersistenceLife {
+		public float? health;
+		public LifeManager.Life.Gender? gender;
+		public Vector2? position;
+		public Vector2? previousPosition;
+		public Vector2? pathEndPosition;
+
+		public PersistenceLife(float? health, LifeManager.Life.Gender? gender, Vector2? position, Vector2? previousPosition, Vector2? pathEndPosition) {
+			this.health = health;
+			this.gender = gender;
+			this.position = position;
+			this.previousPosition = previousPosition;
+			this.pathEndPosition = pathEndPosition;
 		}
+	}
+
+	private void WriteLifeLines(StreamWriter file, LifeManager.Life life, int startLevel) {
+		file.WriteLine(CreateKeyValueString(LifeProperty.Life, string.Empty, startLevel));
+
+		file.WriteLine(CreateKeyValueString(LifeProperty.Health, life.health, startLevel + 1));
+		file.WriteLine(CreateKeyValueString(LifeProperty.Gender, life.gender, startLevel + 1));
+		file.WriteLine(CreateKeyValueString(LifeProperty.Position, FormatVector2ToString(life.obj.transform.position), startLevel + 1));
+		file.WriteLine(CreateKeyValueString(LifeProperty.PreviousPosition, FormatVector2ToString(life.previousPosition), startLevel + 1));
+		if (life.path.Count > 0) {
+			file.WriteLine(CreateKeyValueString(LifeProperty.PathEndPosition, FormatVector2ToString(life.path[life.path.Count - 1].obj.transform.position), startLevel + 1));
+		}
+	}
+
+	public List<PersistenceLife> LoadLife(string path) {
+		List<PersistenceLife> persistenceLife = new List<PersistenceLife>();
+
+		List<KeyValuePair<string, object>> properties = GetKeyValuePairsFromFile(path);
+		foreach (KeyValuePair<string, object> property in properties) {
+			LifeProperty key = (LifeProperty)Enum.Parse(typeof(LifeProperty), property.Key);
+			switch (key) {
+				case LifeProperty.Life:
+					persistenceLife.Add(LoadPersistenceLife((List<KeyValuePair<string, object>>)property.Value));
+					break;
+				default:
+					Debug.LogError("Unknown life property: " + property.Key + " " + property.Value);
+					break;
+			}
+		}
+
+		return persistenceLife;
+	}
+
+	public PersistenceLife LoadPersistenceLife(List<KeyValuePair<string, object>> properties) {
+		float? health = null;
+		LifeManager.Life.Gender? gender = null;
+		Vector2? position = null;
+		Vector2? previousPosition = null;
+		Vector2? pathEndPosition = null;
+
+		foreach (KeyValuePair<string, object> lifeProperty in properties) {
+			LifeProperty lifePropertyKey = (LifeProperty)Enum.Parse(typeof(LifeProperty), lifeProperty.Key);
+			switch (lifePropertyKey) {
+				case LifeProperty.Health:
+					health = float.Parse((string)lifeProperty.Value);
+					break;
+				case LifeProperty.Gender:
+					gender = (LifeManager.Life.Gender)Enum.Parse(typeof(LifeManager.Life.Gender), (string)lifeProperty.Value);
+					break;
+				case LifeProperty.Position:
+					position = new Vector2(float.Parse(((string)lifeProperty.Value).Split(',')[0]), float.Parse(((string)lifeProperty.Value).Split(',')[1]));
+					break;
+				case LifeProperty.PreviousPosition:
+					previousPosition = new Vector2(float.Parse(((string)lifeProperty.Value).Split(',')[0]), float.Parse(((string)lifeProperty.Value).Split(',')[1]));
+					break;
+				case LifeProperty.PathEndPosition:
+					pathEndPosition = new Vector2(float.Parse(((string)lifeProperty.Value).Split(',')[0]), float.Parse(((string)lifeProperty.Value).Split(',')[1]));
+					break;
+				default:
+					Debug.LogError("Unknown life property: " + lifeProperty.Key + " " + lifeProperty.Value);
+					break;
+			}
+		}
+
+		return new PersistenceLife(health, gender, position, previousPosition, pathEndPosition);
 	}
 
 	public enum HumanProperty {
 		Human, Name, SkinIndex, HairIndex, Clothes, Inventory
 	}
 
+	public class PersistenceHuman {
+		public string name;
+		public int? skinIndex;
+		public int? hairIndex;
+		public Dictionary<HumanManager.Human.Appearance, ResourceManager.Clothing> clothes;
+		public ResourceManager.Inventory inventory;
+
+		public PersistenceHuman(string name, int? skinIndex, int? hairIndex, Dictionary<HumanManager.Human.Appearance, ResourceManager.Clothing> clothes, ResourceManager.Inventory inventory) {
+			this.name = name;
+			this.skinIndex = skinIndex;
+			this.hairIndex = hairIndex;
+			this.clothes = clothes;
+			this.inventory = inventory;
+		}
+	}
+
 	private void WriteHumanLines(StreamWriter file, HumanManager.Human human, int startLevel) {
-		file.WriteLine(CreateKeyValueString(HumanProperty.Name, human.name, startLevel));
-		file.WriteLine(CreateKeyValueString(HumanProperty.SkinIndex, human.bodyIndices[HumanManager.Human.Appearance.Skin], startLevel));
-		file.WriteLine(CreateKeyValueString(HumanProperty.HairIndex, human.bodyIndices[HumanManager.Human.Appearance.Hair], startLevel));
+		file.WriteLine(CreateKeyValueString(HumanProperty.Human, string.Empty, startLevel));
+
+		file.WriteLine(CreateKeyValueString(HumanProperty.Name, human.name, startLevel + 1));
+		file.WriteLine(CreateKeyValueString(HumanProperty.SkinIndex, human.bodyIndices[HumanManager.Human.Appearance.Skin], startLevel + 1));
+		file.WriteLine(CreateKeyValueString(HumanProperty.HairIndex, human.bodyIndices[HumanManager.Human.Appearance.Hair], startLevel + 1));
 
 		if (human.clothes.Any(kvp => kvp.Value != null)) {
-			file.WriteLine(CreateKeyValueString(HumanProperty.Clothes, string.Empty, startLevel));
+			file.WriteLine(CreateKeyValueString(HumanProperty.Clothes, string.Empty, startLevel + 1));
 			foreach (KeyValuePair<HumanManager.Human.Appearance, ResourceManager.Clothing> appearanceToClothing in human.clothes) {
 				if (appearanceToClothing.Value != null) {
-					file.WriteLine(CreateKeyValueString(appearanceToClothing.Key, appearanceToClothing.Value.prefab.appearance + ":" + appearanceToClothing.Value.colour, startLevel + 1));
+					file.WriteLine(CreateKeyValueString(appearanceToClothing.Key, appearanceToClothing.Value.prefab.appearance + ":" + appearanceToClothing.Value.colour, startLevel + 2));
 				}
 			}
 		}
 
-		WriteInventoryLines(file, human.inventory, startLevel);
+		WriteInventoryLines(file, human.inventory, startLevel + 1);
 	}
 
 	public enum TraderProperty {
@@ -1362,6 +1919,59 @@ public class PersistenceManager : BaseManager {
 
 	public enum HappinessModifierProperty {
 		HappinessModifier, Type, TimeRemaining
+	}
+
+	public class PersistenceColonist {
+
+		float? health;
+		LifeManager.Life.Gender? gender;
+		Vector2? position;
+		Vector2? previousPosition;
+		string name;
+		int? skinIndex;
+		int? hairIndex;
+		ResourceManager.Inventory inventory;
+		ColonistManager.Profession profession;
+		ColonistManager.Profession oldProfession;
+		bool? playerMoved;
+		List<ColonistManager.SkillInstance> skills;
+		List<ColonistManager.NeedInstance> needs;
+		float? baseHappiness;
+		float? effectiveHappiness;
+
+		public PersistenceColonist(
+			float? health,
+			LifeManager.Life.Gender? gender,
+			Vector2? position,
+			Vector2? previousPosition,
+			string name,
+			int? skinIndex,
+			int? hairIndex,
+			ResourceManager.Inventory inventory,
+			ColonistManager.Profession profession,
+			ColonistManager.Profession oldProfession,
+			bool? playerMoved,
+			List<ColonistManager.SkillInstance> skills,
+			List<ColonistManager.NeedInstance> needs,
+			float? baseHappiness,
+			float? effectiveHappiness
+		) {
+			this.health = health;
+			this.gender = gender;
+			this.position = position;
+			this.previousPosition = previousPosition;
+			this.name = name;
+			this.skinIndex = skinIndex;
+			this.hairIndex = hairIndex;
+			this.inventory = inventory;
+			this.profession = profession;
+			this.oldProfession = oldProfession;
+			this.playerMoved = playerMoved;
+			this.skills = skills;
+			this.needs = needs;
+			this.baseHappiness = baseHappiness;
+			this.effectiveHappiness = effectiveHappiness;
+		}
 	}
 
 	public void SaveColonists(StreamWriter file) {
@@ -1426,8 +2036,130 @@ public class PersistenceManager : BaseManager {
 		}
 	}
 
-	public void LoadColonists(string path) {
+	public List<PersistenceColonist> LoadColonists(string path) {
 		Debug.LogWarning("Load Colonists");
+
+		List<PersistenceColonist> persistenceColonists = new List<PersistenceColonist>();
+
+		List<KeyValuePair<string, object>> properties = GetKeyValuePairsFromFile(path);
+		foreach (KeyValuePair<string, object> property in properties) {
+			ColonistProperty key = (ColonistProperty)Enum.Parse(typeof(ColonistProperty), property.Key);
+			switch (key) {
+				case ColonistProperty.Colonist:
+
+					float? health = null;
+					LifeManager.Life.Gender? gender = null;
+					Vector2? position = null;
+					Vector2? previousPosition = null;
+					string name = null;
+					int? skinIndex = null;
+					int? hairIndex = null;
+					ResourceManager.Inventory inventory = null;
+					ColonistManager.Profession profession = null;
+					ColonistManager.Profession oldProfession = null;
+					bool? playerMoved = null;
+					List<ColonistManager.SkillInstance> skills = new List<ColonistManager.SkillInstance>();
+					List<ColonistManager.NeedInstance> needs = new List<ColonistManager.NeedInstance>();
+					float? baseHappiness = null;
+					float? effectiveHappiness = null;
+
+					foreach (KeyValuePair<string, object> colonistProperty in (List<KeyValuePair<string, object>>)property.Value) {
+						ColonistProperty colonistPropertyKey = (ColonistProperty)Enum.Parse(typeof(ColonistProperty), colonistProperty.Key);
+						switch (colonistPropertyKey) {
+							case ColonistProperty.Health:
+								health = float.Parse((string)colonistProperty.Value);
+								break;
+							case ColonistProperty.Gender:
+								gender = (LifeManager.Life.Gender)Enum.Parse(typeof(LifeManager.Life.Gender), (string)colonistProperty.Value);
+								break;
+							case ColonistProperty.Position:
+
+							case TileProperty.Index:
+								tileIndex = int.Parse((string)colonistProperty.Value);
+								break;
+							case TileProperty.Height:
+								tileHeight = float.Parse((string)colonistProperty.Value);
+								break;
+							case TileProperty.TileType:
+								tileType = GameManager.tileM.GetTileTypeByEnum((TileManager.TileTypes)Enum.Parse(typeof(TileManager.TileTypes), (string)colonistProperty.Value));
+								break;
+							case TileProperty.Temperature:
+								tileTemperature = float.Parse((string)colonistProperty.Value);
+								break;
+							case TileProperty.Precipitation:
+								tilePrecipitation = float.Parse((string)colonistProperty.Value);
+								break;
+							case TileProperty.Biome:
+								tileBiome = GameManager.tileM.biomes.Find(biome => biome.type == (TileManager.BiomeTypes)Enum.Parse(typeof(TileManager.BiomeTypes), (string)colonistProperty.Value));
+								break;
+							case TileProperty.Roof:
+								tileRoof = bool.Parse((string)colonistProperty.Value);
+								break;
+							case TileProperty.Dug:
+								tileDug = bool.Parse((string)colonistProperty.Value);
+								break;
+							case TileProperty.Sprite:
+								tileSpriteName = (string)colonistProperty.Value;
+								break;
+							case TileProperty.Plant:
+								foreach (KeyValuePair<string, object> plantProperty in (List<KeyValuePair<string, object>>)colonistProperty.Value) {
+									PlantProperty plantPropertyKey = (PlantProperty)Enum.Parse(typeof(PlantProperty), plantProperty.Key);
+									switch (plantPropertyKey) {
+										case PlantProperty.Type:
+											plantGroup = GameManager.resourceM.GetPlantGroupByEnum((ResourceManager.PlantGroupsEnum)Enum.Parse(typeof(ResourceManager.PlantGroupsEnum), (string)plantProperty.Value));
+											break;
+										case PlantProperty.Sprite:
+											plantSpriteName = (string)plantProperty.Value;
+											break;
+										case PlantProperty.Small:
+											plantSmall = bool.Parse((string)plantProperty.Value);
+											break;
+										case PlantProperty.GrowthProgress:
+											plantGrowthProgress = float.Parse((string)plantProperty.Value);
+											break;
+										case PlantProperty.HarvestResource:
+											plantHarvestResource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), (string)plantProperty.Value));
+											break;
+										case PlantProperty.Integrity:
+											plantIntegrity = float.Parse((string)plantProperty.Value);
+											break;
+										default:
+											Debug.LogError("Unknown plant property: " + plantProperty.Key + " " + plantProperty.Value);
+											break;
+									}
+								}
+								break;
+							default:
+								Debug.LogError("Unknown tile property: " + colonistProperty.Key + " " + colonistProperty.Value);
+								break;
+						}
+					}
+
+					persistenceColonists.Add(new PersistenceColonist(
+						health,
+						gender,
+						position,
+						previousPosition,
+						name,
+						skinIndex,
+						hairIndex,
+						inventory,
+						profession,
+						oldProfession,
+						playerMoved,
+						skills,
+						needs,
+						baseHappiness,
+						effectiveHappiness
+					));
+					break;
+				default:
+					Debug.LogError("Unknown tile property: " + property.Key + " " + property.Value);
+					break;
+			}
+		}
+
+		return persistenceColonists;
 	}
 
 	public enum JobProperty {
@@ -1540,15 +2272,17 @@ public class PersistenceManager : BaseManager {
 	}
 
 	private void WriteInventoryLines(StreamWriter file, ResourceManager.Inventory inventory, int startLevel) {
-		file.WriteLine(CreateKeyValueString(ContainerProperty.Inventory, string.Empty, startLevel));
-		foreach (ResourceManager.ResourceAmount resourceAmount in inventory.resources) {
-			WriteResourceAmountLines(file, resourceAmount, startLevel + 1);
-		}
-		foreach (ResourceManager.ReservedResources reservedResources in inventory.reservedResources) {
-			file.WriteLine(CreateKeyValueString(ReservedResourceAmountsProperty.ReservedResourceAmounts, string.Empty, startLevel + 1));
-			file.WriteLine(CreateKeyValueString(ReservedResourceAmountsProperty.HumanName, reservedResources.human.name, startLevel + 2));
-			foreach (ResourceManager.ResourceAmount resourceAmount in reservedResources.resources) {
-				WriteResourceAmountLines(file, resourceAmount, startLevel + 2);
+		if (inventory.CountResources() > 0) {
+			file.WriteLine(CreateKeyValueString(ContainerProperty.Inventory, string.Empty, startLevel));
+			foreach (ResourceManager.ResourceAmount resourceAmount in inventory.resources) {
+				WriteResourceAmountLines(file, resourceAmount, startLevel + 1);
+			}
+			foreach (ResourceManager.ReservedResources reservedResources in inventory.reservedResources) {
+				file.WriteLine(CreateKeyValueString(ReservedResourceAmountsProperty.ReservedResourceAmounts, string.Empty, startLevel + 1));
+				file.WriteLine(CreateKeyValueString(ReservedResourceAmountsProperty.HumanName, reservedResources.human.name, startLevel + 2));
+				foreach (ResourceManager.ResourceAmount resourceAmount in reservedResources.resources) {
+					WriteResourceAmountLines(file, resourceAmount, startLevel + 2);
+				}
 			}
 		}
 	}
@@ -1572,7 +2306,7 @@ public class PersistenceManager : BaseManager {
 		}
 	}
 
-	public void LoadResources(string path) {
+	public IEnumerator LoadResources(string path) {
 		foreach (KeyValuePair<string, object> property in GetKeyValuePairsFromFile(path)) {
 			ResourceProperty key = (ResourceProperty)Enum.Parse(typeof(ResourceProperty), property.Key);
 			object value = property.Value;
@@ -1605,6 +2339,9 @@ public class PersistenceManager : BaseManager {
 					break;
 			}
 		}
+
+		loadingState = LoadingState.LoadedResources;
+		yield return null;
 	}
 
 	public enum TimeProperty {
@@ -1619,7 +2356,7 @@ public class PersistenceManager : BaseManager {
 		file.WriteLine(CreateKeyValueString(TimeProperty.Year, GameManager.timeM.GetYear(), 0));
 	}
 
-	public void LoadTime(string path) {
+	public IEnumerator LoadTime(string path) {
 		foreach (KeyValuePair<string, object> property in GetKeyValuePairsFromFile(path)) {
 			TimeProperty key = (TimeProperty)Enum.Parse(typeof(TimeProperty), property.Key);
 			object value = property.Value;
@@ -1644,6 +2381,9 @@ public class PersistenceManager : BaseManager {
 					break;
 			}
 		}
+
+		loadingState = LoadingState.LoadedTime;
+		yield return null;
 	}
 
 	public void ContinueFromMostRecentSave() {
