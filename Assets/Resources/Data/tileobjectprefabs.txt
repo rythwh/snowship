@@ -11,6 +11,7 @@
 			<Flammability>1.0
 			<Walkable>false
 			<WalkSpeed>1.0
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>1.0,1.0
@@ -24,6 +25,7 @@
 			<Flammability>0.0
 			<Walkable>false
 			<WalkSpeed>1.0
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>1.0,1.0
@@ -37,6 +39,7 @@
 			<Flammability>0.0
 			<Walkable>false
 			<WalkSpeed>1.0
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>1.0,1.0
@@ -52,6 +55,7 @@
 			<Flammability>1.0
 			<Walkable>false
 			<WalkSpeed>1.0
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.5,0.5
@@ -67,6 +71,7 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>1.0,1.0
@@ -77,11 +82,12 @@
 			<Type>WoodenFloor
 			<TimeToBuild>5
 			<ResourcesToBuild>Wood:2
-			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs,OmitFarms
 			<JobType>Build
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>1.0
+			<Buildable>true
 			<Layer>1
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.0,0.0
@@ -90,15 +96,32 @@
 			<Type>BrickFloor
 			<TimeToBuild>10
 			<ResourcesToBuild>Brick:2
-			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs,OmitFarms
 			<JobType>Build
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>1.0
+			<Buildable>true
 			<Layer>1
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.0,0.0
 			<MaxIntegrity>200
+	<SubGroup>
+		Foundations
+		<Object>
+			<Type>WoodenDock
+			<TimeToBuild>5
+			<ResourcesToBuild>Wood:6
+			<SelectionModifiers>Walkable,LiquidWaterTypes,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs,OmitFarms
+			<JobType>Build
+			<Flammability>1.0
+			<Walkable>true
+			<WalkSpeed>0.9
+			<Buildable>true
+			<Layer>1
+			<AddToTileWhenBuilt>true
+			<BlockingAmount>0.0,0.0
+			<MaxIntegrity>100
 <Group>
 	Furniture
 	<SubGroup>
@@ -113,6 +136,7 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.35,0.5
@@ -128,6 +152,7 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.8,0.3
@@ -143,6 +168,7 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.8,0.3
@@ -160,6 +186,7 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>1.0,0.8
@@ -176,6 +203,7 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.5,0.5
@@ -191,6 +219,7 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.2
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.5,0.5
@@ -207,6 +236,7 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.1,0.8
@@ -223,12 +253,31 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.8,0.1
 			<MaxIntegrity>20
 			<MaxLightDistance>7
 			<LightColour>E67E22
+	<SubGroup>
+		TradingPosts
+		<Object>
+			<Type>TradingPost
+			<InstanceType>Container
+			<TimeToBuild>5
+			<ResourcesToBuild>Wood:4
+			<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+			<JobType>Build
+			<Flammability>1.0
+			<Walkable>true
+			<WalkSpeed>0.5
+			<Buildable>true
+			<Layer>2
+			<AddToTileWhenBuilt>true
+			<BlockingAmount>0.5,0.5
+			<MaxIntegrity>150
+			<MaxInventoryAmount>500
 <Group>
 	Industrial
 	<SubGroup>
@@ -243,6 +292,7 @@
 			<Flammability>0.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.5,0.5
@@ -259,6 +309,7 @@
 			<Flammability>0.7
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.5,0.5
@@ -274,6 +325,7 @@
 			<Flammability>0.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.35,0.35
@@ -288,6 +340,7 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.35,0.35
@@ -302,6 +355,7 @@
 			<Flammability>0.0
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.6,0.35
@@ -316,6 +370,7 @@
 			<Flammability>0.5
 			<Walkable>true
 			<WalkSpeed>0.5
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.5,0.5
@@ -334,10 +389,14 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.3
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.0,0.0
 			<MaxIntegrity>10
+			<GrowthTimeDays>4
+			<Seed>WheatSeed
+			<HarvestResource>Wheat
 		<Object>
 			<Type>PotatoFarm
 			<InstanceType>Farm
@@ -348,10 +407,14 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.3
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.0,0.0
 			<MaxIntegrity>10
+			<GrowthTimeDays>2
+			<Seed>Potato
+			<HarvestResource>Potato
 		<Object>
 			<Type>CottonFarm
 			<InstanceType>Farm
@@ -362,10 +425,14 @@
 			<Flammability>1.0
 			<Walkable>true
 			<WalkSpeed>0.3
+			<Buildable>true
 			<Layer>2
 			<AddToTileWhenBuilt>true
 			<BlockingAmount>0.0,0.0
 			<MaxIntegrity>10
+			<GrowthTimeDays>4
+			<Seed>CottonSeed
+			<HarvestResource>Cotton
 	<SubGroup>
 		HarvestFarm
 		<Object>
@@ -428,14 +495,14 @@
 	<SubGroup>
 		Remove
 		<Object>
-			<Type>RemoveLayer1
+			<Type>RemoveFloor
 			<TimeToBuild>10
 			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs
 			<JobType>Remove
 			<Layer>1
 			<AddToTileWhenBuilt>false
 		<Object>
-			<Type>RemoveLayer2
+			<Type>RemoveObject
 			<TimeToBuild>10
 			<SelectionModifiers>ObjectsAtSameLayer,OmitSameLayerJobs
 			<JobType>Remove

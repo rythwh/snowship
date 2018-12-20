@@ -714,7 +714,7 @@ public class DebugManager : BaseManager {
 			if (parameters.Count == 0) {
 				List<TileManager.Tile> deselectedTiles = new List<TileManager.Tile>();
 				foreach (TileManager.Tile tile in selectedTiles) {
-					if (!tile.tileType.buildable) {
+					if (!tile.buildable) {
 						deselectedTiles.Add(tile);
 					}
 				}
@@ -732,7 +732,7 @@ public class DebugManager : BaseManager {
 			if (parameters.Count == 0) {
 				List<TileManager.Tile> deselectedTiles = new List<TileManager.Tile>();
 				foreach (TileManager.Tile tile in selectedTiles) {
-					if (tile.tileType.buildable) {
+					if (tile.buildable) {
 						deselectedTiles.Add(tile);
 					}
 				}

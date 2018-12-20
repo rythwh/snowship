@@ -6,7 +6,7 @@ using UnityEngine;
 public class PlanetManager : BaseManager {
 
 	public static string GetRandomPlanetName() {
-		return "Planet";
+		return GameManager.resourceM.GetRandomLocationName();
 	}
 
 	public static int GetRandomPlanetSeed() {
@@ -136,6 +136,7 @@ public class PlanetManager : BaseManager {
 
 		public string directory;
 		public string lastSaveDateTime;
+		public string lastSaveTimeChunk;
 
 		public string name;
 		public List<PlanetTile> planetTiles;
@@ -162,14 +163,16 @@ public class PlanetManager : BaseManager {
 			);
 
 			lastSaveDateTime = PersistenceManager.GenerateSaveDateTimeString();
+			lastSaveTimeChunk = PersistenceManager.GenerateDateTimeString();
 		}
 
 		public void SetDirectory(string directory) {
 			this.directory = directory;
 		}
 
-		public void SetLastSaveDateTime(string lastSaveDateTime) {
+		public void SetLastSaveDateTime(string lastSaveDateTime, string lastSaveTimeChunk) {
 			this.lastSaveDateTime = lastSaveDateTime;
+			this.lastSaveTimeChunk = lastSaveTimeChunk;
 		}
 
 		public class PlanetTile {
@@ -261,258 +264,4 @@ public class PlanetManager : BaseManager {
 	public void SetSelectedPlanetTile(Planet.PlanetTile planetTile) {
 		selectedPlanetTile = planetTile;
 	}
-
-	//public int planetTileSize = 0;
-	//public float planetDistance = 0;
-	//public int temperatureRange = 0;
-	//public bool randomOffsets = false;
-	//public int windDirection = 0;
-	//public int mapSize = 0;
-
-	//private bool createdPlanet = false;
-
-	//void CreateNewGamePlanet() {
-	//	createdPlanet = true;
-
-	//	GeneratePlanet();
-	//	GameManager.uiM.SetSelectedPlanetTileInfo();
-	//}
-
-	//public PlanetTile selectedPlanetTile;
-
-	//public void SetSelectedPlanetTile(PlanetTile selectedPlanetTile) {
-	//	if (selectedPlanetTile == null || planet.rivers.Find(river => river.tiles.Contains(selectedPlanetTile.tile)) != null || !TileManager.waterEquivalentTileTypes.Contains(selectedPlanetTile.tile.tileType.type)) {
-	//		this.selectedPlanetTile = selectedPlanetTile;
-	//		GameManager.uiM.SetSelectedPlanetTileInfo();
-	//	}
-	//}
-
-	//public List<PlanetTile> planetTiles = new List<PlanetTile>();
-
-	//public class PlanetTile {
-	//	public TileManager.Tile tile;
-	//	public GameObject obj;
-
-	//	public Image image;
-
-	//	public Vector2 position;
-
-	//	public TileManager.MapData data;
-	//	private int planetSize;
-	//	private float planetTemperature;
-
-	//	public float equatorOffset;
-	//	public float averageTemperature;
-	//	public float averagePrecipitation;
-	//	public Dictionary<TileManager.TileTypes, float> terrainTypeHeights;
-	//	public List<int> surroundingPlanetTileHeightDirections = new List<int>();
-	//	public bool river;
-	//	public List<int> surroundingPlanetTileRivers = new List<int>();
-
-	//	public PlanetTile(TileManager.Tile tile, Transform parent, Vector2 position, int planetSize, float planetTemperature) {
-
-	//		this.tile = tile;
-
-	//		this.position = position;
-
-	//		this.planetSize = planetSize;
-	//		this.planetTemperature = planetTemperature;
-
-	//		obj = MonoBehaviour.Instantiate(GameManager.resourceM.planetTilePrefab, parent, false);
-	//		obj.name = "Planet Tile: " + position;
-	//		image = obj.GetComponent<Image>();
-	//		image.sprite = tile.obj.GetComponent<SpriteRenderer>().sprite;
-
-	//		obj.GetComponent<Button>().onClick.AddListener(delegate {
-	//			GameManager.planetM.SetSelectedPlanetTile(this);
-	//		});
-
-	//		SetMapData();
-
-	//		MonoBehaviour.Destroy(tile.obj);
-	//	}
-
-	//	public void SetMapData() {
-	//		equatorOffset = ((position.y - (planetSize / 2f)) * 2) / planetSize;
-	//		averageTemperature = tile.temperature + planetTemperature;
-	//		averagePrecipitation = tile.GetPrecipitation();
-
-	//		TileManager.Map.River tileRiver = tile.map.rivers.Find(river => river.tiles.Contains(tile));
-	//		river = tileRiver != null;
-
-	//		if (river || !TileManager.waterEquivalentTileTypes.Contains(tile.tileType.type)) {
-	//			foreach (TileManager.Tile nTile in tile.horizontalSurroundingTiles) {
-	//				if (nTile != null) {
-	//					if (tile.map.rivers.Find(river => river.tiles.Contains(nTile)) == null) {
-	//						if (TileManager.waterEquivalentTileTypes.Contains(nTile.tileType.type)) {
-	//							surroundingPlanetTileHeightDirections.Add(-2);
-	//						} else if (TileManager.stoneEquivalentTileTypes.Contains(nTile.tileType.type)) {
-	//							surroundingPlanetTileHeightDirections.Add(5);
-	//						} else {
-	//							surroundingPlanetTileHeightDirections.Add(0);
-	//						}
-	//					} else {
-	//						surroundingPlanetTileHeightDirections.Add(0);
-	//					}
-	//					if (river) {
-	//						int nTileRiverIndex = tileRiver.tiles.IndexOf(nTile);
-	//						if (nTileRiverIndex == -1) {
-	//							foreach (TileManager.Map.River river in tile.map.rivers) {
-	//								if (river != tileRiver) {
-	//									if (river.tiles.Contains(nTile)) {
-	//										nTileRiverIndex = river.tiles.IndexOf(nTile);
-	//									}
-	//								}
-	//							}
-	//						}
-	//						if (nTileRiverIndex == -1) {
-	//							if (tileRiver.startTile == tile && TileManager.stoneEquivalentTileTypes.Contains(nTile.tileType.type)) {
-	//								nTileRiverIndex = 0;
-	//							} else if (tileRiver.endTile == tile && TileManager.waterEquivalentTileTypes.Contains(nTile.tileType.type)) {
-	//								nTileRiverIndex = int.MaxValue;
-	//							}
-	//						}
-	//						surroundingPlanetTileRivers.Add(nTileRiverIndex);
-	//					}
-	//				} else {
-	//					surroundingPlanetTileHeightDirections.Add(0);
-	//					surroundingPlanetTileRivers.Add(-1);
-	//				}
-	//			}
-	//		} else {
-	//			obj.GetComponent<Button>().interactable = false;
-	//		}
-
-	//		float waterThreshold = 0.40f;
-	//		float stoneThreshold = 0.75f;
-	//		waterThreshold = waterThreshold * tile.GetPrecipitation() * (1 - tile.height);
-	//		stoneThreshold = stoneThreshold * (1 - (tile.height - (1 - stoneThreshold)));
-
-	//		terrainTypeHeights = new Dictionary<TileManager.TileTypes, float>() {
-	//			{ TileManager.TileTypes.GrassWater,waterThreshold},{ TileManager.TileTypes.Stone,stoneThreshold }
-	//		};
-	//	}
-	//}
-
-	//public int CalculatePlanetTemperature(float distance) {
-
-	//	float starMass = 1; // 1 (lower = colder)
-	//	float albedo = 29; // 29 (higher = colder)
-	//	float greenhouse = 0.4f; // 1 (lower = colder)
-
-	//	float sigma = 5.6703f * Mathf.Pow(10, -5);
-	//	float L = 3.846f * Mathf.Pow(10, 33) * Mathf.Pow(starMass, 3);
-	//	float D = distance * 1.496f * Mathf.Pow(10, 13);
-	//	float A = albedo / 100f;
-	//	float T = greenhouse * 0.5841f;
-	//	float X = Mathf.Sqrt((1 - A) * L / (16 * Mathf.PI * sigma));
-	//	float T_eff = Mathf.Sqrt(X) * (1 / Mathf.Sqrt(D));
-	//	float T_eq = (Mathf.Pow(T_eff, 4)) * (1 + (3 * T / 4));
-	//	float T_sur = T_eq / 0.9f;
-	//	float T_kel = Mathf.Round(Mathf.Sqrt(Mathf.Sqrt(T_sur)));
-	//	int celsius = Mathf.RoundToInt(T_kel - 273);
-
-	//	return celsius;
-	//}
-
-	//public TileManager.Map planet;
-	//private static readonly List<int> planetTileSizes = new List<int>() { 20, 15, 12, 10, 8, 6, 5 }; // Some divisors of 600
-
-	//public static class StaticPlanetMapDataValues {
-	//	public static bool actualMap = false;
-	//	public static float equatorOffset = -1;
-	//	public static bool planetTemperature = true;
-	//	public static float averageTemperature = -1;
-	//	public static float averagePrecipitation = -1;
-	//	public static readonly Dictionary<TileManager.TileTypes, float> terrainTypeHeights = new Dictionary<TileManager.TileTypes, float> {
-	//		{ TileManager.TileTypes.GrassWater, 0.40f },
-	//		{ TileManager.TileTypes.Stone, 0.75f }
-	//	};
-	//	public static List<int> surroundingPlanetTileHeightDirections = null;
-	//	public static bool river = false;
-	//	public static List<int> surroundingPlanetTileRivers = null;
-	//	public static bool preventEdgeTouching = true;
-	//	public static Vector2 planetTilePosition = Vector2.zero;
-	//}
-
-	//public void GeneratePlanet() {
-	//	SetSelectedPlanetTile(null);
-
-	//	foreach (PlanetTile tile in planetTiles) {
-	//		MonoBehaviour.Destroy(tile.obj);
-	//	}
-	//	planetTiles.Clear();
-
-	//	int planetSeed = SeedParser(planetSeedInputField.text, planetSeedInputField);
-
-	//	int planetSize = Mathf.FloorToInt(Mathf.FloorToInt(planetPreviewPanel.GetComponent<RectTransform>().sizeDelta.x) / planetTileSize);
-
-	//	int planetTemperature = CalculatePlanetTemperature(planetDistance);
-
-	//	planetPreviewPanel.GetComponent<GridLayoutGroup>().cellSize = new Vector2(planetTileSize, planetTileSize);
-	//	planetPreviewPanel.GetComponent<GridLayoutGroup>().constraintCount = planetSize;
-
-	//	TileManager.MapData planetData = new TileManager.MapData(
-	//		null,
-	//		planetSeed,
-	//		planetSize,
-	//		StaticPlanetMapDataValues.actualMap,
-	//		StaticPlanetMapDataValues.equatorOffset,
-	//		StaticPlanetMapDataValues.planetTemperature,
-	//		temperatureRange,
-	//		planetDistance,
-	//		planetTemperature,
-	//		randomOffsets,
-	//		StaticPlanetMapDataValues.averageTemperature,
-	//		StaticPlanetMapDataValues.averagePrecipitation,
-	//		StaticPlanetMapDataValues.terrainTypeHeights,
-	//		StaticPlanetMapDataValues.surroundingPlanetTileHeightDirections,
-	//		StaticPlanetMapDataValues.river,
-	//		StaticPlanetMapDataValues.surroundingPlanetTileRivers,
-	//		StaticPlanetMapDataValues.preventEdgeTouching,
-	//		windDirection,
-	//		StaticPlanetMapDataValues.planetTilePosition
-	//	);
-	//	planet = new TileManager.Map(planetData, false);
-	//	foreach (TileManager.Tile tile in planet.tiles) {
-	//		planetTiles.Add(new PlanetTile(tile, planetPreviewPanel.transform, tile.position, planetSize, planetTemperature));
-	//	}
-	//}
-
-	//private static readonly List<string> windCardinalDirectionMap = new List<string>() {
-	//	"N",
-	//	"E",
-	//	"S",
-	//	"W",
-	//	"NE",
-	//	"SE",
-	//	"SW",
-	//	"NW",
-	//};
-	//private static readonly List<int> windCircularDirectionMap = new List<int>() {
-	//	0,
-	//	4,
-	//	1,
-	//	5,
-	//	2,
-	//	6,
-	//	3,
-	//	7,
-	//};
-
-	//public void UpdatePlanetInfo() {
-	//	planetTileSize = planetTileSizes[Mathf.RoundToInt(planetSizeSlider.value)];
-	//	planetSizeText.text = Mathf.FloorToInt(Mathf.FloorToInt(planetPreviewPanel.GetComponent<RectTransform>().sizeDelta.x) / planetTileSize).ToString();
-
-	//	planetDistance = (float)Math.Round(0.1f * (planetDistanceSlider.value + 6), 1);
-	//	planetDistanceText.text = planetDistance + " AU";
-
-	//	temperatureRange = Mathf.RoundToInt(temperatureRangeSlider.value * 10);
-	//	temperatureRangeText.text = temperatureRange + "°C";
-
-	//	randomOffsets = randomOffsetsToggle.isOn;
-
-	//	windDirection = windCircularDirectionMap[Mathf.RoundToInt(windDirectionSlider.value)];
-	//	windDirectionText.text = windCardinalDirectionMap[windDirection];
-	//}
 }

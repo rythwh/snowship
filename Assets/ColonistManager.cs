@@ -147,6 +147,10 @@ public class ColonistManager : BaseManager {
 		}
 	}
 
+	public Profession FindProfessionByType(ProfessionTypeEnum type) {
+		return professions.Find(profession => profession.type == type);
+	}
+
 	public void CreateColonistProfessions() {
 		List<string> stringProfessions = Resources.Load<TextAsset>(@"Data/colonistProfessions").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
 		foreach (string stringProfession in stringProfessions) {
@@ -263,7 +267,7 @@ public class ColonistManager : BaseManager {
 	KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>> FindClosestFood(Colonist colonist, float minimumNutritionRequired, bool takeFromOtherColonists, bool eatAnything) {
 		List<KeyValuePair<KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>, int>> resourcesPerInventory = new List<KeyValuePair<KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>, int>>();
 		int totalNutrition = 0;
-		foreach (ResourceManager.Container container in GameManager.resourceM.containers.Where(c => c.tile.region == colonist.overTile.region).OrderBy(c => PathManager.RegionBlockDistance(colonist.overTile.regionBlock, c.tile.regionBlock, true, true, false))) {
+		foreach (ResourceManager.Container container in GameManager.resourceM.GetContainersInRegion(colonist.overTile.region).OrderBy(c => PathManager.RegionBlockDistance(colonist.overTile.regionBlock, c.tile.regionBlock, true, true, false))) {
 			List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
 			foreach (ResourceManager.ResourceAmount ra in container.inventory.resources.Where(ra => ra.resource.resourceClasses.Contains(ResourceManager.ResourceClass.Food)).OrderBy(ra => ((ResourceManager.Food)ra.resource).nutrition).ToList()) {
 				int numReserved = 0;
@@ -943,8 +947,6 @@ public class ColonistManager : BaseManager {
 		public List<HappinessModifierInstance> happinessModifiers = new List<HappinessModifierInstance>();
 
 		public Colonist(TileManager.Tile spawnTile, Profession profession, float startingHealth) : base(spawnTile, startingHealth) {
-			SetNameColour(UIManager.GetColour(UIManager.Colours.LightGreen));
-
 			obj.transform.SetParent(GameObject.Find("ColonistParent").transform, false);
 
 			this.profession = profession;
@@ -998,10 +1000,10 @@ public class ColonistManager : BaseManager {
 			if (job == null) {
 				if (path.Count <= 0) {
 					List<ResourceManager.Container> validEmptyInventoryContainers = FindValidContainersToEmptyInventory();
-					if ((inventory.CountResources() >= inventory.maxAmount && GameManager.jobM.GetColonistJobsCountForColonist(this) == 0) && validEmptyInventoryContainers.Count > 0) {
+					if (inventory.CountResources() >= inventory.maxAmount && validEmptyInventoryContainers.Count > 0) {
 						EmptyInventory(validEmptyInventoryContainers);
 					} else {
-						Wander();
+						Wander(null, 0);
 					}
 				} else {
 					wanderTimer = UnityEngine.Random.Range(10f, 20f);
@@ -1026,7 +1028,7 @@ public class ColonistManager : BaseManager {
 		}
 
 		public List<ResourceManager.Container> FindValidContainersToEmptyInventory() {
-			return GameManager.resourceM.containers.Where(container => container.tile.region == overTile.region && container.inventory.CountResources() < container.inventory.maxAmount).ToList();
+			return GameManager.resourceM.GetContainersInRegion(overTile.region).Where(container => container.inventory.CountResources() < container.inventory.maxAmount).ToList();
 		}
 
 		public void EmptyInventory(List<ResourceManager.Container> validContainers) {
@@ -1108,19 +1110,6 @@ public class ColonistManager : BaseManager {
 			effectiveHappiness = Mathf.Clamp(effectiveHappiness, 0, 100);
 		}
 
-		private float wanderTimer = UnityEngine.Random.Range(10f, 20f);
-		private void Wander() {
-			if (wanderTimer <= 0) {
-				List<TileManager.Tile> validWanderTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable && tile.tileType.buildable && GameManager.colonistM.colonists.Find(colonist => colonist.overTile == tile) == null).ToList();
-				if (validWanderTiles.Count > 0) {
-					MoveToTile(validWanderTiles[UnityEngine.Random.Range(0, validWanderTiles.Count)], false);
-				}
-				wanderTimer = UnityEngine.Random.Range(10f, 20f);
-			} else {
-				wanderTimer -= 1 * GameManager.timeM.deltaTime;
-			}
-		}
-
 		public void SetJob(JobManager.ColonistJob colonistJob, bool reserveResourcesInContainerPickups = true) {
 			job = colonistJob.job;
 			job.colonistResources = colonistJob.colonistResources;
@@ -1178,7 +1167,7 @@ public class ColonistManager : BaseManager {
 			}
 
 			if (job.activeTileObject != null) {
-				job.activeTileObject.SetActiveSprite(true, job);
+				job.activeTileObject.SetActiveSprite(job);
 			}
 
 			job.jobProgress -= 1 * GameManager.timeM.deltaTime;
@@ -1186,7 +1175,7 @@ public class ColonistManager : BaseManager {
 			if (job.jobProgress <= 0 || Mathf.Approximately(job.jobProgress, 0)) {
 				job.jobProgress = 0;
 				if (job.activeTileObject != null) {
-					job.activeTileObject.SetActiveSprite(false, job);
+					job.activeTileObject.SetActiveSprite(job);
 				}
 				FinishJob();
 				return;
@@ -1347,57 +1336,9 @@ public class ColonistManager : BaseManager {
 			}
 		}
 
-		public void LoadColonistData(
-			Vector2 position,
-			string name,
-			Dictionary<Appearance, int> bodyIndices,
-			float health,
-			Profession profession,
-			Profession oldProfession,
-			ResourceManager.Inventory inventory,
-			JobManager.Job job,
-			JobManager.Job storedJob,
-			List<SkillInstance> skills,
-			List<TraitInstance> traits,
-			List<NeedInstance> needs,
-			float baseHappiness,
-			float effectiveHappiness,
-			List<HappinessModifierInstance> happinessModifiers,
-			bool playerMoved,
-			TileManager.Tile pathEnd) {
-
-			obj.transform.position = position;
-
-			this.name = name;
-			SetNameCanvas(name);
-
-			moveSprites = GameManager.humanM.humanMoveSprites[bodyIndices[Appearance.Skin]];
-			this.bodyIndices = bodyIndices;
-
-			ChangeHealthValue(-(this.health - health));
-
-			ChangeProfession(oldProfession);
-			ChangeProfession(profession);
-
-			this.inventory = inventory;
-
-			if (storedJob != null) {
-				SetJob(new JobManager.ColonistJob(this, storedJob, storedJob.colonistResources, storedJob.containerPickups));
-			} else if (job != null) {
-				SetJob(new JobManager.ColonistJob(this, job, job.colonistResources, job.containerPickups));
-			}
-
-			this.skills = skills;
-			this.traits = traits;
-			this.needs = needs;
-
-			this.baseHappiness = baseHappiness;
-			this.effectiveHappiness = effectiveHappiness;
-			this.happinessModifiers = happinessModifiers;
-
-			if (playerMoved) {
-				PlayerMoveToTile(pathEnd);
-			}
+		public override void SetName(string name) {
+			base.SetName(name);
+			SetNameColour(UIManager.GetColour(UIManager.Colours.LightGreen));
 		}
 	}
 
@@ -1421,7 +1362,7 @@ public class ColonistManager : BaseManager {
 		if (amount > 0) {
 			int mapSize = GameManager.colonyM.colony.map.mapData.mapSize;
 			for (int i = 0; i < amount; i++) {
-				List<TileManager.Tile> walkableTilesByDistanceToCentre = GameManager.colonyM.colony.map.tiles.Where(o => o.walkable && o.tileType.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
+				List<TileManager.Tile> walkableTilesByDistanceToCentre = GameManager.colonyM.colony.map.tiles.Where(o => o.walkable && o.buildable && colonists.Find(c => c.overTile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))/*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 				if (walkableTilesByDistanceToCentre.Count <= 0) {
 					foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
 						tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileManager.TileTypes.Grass), true, true, true, true);

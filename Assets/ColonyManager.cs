@@ -15,7 +15,7 @@ public class ColonyManager : BaseManager {
 	}
 
 	public static string GetRandomColonyName() {
-		return "Colony";
+		return GameManager.resourceM.GetRandomLocationName();
 	}
 
 	public void SetupNewColony(Colony colony, bool initialized) {
@@ -95,6 +95,7 @@ public class ColonyManager : BaseManager {
 	public class Colony {
 		public string directory;
 		public string lastSaveDateTime;
+		public string lastSaveTimeChunk;
 
 		public string name;
 
@@ -106,14 +107,16 @@ public class ColonyManager : BaseManager {
 			this.mapData = mapData;
 
 			lastSaveDateTime = PersistenceManager.GenerateSaveDateTimeString();
+			lastSaveTimeChunk = PersistenceManager.GenerateDateTimeString();
 		}
 
 		public void SetDirectory(string directory) {
 			this.directory = directory;
 		}
 
-		public void SetLastSaveDateTime(string lastSaveDateTime) {
+		public void SetLastSaveDateTime(string lastSaveDateTime, string lastSaveTimeChunk) {
 			this.lastSaveDateTime = lastSaveDateTime;
+			this.lastSaveTimeChunk = lastSaveTimeChunk;
 		}
 	}
 }

@@ -90,7 +90,7 @@ public class LifeManager : BaseManager {
 				}
 			} else {
 				path.Clear();
-				if (!Mathf.Approximately(Vector2.Distance(obj.transform.position, overTile.obj.transform.position), 0.01f)) {
+				if (!Mathf.Approximately(Vector2.Distance(obj.transform.position, overTile.obj.transform.position), 0f)) {
 					path.Add(overTile);
 					moveTimer = 0;
 				}
@@ -132,7 +132,12 @@ public class LifeManager : BaseManager {
 		}
 
 		public virtual void Die() {
+			// TODO Implement death (instance still exists but will be in a death-state)
+		}
+
+		public virtual void Remove() {
 			MonoBehaviour.Destroy(obj);
+			GameManager.lifeM.life.Remove(this);
 		}
 	}
 }

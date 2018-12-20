@@ -5,38 +5,41 @@ using UnityEngine;
 
 public class CaravanManager : BaseManager {
 
+	private List<Caravan> removeCaravans = new List<Caravan>();
+
 	public override void Update() {
-		foreach (Trader trader in traders) {
-			trader.Update();
+		UpdateCaravanTimer();
+		
+		foreach (Caravan caravan in caravans) {
+			if (!caravan.Update()) {
+				removeCaravans.Add(caravan);
+			}
 		}
+		foreach (Caravan caravan in removeCaravans) {
+			if (selectedCaravan == caravan) {
+				SetSelectedCaravan(null);
+			}
+
+			caravans.Remove(caravan);
+
+			GameManager.uiM.SetCaravanElements();
+			GameManager.uiM.SetTradeMenu(null);
+		}
+		removeCaravans.Clear();
 	}
 
-	public List<Trader> traders = new List<Trader>(); // TODO Remove Caravan from map and delete its traders from this list
+	private int caravanTimer = 0; // The time since the last caravan visited
+	private static readonly int caravanTimeMin = TimeManager.dayLengthSeconds; // Caravans will only come once every caravanTimeMin in-game minutes
+	private static readonly int caravanTimeMax = TimeManager.dayLengthSeconds * 7; // Caravans will definitely come if the caravanTimer is greater than caravanTimeMax
 
-	public class Trader : HumanManager.Human {
-
-		public Caravan caravan;
-
-		public Trader(TileManager.Tile spawnTile, float startingHealth, Caravan caravan) : base(spawnTile, startingHealth) {
-			this.caravan = caravan;
-
-			SetNameColour(UIManager.GetColour(UIManager.Colours.LightPurple));
-			obj.transform.SetParent(GameObject.Find("TraderParent").transform, false);
-			MoveToTile(GameManager.colonistM.colonists[0].overTile, false);
-
-			GameManager.caravanM.traders.Add(this);
-		}
-	}
-	private float traderTimer = 0; // The time since the last trader visited
-	private static readonly int traderTimeMin = 1440; // Traders will only come once every traderTimeMin in-game minutes
-	private static readonly int traderTimeMax = 10080; // Traders will definitely come if the traderTimer is greater than traderTimeMax
-
-	public void UpdateTraders() {
-		traderTimer += GameManager.timeM.deltaTime;
-		if (traderTimer > traderTimeMin && GameManager.timeM.minuteChanged) {
-			if (UnityEngine.Random.Range(0f, 1f) < ((traderTimer - traderTimeMin) / (traderTimeMax - traderTimeMin))) {
-				traderTimer = 0;
-				SpawnCaravan(CaravanTypeEnum.Foot, 4);
+	public void UpdateCaravanTimer() {
+		if (!GameManager.timeM.GetPaused() && GameManager.timeM.minuteChanged) {
+			caravanTimer += 1;
+			if (caravanTimer > caravanTimeMin) {
+				if (UnityEngine.Random.Range(0f, 1f) < (((float)caravanTimer - caravanTimeMin) / (caravanTimeMax - caravanTimeMin))) {
+					caravanTimer = 0;
+					SpawnCaravan(CaravanTypeEnum.Foot, 4);
+				}
 			}
 		}
 	}
@@ -76,24 +79,56 @@ public class CaravanManager : BaseManager {
 					if (edgeTilesCloseToTargetSpawnTile.Count < numTraders) {
 						numTraders = edgeTilesCloseToTargetSpawnTile.Count;
 					}
-					Caravan caravan = new Caravan(numTraders, CaravanTypeEnum.Foot, edgeTilesCloseToTargetSpawnTile);
-					caravans.Add(caravan);
 
-					GameManager.uiM.SetCaravanElements();
+					List<ResourceManager.TileObjectInstance> tradingPosts = new List<ResourceManager.TileObjectInstance>();
+					foreach (ResourceManager.TileObjectPrefab prefab in GameManager.resourceM.tileObjectInstances.Keys.Where(top => top.tileObjectPrefabSubGroup.type == ResourceManager.TileObjectPrefabSubGroupsEnum.TradingPosts)) {
+						foreach (ResourceManager.TileObjectInstance tradingPost in GameManager.resourceM.tileObjectInstances[prefab]) {
+							if (tradingPost.tile.region == targetSpawnTile.region) {
+								tradingPosts.Add(tradingPost);
+							}
+						}
+					}
+
+					ResourceManager.TileObjectInstance selectedTradingPost = null;
+					if (tradingPosts.Count > 0) {
+						selectedTradingPost = tradingPosts[UnityEngine.Random.Range(0, tradingPosts.Count)];
+					}
+
+					TileManager.Tile targetTile = null;
+					if (selectedTradingPost != null) {
+						targetTile = selectedTradingPost.tile;
+					} else {
+						List<TileManager.Tile> validTargetTiles = targetSpawnTile.region.tiles.Where(tile => tile.walkable && !TileManager.liquidWaterEquivalentTileTypes.Contains(tile.tileType.type)).ToList();
+						targetTile = validTargetTiles[UnityEngine.Random.Range(0, validTargetTiles.Count)];
+					}
+
+					AddCaravan(new Caravan(numTraders, CaravanTypeEnum.Foot, edgeTilesCloseToTargetSpawnTile, targetTile));
 				}
 			}
 		}
 	}
 
+	public void AddCaravan(Caravan caravan) {
+		caravans.Add(caravan);
+
+		GameManager.uiM.SetCaravanElements();
+	}
+
 	public enum CaravanTypeEnum { Foot, Wagon, Boat };
+
+	public Caravan selectedCaravan;
+
+	public void SetSelectedCaravan(Caravan selectedCaravan) {
+		this.selectedCaravan = selectedCaravan;
+	}
 
 	public class Caravan {
 
 		public List<Trader> traders = new List<Trader>();
-		public int amount;
+		public int numTraders;
 		public CaravanTypeEnum caravanType;
 
-		public string originLocation; // This should be changed to a "Location" object (to be created in TileManager?) that stores info
+		public Location location;
 
 		public ResourceManager.Inventory inventory;
 
@@ -101,10 +136,35 @@ public class CaravanManager : BaseManager {
 
 		public List<ResourceManager.ConfirmedTradeResourceAmount> confirmedResourcesToTrade = new List<ResourceManager.ConfirmedTradeResourceAmount>();
 
-		public Caravan(int amount, CaravanTypeEnum caravanType, List<TileManager.Tile> spawnTiles) {
-			this.amount = amount;
+		public TileManager.Tile targetTile;
+
+		public ResourceManager.ResourceGroup resourceGroup;
+
+		public int leaveTimer = 0;
+		public static readonly int leaveTimerMax = TimeManager.dayLengthSeconds * 2;
+		public bool leaving = false;
+
+		private static readonly int minDistinctResources = 1;
+		private static readonly float minDistinctResourceChance = 0.5f;
+		private static readonly float minAvailableAmountModifier = 0.1f;
+		private static readonly float maxAvailableAmountModifier = 0.5f;
+		private static readonly int minMinimumCaravanAmount = 5;
+		private static readonly int maxMinimumCaravanAmount = 15;
+
+		private List<Trader> removeTraders = new List<Trader>();
+
+		public Caravan() {
+			inventory = new ResourceManager.Inventory(null, null, int.MaxValue);
+		}
+
+		public Caravan(int numTraders, CaravanTypeEnum caravanType, List<TileManager.Tile> spawnTiles, TileManager.Tile targetTile) {
+			this.numTraders = numTraders;
 			this.caravanType = caravanType;
-			for (int i = 0; i < amount && spawnTiles.Count > 0; i++) {
+			this.targetTile = targetTile;
+
+			location = GameManager.caravanM.CreateLocation();
+
+			for (int i = 0; i < numTraders && spawnTiles.Count > 0; i++) {
 				TileManager.Tile spawnTile = spawnTiles[UnityEngine.Random.Range(0, spawnTiles.Count)];
 				SpawnTrader(spawnTile);
 				spawnTiles.Remove(spawnTile);
@@ -112,15 +172,31 @@ public class CaravanManager : BaseManager {
 
 			inventory = new ResourceManager.Inventory(null, null, int.MaxValue);
 
-			foreach (ResourceManager.Resource resource in GameManager.resourceM.resources) {
-				if (UnityEngine.Random.Range(0, 100) < 50) {
-					inventory.ChangeResourceAmount(resource, UnityEngine.Random.Range(0, 50));
+			resourceGroup = GameManager.resourceM.GetRandomResourceGroup();
+			foreach (ResourceManager.Resource resource in resourceGroup.resources.OrderBy(r => UnityEngine.Random.Range(0f, 1f))) { // Randomize resource group list
+				int resourceGroupResourceCount = Mathf.Clamp(resourceGroup.resources.Count, minDistinctResources + 1, int.MaxValue); // Ensure minimum count of (minimumDistinctResources + 1)
+				if (UnityEngine.Random.Range(0f, 1f) < Mathf.Clamp(((resourceGroupResourceCount - inventory.resources.Count) - minDistinctResources) / (float)(resourceGroupResourceCount - minDistinctResources), minDistinctResourceChance, 1f)) { // Decrease chance of additional distinct resources on caravan as distinct resources on caravan increase
+					int resourceAvailableAmount = resource.GetAvailableAmount();
+					int caravanAmount = Mathf.RoundToInt(Mathf.Clamp(UnityEngine.Random.Range(resourceAvailableAmount * minAvailableAmountModifier, resourceAvailableAmount * maxAvailableAmountModifier), UnityEngine.Random.Range(minMinimumCaravanAmount, maxMinimumCaravanAmount), int.MaxValue)); // Ensure a minimum number of the resource on the caravan
+					inventory.ChangeResourceAmount(resource, caravanAmount);
 				}
 			}
 		}
 
 		public void SpawnTrader(TileManager.Tile spawnTile) {
-			traders.Add(new Trader(spawnTile, 1f, this));
+			Trader trader = new Trader(spawnTile, 1f, this);
+			traders.Add(trader);
+
+			List<TileManager.Tile> targetTiles = new List<TileManager.Tile>() { targetTile };
+			targetTiles.AddRange(targetTile.horizontalSurroundingTiles.Where(t => t != null && t.walkable && t.buildable));
+
+			List<TileManager.Tile> additionalTargetTiles = new List<TileManager.Tile>();
+			foreach (TileManager.Tile tt in targetTiles) {
+				additionalTargetTiles.AddRange(tt.horizontalSurroundingTiles.Where(t => t != null && t.walkable && t.buildable && !additionalTargetTiles.Contains(t)));
+			}
+			targetTiles.AddRange(additionalTargetTiles);
+
+			trader.MoveToTile(targetTiles[UnityEngine.Random.Range(0, targetTiles.Count)], false);
 		}
 
 		public List<ResourceManager.TradeResourceAmount> GetTradeResourceAmounts() {
@@ -148,7 +224,8 @@ public class CaravanManager : BaseManager {
 				}
 			}
 
-			tradeResourceAmounts = tradeResourceAmounts.OrderByDescending(tra => tra.caravanAmount).ThenByDescending(tra => tra.resource.GetAvailableAmount()).ThenBy(tra => tra.resource.name).ToList();
+			//tradeResourceAmounts = tradeResourceAmounts.OrderByDescending(tra => tra.caravanAmount).ThenByDescending(tra => tra.resource.GetAvailableAmount()).ThenBy(tra => tra.resource.name).ToList();
+			tradeResourceAmounts = tradeResourceAmounts.OrderBy(tra => tra.resource.name).ToList();
 
 			return tradeResourceAmounts;
 		}
@@ -157,9 +234,13 @@ public class CaravanManager : BaseManager {
 			return false; // TODO This needs to be implemented once the originLocation is properly implemented (see above)
 		}
 
-		public ResourceManager.Resource.Price DeterminePriceForResource(ResourceManager.Resource resource) {
-			// TODO This needs to be implemented once the originLocation is properly implemented and use DetermineImportanceForResource(...)
-			//return new ResourceManager.Resource.Price(UnityEngine.Random.Range(0, 100), UnityEngine.Random.Range(0, 100), UnityEngine.Random.Range(0, 100));
+		//public ResourceManager.Resource.Price DeterminePriceForResource(ResourceManager.Resource resource) {
+		//	// TODO This needs to be implemented once the originLocation is properly implemented and use DetermineImportanceForResource(...)
+		//	//return new ResourceManager.Resource.Price(UnityEngine.Random.Range(0, 100), UnityEngine.Random.Range(0, 100), UnityEngine.Random.Range(0, 100));
+		//	return resource.price;
+		//}
+
+		public int DeterminePriceForResource(ResourceManager.Resource resource) {
 			return resource.price;
 		}
 
@@ -181,6 +262,149 @@ public class CaravanManager : BaseManager {
 				confirmedResourcesToTrade.Add(new ResourceManager.ConfirmedTradeResourceAmount(tradeResourceAmount, tradeResourceAmount.GetTradeAmount()));
 			}
 			resourcesToTrade.Clear();
+		}
+
+		/*
+		 * Returns:
+		 *		true - if any of the caravan's traders still exist on the map
+		 *		false - if all of the caravan's traders have left the map
+		 */
+		public bool Update() {
+			foreach (Trader trader in traders) {
+				trader.Update();
+
+				if (trader.overTile == trader.leaveTile) {
+					removeTraders.Add(trader);
+				}
+			}
+			foreach (Trader trader in removeTraders) {
+				trader.Remove();
+
+				traders.Remove(trader);
+			}
+			removeTraders.Clear();
+
+			if (!GameManager.timeM.GetPaused() && GameManager.timeM.minuteChanged) {
+				if (!leaving) {
+					if (leaveTimer >= leaveTimerMax) {
+						leaving = true;
+						leaveTimer = 0;
+
+						foreach (Trader trader in traders) {
+							List<TileManager.Tile> validLeaveTiles = GameManager.colonyM.colony.map.edgeTiles.Where(t => t.region == trader.overTile.region).ToList();
+							if (validLeaveTiles.Count > 0) {
+								trader.leaveTile = validLeaveTiles[UnityEngine.Random.Range(0, validLeaveTiles.Count)];
+								trader.MoveToTile(trader.leaveTile, false);
+							} else {
+								trader.leaveTile = trader.overTile;
+								trader.Remove();
+							}
+						}
+					} else {
+						leaveTimer += 1;
+					}
+				}
+			}
+			return traders.Count > 0;
+		}
+	}
+
+	public class Trader : HumanManager.Human {
+
+		public Caravan caravan;
+
+		public TileManager.Tile leaveTile;
+
+		public Trader(TileManager.Tile spawnTile, float startingHealth, Caravan caravan) : base(spawnTile, startingHealth) {
+			this.caravan = caravan;
+
+			obj.transform.SetParent(GameObject.Find("TraderParent").transform, false);
+		}
+
+		public override void SetName(string name) {
+			base.SetName(name);
+
+			SetNameColour(UIManager.GetColour(UIManager.Colours.LightPurple));
+		}
+
+		public override void Update() {
+			base.Update();
+
+			if (path.Count <= 0) {
+				Wander(caravan.targetTile, 4);
+			} else {
+				wanderTimer = UnityEngine.Random.Range(10f, 20f);
+			}
+		}
+
+		public override void Remove() {
+			base.Remove();
+
+			if (GameManager.humanM.selectedHuman == this) {
+				GameManager.humanM.SetSelectedHuman(null);
+			}
+		}
+	}
+
+	public Location CreateLocation() {
+
+		string name = GameManager.resourceM.GetRandomLocationName();
+
+		List<Location.Wealth> wealthes = ((Location.Wealth[])Enum.GetValues(typeof(Location.Wealth))).ToList();
+		Location.Wealth wealth = wealthes[UnityEngine.Random.Range(0, wealthes.Count)];
+
+		List<Location.ResourceRichness> resourceRichnesses = ((Location.ResourceRichness[])Enum.GetValues(typeof(Location.ResourceRichness))).ToList();
+		Location.ResourceRichness resourceRichness = resourceRichnesses[UnityEngine.Random.Range(0, resourceRichnesses.Count)];
+
+		List<Location.CitySize> citySizes = ((Location.CitySize[])Enum.GetValues(typeof(Location.CitySize))).ToList();
+		Location.CitySize citySize = citySizes[UnityEngine.Random.Range(0, citySizes.Count)];
+
+		List<TileManager.BiomeTypes> biomeTypes = ((TileManager.BiomeTypes[])Enum.GetValues(typeof(TileManager.BiomeTypes))).ToList();
+		TileManager.BiomeTypes biomeType = biomeTypes[UnityEngine.Random.Range(0, biomeTypes.Count)];
+
+		return new Location(name, wealth, resourceRichness, citySize, biomeType);
+	}
+
+	public class Location {
+
+		public enum Wealth {
+			Destitute,
+			Poor,
+			Comfortable,
+			Wealthy
+		}
+
+		public enum ResourceRichness {
+			Sparse,
+			Average,
+			Abundant
+		}
+
+		public enum CitySize {
+			Hamlet,
+			Village,
+			Town,
+			City
+		}
+
+		public string name;
+		public Wealth wealth;
+		public ResourceRichness resourceRichness;
+		public CitySize citySize;
+		public TileManager.BiomeTypes biomeType;
+
+		public Location(
+			string name, 
+			Wealth wealth, 
+			ResourceRichness resourceRichness, 
+			CitySize citySize, 
+			TileManager.BiomeTypes biomeType
+		) {
+			this.name = name;
+			this.wealth = wealth;
+			this.resourceRichness = resourceRichness;
+			this.citySize = citySize;
+			this.biomeType = biomeType;
 		}
 	}
 }

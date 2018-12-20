@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class TimeManager : BaseManager {
 
+	public static readonly int dayLengthSeconds = 1440; // Number of seconds in 1 in-game day
+
 	private bool paused;
 
 	private int pauseTimeModifier = 0;
@@ -17,7 +19,7 @@ public class TimeManager : BaseManager {
 	private float timer = 0;
 
 	private int minute = 0;
-	private int hour = 6;
+	private int hour = 8;
 	private int day = 1;
 	private int month = 1;
 	private int year = 1;
@@ -42,7 +44,7 @@ public class TimeManager : BaseManager {
 			if (Input.GetKeyDown(KeyCode.Alpha2) && !GameManager.uiM.pauseMenu.activeSelf && !GameManager.uiM.playerTyping) {
 				timeModifier += 1;
 			}
-			timeModifier = Mathf.Clamp(timeModifier, 0, 5);
+			timeModifier = Mathf.Clamp(timeModifier, 0, 3);
 			if (timeModifier > 0 && paused) {
 				TogglePause();
 			}

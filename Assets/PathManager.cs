@@ -64,7 +64,13 @@ public static class PathManager {
 
 			foreach (TileManager.Tile nTile in (currentTile.tile.surroundingTiles.Find(tile => tile != null && !tile.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
 				if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (allowEndTileNonWalkable && nTile == endTile ? true : (walkable ? nTile.walkable : true))) {
-					float cost = (Vector2.Distance(nTile.obj.transform.position, endTile.obj.transform.position) * 1) + (RegionBlockDistance(nTile.regionBlock, endTile.regionBlock, true, true, true) * 10) + (currentTile.pathDistance * 5) - (nTile.walkSpeed * 15);
+					float cost = 0;
+					cost += 1 * Vector2.Distance(nTile.obj.transform.position, endTile.obj.transform.position);
+					cost += 1 * RegionBlockDistance(nTile.regionBlock, endTile.regionBlock, true, true, true);
+					cost += 50 * (TileManager.liquidWaterEquivalentTileTypes.Contains(nTile.tileType.type) ? 1 : 0);
+					cost += 5 * currentTile.pathDistance;
+					cost -= nTile.map.mapData.mapSize * nTile.walkSpeed;
+
 					PathfindingTile pTile = new PathfindingTile(nTile, currentTile, cost);
 					frontier.Add(pTile);
 					checkedTiles.Add(pTile);
