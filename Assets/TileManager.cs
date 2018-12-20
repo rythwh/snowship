@@ -168,6 +168,10 @@ public class TileManager : BaseManager {
 		}
 	}
 
+	public Biome GetBiomeByEnum(BiomeTypes biomeType) {
+		return biomes.Find(b => b.type == biomeType);
+	}
+
 	public class PrecipitationRange {
 
 		public float min = 0;
@@ -242,10 +246,10 @@ public class TileManager : BaseManager {
 	};
 
 	public class Tile {
-		public Map map;
+		public readonly Map map;
 
 		public GameObject obj;
-		public Vector2 position;
+		public readonly Vector2 position;
 
 		public SpriteRenderer sr;
 
@@ -271,6 +275,8 @@ public class TileManager : BaseManager {
 
 		public bool walkable = false;
 		public float walkSpeed = 0;
+
+		public bool buildable = false;
 
 		public bool roof = false;
 
@@ -316,6 +322,7 @@ public class TileManager : BaseManager {
 				SetBiome(biome, true);
 			}
 			walkable = tileType.walkable;
+			buildable = tileType.buildable;
 			if (bitmask) {
 				map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList());
 			}
@@ -367,7 +374,7 @@ public class TileManager : BaseManager {
 						nonWalkableSurroundingTiles.Remove(tile);
 					}
 					if (nonWalkableSurroundingTiles.Count > 1) {
-						MonoBehaviour.print("Independent tiles");
+						Debug.Log("Independent tiles");
 						Map.Region oldRegion = region;
 						oldRegion.tiles.Clear();
 						map.regions.Remove(oldRegion);
@@ -381,7 +388,7 @@ public class TileManager : BaseManager {
 							while (frontier.Count > 0) {
 								currentTile = frontier[0];
 								if (nonWalkableTileGroups.Find(group => group.Contains(currentTile)) != null) {
-									MonoBehaviour.print("Separate tiles part of the same group");
+									Debug.Log("Separate tiles part of the same group");
 									addGroup = false;
 									break;
 								}
@@ -504,14 +511,21 @@ public class TileManager : BaseManager {
 
 		public void PostChangeTileObject() {
 			walkable = tileType.walkable;
-			foreach (KeyValuePair<int, ResourceManager.TileObjectInstance> kvp in objectInstances) {
-				if (kvp.Value != null && !kvp.Value.prefab.walkable) {
-					walkable = false;
-					map.RecalculateRegionsAtTile(this);
+			buildable = tileType.buildable;
+			foreach (KeyValuePair<int, ResourceManager.TileObjectInstance> layerToObjectInstance in objectInstances) {
+				if (layerToObjectInstance.Value != null) {
+					if (!layerToObjectInstance.Value.prefab.walkable) {
+						walkable = false;
+						map.RecalculateRegionsAtTile(this);
 
-					map.DetermineShadowTiles(new List<Tile>() { this }, true);
+						map.DetermineShadowTiles(new List<Tile>() { this }, true);
 
-					break;
+						break;
+					}
+
+					// Object Instances are iterated from lowest layer to highest layer (sorted in AddObjectInstaceToLayer), 
+					// therefore, the highest layer is the buildable value that should be applied
+					buildable = layerToObjectInstance.Value.prefab.buildable;
 				}
 			}
 			SetWalkSpeed();
@@ -531,6 +545,7 @@ public class TileManager : BaseManager {
 			} else { // If the layer does not exist
 				objectInstances.Add(layer, instance);
 			}
+			objectInstances.OrderBy(kvp => kvp.Key); // Sorted from lowest layer to highest layer for iterating
 		}
 
 		public void RemoveTileObjectAtLayer(int layer) {
@@ -590,14 +605,9 @@ public class TileManager : BaseManager {
 			if (plant != null && walkSpeed > 0.6f) {
 				walkSpeed = 0.6f;
 			}
-			float minObjectWalkSpeed = float.MaxValue; // Arbitrary value
-			foreach (KeyValuePair<int, ResourceManager.TileObjectInstance> kvp in objectInstances) {
-				if (kvp.Value != null && kvp.Value.prefab.walkSpeed <= minObjectWalkSpeed) {
-					minObjectWalkSpeed = kvp.Value.prefab.walkSpeed;
-				}
-			}
-			if (minObjectWalkSpeed < walkSpeed) {
-				walkSpeed = minObjectWalkSpeed;
+			ResourceManager.TileObjectInstance lowestWalkSpeedObject = objectInstances.Values.OrderBy(o => o.prefab.walkSpeed).FirstOrDefault();
+			if (lowestWalkSpeedObject != null) {
+				walkSpeed = lowestWalkSpeedObject.prefab.walkSpeed;
 			}
 		}
 
@@ -2402,7 +2412,7 @@ public class TileManager : BaseManager {
 			if (!GameManager.timeM.GetPaused() && GameManager.timeM.minuteChanged) {
 				List<ResourceManager.Plant> growPlants = new List<ResourceManager.Plant>();
 				foreach (ResourceManager.Plant plant in smallPlants) {
-					plant.growthProgress += 1 * GameManager.timeM.deltaTime;
+					plant.growthProgress += 1 /** GameManager.timeM.deltaTime*/;
 					if (plant.growthProgress > 5760) { // 5760 = 4 in-game days in seconds
 						if (UnityEngine.Random.Range(0, 100) < (0.01 * (plant.growthProgress / 5760))) {
 							growPlants.Add(plant);

@@ -45,6 +45,7 @@ public class GameManager : MonoBehaviour {
 		resourceM.CreateResources();
 		resourceM.CreateTileObjectPrefabs();
 		resourceM.CreatePlantGroups();
+		resourceM.LoadLocationNames();
 
 		tileM.CreateTileTypes();
 		tileM.CreateBiomes();

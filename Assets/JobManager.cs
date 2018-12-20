@@ -238,7 +238,7 @@ public class JobManager : BaseManager {
 			if (instance is ResourceManager.Farm) {
 				ResourceManager.Farm farm = (ResourceManager.Farm)instance;
 				if (farm.growProgressSpriteIndex == 0) {
-					job.colonist.inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(farm.seedType), 1);
+					job.colonist.inventory.ChangeResourceAmount(farm.prefab.seed, 1);
 				}
 			} else if (instance is ResourceManager.Container) {
 				ResourceManager.Container container = (ResourceManager.Container)instance;
@@ -290,10 +290,10 @@ public class JobManager : BaseManager {
 		});
 		finishJobFunctions.Add(JobTypesEnum.HarvestFarm, delegate (ColonistManager.Colonist colonist, Job job) {
 			if (job.tile.farm != null) {
-				colonist.inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(job.tile.farm.seedType), UnityEngine.Random.Range(1, 3));
-				colonist.inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.farmSeedReturnResource[job.tile.farm.seedType]), UnityEngine.Random.Range(1, 6));
+				colonist.inventory.ChangeResourceAmount(job.tile.farm.prefab.seed, UnityEngine.Random.Range(1, 3));
+				colonist.inventory.ChangeResourceAmount(job.tile.farm.prefab.harvestResource, UnityEngine.Random.Range(1, 6));
 
-				CreateJob(new Job(job.tile, GameManager.resourceM.GetTileObjectPrefabByEnum(ResourceManager.farmSeedsTileObject[job.tile.farm.seedType]), 0));
+				CreateJob(new Job(job.tile, job.tile.farm.prefab, 0));
 
 				GameManager.resourceM.RemoveTileObjectInstance(job.tile.farm);
 				job.tile.RemoveTileObjectAtLayer(job.tile.farm.prefab.layer);
@@ -546,10 +546,10 @@ public class JobManager : BaseManager {
 			return !posTile.walkable;
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.Buildable, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return posTile.tileType.buildable;
+			return posTile.buildable;
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.OmitBuildable, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
-			return !posTile.tileType.buildable;
+			return !posTile.buildable;
 		});
 		selectionModifierFunctions.Add(SelectionModifiersEnum.StoneTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.TileObjectPrefab prefab) {
 			return TileManager.stoneEquivalentTileTypes.Contains(posTile.tileType.type);
@@ -855,16 +855,17 @@ public class JobManager : BaseManager {
 		GameManager.uiM.SetJobElements();
 	}
 
-	Dictionary<int, ResourceManager.TileObjectPrefabsEnum> RemoveLayerMap = new Dictionary<int, ResourceManager.TileObjectPrefabsEnum>() {
-		{1,ResourceManager.TileObjectPrefabsEnum.RemoveLayer1 },{2,ResourceManager.TileObjectPrefabsEnum.RemoveLayer2 }
+	private static readonly Dictionary<int, ResourceManager.TileObjectPrefabsEnum> removeLayerMap = new Dictionary<int, ResourceManager.TileObjectPrefabsEnum>() {
+		{ 1, ResourceManager.TileObjectPrefabsEnum.RemoveFloor },
+		{ 2, ResourceManager.TileObjectPrefabsEnum.RemoveObject }
 	};
 
 	public void CreateJobsInSelectionArea(ResourceManager.TileObjectPrefab prefab, List<TileManager.Tile> selectionArea) {
 		foreach (TileManager.Tile tile in selectionArea) {
 			if (selectedPrefab.type == ResourceManager.TileObjectPrefabsEnum.RemoveAll) {
 				foreach (ResourceManager.TileObjectInstance instance in tile.GetAllObjectInstances()) {
-					if (RemoveLayerMap.ContainsKey(instance.prefab.layer) && !JobOfPrefabTypeExistsAtTile(RemoveLayerMap[instance.prefab.layer], instance.tile)) {
-						ResourceManager.TileObjectPrefab selectedRemovePrefab = GameManager.resourceM.GetTileObjectPrefabByEnum(RemoveLayerMap[instance.prefab.layer]);
+					if (removeLayerMap.ContainsKey(instance.prefab.layer) && !JobOfPrefabTypeExistsAtTile(removeLayerMap[instance.prefab.layer], instance.tile)) {
+						ResourceManager.TileObjectPrefab selectedRemovePrefab = GameManager.resourceM.GetTileObjectPrefabByEnum(removeLayerMap[instance.prefab.layer]);
 						bool createJobAtTile = true;
 						foreach (SelectionModifiersEnum selectionModifier in selectedRemovePrefab.selectionModifiers) {
 							if (selectionModifier != SelectionModifiersEnum.Outline) {
@@ -907,7 +908,7 @@ public class JobManager : BaseManager {
 
 	public List<ContainerPickup> CalculateColonistPickupContainers(ColonistManager.Colonist colonist, Job job, List<ResourceManager.ResourceAmount> resourcesToPickup) {
 		List<ContainerPickup> containersToPickupFrom = new List<ContainerPickup>();
-		List<ResourceManager.Container> sortedContainersByDistance = GameManager.resourceM.containers.Where(container => container.tile.region == colonist.overTile.region).OrderBy(container => PathManager.RegionBlockDistance(colonist.overTile.regionBlock, container.tile.regionBlock, true, true, false)).ToList();
+		List<ResourceManager.Container> sortedContainersByDistance = GameManager.resourceM.GetContainersInRegion(colonist.overTile.region).OrderBy(container => PathManager.RegionBlockDistance(colonist.overTile.regionBlock, container.tile.regionBlock, true, true, false)).ToList();
 		if (sortedContainersByDistance.Count > 0) {
 			foreach (ResourceManager.Container container in sortedContainersByDistance) {
 				List<ResourceManager.ResourceAmount> resourcesToPickupAtContainer = new List<ResourceManager.ResourceAmount>();

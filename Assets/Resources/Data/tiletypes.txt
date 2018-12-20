@@ -3,7 +3,7 @@ Dirt/
 	true/
 	true`
 DirtWater/
-	0.2/
+	0.15/
 	true/
 	false`
 Mud/
@@ -31,7 +31,7 @@ Grass/
 	true/
 	true`
 GrassWater/
-	0.2/
+	0.15/
 	true/
 	false`
 ThickGrass/
@@ -43,7 +43,7 @@ ColdGrass/
 	true/
 	true`
 ColdGrassWater/
-	0.2/
+	0.15/
 	true/
 	false`
 DryGrass/
@@ -51,7 +51,7 @@ DryGrass/
 	true/
 	true`
 DryGrassWater/
-	0.2/
+	0.15/
 	true/
 	false`
 Sand/
@@ -59,7 +59,7 @@ Sand/
 	true/
 	true`
 SandWater/
-	0.2/
+	0.15/
 	true/
 	false`
 SandHole/
@@ -103,7 +103,7 @@ StoneIce/
 	true/
 	false`
 StoneWater/
-	0.2/
+	0.15/
 	true/
 	false`
 StoneHole/
@@ -135,6 +135,6 @@ Clay/
 	true/
 	true`
 ClayWater/
-	0.2/
+	0.15/
 	true/
 	false

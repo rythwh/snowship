@@ -80,6 +80,8 @@ public class HumanManager : BaseManager {
 
 		public enum Appearance { Skin, Hair, Hat, Top, Bottoms, Scarf, Gloves, Shoes };
 
+		protected float wanderTimer = UnityEngine.Random.Range(10f, 20f);
+
 		public Human(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
 			bodyIndices = GetBodyIndices(gender);
 
@@ -87,12 +89,7 @@ public class HumanManager : BaseManager {
 
 			inventory = new ResourceManager.Inventory(this, null, 50);
 
-			name = GameManager.humanM.GetName(gender);
-
-			obj.name = "Human: " + name;
-
-			nameCanvas = MonoBehaviour.Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"), obj.transform, false);
-			SetNameCanvas(name);
+			SetName(GameManager.humanM.GetName(gender));
 
 			humanObj = MonoBehaviour.Instantiate(GameManager.resourceM.humanPrefab, obj.transform, false);
 			int appearanceIndex = 1;
@@ -112,6 +109,18 @@ public class HumanManager : BaseManager {
 			return bodyIndices;
 		}
 
+		public virtual void SetName(string name) {
+			this.name = name;
+
+			obj.name = "Human: " + name;
+
+			if (nameCanvas != null) {
+				MonoBehaviour.Destroy(nameCanvas);
+			}
+			nameCanvas = MonoBehaviour.Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"), obj.transform, false);
+			SetNameCanvas(name);
+		}
+
 		public void SetNameCanvas(string name) {
 			Font nameCanvasFont = Resources.Load<Font>(@"UI/Fonts/Quicksand/Quicksand-Bold");
 			nameCanvas.transform.Find("NameBackground-Image/Name-Text").GetComponent<Text>().text = name;
@@ -125,6 +134,10 @@ public class HumanManager : BaseManager {
 			nameCanvas.transform.Find("NameBackground-Image").GetComponent<RectTransform>().sizeDelta = new Vector2(textWidthPixels / 2.8f, 20);
 		}
 
+		public void SetNameColour(Color nameColour) {
+			nameCanvas.transform.Find("NameBackground-Image/NameColour-Image").GetComponent<Image>().color = nameColour;
+		}
+
 		public override void Update() {
 			base.Update();
 
@@ -132,10 +145,6 @@ public class HumanManager : BaseManager {
 			nameCanvas.transform.Find("NameBackground-Image/HealthIndicator-Image").GetComponent<Image>().color = Color.Lerp(UIManager.GetColour(UIManager.Colours.LightRed), UIManager.GetColour(UIManager.Colours.LightGreen), health);
 
 			SetMoveSprite();
-		}
-
-		public void SetNameColour(Color nameColour) {
-			nameCanvas.transform.Find("NameBackground-Image/NameColour-Image").GetComponent<Image>().color = nameColour;
 		}
 
 		public void ChangeClothing(Appearance appearance, ResourceManager.Clothing clothing, ResourceManager.ResourcesEnum resourceEnum) {
@@ -168,6 +177,30 @@ public class HumanManager : BaseManager {
 					humanObj.transform.Find(appearanceToClothingKVP.Key.ToString()).GetComponent<SpriteRenderer>().sprite = appearanceToClothingKVP.Value.moveSprites[moveSpriteIndex];
 				}
 			}
+		}
+
+		protected void Wander(TileManager.Tile stayNearTile, int stayNearTileDistance) {
+			if (wanderTimer <= 0) {
+				List<TileManager.Tile> validWanderTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable && tile.buildable && GameManager.humanM.humans.Find(human => human.overTile == tile) == null).ToList();
+				if (stayNearTile != null) {
+					validWanderTiles = validWanderTiles.Where(t => Vector2.Distance(t.obj.transform.position, stayNearTile.obj.transform.position) <= stayNearTileDistance).ToList();
+					if (Vector2.Distance(obj.transform.position, stayNearTile.obj.transform.position) > stayNearTileDistance) {
+						MoveToTile(stayNearTile, false);
+						return;
+					}
+				}
+				if (validWanderTiles.Count > 0) {
+					MoveToTile(validWanderTiles[UnityEngine.Random.Range(0, validWanderTiles.Count)], false);
+				}
+				wanderTimer = UnityEngine.Random.Range(10f, 20f);
+			} else {
+				wanderTimer -= 1 * GameManager.timeM.deltaTime;
+			}
+		}
+
+		public override void Remove() {
+			base.Remove();
+			GameManager.humanM.humans.Remove(this);
 		}
 	}
 
@@ -212,5 +245,9 @@ public class HumanManager : BaseManager {
 			sCISR.sortingOrder = 20; // Selected Colonist Indicator Sprite
 			sCISR.color = new Color(1f, 1f, 1f, 0.75f);
 		}
+	}
+
+	public Human FindHumanByName(string name) {
+		return humans.Find(human => human.name == name);
 	}
 }

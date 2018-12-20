@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class UniverseManager : BaseManager {
 
+	public static string GetRandomUniverseName() {
+		return GameManager.resourceM.GetRandomLocationName();
+	}
+
 	public Universe universe = null;
 
 	public Universe CreateUniverse(string name) {
@@ -24,19 +28,22 @@ public class UniverseManager : BaseManager {
 		public string name;
 		public string directory;
 		public string lastSaveDateTime;
+		public string lastSaveTimeChunk;
 
 		public Universe(string name) {
 			this.name = name;
 
 			lastSaveDateTime = PersistenceManager.GenerateSaveDateTimeString();
+			lastSaveTimeChunk = PersistenceManager.GenerateDateTimeString();
 		}
 
 		public void SetDirectory(string directory) {
 			this.directory = directory;
 		}
 
-		public void SetLastSaveDateTime(string lastSaveDateTime) {
+		public void SetLastSaveDateTime(string lastSaveDateTime, string lastSaveTimeChunk) {
 			this.lastSaveDateTime = lastSaveDateTime;
+			this.lastSaveTimeChunk = lastSaveTimeChunk;
 		}
 	}
 }
