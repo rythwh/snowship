@@ -63,9 +63,9 @@ public class PlanetManager : BaseManager {
 		public static bool planetTemperature = true;
 		public static float averageTemperature = -1;
 		public static float averagePrecipitation = -1;
-		public static readonly Dictionary<TileManager.TileTypes, float> terrainTypeHeights = new Dictionary<TileManager.TileTypes, float> {
-			{ TileManager.TileTypes.GrassWater, 0.40f },
-			{ TileManager.TileTypes.Stone, 0.75f }
+		public static readonly Dictionary<TileManager.TileTypeGroupEnum, float> terrainTypeHeights = new Dictionary<TileManager.TileTypeGroupEnum, float> {
+			{ TileManager.TileTypeGroupEnum.Water, 0.40f },
+			{ TileManager.TileTypeGroupEnum.Stone, 0.75f }
 		};
 		public static List<int> surroundingPlanetTileHeightDirections = null;
 		public static bool river = false;
@@ -184,7 +184,7 @@ public class PlanetManager : BaseManager {
 			public float equatorOffset;
 			public float averageTemperature;
 			public bool isRiver;
-			public Dictionary<TileManager.TileTypes, float> terrainTypeHeights;
+			public Dictionary<TileManager.TileTypeGroupEnum, float> terrainTypeHeights;
 			public List<int> surroundingPlanetTileHeightDirections = new List<int>();
 			public List<int> surroundingPlanetTileRivers = new List<int>();
 
@@ -206,9 +206,9 @@ public class PlanetManager : BaseManager {
 				foreach (TileManager.Tile sTile in tile.horizontalSurroundingTiles) {
 					if (sTile != null) {
 						if (planet.rivers.Find(r => r.tiles.Contains(sTile)) == null) {
-							if (TileManager.waterEquivalentTileTypes.Contains(sTile.tileType.type)) {
+							if (sTile.tileType.groupType == TileManager.TileTypeGroupEnum.Water) {
 								surroundingPlanetTileHeightDirections.Add(-2);
-							} else if (TileManager.stoneEquivalentTileTypes.Contains(sTile.tileType.type)) {
+							} else if (sTile.tileType.groupType == TileManager.TileTypeGroupEnum.Stone) {
 								surroundingPlanetTileHeightDirections.Add(5);
 							} else {
 								surroundingPlanetTileHeightDirections.Add(0);
@@ -228,9 +228,9 @@ public class PlanetManager : BaseManager {
 								}
 							}
 							if (nTileRiverIndex == -1) {
-								if (river.startTile == tile && TileManager.stoneEquivalentTileTypes.Contains(sTile.tileType.type)) {
+								if (river.startTile == tile && sTile.tileType.groupType == TileManager.TileTypeGroupEnum.Stone) {
 									nTileRiverIndex = 0;
-								} else if (river.endTile == tile && TileManager.waterEquivalentTileTypes.Contains(sTile.tileType.type)) {
+								} else if (river.endTile == tile && sTile.tileType.groupType == TileManager.TileTypeGroupEnum.Water) {
 									nTileRiverIndex = int.MaxValue;
 								}
 							}
@@ -244,12 +244,12 @@ public class PlanetManager : BaseManager {
 					}
 				}
 
-				terrainTypeHeights = new Dictionary<TileManager.TileTypes, float>() {
-					{ TileManager.TileTypes.GrassWater, 0.40f * tile.GetPrecipitation() * (1 - tile.height) },
-					{ TileManager.TileTypes.Stone, 0.75f * (1 - (tile.height - (1 - 0.75f))) }
+				terrainTypeHeights = new Dictionary<TileManager.TileTypeGroupEnum, float>() {
+					{ TileManager.TileTypeGroupEnum.Water, 0.40f * tile.GetPrecipitation() * (1 - tile.height) },
+					{ TileManager.TileTypeGroupEnum.Stone, 0.75f * (1 - (tile.height - (1 - 0.75f))) }
 				};
 
-				altitude = Mathf.RoundToInt((tile.height - terrainTypeHeights[TileManager.TileTypes.GrassWater]) * 5000f) + "m";
+				altitude = Mathf.RoundToInt((tile.height - terrainTypeHeights[TileManager.TileTypeGroupEnum.Water]) * 5000f) + "m";
 
 				// Remove Tile-specific Information
 				MonoBehaviour.Destroy(tile.obj);

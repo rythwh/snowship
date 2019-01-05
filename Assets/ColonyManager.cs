@@ -40,7 +40,7 @@ public class ColonyManager : BaseManager {
 		int size, 
 		float averageTemperature, 
 		float averagePrecipitation, 
-		Dictionary<TileManager.TileTypes, float> terrainTypeHeights,
+		Dictionary<TileManager.TileTypeGroupEnum, float> terrainTypeHeights,
 		List<int> surroundingPlanetTileHeights,
 		bool onRiver,
 		List<int> surroundingPlanetTileRivers

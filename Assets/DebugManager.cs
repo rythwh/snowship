@@ -105,6 +105,7 @@ public class DebugManager : BaseManager {
 		viewprecipitation,      // viewprecipitation						-- sets the map overlay to colour each tile depending on its precipitation between 0 and 1 (black = 0, white = 1)
 		viewtemperature,        // viewtemperature							-- sets the map overlay to colour each tile depending on its temperature (darker = colder, lighter = warmer)
 		viewbiomes,             // viewbiomes								-- sets the map overlay to colour individual biomes (colours correspond to specific biomes)
+		viewresourceveins,		// viewresourceveins						-- sets the map overlay to show normal sprites for tiles with resources and white for other tiles
 		viewdrainagebasins,     // viewdrainagebasins						-- sets the map overlay to colour individual drainage basins (drainage basin colour is random)
 		viewrivers,             // viewrivers (index)						-- without (index): highlight all rivers. with (index): highlight the river at (index) in the list of rivers
 		viewlargerivers,        // viewlargerivers (index)					-- without (index): highlight all large rivers. with (index): highlight the large river at (index) in the list of large rivers
@@ -159,6 +160,7 @@ public class DebugManager : BaseManager {
 		{Commands.viewprecipitation,"viewprecipitation -- sets the map overlay to colour each tile depending on its precipitation between 0 and 1 (black = 0, white = 1)" },
 		{Commands.viewtemperature,"viewtemperature -- sets the map overlay to colour each tile depending on its temperature (darker = colder, lighter = warmer)" },
 		{Commands.viewbiomes,"viewbiomes -- sets the map overlay to colour individual biomes (colours correspond to specific biomes)" },
+		{Commands.viewresourceveins,"viewresourceveins -- sets the map overlay to show normal sprites for tiles with resources and white for other tiles" },
 		{Commands.viewdrainagebasins,"viewdrainagebasins -- sets the map overlay to colour individual drainage basins (drainage basin colour is random)" },
 		{Commands.viewrivers,"viewrivers (index) -- without (index): highlight all rivers. with (index): highlight the river at (index) in the list of rivers" },
 		{Commands.viewwalkspeed,"viewwalkspeed -- sets the map overlay to colour each tile depending on its walk speed (black = 0, white = 1)" },
@@ -395,13 +397,13 @@ public class DebugManager : BaseManager {
 		});
 		commandFunctions.Add(Commands.changeinvamt, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 2) {
-				ResourceManager.Resource resource = GameManager.resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
+				ResourceManager.Resource resource = GameManager.resourceM.GetResources().Find(r => r.type.ToString() == parameters[0]);
 				if (resource != null) {
 					if (GameManager.humanM.selectedHuman != null || GameManager.uiM.selectedContainer != null) {
 						if (GameManager.humanM.selectedHuman != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								GameManager.humanM.selectedHuman.inventory.ChangeResourceAmount(resource, amount);
+								GameManager.humanM.selectedHuman.inventory.ChangeResourceAmount(resource, amount, false);
 								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to " + GameManager.humanM.selectedHuman + ".");
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
@@ -412,7 +414,7 @@ public class DebugManager : BaseManager {
 						if (GameManager.uiM.selectedContainer != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								GameManager.uiM.selectedContainer.inventory.ChangeResourceAmount(resource, amount);
+								GameManager.uiM.selectedContainer.inventory.ChangeResourceAmount(resource, amount, false);
 								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to container.");
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
@@ -424,10 +426,10 @@ public class DebugManager : BaseManager {
 						int amount = 0;
 						if (int.TryParse(parameters[1], out amount)) {
 							foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
-								colonist.inventory.ChangeResourceAmount(resource, amount);
+								colonist.inventory.ChangeResourceAmount(resource, amount, false);
 							}
 							foreach (ResourceManager.Container container in GameManager.resourceM.containers) {
-								container.inventory.ChangeResourceAmount(resource, amount);
+								container.inventory.ChangeResourceAmount(resource, amount, false);
 							}
 							OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to all colonists and all containers.");
 						} else {
@@ -441,12 +443,12 @@ public class DebugManager : BaseManager {
 				bool allColonists = false;
 				if (bool.TryParse(parameters[2], out allColonists)) {
 					if (allColonists) {
-						ResourceManager.Resource resource = GameManager.resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
+						ResourceManager.Resource resource = GameManager.resourceM.GetResources().Find(r => r.type.ToString() == parameters[0]);
 						if (resource != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
 								foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
-									colonist.inventory.ChangeResourceAmount(resource, amount);
+									colonist.inventory.ChangeResourceAmount(resource, amount, false);
 								}
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
@@ -462,12 +464,12 @@ public class DebugManager : BaseManager {
 				bool allColonists = false;
 				if (bool.TryParse(parameters[2], out allColonists)) {
 					if (allColonists) {
-						ResourceManager.Resource resource = GameManager.resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
+						ResourceManager.Resource resource = GameManager.resourceM.GetResources().Find(r => r.type.ToString() == parameters[0]);
 						if (resource != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
 								foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
-									colonist.inventory.ChangeResourceAmount(resource, amount);
+									colonist.inventory.ChangeResourceAmount(resource, amount, false);
 								}
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
@@ -482,12 +484,12 @@ public class DebugManager : BaseManager {
 				bool allContainers = false;
 				if (bool.TryParse(parameters[3], out allContainers)) {
 					if (allContainers) {
-						ResourceManager.Resource resource = GameManager.resourceM.resources.Find(r => r.type.ToString() == parameters[0]);
+						ResourceManager.Resource resource = GameManager.resourceM.GetResources().Find(r => r.type.ToString() == parameters[0]);
 						if (resource != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
 								foreach (ResourceManager.Container container in GameManager.resourceM.containers) {
-									container.inventory.ChangeResourceAmount(resource, amount);
+									container.inventory.ChangeResourceAmount(resource, amount, false);
 								}
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
@@ -505,7 +507,7 @@ public class DebugManager : BaseManager {
 		});
 		commandFunctions.Add(Commands.listresources, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (ResourceManager.Resource resource in GameManager.resourceM.resources) {
+				foreach (ResourceManager.Resource resource in GameManager.resourceM.GetResources()) {
 					OutputToConsole(resource.type.ToString());
 				}
 			} else {
@@ -748,7 +750,7 @@ public class DebugManager : BaseManager {
 		commandFunctions.Add(Commands.changetiletype, delegate (Commands selectedCommand, List<string> parameters) {
 			int counter = 0;
 			if (parameters.Count == 1) {
-				TileManager.TileType tileType = GameManager.tileM.tileTypes.Find(tt => tt.type.ToString() == parameters[0]);
+				TileManager.TileType tileType = GameManager.tileM.GetTileTypes().Find(tt => tt.type.ToString() == parameters[0]);
 				if (tileType != null) {
 					if (selectedTiles.Count > 0) {
 						foreach (TileManager.Tile tile in selectedTiles) {
@@ -774,7 +776,7 @@ public class DebugManager : BaseManager {
 		});
 		commandFunctions.Add(Commands.listtiletypes, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.TileType tileType in GameManager.tileM.tileTypes) {
+				foreach (TileManager.TileType tileType in GameManager.tileM.GetTileTypes()) {
 					OutputToConsole(tileType.type.ToString());
 				}
 			} else {
@@ -784,7 +786,7 @@ public class DebugManager : BaseManager {
 		commandFunctions.Add(Commands.changetileobj, delegate (Commands selectedCommand, List<string> parameters) {
 			int counter = 0;
 			if (parameters.Count == 2) {
-				ResourceManager.TileObjectPrefab tileObjectPrefab = GameManager.resourceM.tileObjectPrefabs.Find(top => top.type.ToString() == parameters[0]);
+				ResourceManager.ObjectPrefab tileObjectPrefab = GameManager.resourceM.GetObjectPrefabByString(parameters[0]);
 				if (tileObjectPrefab != null) {
 					int rotation = 0;
 					if (int.TryParse(parameters[1], out rotation)) {
@@ -812,7 +814,7 @@ public class DebugManager : BaseManager {
 					OutputToConsole("ERROR: Unable to parse tile object.");
 				}
 			} else if (parameters.Count == 1) {
-				ResourceManager.TileObjectPrefab tileObjectPrefab = GameManager.resourceM.tileObjectPrefabs.Find(top => top.type.ToString() == parameters[0]);
+				ResourceManager.ObjectPrefab tileObjectPrefab = GameManager.resourceM.GetObjectPrefabByString(parameters[0]);
 				if (tileObjectPrefab != null) {
 					if (selectedTiles.Count > 0) {
 						foreach (TileManager.Tile tile in selectedTiles) {
@@ -841,11 +843,11 @@ public class DebugManager : BaseManager {
 			if (parameters.Count == 0) {
 				if (selectedTiles.Count > 0) {
 					foreach (TileManager.Tile tile in selectedTiles) {
-						List<ResourceManager.TileObjectInstance> removeTOIs = new List<ResourceManager.TileObjectInstance>();
-						foreach (KeyValuePair<int, ResourceManager.TileObjectInstance> toiKVP in tile.objectInstances) {
+						List<ResourceManager.ObjectInstance> removeTOIs = new List<ResourceManager.ObjectInstance>();
+						foreach (KeyValuePair<int, ResourceManager.ObjectInstance> toiKVP in tile.objectInstances) {
 							removeTOIs.Add(toiKVP.Value);
 						}
-						foreach (ResourceManager.TileObjectInstance toi in removeTOIs) {
+						foreach (ResourceManager.ObjectInstance toi in removeTOIs) {
 							GameManager.resourceM.RemoveTileObjectInstance(tile.objectInstances[toi.prefab.layer]);
 							tile.RemoveTileObjectAtLayer(toi.prefab.layer);
 						}
@@ -878,7 +880,7 @@ public class DebugManager : BaseManager {
 		});
 		commandFunctions.Add(Commands.listtileobjs, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (ResourceManager.TileObjectPrefab top in GameManager.resourceM.tileObjectPrefabs) {
+				foreach (ResourceManager.ObjectPrefab top in GameManager.resourceM.GetObjectPrefabs()) {
 					OutputToConsole(top.type.ToString());
 				}
 			} else {
@@ -888,13 +890,13 @@ public class DebugManager : BaseManager {
 		commandFunctions.Add(Commands.changetileplant, delegate (Commands selectedCommand, List<string> parameters) {
 			int counter = 0;
 			if (parameters.Count == 2) {
-				ResourceManager.PlantGroup plantGroup = GameManager.resourceM.plantGroups.Find(pg => pg.type.ToString() == parameters[0]);
-				if (plantGroup != null) {
+				ResourceManager.PlantPrefab plantPrefab = GameManager.resourceM.GetPlantPrefabByString(parameters[0]);
+				if (plantPrefab != null) {
 					bool small = false;
 					if (bool.TryParse(parameters[1], out small)) {
 						if (selectedTiles.Count > 0) {
 							foreach (TileManager.Tile tile in selectedTiles) {
-								tile.SetPlant(false, new ResourceManager.Plant(plantGroup, tile, false, small, GameManager.colonyM.colony.map.smallPlants, true, null));
+								tile.SetPlant(false, new ResourceManager.Plant(plantPrefab, tile, small, true, null));
 								GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
 								if (tile.plant != null) {
 									counter += 1;
@@ -934,7 +936,7 @@ public class DebugManager : BaseManager {
 		});
 		commandFunctions.Add(Commands.listtileplants, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (ResourceManager.PlantGroup plantGroup in GameManager.resourceM.plantGroups) {
+				foreach (ResourceManager.PlantPrefab plantGroup in GameManager.resourceM.GetPlantPrefabs()) {
 					OutputToConsole(plantGroup.type.ToString());
 				}
 			} else {
@@ -1079,6 +1081,19 @@ public class DebugManager : BaseManager {
 						tile.sr.color = tile.biome.colour;
 					} else {
 						tile.sr.color = Color.black;
+					}
+				}
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
+		commandFunctions.Add(Commands.viewresourceveins, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 0) {
+				GameManager.colonyM.colony.map.Bitmasking(GameManager.colonyM.colony.map.tiles);
+				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
+					if (tile.tileType.resourceRanges.Find(rr => TileManager.resourceVeinValidTileFunctions.ContainsKey(rr.resource.type)) == null) {
+						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
+						tile.sr.color = Color.white;
 					}
 				}
 			} else {

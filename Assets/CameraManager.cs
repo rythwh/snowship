@@ -70,7 +70,7 @@ public class CameraManager : BaseManager {
 				targetZoom -= Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") + (Input.GetAxis("KeyboardZoom") / 10f), -1f, 1f) * currentZoom * Time.deltaTime * 100;
 
 				float zoomDifference = targetZoom - currentZoom;
-				float maxZoomDifference = Mathf.Clamp(currentZoom / 5f, minZoom, maxZoom);
+				float maxZoomDifference = Mathf.Clamp(currentZoom / 3f, minZoom, maxZoom);
 				if (Mathf.Abs(zoomDifference) >= maxZoomDifference) {
 					if (zoomDifference >= 0) {
 						targetZoom = currentZoom + maxZoomDifference;

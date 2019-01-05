@@ -1,59 +1,54 @@
 <PlantGroup>
 	<Type>None
-	<SimpleName>None
+	<Plants>
+		<Plant>
+			<Type>None
+			<Living>false
+			<Integrity>0
 <PlantGroup>
 	<Type>Cactus
-	<SimpleName>Cactus
-	<Seed>CactusSeed
-	<PlantPlantObjectPrefab>PlantCactus
-	<ReturnResources>Cactus:3,CactusSeed:3
-	<MaxIntegrity>75
+	<Plants>
+		<Plant>
+			<Type>Cactus
+			<Living>true
+			<Integrity>75
+			<Seed>CactusSeed
+			<ReturnResources>Cactus:2-4,CactusSeed:1-2
 <PlantGroup>
-	<Type>ColourfulBush
-	<SimpleName>Bush
-	<Seed>BushSeed
-	<PlantPlantObjectPrefab>PlantBush
-	<ReturnResources>Log:2,BushSeed:2,Leaf:2,Sap:2
-	<MaxIntegrity>50
-<PlantGroup>
-	<Type>ColourfulTree
-	<SimpleName>Tree
-	<Seed>TreeSeed
-	<PlantPlantObjectPrefab>PlantTree
-	<ReturnResources>Log:5,TreeSeed:3,Leaf:4,Sap:4
-	<MaxIntegrity>100
-<PlantGroup>
-	<Type>DeadTree
-	<SimpleName>Dead Tree
-	<Seed>TreeSeed
-	<PlantPlantObjectPrefab>PlantTree
-	<ReturnResources>Log:3
-	<MaxIntegrity>25
+	<Type>Tree
+	<Plants>
+		<Plant>
+			<Type>SnowTree
+			<Living>true
+			<Integrity>100
+			<Seed>TreeSeed
+			<ReturnResources>Log:3-6,TreeSeed:1-2,Leaf:2-4,Sap:2-4
+		<Plant>
+			<Type>ThinTree
+			<Living>true
+			<Integrity>100
+			<Seed>TreeSeed
+			<ReturnResources>Log:3-6,TreeSeed:1-2,Leaf:2-4,Sap:2-4
+		<Plant>
+			<Type>WideTree
+			<Living>true
+			<Integrity>125
+			<Seed>TreeSeed
+			<ReturnResources>Log:3-6,TreeSeed:1-2,Leaf:2-4,Sap:2-4
+			<HarvestResources>Apple:1-6
+		<Plant>
+			<Type>DeadTree
+			<Living>false
+			<Integrity>25
+			<Seed>TreeSeed
+			<ReturnResources>Log:2-4
 <PlantGroup>
 	<Type>Bush
-	<SimpleName>Bush
-	<Seed>BushSeed
-	<PlantPlantObjectPrefab>PlantBush
-	<ReturnResources>Log:2,BushSeed:2,Leaf:2,Sap:2
-	<MaxIntegrity>50
-<PlantGroup>
-	<Type>SnowTree
-	<SimpleName>Tree
-	<Seed>TreeSeed
-	<PlantPlantObjectPrefab>PlantTree
-	<ReturnResources>Log:5,TreeSeed:3,Leaf:4,Sap:4
-	<MaxIntegrity>100
-<PlantGroup>
-	<Type>ThinTree
-	<SimpleName>Tree
-	<Seed>TreeSeed
-	<PlantPlantObjectPrefab>PlantTree
-	<ReturnResources>Log:5,TreeSeed:3,Leaf:3,Sap:4
-	<MaxIntegrity>100
-<PlantGroup>
-	<Type>WideTree
-	<SimpleName>Tree
-	<Seed>TreeSeed
-	<PlantPlantObjectPrefab>PlantTree
-	<ReturnResources>Log:5,TreeSeed:4,Leaf:4,Sap:4
-	<MaxIntegrity>125
+	<Plants>
+		<Plant>
+			<Type>Bush
+			<Living>true
+			<Integrity>50
+			<Seed>BushSeed
+			<ReturnResources>Log:1-3,BushSeed:1-2,Leaf:1-2,Sap:1-2
+			<HarvestResources>Blueberry:5-20
