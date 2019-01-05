@@ -1,0 +1,1180 @@
+fileFormatVersion: 2
+guid: e86fac85a4152e34692e0ac39222ba59
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: stone-bitmask_0
+    21300002: stone-bitmask_1
+    21300004: stone-bitmask_2
+    21300006: stone-bitmask_3
+    21300008: stone-bitmask_4
+    21300010: stone-bitmask_5
+    21300012: stone-bitmask_6
+    21300014: stone-bitmask_7
+    21300016: stone-bitmask_8
+    21300018: stone-bitmask_9
+    21300020: stone-bitmask_10
+    21300022: stone-bitmask_11
+    21300024: stone-bitmask_12
+    21300026: stone-bitmask_13
+    21300028: stone-bitmask_14
+    21300030: stone-bitmask_15
+    21300032: stone-bitmask_16
+    21300034: stone-bitmask_17
+    21300036: stone-bitmask_18
+    21300038: stone-bitmask_19
+    21300040: stone-bitmask_20
+    21300042: stone-bitmask_21
+    21300044: stone-bitmask_22
+    21300046: stone-bitmask_23
+    21300048: stone-bitmask_24
+    21300050: stone-bitmask_25
+    21300052: stone-bitmask_26
+    21300054: stone-bitmask_27
+    21300056: stone-bitmask_28
+    21300058: stone-bitmask_29
+    21300060: stone-bitmask_30
+    21300062: stone-bitmask_31
+    21300064: stone-bitmask_32
+    21300066: stone-bitmask_33
+    21300068: stone-bitmask_34
+    21300070: stone-bitmask_35
+    21300072: stone-bitmask_36
+    21300074: stone-bitmask_37
+    21300076: stone-bitmask_38
+    21300078: stone-bitmask_39
+    21300080: stone-bitmask_40
+    21300082: stone-bitmask_41
+    21300084: stone-bitmask_42
+    21300086: stone-bitmask_43
+    21300088: stone-bitmask_44
+    21300090: stone-bitmask_45
+    21300092: stone-bitmask_46
+    21300094: granite-bitmask_0
+    21300096: granite-bitmask_1
+    21300098: granite-bitmask_2
+    21300100: granite-bitmask_3
+    21300102: granite-bitmask_4
+    21300104: granite-bitmask_5
+    21300106: granite-bitmask_6
+    21300108: granite-bitmask_7
+    21300110: granite-bitmask_8
+    21300112: granite-bitmask_9
+    21300114: granite-bitmask_10
+    21300116: granite-bitmask_11
+    21300118: granite-bitmask_12
+    21300120: granite-bitmask_13
+    21300122: granite-bitmask_14
+    21300124: granite-bitmask_15
+    21300126: granite-bitmask_16
+    21300128: granite-bitmask_17
+    21300130: granite-bitmask_18
+    21300132: granite-bitmask_19
+    21300134: granite-bitmask_20
+    21300136: granite-bitmask_21
+    21300138: granite-bitmask_22
+    21300140: granite-bitmask_23
+    21300142: granite-bitmask_24
+    21300144: granite-bitmask_25
+    21300146: granite-bitmask_26
+    21300148: granite-bitmask_27
+    21300150: granite-bitmask_28
+    21300152: granite-bitmask_29
+    21300154: granite-bitmask_30
+    21300156: granite-bitmask_31
+    21300158: granite-bitmask_32
+    21300160: granite-bitmask_33
+    21300162: granite-bitmask_34
+    21300164: granite-bitmask_35
+    21300166: granite-bitmask_36
+    21300168: granite-bitmask_37
+    21300170: granite-bitmask_38
+    21300172: granite-bitmask_39
+    21300174: granite-bitmask_40
+    21300176: granite-bitmask_41
+    21300178: granite-bitmask_42
+    21300180: granite-bitmask_43
+    21300182: granite-bitmask_44
+    21300184: granite-bitmask_45
+    21300186: granite-bitmask_46
+    21300188: andesite-bitmask_0
+    21300190: andesite-bitmask_1
+    21300192: andesite-bitmask_2
+    21300194: andesite-bitmask_3
+    21300196: andesite-bitmask_4
+    21300198: andesite-bitmask_5
+    21300200: andesite-bitmask_6
+    21300202: andesite-bitmask_7
+    21300204: andesite-bitmask_8
+    21300206: andesite-bitmask_9
+    21300208: andesite-bitmask_10
+    21300210: andesite-bitmask_11
+    21300212: andesite-bitmask_12
+    21300214: andesite-bitmask_13
+    21300216: andesite-bitmask_14
+    21300218: andesite-bitmask_15
+    21300220: andesite-bitmask_16
+    21300222: andesite-bitmask_17
+    21300224: andesite-bitmask_18
+    21300226: andesite-bitmask_19
+    21300228: andesite-bitmask_20
+    21300230: andesite-bitmask_21
+    21300232: andesite-bitmask_22
+    21300234: andesite-bitmask_23
+    21300236: andesite-bitmask_24
+    21300238: andesite-bitmask_25
+    21300240: andesite-bitmask_26
+    21300242: andesite-bitmask_27
+    21300244: andesite-bitmask_28
+    21300246: andesite-bitmask_29
+    21300248: andesite-bitmask_30
+    21300250: andesite-bitmask_31
+    21300252: andesite-bitmask_32
+    21300254: andesite-bitmask_33
+    21300256: andesite-bitmask_34
+    21300258: andesite-bitmask_35
+    21300260: andesite-bitmask_36
+    21300262: andesite-bitmask_37
+    21300264: andesite-bitmask_38
+    21300266: andesite-bitmask_39
+    21300268: andesite-bitmask_40
+    21300270: andesite-bitmask_41
+    21300272: andesite-bitmask_42
+    21300274: andesite-bitmask_43
+    21300276: andesite-bitmask_44
+    21300278: andesite-bitmask_45
+    21300280: andesite-bitmask_46
+  externalObjects: {}
+  serializedVersion: 7
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: -1
+    mipBias: -100
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  platformSettings:
+  - serializedVersion: 2
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+  - serializedVersion: 2
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: andesite-bitmask_0
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b5b5fb4edd32970489254c8d8009b939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_1
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dd68ba8f490593844b6a3bbfbb363dd6
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_2
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 81f6157338c989b40b137732f416931b
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_3
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6fa753dbd8fbd1e4186c37aa21377120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_4
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4da8313bbb2570e4abf9e19660cb6ac6
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_5
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: adcc935567eafc243beec8256a1a44d5
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_6
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a9f9321fd896c64ba33a03509f6d4a9
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_7
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 62f6c69206b4f7244bef9cf1e26f2ddc
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_8
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3f4a9b4d4b9f9b54d8ef832c0caf6ee0
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_9
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 607a96c257b21474cb87cd50684b6e25
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_10
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6dd450fe206be1c4c8734cc6d8b751d1
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_11
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ab435e6654e10854d9d7dc8ccb7c0606
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_12
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 75100e93c94cd2746ad4b83e38a195f5
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_13
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 56b5467baba334a478221c8d97191c79
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_14
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 556ce8bd047bf7141871d28346a69f4e
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_15
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5be8605223d11f546a83bd8941866504
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_16
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 73c16ed7061ad9648a143e90bda2d482
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_17
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 405fcaa847a12e44ea8af80a0b9f126b
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_18
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 596d476747834dd4383f785a6fac1b48
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_19
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b86749ba9f02cab40a95534070288f98
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_20
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 144fd83eb42991a44badbf8bc828234a
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_21
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7595bb52ef807fc40a086e7cdeb2ecaf
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_22
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 79186bb54fb7ad44fb543c566b120a48
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_23
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2a54b83a53398f347a4dfd202359e057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_24
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 23921a4dd53c47249bdc709590a55f51
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_25
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 16f7a65183325714583f28c06998db5b
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_26
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0a4ef3e0cbd4f0845b0cf9f34944d7f5
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_27
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9beaf27fc8f9abf4f8b6f46ba16e232c
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_28
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8703ff967937d7242b28dd215c82dfcd
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_29
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5f7efa8bafe688d47a747e2cee697c50
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_30
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a881659f78ad0e941806ea9a4fbcf18d
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_31
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1342f161aec152b4397a312588fcc018
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_32
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a3d264168e5633e42996de111bbef2f0
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_33
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 822979357a18ba744ac3e8e670bf63ca
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_34
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 56c85389b68b67349af6f6964bef2a71
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_35
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d0e71e10fb2d03d45bf444fc917434e8
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_36
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 54662f57cb4cc464f85af4f2c878926a
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_37
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c90b5477a1f9a004d88d72289800bf10
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_38
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7ffa12bc90a43224da7dbc9cec938208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_39
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 37971ae585803054c91e14ab3ca749ed
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_40
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b0d0ff151d2ba724a968a80e11abae25
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_41
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b1780606bed33a64ebe441312dd97457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_42
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 94bc2f8e46417904d9962a15e88eed3f
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_43
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 068004d82d685a64b831f83414f7a1a7
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_44
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 41dfcfaaf3ce1754db0f9e4d47769f35
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_45
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b6c411c3c2a520479190ccff71c2d20
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: andesite-bitmask_46
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 830e597e3acda8849a213f5ed812892c
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 53a980efc0e0f6c4f8eab58b2fc364dd
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

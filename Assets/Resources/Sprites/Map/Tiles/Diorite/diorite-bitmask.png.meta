@@ -1,0 +1,1227 @@
+fileFormatVersion: 2
+guid: c907e0955fdbfc84bb3a60bc9570fee5
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: stone-bitmask_0
+    21300002: stone-bitmask_1
+    21300004: stone-bitmask_2
+    21300006: stone-bitmask_3
+    21300008: stone-bitmask_4
+    21300010: stone-bitmask_5
+    21300012: stone-bitmask_6
+    21300014: stone-bitmask_7
+    21300016: stone-bitmask_8
+    21300018: stone-bitmask_9
+    21300020: stone-bitmask_10
+    21300022: stone-bitmask_11
+    21300024: stone-bitmask_12
+    21300026: stone-bitmask_13
+    21300028: stone-bitmask_14
+    21300030: stone-bitmask_15
+    21300032: stone-bitmask_16
+    21300034: stone-bitmask_17
+    21300036: stone-bitmask_18
+    21300038: stone-bitmask_19
+    21300040: stone-bitmask_20
+    21300042: stone-bitmask_21
+    21300044: stone-bitmask_22
+    21300046: stone-bitmask_23
+    21300048: stone-bitmask_24
+    21300050: stone-bitmask_25
+    21300052: stone-bitmask_26
+    21300054: stone-bitmask_27
+    21300056: stone-bitmask_28
+    21300058: stone-bitmask_29
+    21300060: stone-bitmask_30
+    21300062: stone-bitmask_31
+    21300064: stone-bitmask_32
+    21300066: stone-bitmask_33
+    21300068: stone-bitmask_34
+    21300070: stone-bitmask_35
+    21300072: stone-bitmask_36
+    21300074: stone-bitmask_37
+    21300076: stone-bitmask_38
+    21300078: stone-bitmask_39
+    21300080: stone-bitmask_40
+    21300082: stone-bitmask_41
+    21300084: stone-bitmask_42
+    21300086: stone-bitmask_43
+    21300088: stone-bitmask_44
+    21300090: stone-bitmask_45
+    21300092: stone-bitmask_46
+    21300094: granite-bitmask_0
+    21300096: granite-bitmask_1
+    21300098: granite-bitmask_2
+    21300100: granite-bitmask_3
+    21300102: granite-bitmask_4
+    21300104: granite-bitmask_5
+    21300106: granite-bitmask_6
+    21300108: granite-bitmask_7
+    21300110: granite-bitmask_8
+    21300112: granite-bitmask_9
+    21300114: granite-bitmask_10
+    21300116: granite-bitmask_11
+    21300118: granite-bitmask_12
+    21300120: granite-bitmask_13
+    21300122: granite-bitmask_14
+    21300124: granite-bitmask_15
+    21300126: granite-bitmask_16
+    21300128: granite-bitmask_17
+    21300130: granite-bitmask_18
+    21300132: granite-bitmask_19
+    21300134: granite-bitmask_20
+    21300136: granite-bitmask_21
+    21300138: granite-bitmask_22
+    21300140: granite-bitmask_23
+    21300142: granite-bitmask_24
+    21300144: granite-bitmask_25
+    21300146: granite-bitmask_26
+    21300148: granite-bitmask_27
+    21300150: granite-bitmask_28
+    21300152: granite-bitmask_29
+    21300154: granite-bitmask_30
+    21300156: granite-bitmask_31
+    21300158: granite-bitmask_32
+    21300160: granite-bitmask_33
+    21300162: granite-bitmask_34
+    21300164: granite-bitmask_35
+    21300166: granite-bitmask_36
+    21300168: granite-bitmask_37
+    21300170: granite-bitmask_38
+    21300172: granite-bitmask_39
+    21300174: granite-bitmask_40
+    21300176: granite-bitmask_41
+    21300178: granite-bitmask_42
+    21300180: granite-bitmask_43
+    21300182: granite-bitmask_44
+    21300184: granite-bitmask_45
+    21300186: granite-bitmask_46
+    21300188: basalt-bitmask_0
+    21300190: basalt-bitmask_1
+    21300192: basalt-bitmask_2
+    21300194: basalt-bitmask_3
+    21300196: basalt-bitmask_4
+    21300198: basalt-bitmask_5
+    21300200: basalt-bitmask_6
+    21300202: basalt-bitmask_7
+    21300204: basalt-bitmask_8
+    21300206: basalt-bitmask_9
+    21300208: basalt-bitmask_10
+    21300210: basalt-bitmask_11
+    21300212: basalt-bitmask_12
+    21300214: basalt-bitmask_13
+    21300216: basalt-bitmask_14
+    21300218: basalt-bitmask_15
+    21300220: basalt-bitmask_16
+    21300222: basalt-bitmask_17
+    21300224: basalt-bitmask_18
+    21300226: basalt-bitmask_19
+    21300228: basalt-bitmask_20
+    21300230: basalt-bitmask_21
+    21300232: basalt-bitmask_22
+    21300234: basalt-bitmask_23
+    21300236: basalt-bitmask_24
+    21300238: basalt-bitmask_25
+    21300240: basalt-bitmask_26
+    21300242: basalt-bitmask_27
+    21300244: basalt-bitmask_28
+    21300246: basalt-bitmask_29
+    21300248: basalt-bitmask_30
+    21300250: basalt-bitmask_31
+    21300252: basalt-bitmask_32
+    21300254: basalt-bitmask_33
+    21300256: basalt-bitmask_34
+    21300258: basalt-bitmask_35
+    21300260: basalt-bitmask_36
+    21300262: basalt-bitmask_37
+    21300264: basalt-bitmask_38
+    21300266: basalt-bitmask_39
+    21300268: basalt-bitmask_40
+    21300270: basalt-bitmask_41
+    21300272: basalt-bitmask_42
+    21300274: basalt-bitmask_43
+    21300276: basalt-bitmask_44
+    21300278: basalt-bitmask_45
+    21300280: basalt-bitmask_46
+    21300282: diorite-bitmask_0
+    21300284: diorite-bitmask_1
+    21300286: diorite-bitmask_2
+    21300288: diorite-bitmask_3
+    21300290: diorite-bitmask_4
+    21300292: diorite-bitmask_5
+    21300294: diorite-bitmask_6
+    21300296: diorite-bitmask_7
+    21300298: diorite-bitmask_8
+    21300300: diorite-bitmask_9
+    21300302: diorite-bitmask_10
+    21300304: diorite-bitmask_11
+    21300306: diorite-bitmask_12
+    21300308: diorite-bitmask_13
+    21300310: diorite-bitmask_14
+    21300312: diorite-bitmask_15
+    21300314: diorite-bitmask_16
+    21300316: diorite-bitmask_17
+    21300318: diorite-bitmask_18
+    21300320: diorite-bitmask_19
+    21300322: diorite-bitmask_20
+    21300324: diorite-bitmask_21
+    21300326: diorite-bitmask_22
+    21300328: diorite-bitmask_23
+    21300330: diorite-bitmask_24
+    21300332: diorite-bitmask_25
+    21300334: diorite-bitmask_26
+    21300336: diorite-bitmask_27
+    21300338: diorite-bitmask_28
+    21300340: diorite-bitmask_29
+    21300342: diorite-bitmask_30
+    21300344: diorite-bitmask_31
+    21300346: diorite-bitmask_32
+    21300348: diorite-bitmask_33
+    21300350: diorite-bitmask_34
+    21300352: diorite-bitmask_35
+    21300354: diorite-bitmask_36
+    21300356: diorite-bitmask_37
+    21300358: diorite-bitmask_38
+    21300360: diorite-bitmask_39
+    21300362: diorite-bitmask_40
+    21300364: diorite-bitmask_41
+    21300366: diorite-bitmask_42
+    21300368: diorite-bitmask_43
+    21300370: diorite-bitmask_44
+    21300372: diorite-bitmask_45
+    21300374: diorite-bitmask_46
+  externalObjects: {}
+  serializedVersion: 7
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: -1
+    mipBias: -100
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  platformSettings:
+  - serializedVersion: 2
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+  - serializedVersion: 2
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: diorite-bitmask_0
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 903438e5f62777a429b3a23143a8df0e
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_1
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8966e2c3d84f2014bb55a60e68b6fe8a
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_2
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 20f71d339a1b5da45892f2fe0922b812
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_3
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 31a3b15efaadc1444bc0ec4a531e6709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_4
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ce1c6544e7133344db56d4af7dbe376c
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_5
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e23e0178c8b911a4b90c5d546a4f8488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_6
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed98d5e54a7ccfb46bcf755df855f5d3
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_7
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53b88ab4fa81fab4b860bf1b76f50614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_8
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f3dee18fd929280439af2596363b02a6
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_9
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b13666417d5ada643bfd392fda2acdac
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_10
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2a50361de93670e40a2a7187de0eb1d7
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_11
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 22e5b5800b17b3244bb107a6187d71e2
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_12
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0a49b75a70d162045ae0e980683adf36
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_13
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 21497bd13adb20c45aa5137ebcc1ac72
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_14
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1fa2998494a3e6247979844dbc535f1a
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_15
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7b2ffa5f43ead6a4096987ed42f872d6
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_16
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 34378c3cead465945bba90b936429e53
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_17
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 10b5adb2c7e5c18439fe396f968520fd
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_18
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d968ae52d99f34f479ecfcde32685541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_19
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 52e53f2121436994aa6a158fd8128c75
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_20
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 74765337d36621f41a7d1f2d70ecfb31
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_21
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c737279222c1bc446a108bb2d571d013
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_22
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 20291a5938c1d6d46adcf2f3b3ba1659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_23
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7ef61970162b3364192b97195214578e
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_24
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 10789133ffc406c498559c65d9ec7a8a
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_25
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e294aad8c9af429428682824868df313
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_26
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 25d892858e7c7a449abdec9300747f96
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_27
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 41afac5722e94fd45880eea4e223d06f
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_28
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: abc55d064e8244248b2bc57809447812
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_29
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3c06b2295429f2b4eab77d1c85fdc8e9
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_30
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e7c7752f14b8b84790194879f4364d7
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_31
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ea9d306bcae8fbe478783b1075f59bd1
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_32
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1a9061455d6aa814cb3d61857e2cce99
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_33
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f2b224e51815f934486e881f24b621bc
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_34
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d56d792008cb8e14c952d52473aeb081
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_35
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cd9317e9b421c4943bb29562120b78cf
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_36
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4bf0421c8cc439c4fb716cf8992883d9
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_37
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 64c8d74f21c9ffd4b9cc6f895a959276
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_38
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 47ddd3b8d10c79f49a22332746bd7ab3
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_39
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2ee807588f7d6a4f82e56cb1ab69fbf
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_40
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b68caaf37bb74584aa34063ffe814847
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_41
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f401222a9e314a14fb480ee9925ec60d
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_42
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2a5fc67089b349441bd878a5bf97857d
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_43
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 986840b257873934f9d39efd304c531e
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_44
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7e9da367ae794a74c8fc0c88cfbe5eed
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_45
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ff82bda2f0ade5c41ae02cbc62b0a770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: diorite-bitmask_46
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 08ad399373a4dce45b30831f57af6ddb
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 53a980efc0e0f6c4f8eab58b2fc364dd
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

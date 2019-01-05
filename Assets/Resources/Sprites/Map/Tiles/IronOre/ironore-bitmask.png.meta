@@ -1,0 +1,1321 @@
+fileFormatVersion: 2
+guid: 3d0adb3e3beda4c438b4e69fbef27d7f
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: stone-bitmask_0
+    21300002: stone-bitmask_1
+    21300004: stone-bitmask_2
+    21300006: stone-bitmask_3
+    21300008: stone-bitmask_4
+    21300010: stone-bitmask_5
+    21300012: stone-bitmask_6
+    21300014: stone-bitmask_7
+    21300016: stone-bitmask_8
+    21300018: stone-bitmask_9
+    21300020: stone-bitmask_10
+    21300022: stone-bitmask_11
+    21300024: stone-bitmask_12
+    21300026: stone-bitmask_13
+    21300028: stone-bitmask_14
+    21300030: stone-bitmask_15
+    21300032: stone-bitmask_16
+    21300034: stone-bitmask_17
+    21300036: stone-bitmask_18
+    21300038: stone-bitmask_19
+    21300040: stone-bitmask_20
+    21300042: stone-bitmask_21
+    21300044: stone-bitmask_22
+    21300046: stone-bitmask_23
+    21300048: stone-bitmask_24
+    21300050: stone-bitmask_25
+    21300052: stone-bitmask_26
+    21300054: stone-bitmask_27
+    21300056: stone-bitmask_28
+    21300058: stone-bitmask_29
+    21300060: stone-bitmask_30
+    21300062: stone-bitmask_31
+    21300064: stone-bitmask_32
+    21300066: stone-bitmask_33
+    21300068: stone-bitmask_34
+    21300070: stone-bitmask_35
+    21300072: stone-bitmask_36
+    21300074: stone-bitmask_37
+    21300076: stone-bitmask_38
+    21300078: stone-bitmask_39
+    21300080: stone-bitmask_40
+    21300082: stone-bitmask_41
+    21300084: stone-bitmask_42
+    21300086: stone-bitmask_43
+    21300088: stone-bitmask_44
+    21300090: stone-bitmask_45
+    21300092: stone-bitmask_46
+    21300094: granite-bitmask_0
+    21300096: granite-bitmask_1
+    21300098: granite-bitmask_2
+    21300100: granite-bitmask_3
+    21300102: granite-bitmask_4
+    21300104: granite-bitmask_5
+    21300106: granite-bitmask_6
+    21300108: granite-bitmask_7
+    21300110: granite-bitmask_8
+    21300112: granite-bitmask_9
+    21300114: granite-bitmask_10
+    21300116: granite-bitmask_11
+    21300118: granite-bitmask_12
+    21300120: granite-bitmask_13
+    21300122: granite-bitmask_14
+    21300124: granite-bitmask_15
+    21300126: granite-bitmask_16
+    21300128: granite-bitmask_17
+    21300130: granite-bitmask_18
+    21300132: granite-bitmask_19
+    21300134: granite-bitmask_20
+    21300136: granite-bitmask_21
+    21300138: granite-bitmask_22
+    21300140: granite-bitmask_23
+    21300142: granite-bitmask_24
+    21300144: granite-bitmask_25
+    21300146: granite-bitmask_26
+    21300148: granite-bitmask_27
+    21300150: granite-bitmask_28
+    21300152: granite-bitmask_29
+    21300154: granite-bitmask_30
+    21300156: granite-bitmask_31
+    21300158: granite-bitmask_32
+    21300160: granite-bitmask_33
+    21300162: granite-bitmask_34
+    21300164: granite-bitmask_35
+    21300166: granite-bitmask_36
+    21300168: granite-bitmask_37
+    21300170: granite-bitmask_38
+    21300172: granite-bitmask_39
+    21300174: granite-bitmask_40
+    21300176: granite-bitmask_41
+    21300178: granite-bitmask_42
+    21300180: granite-bitmask_43
+    21300182: granite-bitmask_44
+    21300184: granite-bitmask_45
+    21300186: granite-bitmask_46
+    21300188: goldore-bitmask_0
+    21300190: goldore-bitmask_1
+    21300192: goldore-bitmask_2
+    21300194: goldore-bitmask_3
+    21300196: goldore-bitmask_4
+    21300198: goldore-bitmask_5
+    21300200: goldore-bitmask_6
+    21300202: goldore-bitmask_7
+    21300204: goldore-bitmask_8
+    21300206: goldore-bitmask_9
+    21300208: goldore-bitmask_10
+    21300210: goldore-bitmask_11
+    21300212: goldore-bitmask_12
+    21300214: goldore-bitmask_13
+    21300216: goldore-bitmask_14
+    21300218: goldore-bitmask_15
+    21300220: goldore-bitmask_16
+    21300222: goldore-bitmask_17
+    21300224: goldore-bitmask_18
+    21300226: goldore-bitmask_19
+    21300228: goldore-bitmask_20
+    21300230: goldore-bitmask_21
+    21300232: goldore-bitmask_22
+    21300234: goldore-bitmask_23
+    21300236: goldore-bitmask_24
+    21300238: goldore-bitmask_25
+    21300240: goldore-bitmask_26
+    21300242: goldore-bitmask_27
+    21300244: goldore-bitmask_28
+    21300246: goldore-bitmask_29
+    21300248: goldore-bitmask_30
+    21300250: goldore-bitmask_31
+    21300252: goldore-bitmask_32
+    21300254: goldore-bitmask_33
+    21300256: goldore-bitmask_34
+    21300258: goldore-bitmask_35
+    21300260: goldore-bitmask_36
+    21300262: goldore-bitmask_37
+    21300264: goldore-bitmask_38
+    21300266: goldore-bitmask_39
+    21300268: goldore-bitmask_40
+    21300270: goldore-bitmask_41
+    21300272: goldore-bitmask_42
+    21300274: goldore-bitmask_43
+    21300276: goldore-bitmask_44
+    21300278: goldore-bitmask_45
+    21300280: goldore-bitmask_46
+    21300282: silverore-bitmask_0
+    21300284: silverore-bitmask_1
+    21300286: silverore-bitmask_2
+    21300288: silverore-bitmask_3
+    21300290: silverore-bitmask_4
+    21300292: silverore-bitmask_5
+    21300294: silverore-bitmask_6
+    21300296: silverore-bitmask_7
+    21300298: silverore-bitmask_8
+    21300300: silverore-bitmask_9
+    21300302: silverore-bitmask_10
+    21300304: silverore-bitmask_11
+    21300306: silverore-bitmask_12
+    21300308: silverore-bitmask_13
+    21300310: silverore-bitmask_14
+    21300312: silverore-bitmask_15
+    21300314: silverore-bitmask_16
+    21300316: silverore-bitmask_17
+    21300318: silverore-bitmask_18
+    21300320: silverore-bitmask_19
+    21300322: silverore-bitmask_20
+    21300324: silverore-bitmask_21
+    21300326: silverore-bitmask_22
+    21300328: silverore-bitmask_23
+    21300330: silverore-bitmask_24
+    21300332: silverore-bitmask_25
+    21300334: silverore-bitmask_26
+    21300336: silverore-bitmask_27
+    21300338: silverore-bitmask_28
+    21300340: silverore-bitmask_29
+    21300342: silverore-bitmask_30
+    21300344: silverore-bitmask_31
+    21300346: silverore-bitmask_32
+    21300348: silverore-bitmask_33
+    21300350: silverore-bitmask_34
+    21300352: silverore-bitmask_35
+    21300354: silverore-bitmask_36
+    21300356: silverore-bitmask_37
+    21300358: silverore-bitmask_38
+    21300360: silverore-bitmask_39
+    21300362: silverore-bitmask_40
+    21300364: silverore-bitmask_41
+    21300366: silverore-bitmask_42
+    21300368: silverore-bitmask_43
+    21300370: silverore-bitmask_44
+    21300372: silverore-bitmask_45
+    21300374: silverore-bitmask_46
+    21300376: bronzeore-bitmask_0
+    21300378: bronzeore-bitmask_1
+    21300380: bronzeore-bitmask_2
+    21300382: bronzeore-bitmask_3
+    21300384: bronzeore-bitmask_4
+    21300386: bronzeore-bitmask_5
+    21300388: bronzeore-bitmask_6
+    21300390: bronzeore-bitmask_7
+    21300392: bronzeore-bitmask_8
+    21300394: bronzeore-bitmask_9
+    21300396: bronzeore-bitmask_10
+    21300398: bronzeore-bitmask_11
+    21300400: bronzeore-bitmask_12
+    21300402: bronzeore-bitmask_13
+    21300404: bronzeore-bitmask_14
+    21300406: bronzeore-bitmask_15
+    21300408: bronzeore-bitmask_16
+    21300410: bronzeore-bitmask_17
+    21300412: bronzeore-bitmask_18
+    21300414: bronzeore-bitmask_19
+    21300416: bronzeore-bitmask_20
+    21300418: bronzeore-bitmask_21
+    21300420: bronzeore-bitmask_22
+    21300422: bronzeore-bitmask_23
+    21300424: bronzeore-bitmask_24
+    21300426: bronzeore-bitmask_25
+    21300428: bronzeore-bitmask_26
+    21300430: bronzeore-bitmask_27
+    21300432: bronzeore-bitmask_28
+    21300434: bronzeore-bitmask_29
+    21300436: bronzeore-bitmask_30
+    21300438: bronzeore-bitmask_31
+    21300440: bronzeore-bitmask_32
+    21300442: bronzeore-bitmask_33
+    21300444: bronzeore-bitmask_34
+    21300446: bronzeore-bitmask_35
+    21300448: bronzeore-bitmask_36
+    21300450: bronzeore-bitmask_37
+    21300452: bronzeore-bitmask_38
+    21300454: bronzeore-bitmask_39
+    21300456: bronzeore-bitmask_40
+    21300458: bronzeore-bitmask_41
+    21300460: bronzeore-bitmask_42
+    21300462: bronzeore-bitmask_43
+    21300464: bronzeore-bitmask_44
+    21300466: bronzeore-bitmask_45
+    21300468: bronzeore-bitmask_46
+    21300470: ironore-bitmask_0
+    21300472: ironore-bitmask_1
+    21300474: ironore-bitmask_2
+    21300476: ironore-bitmask_3
+    21300478: ironore-bitmask_4
+    21300480: ironore-bitmask_5
+    21300482: ironore-bitmask_6
+    21300484: ironore-bitmask_7
+    21300486: ironore-bitmask_8
+    21300488: ironore-bitmask_9
+    21300490: ironore-bitmask_10
+    21300492: ironore-bitmask_11
+    21300494: ironore-bitmask_12
+    21300496: ironore-bitmask_13
+    21300498: ironore-bitmask_14
+    21300500: ironore-bitmask_15
+    21300502: ironore-bitmask_16
+    21300504: ironore-bitmask_17
+    21300506: ironore-bitmask_18
+    21300508: ironore-bitmask_19
+    21300510: ironore-bitmask_20
+    21300512: ironore-bitmask_21
+    21300514: ironore-bitmask_22
+    21300516: ironore-bitmask_23
+    21300518: ironore-bitmask_24
+    21300520: ironore-bitmask_25
+    21300522: ironore-bitmask_26
+    21300524: ironore-bitmask_27
+    21300526: ironore-bitmask_28
+    21300528: ironore-bitmask_29
+    21300530: ironore-bitmask_30
+    21300532: ironore-bitmask_31
+    21300534: ironore-bitmask_32
+    21300536: ironore-bitmask_33
+    21300538: ironore-bitmask_34
+    21300540: ironore-bitmask_35
+    21300542: ironore-bitmask_36
+    21300544: ironore-bitmask_37
+    21300546: ironore-bitmask_38
+    21300548: ironore-bitmask_39
+    21300550: ironore-bitmask_40
+    21300552: ironore-bitmask_41
+    21300554: ironore-bitmask_42
+    21300556: ironore-bitmask_43
+    21300558: ironore-bitmask_44
+    21300560: ironore-bitmask_45
+    21300562: ironore-bitmask_46
+  externalObjects: {}
+  serializedVersion: 7
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: -1
+    mipBias: -100
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  platformSettings:
+  - serializedVersion: 2
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+  - serializedVersion: 2
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ironore-bitmask_0
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9b48bdbb6034d9747912f4cfae896f41
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_1
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 285d8259f63bc5b409b92836726768c4
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_2
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0bdf67ce7fdf69047bfd63109f1ca0f3
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_3
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 54f19d1d4822ef44eab1e84a4c2a0afd
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_4
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa86be18b7faff64ca619b03846cbb46
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_5
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f2e3091a19f7e714393e923277bb9428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_6
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 212
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fdcdbaff643247f4a8c9bec68d512b48
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_7
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6709d9c962a1a0f4ab30a38f8f560d0d
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_8
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 25f90ef053cd59e4fbaafc663de81fe1
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_9
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3191c981ca968dd489a3d71b93eb26b1
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_10
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9975271336d43a547a674cb37a3e4e17
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_11
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca6805d4ce2faef4e82a7c4768e8bb49
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_12
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6f93d58eac7435e40992f74c0327c0ca
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_13
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 177
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a38e6facac9e0ac4a9cf1c400b294164
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_14
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e174a1cc3b922c049ba001404a50ab51
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_15
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2d762eded12d75d4db32685c1bd86153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_16
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3132a8bea170d9844a13423d3fe95320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_17
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 83be5b3e7ea0ca94ba86531892aedadd
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_18
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ab1628d89730dfa46b8eedfc7b7fd930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_19
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 83a4c0e7124e93e4b8cd7c27071443e8
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_20
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 142
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c286e0c268ebec1448f4bb895ce26feb
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_21
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3301911737f4939469219b6147d7cc6f
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_22
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0b7360adbc88cf641bb691f497a3781e
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_23
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6c7e95ed7f8d5f444b0a8cbfb6cad98e
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_24
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 232ee648de277dc42b7f4aac5b1317a3
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_25
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c94299998602d234ca7e6f50df777f34
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_26
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6422801297db5db43a53de9822f09e71
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_27
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 107
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6b458a903b1c1284ab3541cf1cb3ba81
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_28
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9141d2964780104b9a6688eb221eb66
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_29
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b3a23e2579ac74c47972064d969aa71d
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_30
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e128d90fbb39dd04b8dedcc80841a9e2
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_31
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1fc47f06df98f604d9bd6ca28f3246f6
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_32
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e57068fee39405944a8b4386593a3bb5
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_33
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fcc0061b376c4ea4a8414a2de3aac6c4
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_34
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 72
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d8fa61d76aaa6044ca3eb3589e31d7ae
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_35
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 122a78213abe1d343a2131f8d9aab8a9
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_36
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ae99e86e9bfab2d47b74e9ea64c926b9
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_37
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 387cc314625d8c84cbecbeefc764c644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_38
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9f6f7e4363a10694baa279feffc300f7
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_39
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6a8d7be162985ef47b4a04b6a286e674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_40
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bdf9ee8146befe2479691d921a882d3c
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_41
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 37
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7e68816352a8e4143b3a8ffa92e1f175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_42
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0aede9c3c606cfe41ac601936ef8012e
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_43
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fa710d2e0f0990e458f1efdc11ceed60
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_44
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3024d9b175960db4ba62b3a3992e1b38
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_45
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f46160b08722e6e4c81ee08a38ec956b
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ironore-bitmask_46
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 2
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3e257d65f3f984f4c82b0ca830778839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 53a980efc0e0f6c4f8eab58b2fc364dd
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

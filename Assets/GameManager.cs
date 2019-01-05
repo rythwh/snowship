@@ -41,17 +41,15 @@ public class GameManager : MonoBehaviour {
 		persistenceM.SetStartCoroutineReference(this);
 		uiM.SetStartCoroutineReference(this);
 
-		resourceM.GetResourceReferences();
+		resourceM.SetResourceReferences();
 		resourceM.CreateResources();
-		resourceM.CreateTileObjectPrefabs();
-		resourceM.CreatePlantGroups();
+		resourceM.CreatePlantPrefabs();
+		resourceM.CreateObjectPrefabs();
 		resourceM.LoadLocationNames();
 
 		tileM.CreateTileTypes();
 		tileM.CreateBiomes();
 		tileM.CreateBiomeRanges();
-
-		tileM.InitializeResourceVeinValidTileFunctions();
 
 		humanM.CreateNames();
 		humanM.CreateHumanSprites();
@@ -60,13 +58,6 @@ public class GameManager : MonoBehaviour {
 		colonistM.CreateColonistProfessions();
 		colonistM.CreateColonistNeeds();
 		colonistM.CreateHappinessModifiers();
-
-		colonistM.InitializeNeedsValueFunctions();
-		colonistM.InitializeHappinessModifierFunctions();
-
-		jobM.InitializeSelectionModifierFunctions();
-		jobM.InitializeFinishJobFunctions();
-		jobM.InitializeJobDescriptionFunctions();
 
 		foreach (BaseManager manager in managers) {
 			manager.Awake();

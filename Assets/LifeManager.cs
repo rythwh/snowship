@@ -105,6 +105,9 @@ public class LifeManager : BaseManager {
 				TileManager.Tile previousTile = GameManager.colonyM.colony.map.GetTileFromPosition(previousPosition);
 				if (previousTile != path[0]) {
 					moveSpriteIndex = previousTile.surroundingTiles.IndexOf(path[0]);
+					if (moveSpriteIndex == -1) {
+						moveSpriteIndex = 0;
+					}
 					moveSpriteIndex = moveSpriteIndices[moveSpriteIndex];
 				}
 			}

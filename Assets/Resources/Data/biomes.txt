@@ -1,161 +1,309 @@
-PolarDesert/
-	SnowStone,SnowIce,SnowHole/
-	Snow/
-	0.01,0.01/
-	SnowTree,DeadTree/
-	5A5A5A`
-IceCap/
-	Snow,SnowIce,SnowHole/
-	Snow/
-	0//
-	FFFFFF`
-Tundra/
-	StoneThinGrass,StoneIce,StoneHole/
-	Stone/
-	0.2,0.05/
-	Bush, DeadTree/
-	BFBFBF`
-WetTundra/
-	ColdGrass,ColdGrassWater,DirtHole/
-	Dirt/
-	0.3,0.025/
-	Bush,ThinTree/
-	CCC0DA`
-PolarWetlands/
-	Mud,DirtWater,DirtHole/
-	Dirt/
-	0.2,0.02/
-	Bush,ThinTree/
-	60497B`
-CoolDesert/
-	StoneSnow,StoneWater,StoneHole/
-	Stone/
-	0.01,0.05/
-	ThinTree,DeadTree/
-	953735`
-TemperateDesert/
-	Dirt,DirtWater,DirtHole/
-	Dirt/
-	0.01,0.1/
-	WideTree,DeadTree/
-	77574A`
-Steppe/
-	DirtDryGrass,DirtWater,DirtHole/
-	Dirt/
-	0.25/
-	Bush/
-	948B54`
-BorealForest/
-	DirtThinGrass,DirtWater,DirtHole/
-	Dirt/
-	0.95,0.02/
-	ThinTree,DeadTree/
-	9DB195`
-TemperateWoodlands/
-	DirtGrass,DirtWater,DirtHole/
-	Dirt/
-	0.8,0.8,0.02/
-	WideTree,ThinTree,DeadTree/
-	F2DDDC`
-TemperateForest/
-	DirtGrass,DirtWater,DirtHole/
-	Dirt/
-	0.9,0.2,0.2,0.05/
-	WideTree,ThinTree,Bush,DeadTree/
-	DBEEF3`
-TemperateWetForest/
-	Grass,GrassWater,DirtHole/
-	Dirt/
-	0.9,0.1,0.02/
-	WideTree,ThinTree,DeadTree/
-	93CDDD`
-TemperateWetlands/
-	ThickGrass,GrassWater,DirtHole/
-	Dirt/
-	0.4/
-	Bush/
-	31849B`
-ExtremeDesert/
-	Sand,SandWater,SandHole/
-	Sand/
-	0.02,0.02/
-	Cactus,DeadTree/
-	FF5050`
-Desert/
-	Sand,SandWater,SandHole/
-	Sand/
-	0.1,0.05/
-	Cactus,DeadTree/
-	FF9900`
-SubtropicalScrub/
-	DryGrass,DryGrassWater,DirtHole/
-	Dirt/
-	0.2/
-	Bush/
-	CCCC00`
-TropicalScrub/
-	DryGrass,DryGrassWater,DirtHole/
-	Dirt/
-	0.3/
-	Bush/
-	FFFF00`
-SubtropicalWoodlands/
-	Grass,GrassWater,DirtHole/
-	Dirt/
-	0.7,0.3,0.05/
-	WideTree,Bush,DeadTree/
-	FCD5B4`
-TropicalWoodlands/
-	DryGrass,DryGrassWater,DirtHole/
-	Dirt/
-	0.4,0.3,0.02/
-	Bush,WideTree,DeadTree/
-	FFFBC1`
-Mediterranean/
-	Grass,GrassWater,DirtHole/
-	Dirt/
-	0.7,0.7,0.01/
-	Bush,WideTree,DeadTree/
-	D99795`
-SubtropicalDryForest/
-	DryGrass,DryGrassWater,DirtHole/
-	Dirt/
-	0.1,0.5,0.5,0.1/
-	Bush,WideTree,ThinTree,DeadTree/
-	D7E4BC`
-TropicalDryForest/
-	DryGrass,DryGrassWater,DirtHole/
-	Dirt/
-	0.2,0.4,0.4,0.05/
-	Bush,WideTree,ThinTree,DeadTree/
-	CCFF33`
-SubtropicalForest/
-	Grass,GrassWater,DirtHole/
-	Dirt/
-	0.8,0.8,0.5,0.02/
-	WideTree,ThinTree,Bush,DeadTree/
-	66FF66`
-SubtropicalWetForest/
-	Grass,GrassWater,DirtHole/
-	Dirt/
-	0.8,0.8,0.7,0.01/
-	WideTree,ThinTree,Bush,DeadTree/
-	00B050`
-SubtropicalWetlands/
-	ThickGrass,GrassWater,DirtHole/
-	Dirt/
-	0.6,0.2,0.01/
-	Bush,WideTree,DeadTree/
-	00823B`
-TropicalWetForest/
-	ThickGrass,GrassWater,DirtHole/
-	Dirt/
-	0.9,0.9,0.9,0.01/
-	WideTree,Bush,ThinTree,DeadTree/
-	75923C`
-TropicalWetlands/
-	ThickGrass,GrassWater,DirtHole/
-	Dirt/
-	0.8,0.4,0.01/
-	Bush,WideTree,DeadTree/
-	4F6228
+<Biome>
+	<Type>PolarDesert
+	<TileTypes>
+		<Water>SnowIce
+		<Hole>SnowHole
+		<Ground>SnowStone
+		<Stone>Granite
+	<PlantChances>
+		<SnowTree>0.01
+		<DeadTree>0.01
+	<Colour>5A5A5A
+<Biome>
+	<Type>IceCap
+	<TileTypes>
+		<Water>SnowIce
+		<Hole>SnowHole
+		<Ground>Snow
+		<Stone>Granite
+	<Colour>FFFFFF
+<Biome>
+	<Type>Tundra
+	<TileTypes>
+		<Water>StoneIce
+		<Hole>StoneHole
+		<Ground>StoneThinGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.2
+		<DeadTree>0.05
+	<Colour>BFBFBF
+<Biome>
+	<Type>WetTundra
+	<TileTypes>
+		<Water>ColdGrassWater
+		<Hole>DirtHole
+		<Ground>ColdGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.3
+		<ThinTree>0.025
+	<Colour>CCC0DA
+<Biome>
+	<Type>PolarWetlands
+	<TileTypes>
+		<Water>DirtWater
+		<Hole>DirtHole
+		<Ground>Mud
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.2
+		<ThinTree>0.02
+	<Colour>60497B
+<Biome>
+	<Type>CoolDesert
+	<TileTypes>
+		<Water>StoneWater
+		<Hole>StoneHole
+		<Ground>StoneSnow
+		<Stone>Granite
+	<PlantChances>
+		<ThinTree>0.01
+		<DeadTree>0.05
+	<Colour>953735
+<Biome>
+	<Type>TemperateDesert
+	<TileTypes>
+		<Water>DirtWater
+		<Hole>DirtHole
+		<Ground>Dirt
+		<Stone>Granite
+	<PlantChances>
+		<WideTree>0.01
+		<DeadTree>0.1
+	<Colour>77574A
+<Biome>
+	<Type>Steppe
+	<TileTypes>
+		<Water>DirtWater
+		<Hole>DirtHole
+		<Ground>DirtDryGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.25
+	<Colour>948B54
+<Biome>
+	<Type>BorealForest
+	<TileTypes>
+		<Water>DirtWater
+		<Hole>DirtHole
+		<Ground>DirtThinGrass
+		<Stone>Granite
+	<PlantChances>
+		<ThinTree>0.95
+		<DeadTree>0.02
+	<Colour>9DB195
+<Biome>
+	<Type>TemperateWoodlands
+	<TileTypes>
+		<Water>DirtWater
+		<Hole>DirtHole
+		<Ground>DirtGrass
+		<Stone>Granite
+	<PlantChances>
+		<WideTree>0.8
+		<ThinTree>0.8
+		<DeadTree>0.02
+	<Colour>F2DDDC
+<Biome>
+	<Type>TemperateForest
+	<TileTypes>
+		<Water>DirtWater
+		<Hole>DirtHole
+		<Ground>DirtGrass
+		<Stone>Granite
+	<PlantChances>
+		<WideTree>0.9
+		<ThinTree>0.2
+		<Bush>0.2
+		<DeadTree>0.05
+	<Colour>DBEEF3
+<Biome>
+	<Type>TemperateWetForest
+	<TileTypes>
+		<Water>GrassWater
+		<Hole>DirtHole
+		<Ground>Grass
+		<Stone>Granite
+	<PlantChances>
+		<WideTree>0.9
+		<ThinTree>0.1
+		<DeadTree>0.02
+	<Colour>93CDDD
+<Biome>
+	<Type>TemperateWetlands
+	<TileTypes>
+		<Water>GrassWater
+		<Hole>DirtHole
+		<Ground>ThickGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.4
+	<Colour>31849B
+<Biome>
+	<Type>ExtremeDesert
+	<TileTypes>
+		<Water>SandWater
+		<Hole>SandHole
+		<Ground>Sand
+		<Stone>Sandstone
+	<PlantChances>
+		<Cactus>0.02
+		<DeadTree>0.02
+	<Colour>FF5050
+<Biome>
+	<Type>Desert
+	<TileTypes>
+		<Water>SandWater
+		<Hole>SandHole
+		<Ground>Sand
+		<Stone>Sandstone
+	<PlantChances>
+		<Cactus>0.1
+		<DeadTree>0.05
+	<Colour>FF9900
+<Biome>
+	<Type>SubtropicalScrub
+	<TileTypes>
+		<Water>DryGrassWater
+		<Hole>DirtHole
+		<Ground>DryGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.2
+	<Colour>CCCC00
+<Biome>
+	<Type>TropicalScrub
+	<TileTypes>
+		<Water>DryGrassWater
+		<Hole>DirtHole
+		<Ground>DryGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.3
+	<Colour>FFFF00
+<Biome>
+	<Type>SubtropicalWoodlands
+	<TileTypes>
+		<Water>GrassWater
+		<Hole>DirtHole
+		<Ground>Grass
+		<Stone>Granite
+	<PlantChances>
+		<WideTree>0.7
+		<Bush>0.3
+		<DeadTree>0.05
+	<Colour>FCD5B4
+<Biome>
+	<Type>TropicalWoodlands
+	<TileTypes>
+		<Water>DryGrassWater
+		<Hole>DirtHole
+		<Ground>DryGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.4
+		<WideTree>0.3
+		<DeadTree>0.02
+	<Colour>FFFBC1
+<Biome>
+	<Type>Mediterranean
+	<TileTypes>
+		<Water>GrassWater
+		<Hole>DirtHole
+		<Ground>Grass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.7
+		<WideTree>0.7
+		<DeadTree>0.01
+	<Colour>D99795
+<Biome>
+	<Type>SubtropicalDryForest
+	<TileTypes>
+		<Water>DryGrassWater
+		<Hole>DirtHole
+		<Ground>DryGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.1
+		<WideTree>0.5
+		<ThinTree>0.5
+		<DeadTree>0.1
+	<Colour>D7E4BC
+<Biome>
+	<Type>TropicalDryForest
+	<TileTypes>
+		<Water>DryGrassWater
+		<Hole>DirtHole
+		<Ground>DryGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.2
+		<WideTree>0.4
+		<ThinTree>0.4
+		<DeadTree>0.05
+	<Colour>CCFF33
+<Biome>
+	<Type>SubtropicalForest
+	<TileTypes>
+		<Water>GrassWater
+		<Hole>DirtHole
+		<Ground>Grass
+		<Stone>Granite
+	<PlantChances>
+		<WideTree>0.8
+		<ThinTree>0.8
+		<Bush>0.5
+		<DeadTree>0.02
+	<Colour>66FF66
+<Biome>
+	<Type>SubtropicalWetForest
+	<TileTypes>
+		<Water>GrassWater
+		<Hole>DirtHole
+		<Ground>Grass
+		<Stone>Granite
+	<PlantChances>
+		<WideTree>0.8
+		<ThinTree>0.8
+		<Bush>0.7
+		<DeadTree>0.01
+	<Colour>00B050
+<Biome>
+	<Type>SubtropicalWetlands
+	<TileTypes>
+		<Water>GrassWater
+		<Hole>DirtHole
+		<Ground>ThickGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.6
+		<WideTree>0.2
+		<DeadTree>0.01
+	<Colour>00823B
+<Biome>
+	<Type>TropicalWetForest
+	<TileTypes>
+		<Water>GrassWater
+		<Hole>DirtHole
+		<Ground>ThickGrass
+		<Stone>Granite
+	<PlantChances>
+		<WideTree>0.9
+		<Bush>0.9
+		<ThinTree>0.9
+		<DeadTree>0.01
+	<Colour>75923C
+<Biome>
+	<Type>TropicalWetlands
+	<TileTypes>
+		<Water>GrassWater
+		<Hole>DirtHole
+		<Ground>ThickGrass
+		<Stone>Granite
+	<PlantChances>
+		<Bush>0.8
+		<WideTree>0.4
+		<DeadTree>0.01
+	<Colour>4F6228

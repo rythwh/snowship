@@ -23,12 +23,15 @@ public class CaravanManager : BaseManager {
 			caravans.Remove(caravan);
 
 			GameManager.uiM.SetCaravanElements();
-			GameManager.uiM.SetTradeMenu(null);
 		}
 		removeCaravans.Clear();
+
+		if (Input.GetMouseButtonDown(1)) {
+			SetSelectedCaravan(null);
+		}
 	}
 
-	private int caravanTimer = 0; // The time since the last caravan visited
+	public int caravanTimer = 0; // The time since the last caravan visited
 	private static readonly int caravanTimeMin = TimeManager.dayLengthSeconds; // Caravans will only come once every caravanTimeMin in-game minutes
 	private static readonly int caravanTimeMax = TimeManager.dayLengthSeconds * 7; // Caravans will definitely come if the caravanTimer is greater than caravanTimeMax
 
@@ -49,7 +52,7 @@ public class CaravanManager : BaseManager {
 	public void SpawnCaravan(CaravanTypeEnum caravanType, int maxNumTraders) {
 		List<TileManager.Tile> validSpawnTiles = null;
 		if (caravanType == CaravanTypeEnum.Foot || caravanType == CaravanTypeEnum.Wagon) {
-			validSpawnTiles = GameManager.colonyM.colony.map.edgeTiles.Where(tile => tile.walkable && !TileManager.liquidWaterEquivalentTileTypes.Contains(tile.tileType.type)).ToList();
+			validSpawnTiles = GameManager.colonyM.colony.map.edgeTiles.Where(tile => tile.walkable && !tile.tileType.classes[TileManager.TileTypeClassEnum.LiquidWater]).ToList();
 		} else if (caravanType == CaravanTypeEnum.Boat) {
 			validSpawnTiles = new List<TileManager.Tile>(); // TODO Implement boat caravans
 		}
@@ -80,25 +83,25 @@ public class CaravanManager : BaseManager {
 						numTraders = edgeTilesCloseToTargetSpawnTile.Count;
 					}
 
-					List<ResourceManager.TileObjectInstance> tradingPosts = new List<ResourceManager.TileObjectInstance>();
-					foreach (ResourceManager.TileObjectPrefab prefab in GameManager.resourceM.tileObjectInstances.Keys.Where(top => top.tileObjectPrefabSubGroup.type == ResourceManager.TileObjectPrefabSubGroupsEnum.TradingPosts)) {
-						foreach (ResourceManager.TileObjectInstance tradingPost in GameManager.resourceM.tileObjectInstances[prefab]) {
-							if (tradingPost.tile.region == targetSpawnTile.region) {
+					List<ResourceManager.ObjectInstance> tradingPosts = new List<ResourceManager.ObjectInstance>();
+					foreach (ResourceManager.ObjectPrefab prefab in GameManager.resourceM.objectInstances.Keys.Where(op => op.subGroupType == ResourceManager.ObjectSubGroupEnum.TradingPosts)) {
+						foreach (ResourceManager.ObjectInstance tradingPost in GameManager.resourceM.objectInstances[prefab]) {
+							if (tradingPost.zeroPointTile.region == targetSpawnTile.region) {
 								tradingPosts.Add(tradingPost);
 							}
 						}
 					}
 
-					ResourceManager.TileObjectInstance selectedTradingPost = null;
+					ResourceManager.ObjectInstance selectedTradingPost = null;
 					if (tradingPosts.Count > 0) {
 						selectedTradingPost = tradingPosts[UnityEngine.Random.Range(0, tradingPosts.Count)];
 					}
 
 					TileManager.Tile targetTile = null;
 					if (selectedTradingPost != null) {
-						targetTile = selectedTradingPost.tile;
+						targetTile = selectedTradingPost.zeroPointTile;
 					} else {
-						List<TileManager.Tile> validTargetTiles = targetSpawnTile.region.tiles.Where(tile => tile.walkable && !TileManager.liquidWaterEquivalentTileTypes.Contains(tile.tileType.type)).ToList();
+						List<TileManager.Tile> validTargetTiles = targetSpawnTile.region.tiles.Where(tile => tile.walkable && !tile.tileType.classes[TileManager.TileTypeClassEnum.LiquidWater]).ToList();
 						targetTile = validTargetTiles[UnityEngine.Random.Range(0, validTargetTiles.Count)];
 					}
 
@@ -120,6 +123,8 @@ public class CaravanManager : BaseManager {
 
 	public void SetSelectedCaravan(Caravan selectedCaravan) {
 		this.selectedCaravan = selectedCaravan;
+
+		GameManager.uiM.SetTradeMenu();
 	}
 
 	public class Caravan {
@@ -178,7 +183,7 @@ public class CaravanManager : BaseManager {
 				if (UnityEngine.Random.Range(0f, 1f) < Mathf.Clamp(((resourceGroupResourceCount - inventory.resources.Count) - minDistinctResources) / (float)(resourceGroupResourceCount - minDistinctResources), minDistinctResourceChance, 1f)) { // Decrease chance of additional distinct resources on caravan as distinct resources on caravan increase
 					int resourceAvailableAmount = resource.GetAvailableAmount();
 					int caravanAmount = Mathf.RoundToInt(Mathf.Clamp(UnityEngine.Random.Range(resourceAvailableAmount * minAvailableAmountModifier, resourceAvailableAmount * maxAvailableAmountModifier), UnityEngine.Random.Range(minMinimumCaravanAmount, maxMinimumCaravanAmount), int.MaxValue)); // Ensure a minimum number of the resource on the caravan
-					inventory.ChangeResourceAmount(resource, caravanAmount);
+					inventory.ChangeResourceAmount(resource, caravanAmount, false);
 				}
 			}
 		}
@@ -199,32 +204,35 @@ public class CaravanManager : BaseManager {
 			trader.MoveToTile(targetTiles[UnityEngine.Random.Range(0, targetTiles.Count)], false);
 		}
 
-		public List<ResourceManager.TradeResourceAmount> GetTradeResourceAmounts() {
+		public List<ResourceManager.TradeResourceAmount> GenerateTradeResourceAmounts() {
 			List<ResourceManager.TradeResourceAmount> tradeResourceAmounts = new List<ResourceManager.TradeResourceAmount>();
 			tradeResourceAmounts.AddRange(resourcesToTrade);
 
 			List<ResourceManager.ResourceAmount> caravanResourceAmounts = inventory.resources;
-			List<ResourceManager.ResourceAmount> colonyResourceAmounts = GameManager.resourceM.GetFilteredResources(true, false, true, false);
 
 			foreach (ResourceManager.ResourceAmount resourceAmount in caravanResourceAmounts) {
 				ResourceManager.TradeResourceAmount existingTradeResourceAmount = tradeResourceAmounts.Find(tra => tra.resource == resourceAmount.resource);
 				if (existingTradeResourceAmount == null) {
-					tradeResourceAmounts.Add(new ResourceManager.TradeResourceAmount(resourceAmount.resource, resourceAmount.amount, DeterminePriceForResource(resourceAmount.resource), this));
+					tradeResourceAmounts.Add(new ResourceManager.TradeResourceAmount(resourceAmount.resource, resourceAmount.amount, this));
 				} else {
 					existingTradeResourceAmount.Update();
 				}
+			}
+
+			List<ResourceManager.ResourceAmount> colonyResourceAmounts = new List<ResourceManager.ResourceAmount>();
+			if (traders.Count > 0) {
+				colonyResourceAmounts = GameManager.resourceM.GetAvailableResourcesInTradingPostsInRegion(traders.Find(t => t != null).overTile.region);
 			}
 
 			foreach (ResourceManager.ResourceAmount resourceAmount in colonyResourceAmounts) {
 				ResourceManager.TradeResourceAmount existingTradeResourceAmount = tradeResourceAmounts.Find(tra => tra.resource == resourceAmount.resource);
 				if (existingTradeResourceAmount == null) {
-					tradeResourceAmounts.Add(new ResourceManager.TradeResourceAmount(resourceAmount.resource, 0, DeterminePriceForResource(resourceAmount.resource), this));
+					tradeResourceAmounts.Add(new ResourceManager.TradeResourceAmount(resourceAmount.resource, 0, this));
 				} else {
 					existingTradeResourceAmount.Update();
 				}
 			}
 
-			//tradeResourceAmounts = tradeResourceAmounts.OrderByDescending(tra => tra.caravanAmount).ThenByDescending(tra => tra.resource.GetAvailableAmount()).ThenBy(tra => tra.resource.name).ToList();
 			tradeResourceAmounts = tradeResourceAmounts.OrderBy(tra => tra.resource.name).ToList();
 
 			return tradeResourceAmounts;
@@ -233,12 +241,6 @@ public class CaravanManager : BaseManager {
 		public bool DetermineImportanceForResource(ResourceManager.Resource resource) {
 			return false; // TODO This needs to be implemented once the originLocation is properly implemented (see above)
 		}
-
-		//public ResourceManager.Resource.Price DeterminePriceForResource(ResourceManager.Resource resource) {
-		//	// TODO This needs to be implemented once the originLocation is properly implemented and use DetermineImportanceForResource(...)
-		//	//return new ResourceManager.Resource.Price(UnityEngine.Random.Range(0, 100), UnityEngine.Random.Range(0, 100), UnityEngine.Random.Range(0, 100));
-		//	return resource.price;
-		//}
 
 		public int DeterminePriceForResource(ResourceManager.Resource resource) {
 			return resource.price;
@@ -258,10 +260,70 @@ public class CaravanManager : BaseManager {
 		}
 
 		public void ConfirmTrade() {
-			foreach (ResourceManager.TradeResourceAmount tradeResourceAmount in resourcesToTrade) {
-				confirmedResourcesToTrade.Add(new ResourceManager.ConfirmedTradeResourceAmount(tradeResourceAmount, tradeResourceAmount.GetTradeAmount()));
+			if (leaving) {
+				leaving = false;
+				leaveTimer = 0;
+				foreach (Trader trader in traders) {
+					trader.MoveToTile(trader.overTile, false);
+				}
 			}
+
+			foreach (ResourceManager.TradeResourceAmount tradeResourceAmount in resourcesToTrade) {
+				ResourceManager.ConfirmedTradeResourceAmount existingConfirmedTradeResourceAmount = confirmedResourcesToTrade.Find(crtt => crtt.resource == tradeResourceAmount.resource);
+				if (existingConfirmedTradeResourceAmount != null) {
+					existingConfirmedTradeResourceAmount.tradeAmount += tradeResourceAmount.GetTradeAmount();
+					existingConfirmedTradeResourceAmount.amountRemaining += tradeResourceAmount.GetTradeAmount();
+				} else {
+					confirmedResourcesToTrade.Add(new ResourceManager.ConfirmedTradeResourceAmount(tradeResourceAmount.resource, tradeResourceAmount.GetTradeAmount()));
+				}
+			}
+			List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
+			foreach (ResourceManager.TradeResourceAmount tradeResourceAmount in resourcesToTrade) {
+				if (tradeResourceAmount.GetTradeAmount() < 0) {
+					resourcesToReserve.Add(new ResourceManager.ResourceAmount(tradeResourceAmount.resource, Mathf.Abs(tradeResourceAmount.GetTradeAmount())));
+				}
+			}
+
+			foreach (ResourceManager.TradeResourceAmount tradeResourceAmount in resourcesToTrade) {
+				if (tradeResourceAmount.GetTradeAmount() > 0) {
+					inventory.ChangeResourceAmount(tradeResourceAmount.resource, -tradeResourceAmount.GetTradeAmount(), false);
+				}
+			}
+
 			resourcesToTrade.Clear();
+
+			List<ResourceManager.TradingPost> tradingPostsWithReservedResources = new List<ResourceManager.TradingPost>();
+
+			Trader primaryTrader = traders[0];
+			if (primaryTrader != null) {
+				foreach (ResourceManager.TradingPost tradingPost in GameManager.resourceM.GetTradingPostsInRegion(primaryTrader.overTile.region).OrderBy(tp => PathManager.RegionBlockDistance(primaryTrader.overTile.regionBlock, tp.zeroPointTile.regionBlock, true, true, false))) {
+					List<ResourceManager.ResourceAmount> resourcesToReserveAtThisTradingPost = new List<ResourceManager.ResourceAmount>();
+					List<ResourceManager.ResourceAmount> resourcesToReserveToRemove = new List<ResourceManager.ResourceAmount>();
+					foreach (ResourceManager.ResourceAmount resourceToReserve in resourcesToReserve) {
+						ResourceManager.ResourceAmount resourceAmount = tradingPost.inventory.resources.Find(r => r.resource == resourceToReserve.resource);
+						if (resourceAmount != null) {
+							int amountToReserve = resourceToReserve.amount < resourceAmount.amount ? resourceToReserve.amount : resourceAmount.amount;
+							resourcesToReserveAtThisTradingPost.Add(new ResourceManager.ResourceAmount(resourceToReserve.resource, amountToReserve));
+							resourceToReserve.amount -= amountToReserve;
+							if (resourceToReserve.amount == 0) {
+								resourcesToReserveToRemove.Add(resourceToReserve);
+							}
+						}
+					}
+					if (resourcesToReserveAtThisTradingPost.Count > 0) {
+						tradingPost.inventory.ReserveResources(resourcesToReserveAtThisTradingPost, primaryTrader);
+						tradingPostsWithReservedResources.Add(tradingPost);
+					}
+					foreach (ResourceManager.ResourceAmount resourceToReserveToRemove in resourcesToReserveToRemove) {
+						resourcesToReserve.Remove(resourceToReserveToRemove);
+					}
+					resourcesToReserveToRemove.Clear();
+				}
+
+				if (tradingPostsWithReservedResources.Count > 0) {
+					primaryTrader.tradingPosts = tradingPostsWithReservedResources;
+				}
+			}
 		}
 
 		/*
@@ -285,7 +347,7 @@ public class CaravanManager : BaseManager {
 			removeTraders.Clear();
 
 			if (!GameManager.timeM.GetPaused() && GameManager.timeM.minuteChanged) {
-				if (!leaving) {
+				if (!leaving && confirmedResourcesToTrade.Count <= 0) {
 					if (leaveTimer >= leaveTimerMax) {
 						leaving = true;
 						leaveTimer = 0;
@@ -315,6 +377,8 @@ public class CaravanManager : BaseManager {
 
 		public TileManager.Tile leaveTile;
 
+		public List<ResourceManager.TradingPost> tradingPosts;
+
 		public Trader(TileManager.Tile spawnTile, float startingHealth, Caravan caravan) : base(spawnTile, startingHealth) {
 			this.caravan = caravan;
 
@@ -330,10 +394,48 @@ public class CaravanManager : BaseManager {
 		public override void Update() {
 			base.Update();
 
-			if (path.Count <= 0) {
-				Wander(caravan.targetTile, 4);
+			if (tradingPosts != null && tradingPosts.Count > 0) {
+				ResourceManager.TradingPost tradingPost = tradingPosts[0];
+				if (path.Count <= 0) {
+					MoveToTile(tradingPost.zeroPointTile, false);
+				}
+				if (overTile == tradingPost.zeroPointTile) {
+					foreach (ResourceManager.ReservedResources rr in tradingPost.inventory.TakeReservedResources(this)) {
+						foreach (ResourceManager.ResourceAmount ra in rr.resources) {
+							caravan.inventory.ChangeResourceAmount(ra.resource, ra.amount, false);
+
+							ResourceManager.ConfirmedTradeResourceAmount confirmedTradeResourceAmount = caravan.confirmedResourcesToTrade.Find(crtt => crtt.resource == ra.resource);
+							if (confirmedTradeResourceAmount != null) {
+								confirmedTradeResourceAmount.amountRemaining += ra.amount;
+							}
+						}
+					}
+					tradingPosts.RemoveAt(0);
+				}
+				if (tradingPosts.Count <= 0) {
+					JobManager.Job job = new JobManager.Job(
+						tradingPost.tile,
+						GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.CollectResources),
+						0
+					) {
+						transferResources = new List<ResourceManager.ResourceAmount>()
+					};
+					foreach (ResourceManager.ConfirmedTradeResourceAmount confirmedTradeResourceAmount in caravan.confirmedResourcesToTrade) {
+						if (confirmedTradeResourceAmount.tradeAmount > 0) {
+							tradingPost.inventory.ChangeResourceAmount(confirmedTradeResourceAmount.resource, confirmedTradeResourceAmount.tradeAmount, false);
+							confirmedTradeResourceAmount.amountRemaining = 0;
+							job.transferResources.Add(new ResourceManager.ResourceAmount(confirmedTradeResourceAmount.resource, confirmedTradeResourceAmount.tradeAmount));
+						}
+					}
+					caravan.confirmedResourcesToTrade.Clear();
+					GameManager.jobM.CreateJob(job);
+				}
 			} else {
-				wanderTimer = UnityEngine.Random.Range(10f, 20f);
+				if (path.Count <= 0) {
+					Wander(caravan.targetTile, 4);
+				} else {
+					wanderTimer = UnityEngine.Random.Range(10f, 20f);
+				}
 			}
 		}
 
@@ -359,8 +461,8 @@ public class CaravanManager : BaseManager {
 		List<Location.CitySize> citySizes = ((Location.CitySize[])Enum.GetValues(typeof(Location.CitySize))).ToList();
 		Location.CitySize citySize = citySizes[UnityEngine.Random.Range(0, citySizes.Count)];
 
-		List<TileManager.BiomeTypes> biomeTypes = ((TileManager.BiomeTypes[])Enum.GetValues(typeof(TileManager.BiomeTypes))).ToList();
-		TileManager.BiomeTypes biomeType = biomeTypes[UnityEngine.Random.Range(0, biomeTypes.Count)];
+		List<TileManager.BiomeTypeEnum> biomeTypes = ((TileManager.BiomeTypeEnum[])Enum.GetValues(typeof(TileManager.BiomeTypeEnum))).ToList();
+		TileManager.BiomeTypeEnum biomeType = biomeTypes[UnityEngine.Random.Range(0, biomeTypes.Count)];
 
 		return new Location(name, wealth, resourceRichness, citySize, biomeType);
 	}
@@ -391,14 +493,14 @@ public class CaravanManager : BaseManager {
 		public Wealth wealth;
 		public ResourceRichness resourceRichness;
 		public CitySize citySize;
-		public TileManager.BiomeTypes biomeType;
+		public TileManager.BiomeTypeEnum biomeType;
 
 		public Location(
 			string name, 
 			Wealth wealth, 
 			ResourceRichness resourceRichness, 
 			CitySize citySize, 
-			TileManager.BiomeTypes biomeType
+			TileManager.BiomeTypeEnum biomeType
 		) {
 			this.name = name;
 			this.wealth = wealth;

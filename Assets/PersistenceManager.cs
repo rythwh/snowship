@@ -15,8 +15,8 @@ public class PersistenceManager : BaseManager {
 		this.startCoroutineReference = startCoroutineReference;
 	}
 
-	public static readonly KeyValuePair<int, string> gameVersion = new KeyValuePair<int, string>(3, "2018.2");
-	public static readonly KeyValuePair<int, string> saveVersion = new KeyValuePair<int, string>(3, "2018.2");
+	public static readonly KeyValuePair<int, string> gameVersion = new KeyValuePair<int, string>(3, "2019.1");
+	public static readonly KeyValuePair<int, string> saveVersion = new KeyValuePair<int, string>(3, "2019.1");
 
 	public SettingsState settingsState;
 
@@ -150,11 +150,6 @@ public class PersistenceManager : BaseManager {
 
 	// Game Saving
 
-	public class UniverseState {
-		public static readonly string saveVersion = "2018.2";
-		public static readonly string gameVersion = "2018.2";
-	}
-
 	public static string GenerateDateTimeString() {
 		DateTime now = DateTime.Now;
 		string dateTime = string.Format(
@@ -240,7 +235,10 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public static List<KeyValuePair<string, object>> GetKeyValuePairsFromFile(string path) {
-		List<string> lines = File.ReadAllLines(path).ToList();
+		return GetKeyValuePairsFromLines(File.ReadAllLines(path).ToList());
+	}
+
+	public static List<KeyValuePair<string, object>> GetKeyValuePairsFromLines(List<string> lines) {
 		List<KeyValuePair<string, object>> properties = new List<KeyValuePair<string, object>>();
 		while (true) {
 			if (lines.Count <= 0) {
@@ -873,7 +871,7 @@ public class PersistenceManager : BaseManager {
 		file.WriteLine(CreateKeyValueString(ColonyProperty.AveragePrecipitation, colony.map.mapData.averagePrecipitation, 0));
 
 		file.WriteLine(CreateKeyValueString(ColonyProperty.TerrainTypeHeights, string.Empty, 0));
-		foreach (KeyValuePair<TileManager.TileTypes, float> terrainTypeHeight in colony.map.mapData.terrainTypeHeights) {
+		foreach (KeyValuePair<TileManager.TileTypeGroupEnum, float> terrainTypeHeight in colony.map.mapData.terrainTypeHeights) {
 			file.WriteLine(CreateKeyValueString(terrainTypeHeight.Key, terrainTypeHeight.Value, 1));
 		}
 
@@ -896,7 +894,7 @@ public class PersistenceManager : BaseManager {
 		public int size;
 		public float averageTemperature;
 		public float averagePrecipitation;
-		public Dictionary<TileManager.TileTypes, float> terrainTypeHeights = new Dictionary<TileManager.TileTypes, float>();
+		public Dictionary<TileManager.TileTypeGroupEnum, float> terrainTypeHeights = new Dictionary<TileManager.TileTypeGroupEnum, float>();
 		public List<int> surroundingPlanetTileHeights = new List<int>();
 		public bool onRiver;
 		public List<int> surroundingPlanetTileRivers = new List<int>();
@@ -970,7 +968,7 @@ public class PersistenceManager : BaseManager {
 					break;
 				case ColonyProperty.TerrainTypeHeights:
 					foreach (KeyValuePair<string, object> terrainTypeHeightProperty in (List<KeyValuePair<string, object>>)property.Value) {
-						TileManager.TileTypes terrainTypeHeightPropertyKey = (TileManager.TileTypes)Enum.Parse(typeof(TileManager.TileTypes), terrainTypeHeightProperty.Key);
+						TileManager.TileTypeGroupEnum terrainTypeHeightPropertyKey = (TileManager.TileTypeGroupEnum)Enum.Parse(typeof(TileManager.TileTypeGroupEnum), terrainTypeHeightProperty.Key);
 						persistenceColony.terrainTypeHeights.Add(terrainTypeHeightPropertyKey, float.Parse((string)terrainTypeHeightProperty.Value));
 					}
 					break;
@@ -1115,7 +1113,7 @@ public class PersistenceManager : BaseManager {
 			GameManager.uiM.SetLoadingScreenActive(true);
 			GameManager.uiM.SetGameUIActive(false);
 
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Colony"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Loading Colony", string.Empty); yield return null;
 			GameManager.colonyM.LoadColony(GameManager.colonyM.colony, false);
 
 			string saveDirectoryPath = Directory.GetParent(persistenceSave.path).FullName;
@@ -1123,96 +1121,96 @@ public class PersistenceManager : BaseManager {
 			GameManager.timeM.SetPaused(true);
 
 			loadingState = LoadingState.LoadingCamera;
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Camera"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Loading Camera", string.Empty); yield return null;
 			LoadCamera(saveDirectoryPath + "/camera.snowship");
 			while (loadingState != LoadingState.LoadedCamera) { yield return null; }
 
 			loadingState = LoadingState.LoadingTime;
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Time"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Loading Time", string.Empty); yield return null;
 			LoadTime(saveDirectoryPath + "/time.snowship");
 			while (loadingState != LoadingState.LoadedTime) { yield return null; }
 
 			loadingState = LoadingState.LoadingResources;
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Resources"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Loading Resources", string.Empty); yield return null;
 			LoadResources(saveDirectoryPath + "/resources.snowship");
 			while (loadingState != LoadingState.LoadedResources) { yield return null; }
 
 			loadingState = LoadingState.LoadingMap;
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Original Map"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Loading Original Map", string.Empty); yield return null;
 			GameManager.colonyM.colony.map = new TileManager.Map() { mapData = GameManager.colonyM.colony.mapData };
 			TileManager.Map map = GameManager.colonyM.colony.map;
 
 			List<PersistenceTile> originalTiles = LoadTiles(GameManager.colonyM.colony.directory + "/Map/tiles.snowship");
 			List<PersistenceRiver> originalRivers = LoadRivers(GameManager.colonyM.colony.directory + "/Map/rivers.snowship");
 
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Modified Map"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Loading Modified Map", string.Empty); yield return null;
 			List<PersistenceTile> modifiedTiles = LoadTiles(saveDirectoryPath + "/tiles.snowship");
 			List<PersistenceRiver> modifiedRivers = LoadRivers(saveDirectoryPath + "/rivers.snowship");
 
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Generating Map"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Generating Map", string.Empty); yield return null;
 			ApplyLoadedTiles(originalTiles, modifiedTiles, map);
 			ApplyLoadedRivers(originalRivers, modifiedRivers, map);
 			while (loadingState != LoadingState.LoadedMap) { yield return null; }
 
 			loadingState = LoadingState.LoadingObjects;
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Object Data"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Loading Object Data", string.Empty); yield return null;
 			List<PersistenceObject> persistenceObjects = LoadObjects(saveDirectoryPath + "/objects.snowship");
 			ApplyLoadedObjects(persistenceObjects);
 			while (loadingState != LoadingState.LoadedObjects) { yield return null; }
 
 			loadingState = LoadingState.LoadingCaravans;
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Caravan Data"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Loading Caravan Data", string.Empty); yield return null;
 			List<PersistenceCaravan> persistenceCaravans = LoadCaravans(saveDirectoryPath + "/caravans.snowship");
 			ApplyLoadedCaravans(persistenceCaravans);
 			while (loadingState != LoadingState.LoadedCaravans) { yield return null; }
 
 			loadingState = LoadingState.LoadingJobs;
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Job Data"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Loading Job Data", string.Empty); yield return null;
 			List<PersistenceJob> persistenceJobs = LoadJobs(saveDirectoryPath + "/jobs.snowship");
 			ApplyLoadedJobs(persistenceJobs);
 			while (loadingState != LoadingState.LoadedJobs) { yield return null; }
 
 			loadingState = LoadingState.LoadingColonists;
-			GameManager.uiM.UpdateLoadingStateText("Persistence", "Loading Colonist Data"); yield return null;
+			GameManager.uiM.UpdateLoadingStateText("Loading Colonist Data", string.Empty); yield return null;
 			List<PersistenceColonist> persistenceColonists = LoadColonists(saveDirectoryPath + "/colonists.snowship");
 			ApplyLoadedColonists(persistenceColonists);
 			while (loadingState != LoadingState.LoadedColonists) { yield return null; }
 
 			for (int i = 0; i < persistenceObjects.Count; i++) {
 				PersistenceObject persistenceObject = persistenceObjects[i];
-				ResourceManager.TileObjectInstance tileObjectInstance = GameManager.colonyM.colony.map.GetTileFromPosition(persistenceObject.zeroPointTilePosition.Value).objectInstances.Values.ToList().Find(o => o.prefab.type == persistenceObject.type);
+				ResourceManager.ObjectInstance tileObjectInstance = GameManager.colonyM.colony.map.GetTileFromPosition(persistenceObject.zeroPointTilePosition.Value).objectInstances.Values.ToList().Find(o => o.prefab.type == persistenceObject.type);
 
 				switch (tileObjectInstance.prefab.instanceType) {
-					case ResourceManager.TileObjectPrefabInstanceType.Container:
+					case ResourceManager.ObjectInstanceType.Container:
 						ResourceManager.Container container = (ResourceManager.Container)tileObjectInstance;
 						foreach (KeyValuePair<string, List<ResourceManager.ResourceAmount>> humanToReservedResourcesKVP in persistenceObject.persistenceInventory.reservedResources) {
 							foreach (ResourceManager.ResourceAmount resourceAmount in humanToReservedResourcesKVP.Value) {
-								container.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+								container.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 							}
 							container.inventory.ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
 						}
 						break;
-					case ResourceManager.TileObjectPrefabInstanceType.ManufacturingTileObject:
-						ResourceManager.ManufacturingTileObject manufacturingTileObject = (ResourceManager.ManufacturingTileObject)tileObjectInstance;
+					case ResourceManager.ObjectInstanceType.ManufacturingObject:
+						ResourceManager.ManufacturingObject manufacturingTileObject = (ResourceManager.ManufacturingObject)tileObjectInstance;
 						foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
 							if (colonist.job != null) {
-								if (colonist.job.prefab.type == ResourceManager.TileObjectPrefabsEnum.CreateResource && colonist.job.tile == manufacturingTileObject.zeroPointTile) {
+								if (colonist.job.prefab.type == ResourceManager.ObjectEnum.CreateResource && colonist.job.tile == manufacturingTileObject.zeroPointTile) {
 									manufacturingTileObject.jobBacklog.Add(colonist.job);
 								}
 							}
 							if (colonist.storedJob != null) {
-								if (colonist.storedJob.prefab.type == ResourceManager.TileObjectPrefabsEnum.CreateResource && colonist.storedJob.tile == manufacturingTileObject.zeroPointTile) {
+								if (colonist.storedJob.prefab.type == ResourceManager.ObjectEnum.CreateResource && colonist.storedJob.tile == manufacturingTileObject.zeroPointTile) {
 									manufacturingTileObject.jobBacklog.Add(colonist.storedJob);
 								}
 							}
-							JobManager.Job job = GameManager.jobM.jobs.Find(j => j.prefab.type == ResourceManager.TileObjectPrefabsEnum.CreateResource && j.tile == manufacturingTileObject.zeroPointTile);
+							JobManager.Job job = GameManager.jobM.jobs.Find(j => j.prefab.type == ResourceManager.ObjectEnum.CreateResource && j.tile == manufacturingTileObject.zeroPointTile);
 							if (job != null) {
 								manufacturingTileObject.jobBacklog.Add(job);
 							}
 						}
 						manufacturingTileObject.SetActive(persistenceObject.active.Value);
 						break;
-					case ResourceManager.TileObjectPrefabInstanceType.SleepSpot:
+					case ResourceManager.ObjectInstanceType.SleepSpot:
 						ResourceManager.SleepSpot sleepSpot = (ResourceManager.SleepSpot)tileObjectInstance;
 						if (persistenceObject.occupyingColonistName != null) {
 							sleepSpot.occupyingColonist = GameManager.colonistM.colonists.Find(c => c.name == persistenceObject.occupyingColonistName);
@@ -1229,7 +1227,7 @@ public class PersistenceManager : BaseManager {
 
 				foreach (KeyValuePair<string, List<ResourceManager.ResourceAmount>> humanToReservedResourcesKVP in persistenceCaravan.persistenceInventory.reservedResources) {
 					foreach (ResourceManager.ResourceAmount resourceAmount in humanToReservedResourcesKVP.Value) {
-						caravan.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+						caravan.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 					}
 					caravan.inventory.ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
 				}
@@ -1240,7 +1238,7 @@ public class PersistenceManager : BaseManager {
 
 					foreach (KeyValuePair<string, List<ResourceManager.ResourceAmount>> humanToReservedResourcesKVP in persistenceTrader.persistenceHuman.persistenceInventory.reservedResources) {
 						foreach (ResourceManager.ResourceAmount resourceAmount in humanToReservedResourcesKVP.Value) {
-							trader.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+							trader.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 						}
 						trader.inventory.ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
 					}
@@ -1282,7 +1280,7 @@ public class PersistenceManager : BaseManager {
 			if (tile.plant != null) {
 				file.WriteLine(CreateKeyValueString(TileProperty.Plant, string.Empty, 1));
 
-				file.WriteLine(CreateKeyValueString(PlantProperty.Type, tile.plant.group.type, 2));
+				file.WriteLine(CreateKeyValueString(PlantProperty.Type, tile.plant.prefab.type, 2));
 				file.WriteLine(CreateKeyValueString(PlantProperty.Sprite, tile.plant.obj.GetComponent<SpriteRenderer>().sprite.name, 2));
 				file.WriteLine(CreateKeyValueString(PlantProperty.Small, tile.plant.small, 2));
 				file.WriteLine(CreateKeyValueString(PlantProperty.GrowthProgress, tile.plant.growthProgress, 2));
@@ -1305,7 +1303,7 @@ public class PersistenceManager : BaseManager {
 		public bool? tileDug;
 		public string tileSpriteName;
 
-		public ResourceManager.PlantGroup plantGroup;
+		public ResourceManager.PlantPrefab plantPrefab;
 		public string plantSpriteName;
 		public bool? plantSmall;
 		public float? plantGrowthProgress;
@@ -1314,7 +1312,7 @@ public class PersistenceManager : BaseManager {
 
 		public PersistenceTile(
 			int? tileIndex, float? tileHeight, TileManager.TileType tileType, float? tileTemperature, float? tilePrecipitation, TileManager.Biome tileBiome, bool? tileRoof, bool? tileDug, string tileSpriteName,
-			ResourceManager.PlantGroup plantGroup, string plantSpriteName, bool? plantSmall, float? plantGrowthProgress, ResourceManager.Resource plantHarvestResource, float? plantIntegrity
+			ResourceManager.PlantPrefab plantPrefab, string plantSpriteName, bool? plantSmall, float? plantGrowthProgress, ResourceManager.Resource plantHarvestResource, float? plantIntegrity
 		) {
 			this.tileIndex = tileIndex;
 			this.tileHeight = tileHeight;
@@ -1326,7 +1324,7 @@ public class PersistenceManager : BaseManager {
 			this.tileDug = tileDug;
 			this.tileSpriteName = tileSpriteName;
 
-			this.plantGroup = plantGroup;
+			this.plantPrefab = plantPrefab;
 			this.plantSpriteName = plantSpriteName;
 			this.plantSmall = plantSmall;
 			this.plantGrowthProgress = plantGrowthProgress;
@@ -1352,7 +1350,7 @@ public class PersistenceManager : BaseManager {
 					bool? tileDug = null;
 					string tileSpriteName = null;
 
-					ResourceManager.PlantGroup plantGroup = null;
+					ResourceManager.PlantPrefab plantPrefab = null;
 					string plantSpriteName = null;
 					bool? plantSmall = null;
 					float? plantGrowthProgress = null;
@@ -1368,7 +1366,7 @@ public class PersistenceManager : BaseManager {
 								tileHeight = float.Parse((string)tileProperty.Value);
 								break;
 							case TileProperty.TileType:
-								tileType = GameManager.tileM.GetTileTypeByEnum((TileManager.TileTypes)Enum.Parse(typeof(TileManager.TileTypes), (string)tileProperty.Value));
+								tileType = GameManager.tileM.GetTileTypeByString((string)tileProperty.Value);
 								break;
 							case TileProperty.Temperature:
 								tileTemperature = float.Parse((string)tileProperty.Value);
@@ -1377,7 +1375,7 @@ public class PersistenceManager : BaseManager {
 								tilePrecipitation = float.Parse((string)tileProperty.Value);
 								break;
 							case TileProperty.Biome:
-								tileBiome = GameManager.tileM.biomes.Find(biome => biome.type == (TileManager.BiomeTypes)Enum.Parse(typeof(TileManager.BiomeTypes), (string)tileProperty.Value));
+								tileBiome = GameManager.tileM.GetBiomeByString((string)tileProperty.Value);
 								break;
 							case TileProperty.Roof:
 								tileRoof = bool.Parse((string)tileProperty.Value);
@@ -1392,7 +1390,7 @@ public class PersistenceManager : BaseManager {
 								foreach (KeyValuePair<string, object> plantProperty in (List<KeyValuePair<string, object>>)tileProperty.Value) {
 									switch ((PlantProperty)Enum.Parse(typeof(PlantProperty), plantProperty.Key)) {
 										case PlantProperty.Type:
-											plantGroup = GameManager.resourceM.GetPlantGroupByEnum((ResourceManager.PlantGroupsEnum)Enum.Parse(typeof(ResourceManager.PlantGroupsEnum), (string)plantProperty.Value));
+											plantPrefab = GameManager.resourceM.GetPlantPrefabByString((string)plantProperty.Value);
 											break;
 										case PlantProperty.Sprite:
 											plantSpriteName = (string)plantProperty.Value;
@@ -1404,7 +1402,7 @@ public class PersistenceManager : BaseManager {
 											plantGrowthProgress = float.Parse((string)plantProperty.Value);
 											break;
 										case PlantProperty.HarvestResource:
-											plantHarvestResource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), (string)plantProperty.Value));
+											plantHarvestResource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)plantProperty.Value));
 											break;
 										case PlantProperty.Integrity:
 											plantIntegrity = float.Parse((string)plantProperty.Value);
@@ -1423,7 +1421,7 @@ public class PersistenceManager : BaseManager {
 
 					persistenceTiles.Add(new PersistenceTile(
 						tileIndex, tileHeight, tileType, tileTemperature, tilePrecipitation, tileBiome, tileRoof, tileDug, tileSpriteName, 
-						plantGroup, plantSpriteName, plantSmall, plantGrowthProgress, plantHarvestResource, plantIntegrity
+						plantPrefab, plantSpriteName, plantSmall, plantGrowthProgress, plantHarvestResource, plantIntegrity
 					));
 					break;
 				default:
@@ -1480,11 +1478,11 @@ public class PersistenceManager : BaseManager {
 				tileDifferences.Add(TileProperty.Sprite, tile.sr.sprite.name);
 			}
 
-			if (originalTile.plantGroup == null) {
+			if (originalTile.plantPrefab == null) {
 				if (tile.plant != null) { // No original plant, plant was added
 					tileDifferences.Add(TileProperty.Plant, string.Empty);
 
-					plantDifferences.Add(PlantProperty.Type, tile.plant.group.type.ToString());
+					plantDifferences.Add(PlantProperty.Type, tile.plant.prefab.type.ToString());
 					plantDifferences.Add(PlantProperty.Sprite, tile.plant.obj.GetComponent<SpriteRenderer>().sprite.name);
 					plantDifferences.Add(PlantProperty.Small, tile.plant.small.ToString());
 					plantDifferences.Add(PlantProperty.GrowthProgress, tile.plant.growthProgress.ToString());
@@ -1499,8 +1497,8 @@ public class PersistenceManager : BaseManager {
 
 					plantDifferences.Add(PlantProperty.Type, "None");
 				} else { // Plant has remained, properties potentially changed
-					if (tile.plant.group.type != originalTile.plantGroup.type) {
-						plantDifferences.Add(PlantProperty.Type, tile.plant.group.type.ToString());
+					if (tile.plant.prefab.type != originalTile.plantPrefab.type) {
+						plantDifferences.Add(PlantProperty.Type, tile.plant.prefab.type.ToString());
 					}
 
 					if (tile.plant.obj.GetComponent<SpriteRenderer>().sprite.name != originalTile.plantSpriteName) {
@@ -1571,23 +1569,21 @@ public class PersistenceManager : BaseManager {
 				tile.roof = modifiedTile != null && modifiedTile.tileRoof.HasValue ? modifiedTile.tileRoof.Value : originalTile.tileRoof.Value;
 				tile.dugPreviously = modifiedTile != null && modifiedTile.tileDug.HasValue ? modifiedTile.tileDug.Value : originalTile.tileDug.Value;
 
-				bool originalTileValidPlant = originalTile.plantGroup != null;
+				bool originalTileValidPlant = originalTile.plantPrefab != null;
 
-				bool modifiedTilePlantGroupExists = modifiedTile != null && modifiedTile.plantGroup != null;
-				bool modifiedTileValidPlant = modifiedTilePlantGroupExists && modifiedTile.plantGroup.type != ResourceManager.PlantGroupsEnum.None;
-				bool plantRemoved = modifiedTilePlantGroupExists && modifiedTile.plantGroup.type == ResourceManager.PlantGroupsEnum.None;
+				bool modifiedTilePlantGroupExists = modifiedTile != null && modifiedTile.plantPrefab != null;
+				bool modifiedTileValidPlant = modifiedTilePlantGroupExists && modifiedTile.plantPrefab.type != ResourceManager.PlantEnum.None;
+				bool plantRemoved = modifiedTilePlantGroupExists && modifiedTile.plantPrefab.type == ResourceManager.PlantEnum.None;
 
 				if (modifiedTileValidPlant || (originalTileValidPlant && !plantRemoved)) {
 					tile.SetPlant(
 						false,
 						new ResourceManager.Plant(
-							modifiedTile != null && modifiedTile.plantGroup != null && modifiedTile.plantGroup.type != ResourceManager.PlantGroupsEnum.None ? modifiedTile.plantGroup : originalTile.plantGroup,
+							modifiedTile != null && modifiedTile.plantPrefab != null && modifiedTile.plantPrefab.type != ResourceManager.PlantEnum.None ? modifiedTile.plantPrefab : originalTile.plantPrefab,
 							tile,
-							false,
 							modifiedTile != null && modifiedTile.plantSmall.HasValue ? modifiedTile.plantSmall.Value : originalTile.plantSmall.Value,
-							map.smallPlants,
 							false,
-							modifiedTile != null && modifiedTile.plantHarvestResource != null && modifiedTile.plantHarvestResource.type != ResourceManager.ResourcesEnum.None ? modifiedTile.plantHarvestResource : originalTile.plantHarvestResource
+							modifiedTile != null && modifiedTile.plantHarvestResource != null && modifiedTile.plantHarvestResource.type != ResourceManager.ResourceEnum.None ? modifiedTile.plantHarvestResource : originalTile.plantHarvestResource
 						) {
 							integrity = modifiedTile != null && modifiedTile.plantIntegrity.HasValue ? modifiedTile.plantIntegrity.Value : originalTile.plantIntegrity.Value,
 							growthProgress = modifiedTile != null && modifiedTile.plantGrowthProgress.HasValue ? modifiedTile.plantGrowthProgress.Value : originalTile.plantGrowthProgress.Value
@@ -1621,9 +1617,12 @@ public class PersistenceManager : BaseManager {
 
 			Sprite tileSprite = tile.tileType.baseSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.tileSpriteName != null ? modifiedTile.tileSpriteName : originalTile.tileSpriteName));
 			if (tileSprite == null) {
-				tileSprite = tile.tileType.bitmaskSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.tileSpriteName != null ? modifiedTile.tileSpriteName : originalTile.tileSpriteName));
+				tileSprite = tile.biome.tileTypes[tile.tileType.groupType].baseSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.tileSpriteName != null ? modifiedTile.tileSpriteName : originalTile.tileSpriteName));
 				if (tileSprite == null) {
-					tileSprite = tile.tileType.riverSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.tileSpriteName != null ? modifiedTile.tileSpriteName : originalTile.tileSpriteName));
+					tileSprite = tile.tileType.bitmaskSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.tileSpriteName != null ? modifiedTile.tileSpriteName : originalTile.tileSpriteName));
+					if (tileSprite == null) {
+						tileSprite = tile.tileType.riverSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.tileSpriteName != null ? modifiedTile.tileSpriteName : originalTile.tileSpriteName));
+					}
 				}
 			}
 			tile.sr.sprite = tileSprite;
@@ -1631,12 +1630,12 @@ public class PersistenceManager : BaseManager {
 			if (tile.plant != null) {
 				Sprite plantSprite = null;
 				if (tile.plant.small) {
-					plantSprite = tile.plant.group.smallSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.plantSpriteName != null ? modifiedTile.plantSpriteName : originalTile.plantSpriteName));
+					plantSprite = tile.plant.prefab.smallSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.plantSpriteName != null ? modifiedTile.plantSpriteName : originalTile.plantSpriteName));
 				} else {
-					plantSprite = tile.plant.group.fullSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.plantSpriteName != null ? modifiedTile.plantSpriteName : originalTile.plantSpriteName));
+					plantSprite = tile.plant.prefab.fullSprites.Find(s => s.name == (modifiedTile != null && modifiedTile.plantSpriteName != null ? modifiedTile.plantSpriteName : originalTile.plantSpriteName));
 				}
 				if (plantSprite == null) {
-					plantSprite = tile.plant.group.harvestResourceSprites[tile.plant.harvestResource.type][tile.plant.small].Find(sprite => sprite.name == (modifiedTile != null && modifiedTile.plantSpriteName != null ? modifiedTile.plantSpriteName : originalTile.plantSpriteName));
+					plantSprite = tile.plant.prefab.harvestResourceSprites[tile.plant.harvestResource][tile.plant.small].Find(sprite => sprite.name == (modifiedTile != null && modifiedTile.plantSpriteName != null ? modifiedTile.plantSpriteName : originalTile.plantSpriteName));
 				}
 				tile.plant.obj.GetComponent<SpriteRenderer>().sprite = plantSprite;
 			}
@@ -2112,7 +2111,7 @@ public class PersistenceManager : BaseManager {
 				case HumanProperty.Clothes:
 					foreach (KeyValuePair<string, object> clothingProperty in (List<KeyValuePair<string, object>>)humanProperty.Value) {
 						HumanManager.Human.Appearance clothingPropertyKey = (HumanManager.Human.Appearance)Enum.Parse(typeof(HumanManager.Human.Appearance), clothingProperty.Key);
-						ResourceManager.ClothingType clothingType = (ResourceManager.ClothingType)Enum.Parse(typeof(ResourceManager.ClothingType), ((string)clothingProperty.Value).Split(':')[0]);
+						ResourceManager.ClothingEnum clothingType = (ResourceManager.ClothingEnum)Enum.Parse(typeof(ResourceManager.ClothingEnum), ((string)clothingProperty.Value).Split(':')[0]);
 						string colour = ((string)clothingProperty.Value).Split(':')[1];
 						clothes.Add(clothingPropertyKey, GameManager.resourceM.GetClothesByAppearance(clothingPropertyKey).Find(c => c.prefab.clothingType == clothingType && c.colour == colour));
 					}
@@ -2130,7 +2129,7 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public enum CaravanProperty {
-		Caravan, Type, Location, TargetTile, ResourceGroup, Inventory, ResourcesToTrade, ConfirmedResourcesToTrade, Traders
+		CaravanTimer, Caravan, Type, Location, TargetTile, ResourceGroup, LeaveTimer, Leaving, Inventory, ResourcesToTrade, ConfirmedResourcesToTrade, Traders
 	}
 
 	public enum LocationProperty {
@@ -2138,22 +2137,21 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public enum TraderProperty {
-		Trader, Life, Human
+		Trader, Life, Human, LeaveTile, TradingPosts
 	}
 
 	public enum TradeResourceAmountProperty {
 		TradeResourceAmount, Type, CaravanAmount, TradeAmount, Price
 	}
 
-	//public enum PriceProperty {
-	//	Gold, Silver, Bronze
-	//}
-
 	public enum ConfirmedTradeResourceAmountProperty {
 		ConfirmedTradeResourceAmount, Type, TradeAmount, AmountRemaining
 	}
 
 	public void SaveCaravans(StreamWriter file) {
+
+		file.WriteLine(CreateKeyValueString(CaravanProperty.CaravanTimer, GameManager.caravanM.caravanTimer, 0));
+
 		foreach (CaravanManager.Caravan caravan in GameManager.caravanM.caravans) {
 			file.WriteLine(CreateKeyValueString(CaravanProperty.Caravan, string.Empty, 0));
 
@@ -2170,12 +2168,15 @@ public class PersistenceManager : BaseManager {
 
 			file.WriteLine(CreateKeyValueString(CaravanProperty.ResourceGroup, caravan.resourceGroup.type, 1));
 
+			file.WriteLine(CreateKeyValueString(CaravanProperty.LeaveTimer, caravan.leaveTimer, 1));
+			file.WriteLine(CreateKeyValueString(CaravanProperty.Leaving, caravan.leaving, 1));
+
 			WriteInventoryLines(file, caravan.inventory, 1);
 
-			List<ResourceManager.TradeResourceAmount> tradeResourceAmounts = caravan.GetTradeResourceAmounts();
+			List<ResourceManager.TradeResourceAmount> tradeResourceAmounts = caravan.GenerateTradeResourceAmounts();
 			if (tradeResourceAmounts.Count > 0) {
 				file.WriteLine(CreateKeyValueString(CaravanProperty.ResourcesToTrade, string.Empty, 1));
-				foreach (ResourceManager.TradeResourceAmount tra in caravan.GetTradeResourceAmounts()) {
+				foreach (ResourceManager.TradeResourceAmount tra in caravan.GenerateTradeResourceAmounts()) {
 					file.WriteLine(CreateKeyValueString(TradeResourceAmountProperty.TradeResourceAmount, string.Empty, 2));
 
 					file.WriteLine(CreateKeyValueString(TradeResourceAmountProperty.Type, tra.resource.type, 3));
@@ -2193,7 +2194,7 @@ public class PersistenceManager : BaseManager {
 				foreach (ResourceManager.ConfirmedTradeResourceAmount ctra in caravan.confirmedResourcesToTrade) {
 					file.WriteLine(CreateKeyValueString(ConfirmedTradeResourceAmountProperty.ConfirmedTradeResourceAmount, string.Empty, 2));
 
-					file.WriteLine(CreateKeyValueString(ConfirmedTradeResourceAmountProperty.Type, ctra.tradeResourceAmount.resource.type, 3));
+					file.WriteLine(CreateKeyValueString(ConfirmedTradeResourceAmountProperty.Type, ctra.resource.type, 3));
 
 					file.WriteLine(CreateKeyValueString(ConfirmedTradeResourceAmountProperty.TradeAmount, ctra.tradeAmount, 3));
 
@@ -2208,6 +2209,14 @@ public class PersistenceManager : BaseManager {
 				WriteLifeLines(file, trader, 3);
 
 				WriteHumanLines(file, trader, 3);
+
+				if (trader.leaveTile != null) {
+					file.WriteLine(CreateKeyValueString(TraderProperty.LeaveTile, FormatVector2ToString(trader.leaveTile.obj.transform.position), 3));
+				}
+
+				if (trader.tradingPosts != null && trader.tradingPosts.Count > 0) {
+					file.WriteLine(CreateKeyValueString(TraderProperty.TradingPosts, string.Join(";", trader.tradingPosts.Select(tp => FormatVector2ToString(tp.zeroPointTile.obj.transform.position)).ToArray()), 3));
+				}
 			}
 		}
 	}
@@ -2217,6 +2226,8 @@ public class PersistenceManager : BaseManager {
 		public CaravanManager.Location location;
 		public Vector2? targetTilePosition;
 		public ResourceManager.ResourceGroup resourceGroup;
+		public int? leaveTimer;
+		public bool? leaving;
 		public PersistenceInventory persistenceInventory;
 		public List<PersistenceTradeResourceAmount> persistenceResourcesToTrade;
 		public List<PersistenceConfirmedTradeResourceAmount> persistenceConfirmedResourcesToTrade;
@@ -2227,6 +2238,8 @@ public class PersistenceManager : BaseManager {
 			CaravanManager.Location location,
 			Vector2? targetTilePosition,
 			ResourceManager.ResourceGroup resourceGroup,
+			int? leaveTimer,
+			bool? leaving,
 			PersistenceInventory persistenceInventory,
 			List<PersistenceTradeResourceAmount> persistenceResourcesToTrade,
 			List<PersistenceConfirmedTradeResourceAmount> persistenceConfirmedResourcesToTrade,
@@ -2236,6 +2249,8 @@ public class PersistenceManager : BaseManager {
 			this.location = location;
 			this.targetTilePosition = targetTilePosition;
 			this.resourceGroup = resourceGroup;
+			this.leaveTimer = leaveTimer;
+			this.leaving = leaving;
 			this.persistenceInventory = persistenceInventory;
 			this.persistenceResourcesToTrade = persistenceResourcesToTrade;
 			this.persistenceConfirmedResourcesToTrade = persistenceConfirmedResourcesToTrade;
@@ -2244,13 +2259,13 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public class PersistenceTradeResourceAmount {
-		public ResourceManager.ResourcesEnum? type;
+		public ResourceManager.ResourceEnum? type;
 		public int? caravanAmount;
 		public int? tradeAmount;
 		public int? caravanPrice;
 
 		public PersistenceTradeResourceAmount(
-			ResourceManager.ResourcesEnum? type,
+			ResourceManager.ResourceEnum? type,
 			int? caravanAmount,
 			int? tradeAmount,
 			int? caravanPrice
@@ -2263,12 +2278,12 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public class PersistenceConfirmedTradeResourceAmount {
-		public ResourceManager.ResourcesEnum? type;
+		public ResourceManager.ResourceEnum? type;
 		public int? tradeAmount;
 		public int? amountRemaining;
 
 		public PersistenceConfirmedTradeResourceAmount(
-			ResourceManager.ResourcesEnum? type,
+			ResourceManager.ResourceEnum? type,
 			int? tradeAmount,
 			int? amountRemaining
 		) {
@@ -2281,13 +2296,19 @@ public class PersistenceManager : BaseManager {
 	public class PersistenceTrader {
 		public PersistenceLife persistenceLife;
 		public PersistenceHuman persistenceHuman;
+		public TileManager.Tile leaveTile;
+		public List<ResourceManager.TradingPost> tradingPosts;
 
 		public PersistenceTrader(
 			PersistenceLife persistenceLife,
-			PersistenceHuman persistenceHuman
+			PersistenceHuman persistenceHuman,
+			TileManager.Tile leaveTile,
+			List<ResourceManager.TradingPost> tradingPosts
 		) {
 			this.persistenceLife = persistenceLife;
 			this.persistenceHuman = persistenceHuman;
+			this.leaveTile = leaveTile;
+			this.tradingPosts = tradingPosts;
 		}
 	}
 
@@ -2297,6 +2318,9 @@ public class PersistenceManager : BaseManager {
 		List<KeyValuePair<string, object>> properties = GetKeyValuePairsFromFile(path);
 		foreach (KeyValuePair<string, object> property in properties) {
 			switch ((CaravanProperty)Enum.Parse(typeof(CaravanProperty), property.Key)) {
+				case CaravanProperty.CaravanTimer:
+					GameManager.caravanM.caravanTimer = int.Parse((string)property.Value);
+					break;
 				case CaravanProperty.Caravan:
 
 					List<KeyValuePair<string, object>> caravanProperties = (List<KeyValuePair<string, object>>)property.Value;
@@ -2305,6 +2329,8 @@ public class PersistenceManager : BaseManager {
 					CaravanManager.Location location = null;
 					Vector2? targetTilePosition = null;
 					ResourceManager.ResourceGroup resourceGroup = null;
+					int? leaveTimer = null;
+					bool? leaving = null;
 					PersistenceInventory persistenceInventory = null;
 					List<PersistenceTradeResourceAmount> persistenceResourcesToTrade = new List<PersistenceTradeResourceAmount>();
 					List<PersistenceConfirmedTradeResourceAmount> persistenceConfirmedResourcesToTrade = new List<PersistenceConfirmedTradeResourceAmount>();
@@ -2321,7 +2347,7 @@ public class PersistenceManager : BaseManager {
 								CaravanManager.Location.Wealth? locationWealth = null;
 								CaravanManager.Location.ResourceRichness? locationResourceRichness = null;
 								CaravanManager.Location.CitySize? locationCitySize = null;
-								TileManager.BiomeTypes? locationBiomeType = null;
+								TileManager.BiomeTypeEnum? locationBiomeType = null;
 
 								foreach (KeyValuePair<string, object> locationProperty in (List<KeyValuePair<string, object>>)caravanProperty.Value) {
 									switch ((LocationProperty)Enum.Parse(typeof(LocationProperty), locationProperty.Key)) {
@@ -2338,7 +2364,7 @@ public class PersistenceManager : BaseManager {
 											locationCitySize = (CaravanManager.Location.CitySize)Enum.Parse(typeof(CaravanManager.Location.CitySize), (string)locationProperty.Value);
 											break;
 										case LocationProperty.BiomeType:
-											locationBiomeType = (TileManager.BiomeTypes)Enum.Parse(typeof(TileManager.BiomeTypes), (string)locationProperty.Value);
+											locationBiomeType = (TileManager.BiomeTypeEnum)Enum.Parse(typeof(TileManager.BiomeTypeEnum), (string)locationProperty.Value);
 											break;
 										default:
 											Debug.LogError("Unknown location property: " + locationProperty.Key + " " + locationProperty.Value);
@@ -2358,7 +2384,13 @@ public class PersistenceManager : BaseManager {
 								targetTilePosition = new Vector2(float.Parse(((string)caravanProperty.Value).Split(',')[0]), float.Parse(((string)caravanProperty.Value).Split(',')[1]));
 								break;
 							case CaravanProperty.ResourceGroup:
-								resourceGroup = GameManager.resourceM.GetResourceGroupByEnum((ResourceManager.ResourceGroupsEnum)Enum.Parse(typeof(ResourceManager.ResourceGroupsEnum), (string)caravanProperty.Value));
+								resourceGroup = GameManager.resourceM.GetResourceGroupByEnum((ResourceManager.ResourceGroupEnum)Enum.Parse(typeof(ResourceManager.ResourceGroupEnum), (string)caravanProperty.Value));
+								break;
+							case CaravanProperty.LeaveTimer:
+								leaveTimer = int.Parse((string)caravanProperty.Value);
+								break;
+							case CaravanProperty.Leaving:
+								leaving = bool.Parse((string)caravanProperty.Value);
 								break;
 							case CaravanProperty.Inventory:
 								persistenceInventory = LoadPersistenceInventory((List<KeyValuePair<string, object>>)caravanProperty.Value);
@@ -2368,7 +2400,7 @@ public class PersistenceManager : BaseManager {
 									switch ((TradeResourceAmountProperty)Enum.Parse(typeof(TradeResourceAmountProperty), resourceToTradeProperty.Key)) {
 										case TradeResourceAmountProperty.TradeResourceAmount:
 
-											ResourceManager.ResourcesEnum? resourceToTradeType = null;
+											ResourceManager.ResourceEnum? resourceToTradeType = null;
 											int? resourceToTradeCaravanAmount = null;
 											int? resourceToTradeTradeAmount = null;
 											int? resourceToTradeCaravanPrice = null;
@@ -2376,7 +2408,7 @@ public class PersistenceManager : BaseManager {
 											foreach (KeyValuePair<string, object> resourceToTradeSubProperty in (List<KeyValuePair<string, object>>)resourceToTradeProperty.Value) {
 												switch ((TradeResourceAmountProperty)Enum.Parse(typeof(TradeResourceAmountProperty), resourceToTradeSubProperty.Key)) {
 													case TradeResourceAmountProperty.Type:
-														resourceToTradeType = (ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), (string)resourceToTradeSubProperty.Value);
+														resourceToTradeType = (ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)resourceToTradeSubProperty.Value);
 														break;
 													case TradeResourceAmountProperty.CaravanAmount:
 														resourceToTradeCaravanAmount = int.Parse((string)resourceToTradeSubProperty.Value);
@@ -2411,14 +2443,14 @@ public class PersistenceManager : BaseManager {
 									switch ((ConfirmedTradeResourceAmountProperty)Enum.Parse(typeof(ConfirmedTradeResourceAmountProperty), confirmedResourceToTradeProperty.Key)) {
 										case ConfirmedTradeResourceAmountProperty.ConfirmedTradeResourceAmount:
 
-											ResourceManager.ResourcesEnum? confirmedResourceToTradeType = null;
+											ResourceManager.ResourceEnum? confirmedResourceToTradeType = null;
 											int? confirmedResourceToTradeTradeAmount = null;
 											int? confirmedResourceToTradeAmountRemaining = null;
 
 											foreach (KeyValuePair<string, object> confirmedResourceToTradeSubProperty in (List<KeyValuePair<string, object>>)confirmedResourceToTradeProperty.Value) {
 												switch ((ConfirmedTradeResourceAmountProperty)Enum.Parse(typeof(ConfirmedTradeResourceAmountProperty), confirmedResourceToTradeSubProperty.Key)) {
 													case ConfirmedTradeResourceAmountProperty.Type:
-														confirmedResourceToTradeType = (ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), (string)confirmedResourceToTradeSubProperty.Value);
+														confirmedResourceToTradeType = (ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)confirmedResourceToTradeSubProperty.Value);
 														break;
 													case ConfirmedTradeResourceAmountProperty.TradeAmount:
 														confirmedResourceToTradeTradeAmount = int.Parse((string)confirmedResourceToTradeSubProperty.Value);
@@ -2451,6 +2483,8 @@ public class PersistenceManager : BaseManager {
 
 											PersistenceLife persistenceLife = null;
 											PersistenceHuman persistenceHuman = null;
+											TileManager.Tile traderLeaveTile = null;
+											List<ResourceManager.TradingPost> traderTradingPosts = new List<ResourceManager.TradingPost>();
 
 											foreach (KeyValuePair<string, object> traderSubProperty in (List<KeyValuePair<string, object>>)traderProperty.Value) {
 												switch ((TraderProperty)Enum.Parse(typeof(TraderProperty), traderSubProperty.Key)) {
@@ -2460,13 +2494,27 @@ public class PersistenceManager : BaseManager {
 													case TraderProperty.Human:
 														persistenceHuman = LoadPersistenceHuman((List<KeyValuePair<string, object>>)traderSubProperty.Value);
 														break;
+													case TraderProperty.LeaveTile:
+														traderLeaveTile = GameManager.colonyM.colony.map.GetTileFromPosition(new Vector2(float.Parse(((string)traderSubProperty.Value).Split(',')[0]), float.Parse(((string)traderSubProperty.Value).Split(',')[1])));
+														break;
+													case TraderProperty.TradingPosts:
+														foreach (string vector2String in ((string)traderSubProperty.Value).Split(';')) {
+															TileManager.Tile tradingPostZeroPointTile = GameManager.colonyM.colony.map.GetTileFromPosition(new Vector2(float.Parse(vector2String.Split(',')[0]), float.Parse(vector2String.Split(',')[1])));
+															traderTradingPosts.Add(GameManager.resourceM.tradingPosts.Find(tp => tp.zeroPointTile == tradingPostZeroPointTile));
+														}
+														break;
 													default:
 														Debug.LogError("Unknown trader property: " + traderSubProperty.Key + " " + traderSubProperty.Value);
 														break;
 												}
 											}
 
-											persistenceTraders.Add(new PersistenceTrader(persistenceLife, persistenceHuman));
+											persistenceTraders.Add(new PersistenceTrader(
+												persistenceLife, 
+												persistenceHuman,
+												traderLeaveTile,
+												traderTradingPosts
+											));
 											break;
 										default:
 											Debug.LogError("Unknown trader property: " + traderProperty.Key + " " + traderProperty.Value);
@@ -2485,6 +2533,8 @@ public class PersistenceManager : BaseManager {
 						location,
 						targetTilePosition,
 						resourceGroup,
+						leaveTimer,
+						leaving,
 						persistenceInventory,
 						persistenceResourcesToTrade,
 						persistenceConfirmedResourcesToTrade,
@@ -2508,28 +2558,31 @@ public class PersistenceManager : BaseManager {
 				caravanType = persistenceCaravan.type.Value,
 				location = persistenceCaravan.location,
 				targetTile = GameManager.colonyM.colony.map.GetTileFromPosition(persistenceCaravan.targetTilePosition.Value),
-				resourceGroup = persistenceCaravan.resourceGroup
+				resourceGroup = persistenceCaravan.resourceGroup,
+				leaveTimer = persistenceCaravan.leaveTimer.Value,
+				leaving = persistenceCaravan.leaving.Value
 			};
 
 			caravan.inventory.maxAmount = persistenceCaravan.persistenceInventory.maxAmount.Value;
 			foreach (ResourceManager.ResourceAmount resourceAmount in persistenceCaravan.persistenceInventory.resources) {
-				caravan.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+				caravan.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 			}
 
 			foreach (PersistenceTradeResourceAmount persistenceTradeResourceAmount in persistenceCaravan.persistenceResourcesToTrade) {
 				ResourceManager.TradeResourceAmount tradeResourceAmount = new ResourceManager.TradeResourceAmount(
 					GameManager.resourceM.GetResourceByEnum(persistenceTradeResourceAmount.type.Value),
 					persistenceTradeResourceAmount.caravanAmount.Value,
-					persistenceTradeResourceAmount.caravanPrice.Value,
 					caravan
-				);
-				tradeResourceAmount.SetTradeAmount(persistenceTradeResourceAmount.tradeAmount.Value);
+				) {
+					caravanResourcePrice = persistenceTradeResourceAmount.caravanPrice.Value
+				};
+				tradeResourceAmount.SetTradeAmount(persistenceTradeResourceAmount.tradeAmount.Value); // Added to caravan through tra.SetTradeAmount() -> caravan.SetSelectedResource()
 			}
 
 			foreach (PersistenceConfirmedTradeResourceAmount persistenceConfirmedTradeResourceAmount in persistenceCaravan.persistenceConfirmedResourcesToTrade) {
 				caravan.confirmedResourcesToTrade.Add(
 					new ResourceManager.ConfirmedTradeResourceAmount(
-						caravan.resourcesToTrade.Find(rtt => rtt.resource.type == persistenceConfirmedTradeResourceAmount.type),
+						GameManager.resourceM.GetResourceByEnum(persistenceConfirmedTradeResourceAmount.type.Value),
 						persistenceConfirmedTradeResourceAmount.tradeAmount.Value
 					) {
 						amountRemaining = persistenceConfirmedTradeResourceAmount.amountRemaining.Value
@@ -2557,17 +2610,21 @@ public class PersistenceManager : BaseManager {
 
 				trader.inventory.maxAmount = persistenceTrader.persistenceHuman.persistenceInventory.maxAmount.Value;
 				foreach (ResourceManager.ResourceAmount resourceAmount in persistenceTrader.persistenceHuman.persistenceInventory.resources) {
-					trader.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+					trader.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 				}
 
 				foreach (KeyValuePair<HumanManager.Human.Appearance, ResourceManager.Clothing> appearanceToClothingKVP in persistenceTrader.persistenceHuman.clothes) {
-					trader.inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(appearanceToClothingKVP.Value.type), 1);
+					trader.inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(appearanceToClothingKVP.Value.type), 1, false);
 					trader.ChangeClothing(appearanceToClothingKVP.Key, appearanceToClothingKVP.Value, appearanceToClothingKVP.Value.type);
 				}
 
 				if (persistenceTrader.persistenceLife.pathEndPosition.HasValue) {
 					trader.MoveToTile(GameManager.colonyM.colony.map.GetTileFromPosition(persistenceTrader.persistenceLife.pathEndPosition.Value), true);
 				}
+
+				trader.leaveTile = persistenceTrader.leaveTile;
+
+				trader.tradingPosts = persistenceTrader.tradingPosts;
 
 				caravan.traders.Add(trader);
 			}
@@ -2992,11 +3049,11 @@ public class PersistenceManager : BaseManager {
 
 			colonist.inventory.maxAmount = persistenceColonist.persistenceHuman.persistenceInventory.maxAmount.Value;
 			foreach (ResourceManager.ResourceAmount resourceAmount in persistenceColonist.persistenceHuman.persistenceInventory.resources) {
-				colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+				colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 			}
 
 			foreach (KeyValuePair<HumanManager.Human.Appearance, ResourceManager.Clothing> appearanceToClothingKVP in persistenceColonist.persistenceHuman.clothes) {
-				colonist.inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(appearanceToClothingKVP.Value.type), 1);
+				colonist.inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(appearanceToClothingKVP.Value.type), 1, false);
 				colonist.ChangeClothing(appearanceToClothingKVP.Key, appearanceToClothingKVP.Value, appearanceToClothingKVP.Value.type);
 			}
 
@@ -3046,7 +3103,7 @@ public class PersistenceManager : BaseManager {
 
 			foreach (KeyValuePair<string, List<ResourceManager.ResourceAmount>> humanToReservedResourcesKVP in persistenceColonist.persistenceHuman.persistenceInventory.reservedResources) {
 				foreach (ResourceManager.ResourceAmount resourceAmount in humanToReservedResourcesKVP.Value) {
-					colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+					colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 				}
 				colonist.inventory.ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
 			}
@@ -3056,7 +3113,7 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public enum JobProperty {
-		Job, StoredJob, Type, Position, RotationIndex, Priority, Started, Progress, ColonistBuildTime, ResourcesToBuild, ColonistResources, ContainerPickups, Plant, CreateResource, ActiveTileObject
+		Job, StoredJob, Type, Position, RotationIndex, Priority, Started, Progress, ColonistBuildTime, ResourcesToBuild, ColonistResources, ContainerPickups, Plant, CreateResource, ActiveTileObject, TransferResources
 	}
 
 	public enum ContainerPickupProperty {
@@ -3110,14 +3167,6 @@ public class PersistenceManager : BaseManager {
 			}
 		}
 
-		if (job.plant != null) {
-			file.WriteLine(CreateKeyValueString(JobProperty.Plant, string.Empty, startLevel + 1));
-			file.WriteLine(CreateKeyValueString(PlantProperty.Type, job.plant.group.type, startLevel + 2));
-			if (job.plant.harvestResource != null) {
-				file.WriteLine(CreateKeyValueString(PlantProperty.HarvestResource, job.plant.harvestResource.type, startLevel + 2));
-			}
-		}
-
 		if (job.createResource != null) {
 			file.WriteLine(CreateKeyValueString(JobProperty.CreateResource, job.createResource.type, startLevel + 1));
 		}
@@ -3128,10 +3177,17 @@ public class PersistenceManager : BaseManager {
 			file.WriteLine(CreateKeyValueString(TileObjectProperty.Position, FormatVector2ToString(job.activeTileObject.zeroPointTile.obj.transform.position), startLevel + 2));
 			file.WriteLine(CreateKeyValueString(TileObjectProperty.Type, job.activeTileObject.prefab.type, startLevel + 2));
 		}
+
+		if (job.transferResources != null && job.transferResources.Count > 0) {
+			file.WriteLine(CreateKeyValueString(JobProperty.TransferResources, string.Empty, startLevel + 1));
+			foreach (ResourceManager.ResourceAmount resourceAmount in job.transferResources) {
+				WriteResourceAmountLines(file, resourceAmount, startLevel + 2);
+			}
+		}
 	}
 
 	public class PersistenceJob {
-		public ResourceManager.TileObjectPrefabsEnum? type;
+		public ResourceManager.ObjectEnum? type;
 		public Vector2? position;
 		public int? rotationIndex;
 		public int? priority;
@@ -3141,12 +3197,12 @@ public class PersistenceManager : BaseManager {
 		public List<ResourceManager.ResourceAmount> resourcesToBuild;
 		public List<ResourceManager.ResourceAmount> colonistResources;
 		public List<PersistenceContainerPickup> containerPickups;
-		public ResourceManager.Plant plant;
 		public ResourceManager.Resource createResource;
 		public PersistenceObject activeTileObject;
+		public List<ResourceManager.ResourceAmount> transferResources;
 
 		public PersistenceJob(
-			ResourceManager.TileObjectPrefabsEnum? type,
+			ResourceManager.ObjectEnum? type,
 			Vector2? position,
 			int? rotationIndex,
 			int? priority,
@@ -3156,9 +3212,9 @@ public class PersistenceManager : BaseManager {
 			List<ResourceManager.ResourceAmount> resourcesToBuild,
 			List<ResourceManager.ResourceAmount> colonistResources,
 			List<PersistenceContainerPickup> containerPickups,
-			ResourceManager.Plant plant,
 			ResourceManager.Resource createResource,
-			PersistenceObject activeTileObject
+			PersistenceObject activeTileObject,
+			List<ResourceManager.ResourceAmount> transferResources
 		) {
 			this.type = type;
 			this.position = position;
@@ -3170,9 +3226,9 @@ public class PersistenceManager : BaseManager {
 			this.resourcesToBuild = resourcesToBuild;
 			this.colonistResources = colonistResources;
 			this.containerPickups = containerPickups;
-			this.plant = plant;
 			this.createResource = createResource;
 			this.activeTileObject = activeTileObject;
+			this.transferResources = transferResources;
 		}
 	}
 
@@ -3206,7 +3262,7 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public PersistenceJob LoadPersistenceJob(List<KeyValuePair<string, object>> properties) {
-		ResourceManager.TileObjectPrefabsEnum? type = null;
+		ResourceManager.ObjectEnum? type = null;
 		Vector2? position = null;
 		int? rotationIndex = null;
 		int? priority = null;
@@ -3216,15 +3272,15 @@ public class PersistenceManager : BaseManager {
 		List<ResourceManager.ResourceAmount> resourcesToBuild = new List<ResourceManager.ResourceAmount>();
 		List<ResourceManager.ResourceAmount> colonistResources = null;
 		List<PersistenceContainerPickup> containerPickups = null;
-		ResourceManager.Plant plant = null;
 		ResourceManager.Resource createResource = null;
 		PersistenceObject activeTileObject = null;
+		List<ResourceManager.ResourceAmount> transferResources = null;
 
 		foreach (KeyValuePair<string, object> jobProperty in properties) {
 			JobProperty jobPropertyKey = (JobProperty)Enum.Parse(typeof(JobProperty), jobProperty.Key);
 			switch (jobPropertyKey) {
 				case JobProperty.Type:
-					type = (ResourceManager.TileObjectPrefabsEnum)Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), (string)jobProperty.Value);
+					type = (ResourceManager.ObjectEnum)Enum.Parse(typeof(ResourceManager.ObjectEnum), (string)jobProperty.Value);
 					break;
 				case JobProperty.Position:
 					position = new Vector2(float.Parse(((string)jobProperty.Value).Split(',')[0]), float.Parse(((string)jobProperty.Value).Split(',')[1]));
@@ -3294,45 +3350,12 @@ public class PersistenceManager : BaseManager {
 						containerPickups = null;
 					}
 					break;
-				case JobProperty.Plant:
-					if (!position.HasValue) {
-						Debug.LogError("Map Tiles and Job Position must be loaded before Job Plant as plants require an instance of a tile.");
-						break;
-					}
-
-					ResourceManager.PlantGroup plantGroup = null;
-					ResourceManager.Resource plantHarvestResource = null;
-
-					foreach (KeyValuePair<string, object> plantProperty in (List<KeyValuePair<string, object>>)jobProperty.Value) {
-						switch ((PlantProperty)Enum.Parse(typeof(PlantProperty), plantProperty.Key)) {
-							case PlantProperty.Type:
-								plantGroup = GameManager.resourceM.GetPlantGroupByEnum((ResourceManager.PlantGroupsEnum)Enum.Parse(typeof(ResourceManager.PlantGroupsEnum), (string)plantProperty.Value));
-								break;
-							case PlantProperty.HarvestResource:
-								plantHarvestResource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), (string)plantProperty.Value));
-								break;
-							default:
-								Debug.LogError("Unknown plant property: " + plantProperty.Key + " " + plantProperty.Value);
-								break;
-						}
-					}
-
-					plant = new ResourceManager.Plant(
-						plantGroup,
-						GameManager.colonyM.colony.map.GetTileFromPosition(position.Value),
-						false,
-						true,
-						GameManager.colonyM.colony.map.smallPlants,
-						false,
-						plantHarvestResource
-					);
-					break;
 				case JobProperty.CreateResource:
-					createResource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), (string)jobProperty.Value));
+					createResource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)jobProperty.Value));
 					break;
 				case JobProperty.ActiveTileObject:
 					Vector2? activeTileObjectZeroPointTilePosition = null;
-					ResourceManager.TileObjectPrefabsEnum? activeTileObjectType = null;
+					ResourceManager.ObjectEnum? activeTileObjectType = null;
 
 					foreach (KeyValuePair<string, object> activeTileObjectProperty in (List<KeyValuePair<string, object>>)jobProperty.Value) {
 						switch ((TileObjectProperty)Enum.Parse(typeof(TileObjectProperty), activeTileObjectProperty.Key)) {
@@ -3340,7 +3363,7 @@ public class PersistenceManager : BaseManager {
 								activeTileObjectZeroPointTilePosition = new Vector2(float.Parse(((string)activeTileObjectProperty.Value).Split(',')[0]), float.Parse(((string)activeTileObjectProperty.Value).Split(',')[1]));
 								break;
 							case TileObjectProperty.Type:
-								activeTileObjectType = (ResourceManager.TileObjectPrefabsEnum)Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), (string)activeTileObjectProperty.Value);
+								activeTileObjectType = (ResourceManager.ObjectEnum)Enum.Parse(typeof(ResourceManager.ObjectEnum), (string)activeTileObjectProperty.Value);
 								break;
 							default:
 								Debug.LogError("Unknown active tile object property: " + activeTileObjectProperty.Key + " " + activeTileObjectProperty.Value);
@@ -3353,6 +3376,15 @@ public class PersistenceManager : BaseManager {
 						activeTileObjectZeroPointTilePosition,
 						null, null, null, null, null, null, null, null, null
 					);
+					break;
+				case JobProperty.TransferResources:
+					transferResources = new List<ResourceManager.ResourceAmount>();
+					foreach (KeyValuePair<string, object> resourceAmountProperty in (List<KeyValuePair<string, object>>)jobProperty.Value) {
+						transferResources.Add(LoadResourceAmount((List<KeyValuePair<string, object>>)resourceAmountProperty.Value));
+					}
+					if (transferResources.Count <= 0) {
+						transferResources = null;
+					}
 					break;
 				default:
 					Debug.LogError("Unknown job property: " + jobProperty.Key + " " + jobProperty.Value);
@@ -3371,9 +3403,9 @@ public class PersistenceManager : BaseManager {
 			resourcesToBuild,
 			colonistResources,
 			containerPickups,
-			plant,
 			createResource,
-			activeTileObject
+			activeTileObject,
+			transferResources
 		);
 	}
 
@@ -3397,7 +3429,7 @@ public class PersistenceManager : BaseManager {
 
 		JobManager.Job job = new JobManager.Job(
 			GameManager.colonyM.colony.map.GetTileFromPosition(persistenceJob.position.Value),
-			GameManager.resourceM.GetTileObjectPrefabByEnum(persistenceJob.type.Value),
+			GameManager.resourceM.GetObjectPrefabByEnum(persistenceJob.type.Value),
 			persistenceJob.rotationIndex.Value
 		) {
 			started = persistenceJob.started ?? false,
@@ -3406,7 +3438,7 @@ public class PersistenceManager : BaseManager {
 			resourcesToBuild = persistenceJob.resourcesToBuild,
 			colonistResources = persistenceJob.colonistResources,
 			containerPickups = containerPickups,
-			plant = persistenceJob.plant
+			transferResources = persistenceJob.transferResources
 		};
 		if (persistenceJob.priority.HasValue) {
 			job.ChangePriority(persistenceJob.priority.Value);
@@ -3414,7 +3446,7 @@ public class PersistenceManager : BaseManager {
 		if (persistenceJob.createResource != null) {
 			job.SetCreateResourceData(
 				persistenceJob.createResource,
-				persistenceJob.activeTileObject != null ? (ResourceManager.ManufacturingTileObject)job.tile.GetAllObjectInstances().Find(o => o.prefab.type == persistenceJob.activeTileObject.type) : null
+				persistenceJob.activeTileObject != null ? (ResourceManager.ManufacturingObject)job.tile.GetAllObjectInstances().Find(o => o.prefab.type == persistenceJob.activeTileObject.type) : null
 			);
 		}
 		return job;
@@ -3441,8 +3473,8 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public void SaveObjects(StreamWriter file) {
-		foreach (List<ResourceManager.TileObjectInstance> instances in GameManager.resourceM.tileObjectInstances.Values) {
-			foreach (ResourceManager.TileObjectInstance instance in instances) {
+		foreach (List<ResourceManager.ObjectInstance> instances in GameManager.resourceM.objectInstances.Values) {
+			foreach (ResourceManager.ObjectInstance instance in instances) {
 				file.WriteLine(CreateKeyValueString(TileObjectProperty.Object, string.Empty, 0));
 
 				file.WriteLine(CreateKeyValueString(TileObjectProperty.Type, instance.prefab.type, 1));
@@ -3455,8 +3487,8 @@ public class PersistenceManager : BaseManager {
 					ResourceManager.Container container = (ResourceManager.Container)instance;
 					file.WriteLine(CreateKeyValueString(TileObjectProperty.Container, string.Empty, 1));
 					WriteInventoryLines(file, container.inventory, 2);
-				} else if (instance is ResourceManager.ManufacturingTileObject) {
-					ResourceManager.ManufacturingTileObject manufacturingTileObject = (ResourceManager.ManufacturingTileObject)instance;
+				} else if (instance is ResourceManager.ManufacturingObject) {
+					ResourceManager.ManufacturingObject manufacturingTileObject = (ResourceManager.ManufacturingObject)instance;
 					if (manufacturingTileObject.createResource != null || manufacturingTileObject.fuelResource != null) {
 						file.WriteLine(CreateKeyValueString(TileObjectProperty.ManufacturingTileObject, string.Empty, 1));
 						if (manufacturingTileObject.createResource != null) {
@@ -3480,7 +3512,7 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public class PersistenceObject {
-		public ResourceManager.TileObjectPrefabsEnum? type;
+		public ResourceManager.ObjectEnum? type;
 		public Vector2? zeroPointTilePosition;
 		public int? rotationIndex;
 		public float? integrity;
@@ -3501,7 +3533,7 @@ public class PersistenceManager : BaseManager {
 		public string occupyingColonistName;
 
 		public PersistenceObject(
-			ResourceManager.TileObjectPrefabsEnum? type,
+			ResourceManager.ObjectEnum? type,
 			Vector2? zeroPointTilePosition,
 			int? rotationIndex,
 			float? integrity,
@@ -3539,7 +3571,7 @@ public class PersistenceManager : BaseManager {
 			switch ((TileObjectProperty)Enum.Parse(typeof(TileObjectProperty), property.Key)) {
 				case TileObjectProperty.Object:
 
-					ResourceManager.TileObjectPrefabsEnum? type = null;
+					ResourceManager.ObjectEnum? type = null;
 					Vector2? zeroPointTilePosition = null;
 					int? rotationIndex = null;
 					float? integrity = null;
@@ -3562,7 +3594,7 @@ public class PersistenceManager : BaseManager {
 					foreach (KeyValuePair<string, object> tileObjectProperty in (List<KeyValuePair<string, object>>)property.Value) {
 						switch ((TileObjectProperty)Enum.Parse(typeof(TileObjectProperty), tileObjectProperty.Key)) {
 							case TileObjectProperty.Type:
-								type = (ResourceManager.TileObjectPrefabsEnum)Enum.Parse(typeof(ResourceManager.TileObjectPrefabsEnum), (string)tileObjectProperty.Value);
+								type = (ResourceManager.ObjectEnum)Enum.Parse(typeof(ResourceManager.ObjectEnum), (string)tileObjectProperty.Value);
 								break;
 							case TileObjectProperty.Position:
 								zeroPointTilePosition = new Vector2(float.Parse(((string)tileObjectProperty.Value).Split(',')[0]), float.Parse(((string)tileObjectProperty.Value).Split(',')[1]));
@@ -3592,10 +3624,10 @@ public class PersistenceManager : BaseManager {
 								foreach (KeyValuePair<string, object> manufacturingTileObjectProperty in (List<KeyValuePair<string, object>>)tileObjectProperty.Value) {
 									switch ((ManufacturingTileObjectProperty)Enum.Parse(typeof(ManufacturingTileObjectProperty), manufacturingTileObjectProperty.Key)) {
 										case ManufacturingTileObjectProperty.CreateResource:
-											createResource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), (string)manufacturingTileObjectProperty.Value));
+											createResource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)manufacturingTileObjectProperty.Value));
 											break;
 										case ManufacturingTileObjectProperty.FuelResource:
-											fuelResource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), (string)manufacturingTileObjectProperty.Value));
+											fuelResource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)manufacturingTileObjectProperty.Value));
 											break;
 										default:
 											Debug.LogError("Unknown manufacturing tile object property: " + manufacturingTileObjectProperty.Key + " " + manufacturingTileObjectProperty.Value);
@@ -3661,8 +3693,8 @@ public class PersistenceManager : BaseManager {
 		foreach (PersistenceObject persistenceObject in persistenceObjects) {
 			TileManager.Tile zeroPointTile = GameManager.colonyM.colony.map.GetTileFromPosition(persistenceObject.zeroPointTilePosition.Value);
 
-			ResourceManager.TileObjectPrefab tileObjectPrefab = GameManager.resourceM.GetTileObjectPrefabByEnum(persistenceObject.type.Value);
-			ResourceManager.TileObjectInstance tileObjectInstance = GameManager.resourceM.CreateTileObjectInstance(
+			ResourceManager.ObjectPrefab tileObjectPrefab = GameManager.resourceM.GetObjectPrefabByEnum(persistenceObject.type.Value);
+			ResourceManager.ObjectInstance tileObjectInstance = GameManager.resourceM.CreateTileObjectInstance(
 				tileObjectPrefab,
 				zeroPointTile,
 				persistenceObject.rotationIndex.Value,
@@ -3672,25 +3704,26 @@ public class PersistenceManager : BaseManager {
 			tileObjectInstance.SetActive(persistenceObject.active.Value);
 
 			switch (tileObjectPrefab.instanceType) {
-				case ResourceManager.TileObjectPrefabInstanceType.Container:
+				case ResourceManager.ObjectInstanceType.Container:
+				case ResourceManager.ObjectInstanceType.TradingPost:
 					ResourceManager.Container container = (ResourceManager.Container)tileObjectInstance;
 					container.inventory.maxAmount = persistenceObject.persistenceInventory.maxAmount.Value;
 					foreach (ResourceManager.ResourceAmount resourceAmount in persistenceObject.persistenceInventory.resources) {
-						container.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount);
+						container.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 					}
 					// TODO (maybe already done?) Reserved resources must be set after colonists are loaded
 					break;
-				case ResourceManager.TileObjectPrefabInstanceType.Farm:
+				case ResourceManager.ObjectInstanceType.Farm:
 					ResourceManager.Farm farm = (ResourceManager.Farm)tileObjectInstance;
 					farm.growTimer = persistenceObject.growTimer.Value;
 					break;
-				case ResourceManager.TileObjectPrefabInstanceType.ManufacturingTileObject:
-					ResourceManager.ManufacturingTileObject manufacturingTileObject = (ResourceManager.ManufacturingTileObject)tileObjectInstance;
+				case ResourceManager.ObjectInstanceType.ManufacturingObject:
+					ResourceManager.ManufacturingObject manufacturingTileObject = (ResourceManager.ManufacturingObject)tileObjectInstance;
 					manufacturingTileObject.SetActive(false); // Gets set to proper state after loading jobBacklog, this prevents it from creating a CreateResource job before then
 					manufacturingTileObject.createResource = persistenceObject.createResource;
 					manufacturingTileObject.fuelResource = persistenceObject.fuelResource;
 					break;
-				case ResourceManager.TileObjectPrefabInstanceType.SleepSpot:
+				case ResourceManager.ObjectInstanceType.SleepSpot:
 					// Occupying colonist must be set after colonists are loaded
 					break;
 			}
@@ -3840,7 +3873,7 @@ public class PersistenceManager : BaseManager {
 			ResourceAmountProperty resourceAmountPropertyKey = (ResourceAmountProperty)Enum.Parse(typeof(ResourceAmountProperty), resourceAmountProperty.Key);
 			switch (resourceAmountPropertyKey) {
 				case ResourceAmountProperty.Type:
-					resource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), (string)resourceAmountProperty.Value));
+					resource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)resourceAmountProperty.Value));
 					break;
 				case ResourceAmountProperty.Amount:
 					amount = int.Parse((string)resourceAmountProperty.Value);
@@ -3859,11 +3892,11 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public void SaveResources(StreamWriter file) {
-		foreach (ResourceManager.Resource resource in GameManager.resourceM.resources) {
+		foreach (ResourceManager.Resource resource in GameManager.resourceM.GetResources()) {
 			file.WriteLine(CreateKeyValueString(ResourceProperty.Resource, string.Empty, 0));
 
 			file.WriteLine(CreateKeyValueString(ResourceProperty.Type, resource.type, 1));
-			file.WriteLine(CreateKeyValueString(ResourceProperty.DesiredAmount, resource.desiredAmount, 1));
+			file.WriteLine(CreateKeyValueString(ResourceProperty.DesiredAmount, resource.GetDesiredAmount(), 1));
 		}
 	}
 
@@ -3881,7 +3914,7 @@ public class PersistenceManager : BaseManager {
 						ResourceProperty resourcePropertyKey = (ResourceProperty)Enum.Parse(typeof(ResourceProperty), resourceProperty.Key);
 						switch (resourcePropertyKey) {
 							case ResourceProperty.Type:
-								resource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourcesEnum)Enum.Parse(typeof(ResourceManager.ResourcesEnum), (string)resourceProperty.Value));
+								resource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)resourceProperty.Value));
 								break;
 							case ResourceProperty.DesiredAmount:
 								desiredAmount = int.Parse((string)resourceProperty.Value);
@@ -3892,7 +3925,7 @@ public class PersistenceManager : BaseManager {
 						}
 					}
 
-					resource.ChangeDesiredAmount(desiredAmount);
+					resource.SetDesiredAmount(desiredAmount);
 
 					break;
 				default:

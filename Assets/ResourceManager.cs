@@ -16,7 +16,7 @@ public class ResourceManager : BaseManager {
 	public GameObject tileImage;
 	public GameObject objectDataPanel;
 
-	public void GetResourceReferences() {
+	public void SetResourceReferences() {
 		tilePrefab = Resources.Load<GameObject>(@"Prefabs/Tile");
 		humanPrefab = Resources.Load<GameObject>(@"Prefabs/Human");
 		selectionCornersSprite = Resources.Load<Sprite>(@"UI/selectionCorners");
@@ -30,15 +30,62 @@ public class ResourceManager : BaseManager {
 
 	public override void Update() {
 		CalculateResourceTotals();
+
+		GrowPlants();
+
 		foreach (Farm farm in farms) {
 			farm.Update();
 		}
-		foreach (ManufacturingTileObject mto in manufacturingTileObjectInstances) {
-			mto.Update();
+		foreach (ManufacturingObject manufacturingObject in manufacturingObjectInstances) {
+			manufacturingObject.Update();
 		}
 	}
 
-	public enum ResourceGroupsEnum {
+	public enum ResourceGroupPropertyEnum {
+		ResourceGroup,
+		Type,
+		Resources
+	}
+
+	public enum ResourcePropertyEnum {
+		Resource,
+		Type,
+		Classes,
+		Weight,
+		Volume,
+		Price,
+		Food,
+		Fuel,
+		Manufacturing,
+		Clothing
+	}
+
+	public enum ResourceFoodPropertyEnum {
+		Nutrition
+	}
+
+	public enum ResourceFuelPropertyEnum {
+		FuelEnergy
+	}
+
+	public enum ResourceManufacturingPropertyEnum {
+		ObjectSubGroups,
+		Objects,
+		ManufacturingEnergy,
+		Resources
+	}
+
+	public enum ResourceClothingPropertyEnum {
+		Appearance,
+		ClothingType,
+		Insulation,
+		WaterResistance,
+		WeightCapacity,
+		VolumeCapacity,
+		Colours
+	}
+
+	public enum ResourceGroupEnum {
 		None,
 		NaturalResources,
 		Ores,
@@ -49,361 +96,451 @@ public class ResourceManager : BaseManager {
 		Foods,
 		Coins,
 		Clothing
-	};
+	}
 
-	public enum ResourcesEnum {
+	public enum ResourceEnum {
 		None,
-		Dirt, Stone, Granite, Limestone, Marble, Sandstone, Slate, Clay, Log, Wood, Firewood, Snow, Sand, Cactus, Leaf, Sap,
-		GoldOre, SilverOre, BronzeOre, IronOre,
-		Gold, Silver, Bronze, Iron,
-		Brick, Glass, Cotton, Cloth,
+		Dirt, Mud, Andesite, Basalt, Diorite, Granite, Kimberlite, Obsidian, Rhyolite, Chalk, Claystone, Coal, Flint, Lignite, Limestone, Sandstone, Anthracite, Marble, Quartz, Slate,
+			Clay, Log, Snow, Sand, Cactus, Leaf, Sap,
+		GoldOre, SilverOre, BronzeOre, IronOre, CopperOre,
+		Gold, Silver, Bronze, Iron, Copper,
+		Wood, Firewood, Charcoal, Brick, Glass, Cotton, Cloth,
 		WheatSeed, CottonSeed, TreeSeed, AppleSeed, BushSeed, CactusSeed,
 		Wheat,
 		Potato, BakedPotato, Blueberry, Apple, BakedApple,
 		GoldCoin, SilverCoin, BronzeCoin,
 		CyanSweater, GreenSweater, BlueSweater, PurpleSweater, NavySweater, YellowSweater, OrangeSweater, RedSweater, WhiteSweater, GraySweater,
-		CyanShirt, GreenShirt, BlueShirt, PurpleShirt, NavyShirt, YellowShirt, OrangeShirt, RedShirt, WhiteShirt, GrayShirt
-	};
+		CyanShirt, GreenShirt, BlueShirt, PurpleShirt, NavyShirt, YellowShirt, OrangeShirt, RedShirt, WhiteShirt, GrayShirt,
+		BrownSmallBackpack
+	}
 
-	public enum ResourceClass {
+	public enum ResourceClassEnum {
 		Food,
 		Manufacturable,
 		Fuel,
-		Clothing
+		Clothing,
+		Bag
 	}
 
-	private static readonly Dictionary<ResourceClass, List<Resource>> resourceClassToResources = new Dictionary<ResourceClass, List<Resource>>();
-
-	public static List<Resource> GetResourcesInClass(ResourceClass resourceClass) {
-		return resourceClassToResources[resourceClass];
-	}
-
-	public static bool IsResourceInClass(ResourceClass resourceClass, Resource resource) {
-		return resourceClassToResources[resourceClass].Contains(resource);
+	public enum ClothingEnum {
+		Sweater, Shirt, SmallBackpack
 	}
 
 	public void CreateResources() {
-		List<string> resourceGroupsData = Resources.Load<TextAsset>(@"Data/resources").text.Replace("\t", string.Empty).Split(new string[] { "<Group>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-		foreach (string resourceGroupDataString in resourceGroupsData) {
-			resourceGroups.Add(new ResourceGroup(resourceGroupDataString));
-		}
-		foreach (Resource resource in resources) {
-			resource.SetInitialRequiredResourceReferences();
-		}
-	}
 
-	public List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
+		Dictionary<ResourceEnum, List<KeyValuePair<ResourceEnum, float>>> manufacturingResourcesTemp = new Dictionary<ResourceEnum, List<KeyValuePair<ResourceEnum, float>>>();
 
-	public ResourceGroup GetResourceGroupByEnum(ResourceGroupsEnum resourceGroupsEnum) {
-		return resourceGroups.Find(rg => rg.type == resourceGroupsEnum);
-	}
+		List<KeyValuePair<string, object>> resourceGroupProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/resources").text.Split('\n').ToList());
+		foreach (KeyValuePair<string, object> resourceGroupProperty in resourceGroupProperties) {
+			switch ((ResourceGroupPropertyEnum)Enum.Parse(typeof(ResourceGroupPropertyEnum), resourceGroupProperty.Key)) {
+				case ResourceGroupPropertyEnum.ResourceGroup:
 
-	public ResourceGroup GetRandomResourceGroup() {
-		List<ResourceGroup> resourcesGroupsWithoutNone = resourceGroups.Where(rg => rg.type != ResourceGroupsEnum.None).ToList();
-		return resourcesGroupsWithoutNone[UnityEngine.Random.Range(0, resourcesGroupsWithoutNone.Count)];
-	}
+					ResourceGroupEnum? groupType = null;
+					List<Resource> resources = new List<Resource>();
 
-	public class ResourceGroup {
+					foreach (KeyValuePair<string, object> resourceGroupSubProperty in (List<KeyValuePair<string, object>>)resourceGroupProperty.Value) {
+						switch ((ResourceGroupPropertyEnum)Enum.Parse(typeof(ResourceGroupPropertyEnum), resourceGroupSubProperty.Key)) {
+							case ResourceGroupPropertyEnum.Type:
+								groupType = (ResourceGroupEnum)Enum.Parse(typeof(ResourceGroupEnum), (string)resourceGroupSubProperty.Value);
+								break;
+							case ResourceGroupPropertyEnum.Resources:
+								foreach (KeyValuePair<string, object> resourceProperty in (List<KeyValuePair<string, object>>)resourceGroupSubProperty.Value) {
+									switch ((ResourcePropertyEnum)Enum.Parse(typeof(ResourcePropertyEnum), resourceProperty.Key)) {
+										case ResourcePropertyEnum.Resource:
 
-		public ResourceGroupsEnum type;
-		public string name;
+											ResourceEnum? type = null;
+											List<ResourceClassEnum> classes = new List<ResourceClassEnum>();
+											int? weight = null;
+											int? volume = null;
+											int? price = null;
 
-		public List<ResourcesEnum> resourceTypes = new List<ResourcesEnum>();
-		public List<Resource> resources = new List<Resource>();
+											// Food
+											int? foodNutrition = null;
 
-		public ResourceGroup(string resourceDataString) {
-			List<string> resourceGroupResourcesData = resourceDataString.Split(new string[] { "<Resource>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+											// Fuel
+											int? fuelEnergy = 0;
 
-			this.type = (ResourceGroupsEnum)Enum.Parse(typeof(ResourceGroupsEnum), resourceGroupResourcesData[0]);
-			name = UIManager.SplitByCapitals(type.ToString());
+											// Manufacturing
+											List<ObjectSubGroupEnum> manufacturingObjectSubGroups = new List<ObjectSubGroupEnum>();
+											List<ObjectEnum> manufacturingObjects = new List<ObjectEnum>();
+											int? manufacturingEnergy = 0;
+											// manufacturingResources -> manufacturingResourcesTemp
 
-			foreach (string resourceGroupResourceString in resourceGroupResourcesData.Skip(1)) {
+											// Clothing
+											HumanManager.Human.Appearance? clothingAppearance = null;
+											ClothingEnum? clothingType = null;
+											int? clothingInsulation = null;
+											int? clothingWaterResistance = null;
+											int? clothingWeightCapacity = 0;
+											int? clothingVolumeCapacity = 0;
+											List<string> clothingColours = new List<string>();
 
-				ResourcesEnum type = ResourcesEnum.Apple;
-				List<ResourceClass> resourceClasses = new List<ResourceClass>();
-				float weight = 0;
-				//Resource.Price price = null;
-				int price = 0;
-				int nutrition = 0;
-				int fuelEnergy = 0;
-				List<TileObjectPrefabSubGroupsEnum> requiredMTOSubGroups = new List<TileObjectPrefabSubGroupsEnum>();
-				List<TileObjectPrefabsEnum> requiredMTOs = new List<TileObjectPrefabsEnum>();
-				int requiredEnergy = 0;
-				Dictionary<ResourcesEnum, float> requiredResources = new Dictionary<ResourcesEnum, float>();
+											foreach (KeyValuePair<string, object> resourceSubProperty in (List<KeyValuePair<string, object>>)resourceProperty.Value) {
+												switch ((ResourcePropertyEnum)Enum.Parse(typeof(ResourcePropertyEnum), resourceSubProperty.Key)) {
+													case ResourcePropertyEnum.Type:
+														type = (ResourceEnum)Enum.Parse(typeof(ResourceEnum), (string)resourceSubProperty.Value);
+														break;
+													case ResourcePropertyEnum.Classes:
+														foreach (string classString in ((string)resourceSubProperty.Value).Split(',')) {
+															classes.Add((ResourceClassEnum)Enum.Parse(typeof(ResourceClassEnum), classString));
+														}
+														break;
+													case ResourcePropertyEnum.Weight:
+														weight = int.Parse((string)resourceSubProperty.Value);
+														break;
+													case ResourcePropertyEnum.Volume:
+														volume = int.Parse((string)resourceSubProperty.Value);
+														break;
+													case ResourcePropertyEnum.Price:
+														price = int.Parse((string)resourceSubProperty.Value);
+														break;
+													case ResourcePropertyEnum.Food:
+														foreach (KeyValuePair<string, object> foodProperty in (List<KeyValuePair<string, object>>)resourceSubProperty.Value) {
+															switch ((ResourceFoodPropertyEnum)Enum.Parse(typeof(ResourceFoodPropertyEnum), foodProperty.Key)) {
+																case ResourceFoodPropertyEnum.Nutrition:
+																	foodNutrition = int.Parse((string)foodProperty.Value);
+																	break;
+																default:
+																	Debug.LogError("Unknown resource food property: " + foodProperty.Key + " " + foodProperty.Value);
+																	break;
+															}
+														}
+														break;
+													case ResourcePropertyEnum.Fuel:
+														foreach (KeyValuePair<string, object> fuelProperty in (List<KeyValuePair<string, object>>)resourceSubProperty.Value) {
+															switch ((ResourceFuelPropertyEnum)Enum.Parse(typeof(ResourceFuelPropertyEnum), fuelProperty.Key)) {
+																case ResourceFuelPropertyEnum.FuelEnergy:
+																	fuelEnergy = int.Parse((string)fuelProperty.Value);
+																	break;
+																default:
+																	Debug.LogError("Unknown resource fuel property: " + fuelProperty.Key + " " + fuelProperty.Value);
+																	break;
+															}
+														}
+														break;
+													case ResourcePropertyEnum.Manufacturing:
+														foreach (KeyValuePair<string, object> manufacturingProperty in (List<KeyValuePair<string, object>>)resourceSubProperty.Value) {
+															switch ((ResourceManufacturingPropertyEnum)Enum.Parse(typeof(ResourceManufacturingPropertyEnum), manufacturingProperty.Key)) {
+																case ResourceManufacturingPropertyEnum.ObjectSubGroups:
+																	foreach (string objectSubGroupString in ((string)manufacturingProperty.Value).Split(',')) {
+																		manufacturingObjectSubGroups.Add((ObjectSubGroupEnum)Enum.Parse(typeof(ObjectSubGroupEnum), objectSubGroupString));
+																	}
+																	break;
+																case ResourceManufacturingPropertyEnum.Objects:
+																	foreach (string objectString in ((string)manufacturingProperty.Value).Split(',')) {
+																		manufacturingObjects.Add((ObjectEnum)Enum.Parse(typeof(ObjectEnum), objectString));
+																	}
+																	break;
+																case ResourceManufacturingPropertyEnum.ManufacturingEnergy:
+																	manufacturingEnergy = int.Parse((string)manufacturingProperty.Value);
+																	break;
+																case ResourceManufacturingPropertyEnum.Resources:
+																	manufacturingResourcesTemp.Add(type.Value, new List<KeyValuePair<ResourceEnum, float>>());
+																	foreach (string resourceAmountString in ((string)manufacturingProperty.Value).Split(',')) {
+																		float amount = float.Parse(resourceAmountString.Split(':')[1]);
+																		manufacturingResourcesTemp[type.Value].Add(new KeyValuePair<ResourceEnum, float>(
+																			(ResourceEnum)Enum.Parse(typeof(ResourceEnum), resourceAmountString.Split(':')[0]),
+																			amount
+																		));
+																	}
+																	break;
+																default:
+																	Debug.LogError("Unknown resource manufacturing property: " + manufacturingProperty.Key + " " + manufacturingProperty.Value);
+																	break;
+															}
+														}
+														break;
+													case ResourcePropertyEnum.Clothing:
+														foreach (KeyValuePair<string, object> clothingProperty in (List<KeyValuePair<string, object>>)resourceSubProperty.Value) {
+															switch ((ResourceClothingPropertyEnum)Enum.Parse(typeof(ResourceClothingPropertyEnum), clothingProperty.Key)) {
+																case ResourceClothingPropertyEnum.Appearance:
+																	clothingAppearance = (HumanManager.Human.Appearance)Enum.Parse(typeof(HumanManager.Human.Appearance), (string)clothingProperty.Value);
+																	break;
+																case ResourceClothingPropertyEnum.ClothingType:
+																	clothingType = (ClothingEnum)Enum.Parse(typeof(ClothingEnum), (string)clothingProperty.Value);
+																	break;
+																case ResourceClothingPropertyEnum.Insulation:
+																	clothingInsulation = int.Parse((string)clothingProperty.Value);
+																	break;
+																case ResourceClothingPropertyEnum.WaterResistance:
+																	clothingWaterResistance = int.Parse((string)clothingProperty.Value);
+																	break;
+																case ResourceClothingPropertyEnum.WeightCapacity:
+																	clothingWeightCapacity = int.Parse((string)clothingProperty.Value);
+																	break;
+																case ResourceClothingPropertyEnum.VolumeCapacity:
+																	clothingVolumeCapacity = int.Parse((string)clothingProperty.Value);
+																	break;
+																case ResourceClothingPropertyEnum.Colours:
+																	foreach (string colourString in ((string)clothingProperty.Value).Split(',')) {
+																		clothingColours.Add(UIManager.RemoveNonAlphanumericChars(colourString));
+																	}
+																	break;
+																default:
+																	Debug.LogError("Unknown resource clothing property: " + clothingProperty.Key + " " + clothingProperty.Value);
+																	break;
+															}
+														}
+														break;
+													default:
+														Debug.LogError("Unknown resource sub property: " + resourceSubProperty.Key + " " + resourceSubProperty.Value);
+														break;
+												}
+											}
 
-				HumanManager.Human.Appearance appearance = HumanManager.Human.Appearance.Hat;
-				ClothingType clothingType = ClothingType.Sweater;
-				int insulation = 0;
-				int waterResistance = 0;
-				List<string> colours = new List<string>();
+											if (classes.Contains(ResourceClassEnum.Food)) {
+												Food food = new Food(
+													type.Value,
+													groupType.Value,
+													classes,
+													weight.Value,
+													volume.Value,
+													price.Value,
+													fuelEnergy.Value,
+													manufacturingObjectSubGroups,
+													manufacturingObjects,
+													manufacturingEnergy.Value,
+													foodNutrition.Value
+												);
+												resources.Add(food);
+												this.resources.Add(type.Value, food);
+											} else if (classes.Contains(ResourceClassEnum.Clothing)) {
+												ClothingPrefab clothingPrefab = new ClothingPrefab(
+													clothingAppearance.Value,
+													clothingType.Value,
+													clothingInsulation.Value,
+													clothingWaterResistance.Value,
+													clothingWeightCapacity.Value,
+													clothingVolumeCapacity.Value,
+													clothingColours,
+													clothingPrefabs.Where(c => c.appearance == clothingAppearance.Value).Sum(c => c.colours.Count)
+												);
+												clothingPrefabs.Add(clothingPrefab);
+												foreach (string colour in clothingPrefab.colours) {
+													Clothing clothing = new Clothing(
+														(ResourceEnum)Enum.Parse(typeof(ResourceEnum), colour + clothingType.Value),
+														groupType.Value,
+														classes,
+														weight.Value,
+														volume.Value,
+														price.Value,
+														fuelEnergy.Value,
+														manufacturingObjectSubGroups,
+														manufacturingObjects,
+														manufacturingEnergy.Value,
+														clothingPrefab,
+														colour
+													);
+													resources.Add(clothing);
+													this.resources.Add(clothing.type, clothing);
+												}
+											} else {
+												Resource resource = new Resource(
+													type.Value,
+													groupType.Value,
+													classes,
+													weight.Value,
+													volume.Value,
+													price.Value,
+													fuelEnergy.Value,
+													manufacturingObjectSubGroups,
+													manufacturingObjects,
+													manufacturingEnergy.Value
+												);
+												resources.Add(resource);
+												this.resources.Add(type.Value, resource);
+											}
 
-				List<string> singleResourceDataLineStringList = resourceGroupResourceString.Split('\n').ToList();
-				foreach (string singleResourceDataLineString in singleResourceDataLineStringList.Skip(1)) {
-					if (!string.IsNullOrEmpty(singleResourceDataLineString)) {
-
-						string label = singleResourceDataLineString.Split('>')[0].Replace("<", string.Empty);
-						string value = singleResourceDataLineString.Split('>')[1];
-
-						switch (label) {
-							case "Type":
-								type = (ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), value);
-								break;
-							case "Classes":
-								foreach (string classString in value.Split(',')) {
-									resourceClasses.Add((ResourceClass)Enum.Parse(typeof(ResourceClass), classString));
-								}
-								break;
-							case "Weight":
-								weight = float.Parse(value);
-								break;
-							//case "Price":
-							//	int gold = 0;
-							//	int silver = 0;
-							//	int bronze = 0;
-							//	foreach (string priceValue in value.Split(',')) {
-							//		string priceValueAmount = UIManager.RemoveNonAlphanumericChars(value.Split(':')[0]);
-							//		string priceValueDenomination = UIManager.RemoveNonAlphanumericChars(value.Split(':')[1]);
-							//		switch (priceValueDenomination) {
-							//			case "G":
-							//				gold = int.Parse(priceValueAmount);
-							//				break;
-							//			case "S":
-							//				silver = int.Parse(priceValueAmount);
-							//				break;
-							//			case "B":
-							//				bronze = int.Parse(priceValueAmount);
-							//				break;
-							//			default:
-							//				MonoBehaviour.print("Unknown resource-price label: \"" + value + "\"");
-							//				break;
-							//		}
-							//		price = new Resource.Price(gold, silver, bronze);
-							//	}
-							//	break;
-							case "Price":
-								price = int.Parse(value);
-								break;
-							case "FuelEnergy":
-								fuelEnergy = int.Parse(value);
-								break;
-							case "RequiredMTOSubGroups":
-								foreach (string requiredMTOSubGroupString in value.Split(',')) {
-									requiredMTOSubGroups.Add((TileObjectPrefabSubGroupsEnum)Enum.Parse(typeof(TileObjectPrefabSubGroupsEnum), value));
-								}
-								break;
-							case "RequiredMTOs":
-								foreach (string requiredMTOString in value.Split(',')) {
-									requiredMTOs.Add((TileObjectPrefabsEnum)Enum.Parse(typeof(TileObjectPrefabsEnum), value));
-								}
-								break;
-							case "RequiredEnergy":
-								requiredEnergy = int.Parse(value);
-								break;
-							case "RequiredResources":
-								foreach (string requiredResourceString in value.Split(',')) {
-									string resourceName = requiredResourceString.Split(':')[0];
-									ResourcesEnum resourceType = (ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), resourceName);
-									float amount = float.Parse(requiredResourceString.Split(':')[1]);
-									requiredResources.Add(resourceType, amount);
-								}
-								break;
-							case "Nutrition":
-								nutrition = int.Parse(value);
-								break;
-							case "Appearance":
-								appearance = (HumanManager.Human.Appearance)Enum.Parse(typeof(HumanManager.Human.Appearance), value);
-								break;
-							case "ClothingType":
-								clothingType = (ClothingType)Enum.Parse(typeof(ClothingType), value);
-								break;
-							case "Insulation":
-								insulation = int.Parse(value);
-								break;
-							case "WaterResistance":
-								waterResistance = int.Parse(value);
-								break;
-							case "Colours":
-								if (!string.IsNullOrEmpty(UIManager.RemoveNonAlphanumericChars(value))) {
-									foreach (string colour in value.Split(',')) {
-										colours.Add(UIManager.RemoveNonAlphanumericChars(colour));
+											break;
+										default:
+											Debug.LogError("Unknown resource property: " + resourceProperty.Key + " " + resourceProperty.Value);
+											break;
 									}
 								}
 								break;
 							default:
-								MonoBehaviour.print("Unknown resource label: \"" + singleResourceDataLineString + "\"");
+								Debug.LogError("Unknown resource group sub property: " + resourceGroupSubProperty.Key + " " + resourceGroupSubProperty.Value);
 								break;
 						}
-					}
-				}
 
-				if (resourceClasses.Contains(ResourceClass.Food)) {
-					Resource resource = new Food(
-						this,
-						type,
-						resourceClasses,
-						weight,
-						price,
-						fuelEnergy,
-						requiredMTOSubGroups,
-						requiredMTOs,
-						requiredEnergy,
-						requiredResources,
-						nutrition
-					);
-					GameManager.resourceM.AddResource(this, resource);
-				} else if (resourceClasses.Contains(ResourceClass.Clothing)) {
-					ClothingPrefab clothingPrefab = new ClothingPrefab(appearance, clothingType, insulation, waterResistance, colours, GameManager.resourceM.clothingPrefabs.Sum(c => c.colours.Count));
-					GameManager.resourceM.clothingPrefabs.Add(clothingPrefab);
-					foreach (string colour in clothingPrefab.colours) {
-						Clothing resource = new Clothing(
-							this,
-							(ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), colour + clothingType),
-							resourceClasses,
-							weight,
-							price,
-							fuelEnergy,
-							requiredMTOSubGroups,
-							requiredMTOs,
-							requiredEnergy,
-							requiredResources,
-							clothingPrefab,
-							colour
-						);
-						GameManager.resourceM.AddResource(this, resource);
 					}
-				} else {
-					Resource resource = new Resource(
-						this,
-						type,
-						resourceClasses,
-						weight,
-						price,
-						fuelEnergy,
-						requiredMTOSubGroups,
-						requiredMTOs,
-						requiredEnergy,
-						requiredResources
+
+					ResourceGroup resourceGroup = new ResourceGroup(
+						groupType.Value,
+						resources
 					);
-					GameManager.resourceM.AddResource(this, resource);
-				}
+					resourceGroups.Add(groupType.Value, resourceGroup);
+
+					break;
+				default:
+					Debug.LogError("Unknown resource group property: " + resourceGroupProperty.Key + " " + resourceGroupProperty.Value);
+					break;
+
 			}
 		}
-	}
 
-	public void AddResource(ResourceGroup resourceGroup, Resource resource) {
-		resourceGroup.resourceTypes.Add(resource.type);
-		resourceGroup.resources.Add(resource);
-		resources.Add(resource);
+		// Set Resource Classes
+		foreach (ResourceClassEnum resourceClassEnum in Enum.GetValues(typeof(ResourceClassEnum))) {
+			resourceClassToResources.Add(resourceClassEnum, new List<Resource>());
+		}
 
-		foreach (ResourceClass resourceClass in resource.resourceClasses) {
-			if (resourceClassToResources.ContainsKey(resourceClass)) {
-				resourceClassToResources[resourceClass].Add(resource);
+		foreach (Resource resource in GetResources()) {
+			foreach (ResourceClassEnum resourceClassEnum in resource.classes) {
+				resourceClassToResources[resourceClassEnum].Add(resource);
+			}
+		}
+
+		// Set Manufacturing Resources
+		foreach (KeyValuePair<ResourceEnum, List<KeyValuePair<ResourceEnum, float>>> manufacturingResourceToResourceAmount in manufacturingResourcesTemp) {
+			List<Resource> resourcesToApplyTo = new List<Resource>();
+			Resource manufacturableResource = GetResourceByEnum(manufacturingResourceToResourceAmount.Key);
+			if (manufacturableResource.classes.Contains(ResourceClassEnum.Clothing)) {
+				Clothing manufacturableClothing = (Clothing)manufacturableResource;
+				foreach (Resource resource in GetResourcesInClass(ResourceClassEnum.Clothing).Select(r => (Clothing)r).Where(c => c.prefab.clothingType == manufacturableClothing.prefab.clothingType)) {
+					resourcesToApplyTo.Add(resource);
+				}
 			} else {
-				resourceClassToResources.Add(resourceClass, new List<Resource>() { resource });
+				resourcesToApplyTo.Add(manufacturableResource);
+			}
+			foreach (Resource resource in resourcesToApplyTo) {
+				foreach (KeyValuePair<ResourceEnum, float> resourceToAmount in manufacturingResourceToResourceAmount.Value) {
+					float amount = resourceToAmount.Value;
+					if (amount < 1 && amount > 0) {
+						resource.amountCreated = Mathf.RoundToInt(1 / amount);
+						resource.manufacturingResources.Add(new ResourceAmount(GetResourceByEnum(resourceToAmount.Key), 1));
+					} else {
+						resource.amountCreated = 1;
+						resource.manufacturingResources.Add(new ResourceAmount(GetResourceByEnum(resourceToAmount.Key), Mathf.RoundToInt(resourceToAmount.Value)));
+					}
+				}
 			}
 		}
 	}
 
-	public List<Resource> resources = new List<Resource>();
+	private static readonly Dictionary<ResourceClassEnum, List<Resource>> resourceClassToResources = new Dictionary<ResourceClassEnum, List<Resource>>();
 
-	public Resource GetResourceByEnum(ResourcesEnum resourceEnum) {
-		return resources.Find(resource => resource.type == resourceEnum);
+	public static List<Resource> GetResourcesInClass(ResourceClassEnum resourceClass) {
+		return resourceClassToResources[resourceClass];
 	}
+
+	public static bool IsResourceInClass(ResourceClassEnum resourceClass, Resource resource) {
+		return resource.classes.Contains(resourceClass);
+	}
+
+	public Dictionary<ResourceGroupEnum, ResourceGroup> resourceGroups = new Dictionary<ResourceGroupEnum, ResourceGroup>();
+
+	public class ResourceGroup {
+		public readonly ResourceGroupEnum type;
+		public readonly string name;
+
+		public readonly List<Resource> resources;
+
+		public ResourceGroup(
+			ResourceGroupEnum type,
+			List<Resource> resources
+		) {
+			this.type = type;
+			name = UIManager.SplitByCapitals(type.ToString());
+
+			this.resources = resources;
+		}
+	}
+
+	public ResourceGroup GetResourceGroupByEnum(ResourceGroupEnum resourceGroupEnum) {
+		return resourceGroups[resourceGroupEnum];
+	}
+
+	public List<ResourceGroup> GetResourceGroups() {
+		return resourceGroups.Values.ToList();
+	}
+
+	public ResourceGroup GetRandomResourceGroup() {
+		List<ResourceGroup> resourcesGroupsWithoutNone = GetResourceGroups().Where(rg => rg.type != ResourceGroupEnum.None).ToList();
+		return resourcesGroupsWithoutNone[UnityEngine.Random.Range(0, resourcesGroupsWithoutNone.Count)];
+	}
+
+	public Dictionary<ResourceEnum, Resource> resources = new Dictionary<ResourceEnum, Resource>();
 
 	public class Resource {
-		public readonly ResourcesEnum type;
-		public string name;
+		public readonly ResourceEnum type;
+		public string name; // Can't be readonly
 
-		public readonly List<ResourceClass> resourceClasses;
+		public readonly ResourceGroupEnum groupType;
 
-		public Sprite image;
+		public readonly List<ResourceClassEnum> classes;
 
-		public readonly ResourceGroup resourceGroup;
+		public readonly int weight;
+		public readonly int volume;
 
-		public readonly float weight = 0;
+		public readonly int price;
 
-		public readonly /*Price*/int price;
+		public Sprite image; // Can't be readonly
 
-		public int desiredAmount = 0;
+		// Fuel
+		public readonly int fuelEnergy;
 
+		// Manufacturing
+		public readonly List<ObjectSubGroupEnum> manufacturingObjectSubGroups;
+		public readonly List<ObjectEnum> manufacturingObjects;
+		public readonly int manufacturingEnergy;
+		public readonly List<ResourceAmount> manufacturingResources = new List<ResourceAmount>(); // Filled in CreateResources() after all resources created
+		public int amountCreated = 1; // Can't be readonly
+
+		// Desired Amount
+		private int desiredAmount = 0;
+
+		// World Amounts
 		private int worldTotalAmount;
 		private int colonistsTotalAmount;
 		private int containerTotalAmount;
 		private int unreservedContainerTotalAmount;
+		private int unreservedTradingPostTotalAmount;
 		private int availableAmount;
 
-		public List<TileObjectPrefabSubGroup> requiredMTOSubGroups = new List<TileObjectPrefabSubGroup>();
-		public List<TileObjectPrefab> requiredMTOs = new List<TileObjectPrefab>();
-		public readonly int requiredEnergy = 0;
-		public List<ResourceAmount> requiredResources = new List<ResourceAmount>();
-		public readonly int fuelEnergy = 0;
-		public int amountCreated = 1;
+		// UI
+		public UIManager.ResourceElement resourceListElement; // REMOVE THIS (replace with a UIManager Dictionary<ResourceEnum, ResourceElement> and access like that
 
-		// Not possible to immediately fill requiredResources since all resources don't exist at this point in code execution
-		public Dictionary<ResourcesEnum, float> requiredResourcesTemp = new Dictionary<ResourcesEnum, float>();
-
-		// Not possible to immediately fill MTOSubGroups and MTOs since all tile object prefabs don't exist at this point in code execution
-		public List<TileObjectPrefabSubGroupsEnum> requiredMTOSubGroupsTemp = new List<TileObjectPrefabSubGroupsEnum>();
-		public List<TileObjectPrefabsEnum> requiredMTOsTemp = new List<TileObjectPrefabsEnum>();
-
-		public UIManager.ResourceElement resourceListElement;
-
-		public Resource(ResourceGroup resourceGroup, ResourcesEnum type, List<ResourceClass> resourceClasses, float weight, /*Price price*/int price, int fuelEnergy, List<TileObjectPrefabSubGroupsEnum> requiredMTOSubGroupsTemp, List<TileObjectPrefabsEnum> requiredMTOsTemp, int requiredEnergy, Dictionary<ResourcesEnum, float> requiredResourcesTemp) {
-			this.resourceGroup = resourceGroup;
-
+		public Resource(
+			ResourceEnum type,
+			ResourceGroupEnum groupType,
+			List<ResourceClassEnum> classes,
+			int weight,
+			int volume,
+			int price,
+			int fuelEnergy,
+			List<ObjectSubGroupEnum> manufacturingObjectSubGroups,
+			List<ObjectEnum> manufacturingObjects,
+			int manufacturingEnergy
+		) {
 			this.type = type;
 			name = UIManager.SplitByCapitals(type.ToString());
 
-			this.resourceClasses = resourceClasses;
+			this.groupType = groupType;
+
+			this.classes = classes;
 
 			this.weight = weight;
+			this.volume = volume;
 
 			this.price = price;
 
+			image = Resources.Load<Sprite>(@"Sprites/Resources/" + name + "/" + name.Replace(' ', '-') + "-base");
+
+			// Fuel
 			this.fuelEnergy = fuelEnergy;
 
-			this.requiredMTOSubGroupsTemp = requiredMTOSubGroupsTemp;
-			this.requiredMTOsTemp = requiredMTOsTemp;
-
-			this.requiredEnergy = requiredEnergy;
-
-			this.requiredResourcesTemp = requiredResourcesTemp;
-
-			image = Resources.Load<Sprite>(@"Sprites/Resources/" + name + "/" + name.Replace(' ', '-') + "-base");
+			// Manufacturing
+			this.manufacturingObjectSubGroups = manufacturingObjectSubGroups;
+			this.manufacturingObjects = manufacturingObjects;
+			this.manufacturingEnergy = manufacturingEnergy;
 		}
 
-		public void SetInitialRequiredResourceReferences() {
-			foreach (KeyValuePair<ResourcesEnum, float> requiredResourcesTempKVP in requiredResourcesTemp) {
-				Resource resource = GameManager.resourceM.GetResourceByEnum(requiredResourcesTempKVP.Key);
-				float amount = requiredResourcesTempKVP.Value;
-				if (amount < 1 && amount > 0) {
-					amountCreated = Mathf.RoundToInt(1f / amount);
-					requiredResources.Add(new ResourceAmount(resource, 1));
-				} else {
-					amountCreated = 1;
-					requiredResources.Add(new ResourceAmount(resource, Mathf.RoundToInt(amount)));
-				}
-			}
-			requiredResourcesTemp.Clear();
-			requiredResourcesTemp = null;
+		public int GetDesiredAmount() {
+			return desiredAmount;
 		}
-
-		public void SetInitialMTOReferences() {
-			foreach (TileObjectPrefabSubGroupsEnum requiredMTOSubGroupTempEnum in requiredMTOSubGroupsTemp) {
-				requiredMTOSubGroups.Add(GameManager.resourceM.GetTileObjectPrefabSubGroupByEnum(requiredMTOSubGroupTempEnum));
-			}
-			requiredMTOSubGroupsTemp.Clear();
-			requiredMTOSubGroupsTemp = null;
-
-			foreach (TileObjectPrefabsEnum requiredMTOTempEnum in requiredMTOsTemp) {
-				requiredMTOs.Add(GameManager.resourceM.GetTileObjectPrefabByEnum(requiredMTOTempEnum));
-			}
-			requiredMTOsTemp.Clear();
-			requiredMTOsTemp = null;
-		}
-
-		public void ChangeDesiredAmount(int newDesiredAmount) {
-			desiredAmount = newDesiredAmount;
+	
+		public void SetDesiredAmount(int desiredAmount) {
+			this.desiredAmount = desiredAmount;
 			UpdateDesiredAmountText();
 		}
 
@@ -413,81 +550,6 @@ public class ResourceManager : BaseManager {
 			}
 			resourceListElement.desiredAmountInput.text = desiredAmount.ToString();
 		}
-
-		//public class Price {
-		//	public int gold = 0; // Amount of Gold in this price
-		//	public int silver = 0; // Amount of Silver in this Price
-		//	public int bronze = 0; // Amount of Bronze in this Price
-
-		//	public float relativeGold = 0; // Entire value of this Price, represented as only Gold
-		//	public float relativeSilver = 0; // Entire value of this Price, represented as only Silver
-		//	public float relativeBronze = 0; // Entire value of this Price, represented as only Bronze
-
-		//	public enum PriceTypeEnum { Gold, Silver, Bronze };
-		//	public enum RelativePriceTypeEnum { RelativeGold, RelativeSilver, RelativeBronze };
-
-		//	public Price() {
-
-		//	}
-
-		//	public Price(int gold, int silver, int bronze) {
-		//		this.gold = gold;
-		//		this.silver = silver;
-		//		this.bronze = bronze;
-		//	}
-
-		//	public void CalculateRelativePrices() {
-		//		relativeGold = gold * (silver / 100f) * (bronze / 10000f);
-		//		relativeSilver = (gold * 100f) + silver + (bronze / 100f);
-		//		relativeBronze = (gold * 10000f) + (silver * 100f) + bronze;
-		//	}
-
-		//	public int GetPrice(PriceTypeEnum priceType) {
-		//		switch (priceType) {
-		//			case PriceTypeEnum.Gold:
-		//				return gold;
-		//			case PriceTypeEnum.Silver:
-		//				return silver;
-		//			case PriceTypeEnum.Bronze:
-		//				return bronze;
-		//		}
-		//		return -1;
-		//	}
-
-		//	public float GetRelativePrice(RelativePriceTypeEnum relativePriceType) {
-		//		switch (relativePriceType) {
-		//			case RelativePriceTypeEnum.RelativeGold:
-		//				return relativeGold;
-		//			case RelativePriceTypeEnum.RelativeSilver:
-		//				return relativeSilver;
-		//			case RelativePriceTypeEnum.RelativeBronze:
-		//				return relativeBronze;
-		//		}
-		//		return -1;
-		//	}
-
-		//	public void Redistribute() {
-		//		silver += (bronze > 0 ? Mathf.FloorToInt(bronze / 100f) : Mathf.CeilToInt(bronze / 100f));
-		//		bronze %= 100; // Does this work with negatives?
-
-		//		gold += (silver > 0 ? Mathf.FloorToInt(silver / 100f) : Mathf.CeilToInt(silver / 100f));
-		//		silver %= 100; // Does this work with negatives?
-		//	}
-
-		//	public void ChangePrice(Price price, int multiple) {
-		//		gold += price.gold * multiple;
-		//		silver += price.silver * multiple;
-		//		bronze += price.bronze * multiple;
-
-		//		Redistribute();
-
-		//		CalculateRelativePrices();
-		//	}
-
-		//	public override string ToString() {
-		//		return string.Format("<color=\"#f39c12\">{0}</color> <color=\"#7f8c8d\">{1}</color> <color=\"#d35400\">{2}</color>", gold, silver, bronze);
-		//	}
-		//}
 
 		public int GetWorldTotalAmount() {
 			return worldTotalAmount;
@@ -537,6 +599,18 @@ public class ResourceManager : BaseManager {
 			SetUnreservedContainerTotalAmount(GetUnreservedContainerTotalAmount() + amount);
 		}
 
+		public int GetUnreservedTradingPostTotalAmount() {
+			return unreservedTradingPostTotalAmount;
+		}
+
+		public void SetUnreservedTradingPostTotalAmount(int unreservedTradingPostTotalAmount) {
+			this.unreservedTradingPostTotalAmount = unreservedTradingPostTotalAmount;
+		}
+
+		public void AddToUnreservedTradingPostTotalAmount(int amount) {
+			SetUnreservedTradingPostTotalAmount(GetUnreservedTradingPostTotalAmount() + amount);
+		}
+
 		public void SetAvailableAmount(int availableAmount) {
 			this.availableAmount = availableAmount;
 		}
@@ -550,6 +624,142 @@ public class ResourceManager : BaseManager {
 		}
 	}
 
+	public Resource GetResourceByString(string resourceString) {
+		return GetResourceByEnum((ResourceEnum)Enum.Parse(typeof(ResourceEnum), resourceString));
+	}
+
+	public Resource GetResourceByEnum(ResourceEnum resourceEnum) {
+		return resources[resourceEnum];
+	}
+
+	public List<Resource> GetResources() {
+		return resources.Values.ToList();
+	}
+
+	public class Food : Resource {
+
+		public int nutrition = 0;
+
+		public Food(
+			ResourceEnum type,
+			ResourceGroupEnum groupType,
+			List<ResourceClassEnum> classes,
+			int weight,
+			int volume,
+			int price,
+			int fuelEnergy,
+			List<ObjectSubGroupEnum> manufacturingObjectSubGroups,
+			List<ObjectEnum> manufacturingObjects,
+			int manufacturingEnergy,
+			int nutrition
+		) : base(
+			type,
+			groupType,
+			classes,
+			weight,
+			volume,
+			price,
+			fuelEnergy,
+			manufacturingObjectSubGroups,
+			manufacturingObjects,
+			manufacturingEnergy
+		) {
+			this.nutrition = nutrition;
+		}
+	}
+
+	public List<ClothingPrefab> clothingPrefabs = new List<ClothingPrefab>();
+
+	public class ClothingPrefab {
+		public HumanManager.Human.Appearance appearance;
+		public ClothingEnum clothingType;
+		public int insulation;
+		public int waterResistance;
+		public int weightCapacity;
+		public int volumeCapacity;
+
+		public List<string> colours;
+
+		public List<List<Sprite>> moveSprites = new List<List<Sprite>>();
+
+		public List<Clothing> clothes = new List<Clothing>();
+
+		public ClothingPrefab(
+			HumanManager.Human.Appearance appearance, 
+			ClothingEnum clothingType, 
+			int insulation, 
+			int waterResistance, 
+			int weightCapacity, 
+			int volumeCapacity, 
+			List<string> colours, 
+			int typeIndex
+		) {
+			this.appearance = appearance;
+			this.clothingType = clothingType;
+			this.insulation = insulation;
+			this.waterResistance = waterResistance;
+			this.weightCapacity = weightCapacity;
+			this.volumeCapacity = volumeCapacity;
+			this.colours = colours;
+
+			for (int i = 0; i < 4; i++) {
+				moveSprites.Add(Resources.LoadAll<Sprite>(@"Sprites/Clothes/" + appearance + "/clothes-" + appearance.ToString().ToLower() + "-" + i).Skip(typeIndex).Take(colours.Count).ToList());
+			}
+		}
+	}
+
+	public List<ClothingPrefab> GetClothingPrefabsByAppearance(HumanManager.Human.Appearance appearance) {
+		return clothingPrefabs.FindAll(c => c.appearance == appearance);
+	}
+
+	public class Clothing : Resource {
+		public ClothingPrefab prefab;
+		public string colour;
+
+		public List<Sprite> moveSprites = new List<Sprite>();
+
+		public Clothing(
+			ResourceEnum type,
+			ResourceGroupEnum groupType,
+			List<ResourceClassEnum> classes,
+			int weight,
+			int volume,
+			int price,
+			int fuelEnergy,
+			List<ObjectSubGroupEnum> manufacturingObjectSubGroups,
+			List<ObjectEnum> manufacturingObjects,
+			int manufacturingEnergy,
+			ClothingPrefab prefab,
+			string colour
+		) : base(
+			type,
+			groupType,
+			classes,
+			weight,
+			volume,
+			price,
+			fuelEnergy,
+			manufacturingObjectSubGroups,
+			manufacturingObjects,
+			manufacturingEnergy
+		) {
+			this.prefab = prefab;
+			this.colour = colour;
+
+			name = UIManager.SplitByCapitals(colour + prefab.clothingType);
+
+			for (int i = 0; i < 4; i++) {
+				moveSprites.Add(prefab.moveSprites[i][prefab.colours.IndexOf(colour)]);
+			}
+
+			image = moveSprites[0];
+		}
+	}
+
+	public List<Clothing> GetClothesByAppearance(HumanManager.Human.Appearance appearance) {
+		return GetResourcesInClass(ResourceClassEnum.Clothing).Select(r => (Clothing)r).Where(c => c.prefab.appearance == appearance).ToList();
+	}
+
 	public class ResourceAmount {
 		public Resource resource;
 		public int amount;
@@ -557,6 +767,18 @@ public class ResourceManager : BaseManager {
 		public ResourceAmount(Resource resource, int amount) {
 			this.resource = resource;
 			this.amount = amount;
+		}
+	}
+
+	public class ResourceRange {
+		public Resource resource;
+		public int min;
+		public int max;
+
+		public ResourceRange(Resource resource, int min, int max) {
+			this.resource = resource;
+			this.min = min;
+			this.max = max;
 		}
 	}
 
@@ -574,20 +796,21 @@ public class ResourceManager : BaseManager {
 		public Resource resource;
 
 		public int caravanAmount;
+		public int colonyAmount;
 
 		private int oldTradeAmount = 0;
 		private int tradeAmount;
 
-		public /*Resource.Price*/int caravanResourcePrice;
+		public int caravanResourcePrice;
 
 		public CaravanManager.Caravan caravan;
 
-		public TradeResourceAmount(Resource resource, int caravanAmount, /*Resource.Price*/int caravanResourcePrice, CaravanManager.Caravan caravan) {
+		public TradeResourceAmount(Resource resource, int caravanAmount, CaravanManager.Caravan caravan) {
 			this.resource = resource;
 
 			this.caravanAmount = caravanAmount;
 
-			this.caravanResourcePrice = caravanResourcePrice;
+			caravanResourcePrice = caravan.DeterminePriceForResource(resource);
 
 			this.caravan = caravan;
 		}
@@ -604,6 +827,10 @@ public class ResourceManager : BaseManager {
 			}
 		}
 
+		public void SetColonyAmount(int colonyAmount) {
+			this.colonyAmount = colonyAmount;
+		}
+
 		public int GetTradeAmount() {
 			return tradeAmount;
 		}
@@ -618,20 +845,20 @@ public class ResourceManager : BaseManager {
 	}
 
 	public class ConfirmedTradeResourceAmount {
-		public TradeResourceAmount tradeResourceAmount;
+		public Resource resource;
 		public int tradeAmount;
 		public int amountRemaining;
 
-		public ConfirmedTradeResourceAmount(TradeResourceAmount tradeResourceAmount, int tradeAmount) {
-			this.tradeResourceAmount = tradeResourceAmount;
+		public ConfirmedTradeResourceAmount(Resource resource, int tradeAmount) {
+			this.resource = resource;
 			this.tradeAmount = tradeAmount;
 			amountRemaining = tradeAmount;
 		}
 	}
 
-	public void CreateResource(Resource resource, int amount, ManufacturingTileObject manufacturingTileObject) {
+	public void CreateResource(Resource resource, int amount, ManufacturingObject manufacturingTileObject) {
 		for (int i = 0; i < amount; i++) {
-			JobManager.Job job = new JobManager.Job(manufacturingTileObject.tile, GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.CreateResource), 0);
+			JobManager.Job job = new JobManager.Job(manufacturingTileObject.tile, GetObjectPrefabByEnum(ObjectEnum.CreateResource), 0);
 			job.SetCreateResourceData(resource, manufacturingTileObject);
 			GameManager.jobM.CreateJob(job);
 			manufacturingTileObject.jobBacklog.Add(job);
@@ -658,7 +885,18 @@ public class ResourceManager : BaseManager {
 			return (resources.Sum(resource => resource.amount) + reservedResources.Sum(reservedResource => reservedResource.resources.Sum(rr => rr.amount)));
 		}
 
-		public void ChangeResourceAmount(Resource resource, int amount) {
+		public int ChangeResourceAmount(Resource resource, int amount, bool limitToMaxAmount) {
+			int remainingAmount = 0;
+			if (limitToMaxAmount && amount > 0) {
+				remainingAmount = maxAmount - (CountResources() + amount);
+				if (remainingAmount < 0) {
+					remainingAmount = Mathf.Abs(remainingAmount);
+					amount -= remainingAmount;
+				} else {
+					remainingAmount = 0;
+				}
+			}
+
 			ResourceAmount existingResourceAmount = resources.Find(ra => ra.resource == resource);
 			if (existingResourceAmount != null) {
 				if (amount >= 0 || (amount - existingResourceAmount.amount) >= 0) {
@@ -677,11 +915,15 @@ public class ResourceManager : BaseManager {
 					resources.Remove(existingResourceAmount);
 				}
 			}
+
 			GameManager.resourceM.CalculateResourceTotals();
 			GameManager.uiM.SetSelectedColonistInformation(true);
 			GameManager.uiM.SetSelectedTraderMenu();
 			GameManager.uiM.SetSelectedContainerInfo();
+			GameManager.uiM.SetSelectedTradingPostInfo();
 			GameManager.jobM.UpdateColonistJobs();
+
+			return remainingAmount;
 		}
 
 		public bool ReserveResources(List<ResourceAmount> resourcesToReserve, HumanManager.Human humanReservingResources) {
@@ -695,13 +937,14 @@ public class ResourceManager : BaseManager {
 			if (allResourcesFound) {
 				foreach (ResourceAmount raReserve in resourcesToReserve) {
 					ResourceAmount raInventory = resources.Find(ra => ra.resource == raReserve.resource);
-					ChangeResourceAmount(raInventory.resource, -raReserve.amount);
+					ChangeResourceAmount(raInventory.resource, -raReserve.amount, false);
 				}
 				reservedResources.Add(new ReservedResources(resourcesToReserve, humanReservingResources));
 			}
 			GameManager.uiM.SetSelectedColonistInformation(true);
 			GameManager.uiM.SetSelectedTraderMenu();
 			GameManager.uiM.SetSelectedContainerInfo();
+			GameManager.uiM.SetSelectedTradingPostInfo();
 			return allResourcesFound;
 		}
 
@@ -718,6 +961,7 @@ public class ResourceManager : BaseManager {
 			GameManager.uiM.SetSelectedColonistInformation(true);
 			GameManager.uiM.SetSelectedTraderMenu();
 			GameManager.uiM.SetSelectedContainerInfo();
+			GameManager.uiM.SetSelectedTradingPostInfo();
 			return reservedResourcesByHuman;
 		}
 
@@ -726,7 +970,7 @@ public class ResourceManager : BaseManager {
 			foreach (ReservedResources rr in reservedResources) {
 				if (rr.human == human) {
 					foreach (ResourceAmount ra in rr.resources) {
-						ChangeResourceAmount(ra.resource, ra.amount);
+						ChangeResourceAmount(ra.resource, ra.amount, false);
 					}
 					reservedResourcesToRemove.Add(rr);
 				}
@@ -738,15 +982,34 @@ public class ResourceManager : BaseManager {
 			GameManager.uiM.SetSelectedColonistInformation(true);
 			GameManager.uiM.SetSelectedTraderMenu();
 			GameManager.uiM.SetSelectedContainerInfo();
+			GameManager.uiM.SetSelectedTradingPostInfo();
+		}
+
+		public static void TransferResourcesBetweenInventories(Inventory fromInventory, Inventory toInventory, ResourceAmount resourceAmount, bool limitToMaxAmount) {
+			Resource resource = resourceAmount.resource;
+			int amount = resourceAmount.amount;
+			
+			fromInventory.ChangeResourceAmount(resource, -amount, false);
+			int remainingAmount = toInventory.ChangeResourceAmount(resource, amount, limitToMaxAmount);
+			if (remainingAmount > 0) {
+				fromInventory.ChangeResourceAmount(resource, remainingAmount, false);
+			}
+		}
+
+		public static void TransferResourcesBetweenInventories(Inventory fromInventory, Inventory toInventory, List<ResourceAmount> resourceAmounts, bool limitToMaxAmount) {
+			foreach (ResourceAmount resourceAmount in resourceAmounts.ToList()) {
+				TransferResourcesBetweenInventories(fromInventory, toInventory, resourceAmount, limitToMaxAmount);
+			}
 		}
 	}
 
 	public void CalculateResourceTotals() {
-		foreach (Resource resource in resources) {
+		foreach (Resource resource in GetResources()) {
 			resource.SetWorldTotalAmount(0);
 			resource.SetColonistsTotalAmount(0);
 			resource.SetContainerTotalAmount(0);
 			resource.SetUnreservedContainerTotalAmount(0);
+			resource.SetUnreservedTradingPostTotalAmount(0);
 			resource.SetAvailableAmount(0);
 		}
 
@@ -775,8 +1038,13 @@ public class ResourceManager : BaseManager {
 				}
 			}
 		}
+		foreach (TradingPost tradingPost in tradingPosts) {
+			foreach (ResourceAmount resourceAmount in tradingPost.inventory.resources) {
+				resourceAmount.resource.AddToUnreservedTradingPostTotalAmount(resourceAmount.amount);
+			}
+		}
 
-		foreach (Resource resource in resources) {
+		foreach (Resource resource in GetResources()) {
 			resource.CalculateAvailableAmount();
 		}
 	}
@@ -838,92 +1106,77 @@ public class ResourceManager : BaseManager {
 		return returnResources;
 	}
 
-	public List<ClothingPrefab> GetClothingPrefabsByAppearance(HumanManager.Human.Appearance appearance) {
-		return clothingPrefabs.FindAll(c => c.appearance == appearance);
+	
+
+	
+
+	
+
+
+
+	public enum ObjectGroupPropertyEnum {
+		Group,
+		Type,
+		SubGroups
 	}
 
-	public List<Clothing> GetClothesByAppearance(HumanManager.Human.Appearance appearance) {
-		return resources.Where(r => r.resourceClasses.Contains(ResourceClass.Clothing)).Select(r => (Clothing)r).Where(c => c.prefab.appearance == appearance).ToList();
-	}
-
-	public class Food : Resource {
-
-		public int nutrition = 0;
-
-		public Food(ResourceGroup resourceGroup, ResourcesEnum type, List<ResourceClass> resourceClasses, float weight, /*Price*/int price, int fuelEnergy, List<TileObjectPrefabSubGroupsEnum> requiredMTOSubGroupsTemp, List<TileObjectPrefabsEnum> requiredMTOsTemp, int requiredEnergy, Dictionary<ResourcesEnum, float> requiredResourcesTemp, int nutrition) : base(resourceGroup, type, resourceClasses, weight, price, fuelEnergy, requiredMTOSubGroupsTemp, requiredMTOsTemp, requiredEnergy, requiredResourcesTemp) {
-			this.nutrition = nutrition;
-		}
-	}
-
-	public enum ClothingType {
-		Sweater, Shirt
-	}
-
-	public List<ClothingPrefab> clothingPrefabs = new List<ClothingPrefab>();
-
-	public class ClothingPrefab {
-		public HumanManager.Human.Appearance appearance;
-		public ClothingType clothingType;
-		public int insulation;
-		public int waterResistance;
-		public List<string> colours;
-
-		public List<List<Sprite>> moveSprites = new List<List<Sprite>>();
-
-		public List<Clothing> clothes = new List<Clothing>();
-
-		public ClothingPrefab(HumanManager.Human.Appearance appearance, ClothingType clothingType, int insulation, int waterResistance, List<string> colours, int typeIndex) {
-			this.appearance = appearance;
-			this.clothingType = clothingType;
-			this.insulation = insulation;
-			this.waterResistance = waterResistance;
-			this.colours = colours;
-
-			for (int i = 0; i < 4; i++) {
-				moveSprites.Add(Resources.LoadAll<Sprite>(@"Sprites/Clothes/" + appearance + "/clothes-" + appearance.ToString().ToLower() + "-" + i).Skip(typeIndex).Take(colours.Count).ToList());
-			}
-		}
-	}
-
-	public class Clothing : Resource {
-		public ClothingPrefab prefab;
-		public string colour;
-
-		public List<Sprite> moveSprites = new List<Sprite>();
-
-		public Clothing(ResourceGroup resourceGroup, ResourcesEnum type, List<ResourceClass> resourceClasses, float weight, /*Price*/int price, int fuelEnergy, List<TileObjectPrefabSubGroupsEnum> requiredMTOSubGroupsTemp, List<TileObjectPrefabsEnum> requiredMTOsTemp, int requiredEnergy, Dictionary<ResourcesEnum, float> requiredResourcesTemp, ClothingPrefab prefab, string colour) : base(resourceGroup, type, resourceClasses, weight, price, fuelEnergy, requiredMTOSubGroupsTemp, requiredMTOsTemp, requiredEnergy, requiredResourcesTemp) {
-			this.prefab = prefab;
-			this.colour = colour;
-
-			name = UIManager.SplitByCapitals(colour + prefab.clothingType);
-
-			for (int i = 0; i < 4; i++) {
-				moveSprites.Add(prefab.moveSprites[i][prefab.colours.IndexOf(colour)]);
-			}
-
-			image = moveSprites[0];
-		}
-	}
-
-	public enum TileObjectPrefabGroupsEnum {
+	public enum ObjectGroupEnum {
 		Structure, Furniture, Industrial,
 		Command,
 		Farm,
 		None,
-	};
-	public enum TileObjectPrefabSubGroupsEnum {
+	}
+
+	public enum ObjectSubGroupPropertyEnum {
+		SubGroup,
+		Type,
+		Objects
+	}
+
+	public enum ObjectSubGroupEnum {
 		Walls, Fences, Doors, Floors, Foundations,
 		Containers, Beds, Chairs, Tables, Lights, TradingPosts,
 		Furnaces, Processing,
 		Plants, Terrain, Remove, Cancel, Priority,
 		PlantFarm, HarvestFarm,
 		None
-	};
-	public enum TileObjectPrefabsEnum {
-		StoneWall, WoodenWall, BrickWall,
+	}
+
+	public enum ObjectPropertyEnum {
+		Object,
+		Type,
+		InstanceType,
+		Layer,
+		Bitmasking,
+		BlocksLight,
+		MultiTilePositions,
+		Integrity,
+		Walkable,
+		WalkSpeed,
+		Buildable,
+		Flammability,
+		MaxInventoryVolume,
+		MaxInventoryWeight,
+		MaxLightDistance,
+		LightColour,
+		RestComfortAmount,
+		UsesFuel,
+		GrowthTimeDays,
+		Seed,
+		HarvestResource,
+		Plants,
+		TimeToBuild,
+		ResourcesToBuild,
+		SelectionModifiers,
+		JobType,
+		AddToTileWhenBuilt
+	}
+
+	public enum ObjectEnum {
+		WoodenWall, GraniteWall, BrickWall,
 		WoodenFence,
 		WoodenDoor,
-		StoneFloor, WoodenFloor, BrickFloor,
+		WoodenFloor, BrickFloor,
 		WoodenDock,
 		Basket, WoodenChest, WoodenDrawers,
 		WoodenBed,
@@ -932,7 +1185,7 @@ public class ResourceManager : BaseManager {
 		Torch, WoodenLamp,
 		TradingPost,
 		StoneFurnace,
-		CottonGin, SplittingBlock, SplittingLog, Anvil, Loom,
+		CottonGin, SplittingBlock, SplittingLog, Anvil, Loom, SowingTable,
 		ChopPlant, PlantPlant, PlantAppleTree, PlantBlueberryBush,
 		Mine, Dig,
 		RemoveFloor, RemoveObject, RemoveAll,
@@ -940,307 +1193,397 @@ public class ResourceManager : BaseManager {
 		IncreasePriority, DecreasePriority,
 		WheatFarm, PotatoFarm, CottonFarm,
 		HarvestFarm,
-		CreateResource, PickupResources, EmptyInventory, Sleep, CollectWater, Drink, CollectFood, Eat,
+		CreateResource, PickupResources, TransferResources, CollectResources, EmptyInventory, Sleep, CollectWater, Drink, CollectFood, Eat,
 		PlantTree, PlantBush, PlantCactus
-	};
-	public enum TileObjectPrefabInstanceType {
+	}
+
+	public enum ObjectInstanceType {
 		Normal,
 		Container,
+		TradingPost,
 		SleepSpot,
 		LightSource,
-		ManufacturingTileObject,
+		ManufacturingObject,
 		Farm
-	};
-
-	public static readonly List<TileObjectPrefabsEnum> bitmaskingTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall, TileObjectPrefabsEnum.StoneFloor, TileObjectPrefabsEnum.WoodenFloor, TileObjectPrefabsEnum.WoodenFence,
-		TileObjectPrefabsEnum.BrickWall, TileObjectPrefabsEnum.BrickFloor,
-		TileObjectPrefabsEnum.WoodenDock,
-		TileObjectPrefabsEnum.WoodenTable
-	};
-
-	public static readonly List<TileObjectPrefabsEnum> floorEquivalentTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.StoneFloor, TileObjectPrefabsEnum.WoodenFloor, TileObjectPrefabsEnum.BrickFloor
-	};
-	public static readonly List<TileObjectPrefabsEnum> wallEquivalentTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall, TileObjectPrefabsEnum.WoodenFence, TileObjectPrefabsEnum.BrickWall
-	};
-
-	public static readonly Dictionary<TileObjectPrefabSubGroupsEnum, List<TileObjectPrefabsEnum>> manufacturingTileObjects = new Dictionary<TileObjectPrefabSubGroupsEnum, List<TileObjectPrefabsEnum>>() {
-		{ TileObjectPrefabSubGroupsEnum.Furnaces, new List<TileObjectPrefabsEnum>() {
-			TileObjectPrefabsEnum.StoneFurnace
-		} },
-		{ TileObjectPrefabSubGroupsEnum.Processing, new List<TileObjectPrefabsEnum>() {
-			TileObjectPrefabsEnum.CottonGin, TileObjectPrefabsEnum.SplittingBlock, TileObjectPrefabsEnum.SplittingLog, TileObjectPrefabsEnum.Anvil
-		} }
-	};
-	public static readonly List<TileObjectPrefabsEnum> containerTileObjectTypes = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.Basket, TileObjectPrefabsEnum.WoodenChest
-	};
-	public static readonly List<TileObjectPrefabsEnum> sleepSpotTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.WoodenBed
-	};
-	public static readonly List<TileObjectPrefabsEnum> manufacturingTileObjectsFuel = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.StoneFurnace
-	};
-	public static readonly List<TileObjectPrefabsEnum> manufacturingTileObjectsNoFuel = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.CottonGin, TileObjectPrefabsEnum.SplittingBlock, TileObjectPrefabsEnum.SplittingLog, TileObjectPrefabsEnum.Anvil
-	};
-
-	public static readonly List<TileObjectPrefabsEnum> lightSourceTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.WoodenLamp, TileObjectPrefabsEnum.Torch
-	};
-
-	public static readonly List<TileObjectPrefabsEnum> lightBlockingTileObjects = new List<TileObjectPrefabsEnum>() {
-		TileObjectPrefabsEnum.BrickWall, TileObjectPrefabsEnum.StoneWall, TileObjectPrefabsEnum.WoodenWall, TileObjectPrefabsEnum.WoodenDoor
-	};
-
-	public void CreateTileObjectPrefabs() {
-		List<string> tileObjectPrefabGroupsData = Resources.Load<TextAsset>(@"Data/tileObjectPrefabs").text.Replace("\t", string.Empty).Split(new string[] { "<Group>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-		foreach (string tileObjectPrefabGroupDataString in tileObjectPrefabGroupsData) {
-			tileObjectPrefabGroups.Add(new TileObjectPrefabGroup(tileObjectPrefabGroupDataString));
-		}
-		foreach (Resource resource in resources) {
-			resource.SetInitialMTOReferences();
-		}
 	}
 
-	public List<TileObjectPrefabGroup> tileObjectPrefabGroups = new List<TileObjectPrefabGroup>();
+	public void CreateObjectPrefabs() {
+		List<KeyValuePair<string, object>> objectGroupProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/objects").text.Split('\n').ToList());
+		foreach (KeyValuePair<string, object> objectGroupProperty in objectGroupProperties) {
+			switch ((ObjectGroupPropertyEnum)Enum.Parse(typeof(ObjectGroupPropertyEnum), objectGroupProperty.Key)) {
+				case ObjectGroupPropertyEnum.Group:
 
-	public class TileObjectPrefabGroup {
-		public TileObjectPrefabGroupsEnum type;
-		public string name;
+					ObjectGroupEnum? groupType = null;
+					List<ObjectPrefabSubGroup> subGroups = new List<ObjectPrefabSubGroup>();
 
-		public List<TileObjectPrefabSubGroup> tileObjectPrefabSubGroups = new List<TileObjectPrefabSubGroup>();
-
-		public TileObjectPrefabGroup(string data) {
-			List<string> tileObjectPrefabSubGroupsData = data.Split(new string[] { "<SubGroup>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-			type = (TileObjectPrefabGroupsEnum)Enum.Parse(typeof(TileObjectPrefabGroupsEnum), tileObjectPrefabSubGroupsData[0]);
-			name = UIManager.SplitByCapitals(type.ToString());
-
-			foreach (string tileObjectPrefabSubGroupDataString in tileObjectPrefabSubGroupsData.Skip(1)) {
-				tileObjectPrefabSubGroups.Add(new TileObjectPrefabSubGroup(tileObjectPrefabSubGroupDataString, this));
-			}
-		}
-	}
-
-	public class TileObjectPrefabSubGroup {
-		public TileObjectPrefabSubGroupsEnum type;
-		public string name;
-
-		public TileObjectPrefabGroup tileObjectPrefabGroup;
-		public List<TileObjectPrefab> tileObjectPrefabs = new List<TileObjectPrefab>();
-
-		public TileObjectPrefabSubGroup(string data, TileObjectPrefabGroup tileObjectPrefabGroup) {
-			this.tileObjectPrefabGroup = tileObjectPrefabGroup;
-
-			List<string> tileObjectPrefabsData = data.Split(new string[] { "<Object>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-			type = (TileObjectPrefabSubGroupsEnum)Enum.Parse(typeof(TileObjectPrefabSubGroupsEnum), tileObjectPrefabsData[0]);
-			name = UIManager.SplitByCapitals(type.ToString());
-
-			foreach (string tileObjectPrefabDataString in tileObjectPrefabsData.Skip(1)) {
-				TileObjectPrefabsEnum type = TileObjectPrefabsEnum.Cancel;
-				TileObjectPrefabInstanceType instanceType = TileObjectPrefabInstanceType.Normal;
-				int timeToBuild = -1;
-				List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
-				List<JobManager.SelectionModifiersEnum> selectionModifiers = new List<JobManager.SelectionModifiersEnum>();
-				JobManager.JobTypesEnum jobType = JobManager.JobTypesEnum.Cancel;
-				float flammability = 0;
-				int maxIntegrity = 0;
-				bool walkable = true;
-				float walkSpeed = 1;
-				bool buildable = true;
-				int layer = -1;
-				bool addToTileWhenBuilt = true;
-				Vector2 blockingAmount = new Vector2(0, 0);
-				List<Vector2> multiTilePositions = new List<Vector2>();
-				int maxInventoryAmount = -1;
-				int maxLightDistance = -1;
-				Color lightColour = Color.black;
-				float restComfortAmount = -1;
-				int growthTime = -1;
-				Resource seed = null;
-				Resource harvestResource = null;
-
-				List<string> singleTileObjectPrefabDataLineStringList = tileObjectPrefabDataString.Split('\n').ToList();
-				foreach (string singleTileObjectPrefabDataLineString in singleTileObjectPrefabDataLineStringList.Skip(1)) {
-					if (!string.IsNullOrEmpty(singleTileObjectPrefabDataLineString)) {
-
-						string label = singleTileObjectPrefabDataLineString.Split('>')[0].Replace("<", string.Empty);
-						string value = singleTileObjectPrefabDataLineString.Split('>')[1];
-
-						switch (label) {
-							case "Type":
-								type = (TileObjectPrefabsEnum)Enum.Parse(typeof(TileObjectPrefabsEnum), value);
+					foreach (KeyValuePair<string, object> objectGroupSubProperty in (List<KeyValuePair<string, object>>)objectGroupProperty.Value) {
+						switch ((ObjectGroupPropertyEnum)Enum.Parse(typeof(ObjectGroupPropertyEnum), objectGroupSubProperty.Key)) {
+							case ObjectGroupPropertyEnum.Type:
+								groupType = (ObjectGroupEnum)Enum.Parse(typeof(ObjectGroupEnum), (string)objectGroupSubProperty.Value);
 								break;
-							case "InstanceType":
-								instanceType = (TileObjectPrefabInstanceType)Enum.Parse(typeof(TileObjectPrefabInstanceType), value);
-								break;
-							case "TimeToBuild":
-								timeToBuild = int.Parse(value);
-								break;
-							case "ResourcesToBuild":
-								foreach (string resourceToBuildString in value.Split(',')) {
-									string resourceName = resourceToBuildString.Split(':')[0];
-									Resource resource = GameManager.resourceM.GetResourceByEnum((ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), resourceName));
-									int amount = int.Parse(resourceToBuildString.Split(':')[1]);
-									resourcesToBuild.Add(new ResourceAmount(resource, amount));
+							case ObjectGroupPropertyEnum.SubGroups:
+								foreach (KeyValuePair<string, object> objectSubGroupProperty in (List<KeyValuePair<string, object>>)objectGroupSubProperty.Value) {
+									switch ((ObjectSubGroupPropertyEnum)Enum.Parse(typeof(ObjectSubGroupPropertyEnum), objectSubGroupProperty.Key)) {
+										case ObjectSubGroupPropertyEnum.SubGroup:
+
+											ObjectSubGroupEnum? subGroupType = null;
+											List<ObjectPrefab> prefabs = new List<ObjectPrefab>();
+
+											foreach (KeyValuePair<string, object> objectSubGroupSubProperty in (List<KeyValuePair<string, object>>)objectSubGroupProperty.Value) {
+												switch ((ObjectSubGroupPropertyEnum)Enum.Parse(typeof(ObjectSubGroupPropertyEnum), objectSubGroupSubProperty.Key)) {
+													case ObjectSubGroupPropertyEnum.Type:
+														subGroupType = (ObjectSubGroupEnum)Enum.Parse(typeof(ObjectSubGroupEnum), (string)objectSubGroupSubProperty.Value);
+														break;
+													case ObjectSubGroupPropertyEnum.Objects:
+														foreach (KeyValuePair<string, object> objectProperty in (List<KeyValuePair<string, object>>)objectSubGroupSubProperty.Value) {
+															switch ((ObjectPropertyEnum)Enum.Parse(typeof(ObjectPropertyEnum), objectProperty.Key)) {
+																case ObjectPropertyEnum.Object:
+
+																	ObjectEnum? type = null;
+																	ObjectInstanceType instanceType = ObjectInstanceType.Normal;
+																	int? layer = null;
+																	bool? bitmasking = false;
+																	bool? blocksLight = false;
+																	int? integrity = 0;
+																	List<Vector2> multiTilePositions = new List<Vector2>();
+
+																	float? walkSpeed = 1;
+																	bool? walkable = true;
+																	bool? buildable = true;
+																	float? flammability = 0;
+
+																	// Container
+																	int? maxInventoryVolume = null;
+																	int? maxInventoryWeight = null;
+
+																	// Light
+																	int? maxLightDistance = null;
+																	Color? lightColour = null;
+
+																	// Sleep Spot
+																	float? restComfortAmount = null;
+
+																	// Manufacturing Object
+																	bool? usesFuel = null;
+
+																	// Farm
+																	int? growthTimeDays = null;
+																	Resource seedResource = null;
+																	Resource harvestResource = null;
+
+																	// Plants
+																	Dictionary<PlantPrefab, Resource> plants = new Dictionary<PlantPrefab, Resource>();
+
+																	// Job
+																	int? timeToBuild = null;
+																	List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
+																	List<JobManager.SelectionModifiersEnum> selectionModifiers = new List<JobManager.SelectionModifiersEnum>();
+																	JobManager.JobTypesEnum? jobType = null;
+																	bool? addToTileWhenBuilt = true;
+
+																	foreach (KeyValuePair<string, object> objectSubProperty in (List<KeyValuePair<string, object>>)objectProperty.Value) {
+																		switch ((ObjectPropertyEnum)Enum.Parse(typeof(ObjectPropertyEnum), objectSubProperty.Key)) {
+																			case ObjectPropertyEnum.Type:
+																				type = (ObjectEnum)Enum.Parse(typeof(ObjectEnum), (string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.InstanceType:
+																				instanceType = (ObjectInstanceType)Enum.Parse(typeof(ObjectInstanceType), (string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.Layer:
+																				layer = int.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.Bitmasking:
+																				bitmasking = bool.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.BlocksLight:
+																				blocksLight = bool.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.Integrity:
+																				integrity = int.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.MultiTilePositions:
+																				foreach (string vector2String in ((string)objectSubProperty.Value).Split(';')) {
+																					multiTilePositions.Add(new Vector2(float.Parse(vector2String.Split(',')[0]), float.Parse(vector2String.Split(',')[1])));
+																				}
+																				break;
+																			case ObjectPropertyEnum.WalkSpeed:
+																				walkSpeed = float.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.Walkable:
+																				walkable = bool.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.Buildable:
+																				buildable = bool.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.Flammability:
+																				flammability = float.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.MaxInventoryVolume:
+																				if (((string)objectSubProperty.Value).Contains("Max")) {
+																					maxInventoryVolume = int.MaxValue;
+																				} else {
+																					maxInventoryVolume = int.Parse((string)objectSubProperty.Value);
+																				}
+																				break;
+																			case ObjectPropertyEnum.MaxInventoryWeight:
+																				if (((string)objectSubProperty.Value).Contains("Max")) {
+																					maxInventoryWeight = int.MaxValue;
+																				} else {
+																					maxInventoryWeight = int.Parse((string)objectSubProperty.Value);
+																				}
+																				break;
+																			case ObjectPropertyEnum.MaxLightDistance:
+																				maxLightDistance = int.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.LightColour:
+																				lightColour = UIManager.HexToColor((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.RestComfortAmount:
+																				restComfortAmount = float.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.UsesFuel:
+																				usesFuel = bool.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.GrowthTimeDays:
+																				growthTimeDays = int.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.Seed:
+																				seedResource = GetResourceByString((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.HarvestResource:
+																				harvestResource = GetResourceByString((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.Plants:
+																				foreach (string plantToHarvestResourceString in ((string)objectSubProperty.Value).Split(',')) {
+																					string harvestResourceString = plantToHarvestResourceString.Split(':')[1];
+																					plants.Add(
+																						GetPlantPrefabByString(plantToHarvestResourceString.Split(':')[0]), 
+																						harvestResourceString.Contains("None") ? null : GetResourceByString(harvestResourceString)
+																					);
+																				}
+																				break;
+																			case ObjectPropertyEnum.TimeToBuild:
+																				timeToBuild = int.Parse((string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.ResourcesToBuild:
+																				foreach (string resourceAmountString in ((string)objectSubProperty.Value).Split(',')) {
+																					resourcesToBuild.Add(new ResourceAmount(GetResourceByString(resourceAmountString.Split(':')[0]), int.Parse(resourceAmountString.Split(':')[1])));
+																				}
+																				break;
+																			case ObjectPropertyEnum.SelectionModifiers:
+																				foreach (string selectionModifierString in ((string)objectSubProperty.Value).Split(',')) {
+																					selectionModifiers.Add((JobManager.SelectionModifiersEnum)Enum.Parse(typeof(JobManager.SelectionModifiersEnum), selectionModifierString));
+																				}
+																				break;
+																			case ObjectPropertyEnum.JobType:
+																				jobType = (JobManager.JobTypesEnum)Enum.Parse(typeof(JobManager.JobTypesEnum), (string)objectSubProperty.Value);
+																				break;
+																			case ObjectPropertyEnum.AddToTileWhenBuilt:
+																				addToTileWhenBuilt = bool.Parse((string)objectSubProperty.Value);
+																				break;
+																			default:
+																				Debug.LogError("Unknown object sub property: " + objectSubProperty.Key + " " + objectSubProperty.Value);
+																				break;
+																		}
+																	}
+
+																	if (instanceType != ObjectInstanceType.Container && instanceType != ObjectInstanceType.TradingPost) {
+																		if (!maxInventoryVolume.HasValue) {
+																			maxInventoryVolume = 0;
+																		}
+																		if (!maxInventoryWeight.HasValue) {
+																			maxInventoryWeight = 0;
+																		}
+																	}
+
+																	if (instanceType != ObjectInstanceType.LightSource) {
+																		if (!maxLightDistance.HasValue) {
+																			maxLightDistance = 0;
+																		}
+																		if (!lightColour.HasValue) {
+																			lightColour = Color.white;
+																		}
+																	}
+
+																	if (instanceType != ObjectInstanceType.SleepSpot) {
+																		if (!restComfortAmount.HasValue) {
+																			restComfortAmount = 0;
+																		}
+																	}
+
+																	if (instanceType != ObjectInstanceType.ManufacturingObject) {
+																		if (!usesFuel.HasValue) {
+																			usesFuel = false;
+																		}
+																	}
+
+																	if (instanceType != ObjectInstanceType.Farm) {
+																		if (!growthTimeDays.HasValue) {
+																			growthTimeDays = 0;
+																		}
+																	}
+
+																	ObjectPrefab objectPrefab = new ObjectPrefab(
+																		type.Value,
+																		groupType.Value,
+																		subGroupType.Value,
+																		instanceType,
+																		layer.Value,
+																		bitmasking.Value,
+																		blocksLight.Value,
+																		integrity.Value,
+																		multiTilePositions,
+																		walkSpeed.Value,
+																		walkable.Value,
+																		buildable.Value,
+																		flammability.Value,
+																		maxInventoryVolume.Value,
+																		maxInventoryWeight.Value,
+																		maxLightDistance.Value,
+																		lightColour.Value,
+																		restComfortAmount.Value,
+																		usesFuel.Value,
+																		growthTimeDays.Value,
+																		seedResource,
+																		harvestResource,
+																		plants,
+																		timeToBuild.Value,
+																		resourcesToBuild,
+																		selectionModifiers,
+																		jobType.Value,
+																		addToTileWhenBuilt.Value
+																	);
+																	prefabs.Add(objectPrefab);
+																	objectPrefabs.Add(type.Value, objectPrefab);
+
+																	break;
+																default:
+																	Debug.LogError("Unknown object property: " + objectProperty.Key + " " + objectProperty.Value);
+																	break;
+															}
+														}
+														break;
+													default:
+														Debug.LogError("Unknown object sub group sub property: " + objectSubGroupSubProperty.Key + " " + objectSubGroupSubProperty.Value);
+														break;
+												}
+											}
+
+											ObjectPrefabSubGroup objectPrefabSubGroup = new ObjectPrefabSubGroup(
+												subGroupType.Value,
+												groupType.Value,
+												prefabs
+											);
+											subGroups.Add(objectPrefabSubGroup);
+											objectPrefabSubGroups.Add(subGroupType.Value, objectPrefabSubGroup);
+
+											break;
+										default:
+											Debug.LogError("Unknown object sub group property: " + objectSubGroupProperty.Key + " " + objectSubGroupProperty.Value);
+											break;
+									}
 								}
-								break;
-							case "SelectionModifiers":
-								foreach (string selectionModifierString in value.Split(',')) {
-									string selectionModifierName = selectionModifierString.Split(':')[0];
-									JobManager.SelectionModifiersEnum selectionModifier = (JobManager.SelectionModifiersEnum)Enum.Parse(typeof(JobManager.SelectionModifiersEnum), selectionModifierName);
-									selectionModifiers.Add(selectionModifier);
-								}
-								break;
-							case "JobType":
-								jobType = (JobManager.JobTypesEnum)Enum.Parse(typeof(JobManager.JobTypesEnum), value);
-								break;
-							case "Flammability":
-								flammability = float.Parse(value);
-								break;
-							case "MaxIntegrity":
-								maxIntegrity = int.Parse(value);
-								break;
-							case "Walkable":
-								walkable = bool.Parse(value);
-								break;
-							case "WalkSpeed":
-								walkSpeed = float.Parse(value);
-								break;
-							case "Buildable":
-								buildable = bool.Parse(value);
-								break;
-							case "Layer":
-								layer = int.Parse(value);
-								break;
-							case "AddToTileWhenBuilt":
-								addToTileWhenBuilt = bool.Parse(value);
-								break;
-							case "BlockingAmount":
-								List<string> blockingDirections = value.Split(',').ToList();
-								blockingAmount = new Vector2(float.Parse(blockingDirections[0]), float.Parse(blockingDirections[1]));
-								break;
-							case "MultiTilePositions":
-								List<string> multiTilePositionStrings = value.Split(';').ToList();
-								foreach (string multiTilePositionString in multiTilePositionStrings) {
-									Vector2 multiTilePosition = new Vector2(float.Parse(multiTilePositionString.Split(',')[0]), float.Parse(multiTilePositionString.Split(',')[1]));
-									multiTilePositions.Add(multiTilePosition);
-								}
-								break;
-							case "MaxInventoryAmount":
-								maxInventoryAmount = int.Parse(value);
-								break;
-							case "MaxLightDistance":
-								maxLightDistance = int.Parse(value);
-								break;
-							case "LightColour":
-								lightColour = UIManager.HexToColor(value);
-								break;
-							case "RestComfortAmount":
-								restComfortAmount = float.Parse(value);
-								break;
-							case "GrowthTimeDays":
-								growthTime = int.Parse(value) * TimeManager.dayLengthSeconds;
-								break;
-							case "Seed":
-								seed = GameManager.resourceM.GetResourceByEnum((ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), value));
-								break;
-							case "HarvestResource":
-								harvestResource = GameManager.resourceM.GetResourceByEnum((ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), value));
 								break;
 							default:
-								MonoBehaviour.print("Unknown tile object prefab label: \"" + singleTileObjectPrefabDataLineString + "\"");
+								Debug.LogError("Unknown object group sub property: " + objectGroupSubProperty.Key + " " + objectGroupSubProperty.Value);
 								break;
 						}
 					}
-				}
 
-				TileObjectPrefab newTOP = new TileObjectPrefab(
-					this,
-					type,
-					instanceType,
-					timeToBuild,
-					resourcesToBuild,
-					selectionModifiers,
-					jobType,
-					flammability,
-					maxIntegrity,
-					walkable,
-					walkSpeed,
-					buildable,
-					layer,
-					addToTileWhenBuilt,
-					blockingAmount,
-					multiTilePositions,
-					maxInventoryAmount,
-					maxLightDistance,
-					lightColour,
-					restComfortAmount,
-					growthTime,
-					seed,
-					harvestResource
-				);
-				tileObjectPrefabs.Add(newTOP);
-				GameManager.resourceM.tileObjectPrefabs.Add(newTOP);
+					ObjectPrefabGroup objectPrefabGroup = new ObjectPrefabGroup(
+						groupType.Value,
+						subGroups
+					);
+					objectPrefabGroups.Add(groupType.Value, objectPrefabGroup);
+
+					break;
+				default:
+					Debug.LogError("Unknown object group property: " + objectGroupProperty.Key + " " + objectGroupProperty.Value);
+					break;
 			}
 		}
 	}
 
-	public TileObjectPrefabSubGroup GetTileObjectPrefabSubGroupByEnum(TileObjectPrefabSubGroupsEnum topsgEnum) {
-		foreach (TileObjectPrefabGroup topg in tileObjectPrefabGroups) {
-			foreach (TileObjectPrefabSubGroup topsg in topg.tileObjectPrefabSubGroups) {
-				if (topsg.type == topsgEnum) {
-					return topsg;
-				}
-			}
-		}
-		return null;
-	}
+	private Dictionary<ObjectGroupEnum, ObjectPrefabGroup> objectPrefabGroups = new Dictionary<ObjectGroupEnum, ObjectPrefabGroup>();
 
-	public List<TileObjectPrefab> tileObjectPrefabs = new List<TileObjectPrefab>();
-
-	public class TileObjectPrefab {
-
-		public readonly TileObjectPrefabsEnum type;
+	public class ObjectPrefabGroup {
+		public readonly ObjectGroupEnum type;
 		public readonly string name;
 
-		public readonly TileObjectPrefabInstanceType instanceType;
+		public readonly List<ObjectPrefabSubGroup> subGroups = new List<ObjectPrefabSubGroup>();
 
-		public readonly TileObjectPrefabSubGroup tileObjectPrefabSubGroup;
+		public ObjectPrefabGroup(ObjectGroupEnum type, List<ObjectPrefabSubGroup> subGroups) {
+			this.type = type;
+			name = UIManager.SplitByCapitals(type.ToString());
 
-		public readonly Sprite baseSprite;
-		public readonly List<Sprite> bitmaskSprites = new List<Sprite>();
-		public readonly List<Sprite> activeSprites = new List<Sprite>();
+			this.subGroups = subGroups;
+		}
+	}
 
-		public readonly int timeToBuild;
-		public readonly List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
-		public readonly List<JobManager.SelectionModifiersEnum> selectionModifiers = new List<JobManager.SelectionModifiersEnum>();
-		public readonly JobManager.JobTypesEnum jobType;
+	public ObjectPrefabGroup GetObjectPrefabGroupByString(string objectPrefabGroupString) {
+		return GetObjectPrefabGroupByEnum((ObjectGroupEnum)Enum.Parse(typeof(ObjectGroupEnum), objectPrefabGroupString));
+	}
 
-		public readonly float flammability;
+	public ObjectPrefabGroup GetObjectPrefabGroupByEnum(ObjectGroupEnum objectGroupEnum) {
+		return objectPrefabGroups[objectGroupEnum];
+	}
 
-		public readonly int maxIntegrity;
+	public List<ObjectPrefabGroup> GetObjectPrefabGroups() {
+		return objectPrefabGroups.Values.ToList();
+	}
 
-		public readonly bool walkable;
-		public readonly float walkSpeed;
+	public Dictionary<ObjectSubGroupEnum, ObjectPrefabSubGroup> objectPrefabSubGroups = new Dictionary<ObjectSubGroupEnum, ObjectPrefabSubGroup>();
 
-		public readonly bool buildable;
+	public class ObjectPrefabSubGroup {
+		public readonly ObjectSubGroupEnum type;
+		public readonly string name;
+
+		public readonly ObjectGroupEnum groupType;
+		public readonly List<ObjectPrefab> prefabs;
+
+		public ObjectPrefabSubGroup(ObjectSubGroupEnum type, ObjectGroupEnum groupType, List<ObjectPrefab> prefabs) {
+			this.type = type;
+			name = UIManager.SplitByCapitals(type.ToString());
+
+			this.groupType = groupType;
+			this.prefabs = prefabs;
+		}
+	}
+
+	public ObjectPrefabSubGroup GetTileObjectPrefabSubGroupByEnum(ObjectSubGroupEnum objectSubGroupEnum) {
+		return objectPrefabSubGroups[objectSubGroupEnum];
+	}
+
+	public Dictionary<ObjectEnum, ObjectPrefab> objectPrefabs = new Dictionary<ObjectEnum, ObjectPrefab>();
+
+	public class ObjectPrefab {
+		public readonly ObjectEnum type;
+		public readonly string name;
+
+		public readonly ObjectGroupEnum groupType;
+		public readonly ObjectSubGroupEnum subGroupType;
+
+		public readonly ObjectInstanceType instanceType;
 
 		public readonly int layer;
 
-		public readonly bool addToTileWhenBuilt;
+		public readonly bool bitmasking;
+		public readonly bool canRotate;
 
-		public readonly Vector2 blockingAmount;
+		public readonly bool blocksLight;
+
+		public readonly int integrity;
 
 		public readonly Dictionary<int, List<Vector2>> multiTilePositions = new Dictionary<int, List<Vector2>>();
 		public readonly Dictionary<int, Vector2> anchorPositionOffset = new Dictionary<int, Vector2>();
 		public readonly Dictionary<int, Vector2> dimensions = new Dictionary<int, Vector2>();
 
-		public readonly bool canRotate;
+		public readonly float walkSpeed;
+		public readonly bool walkable;
+
+		public readonly bool buildable;
+
+		public readonly float flammability;
 
 		// Container
 		public readonly int maxInventoryAmount;
@@ -1252,77 +1595,111 @@ public class ResourceManager : BaseManager {
 		// Sleep Spot
 		public readonly float restComfortAmount;
 
+		// Manufacturing Tile Object
+		public readonly bool usesFuel;
+
 		// Farm
-		public readonly int growthTime;
-		public readonly Resource seed;
+		public readonly int growthTimeDays;
+		public readonly Resource seedResource;
 		public readonly Resource harvestResource;
 
-		public TileObjectPrefab(
-			TileObjectPrefabSubGroup tileObjectPrefabSubGroup,
-			TileObjectPrefabsEnum type,
-			TileObjectPrefabInstanceType instanceType,
+		// Plants
+		public readonly Dictionary<PlantPrefab, Resource> plants;
+
+		// Job
+		public readonly int timeToBuild;
+		public readonly List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
+		public readonly List<JobManager.SelectionModifiersEnum> selectionModifiers = new List<JobManager.SelectionModifiersEnum>();
+		public readonly JobManager.JobTypesEnum jobType;
+		public readonly bool addToTileWhenBuilt;
+
+		// Sprites
+		public readonly Sprite baseSprite;
+		public readonly List<Sprite> bitmaskSprites = new List<Sprite>();
+		public readonly List<Sprite> activeSprites = new List<Sprite>();
+
+		public ObjectPrefab(
+			ObjectEnum type,
+			ObjectGroupEnum groupType,
+			ObjectSubGroupEnum subGroupType,
+			ObjectInstanceType instanceType,
+			int layer,
+			bool bitmasking,
+			bool blocksLight,
+			int integrity,
+			List<Vector2> multiTilePositions,
+			float walkSpeed,
+			bool walkable,
+			bool buildable,
+			float flammability,
+			int maxInventoryVolume,
+			int maxInventoryWeight,
+			int maxLightDistance,
+			Color lightColour,
+			float restComfortAmount,
+			bool usesFuel,
+			int growthTimeDays,
+			Resource seedResource,
+			Resource harvestResource,
+			Dictionary<PlantPrefab, Resource> plants,
 			int timeToBuild,
 			List<ResourceAmount> resourcesToBuild,
 			List<JobManager.SelectionModifiersEnum> selectionModifiers,
 			JobManager.JobTypesEnum jobType,
-			float flammability,
-			int maxIntegrity,
-			bool walkable,
-			float walkSpeed,
-			bool buildable,
-			int layer,
-			bool addToTileWhenBuilt,
-			Vector2 blockingAmount,
-			List<Vector2> multiTilePositions,
-			int maxInventoryAmount,
-			int maxLightDistance,
-			Color lightColour,
-			float restComfortAmount,
-			int growthTime,
-			Resource seed,
-			Resource harvestResource
+			bool addToTileWhenBuilt
 		) {
-			this.tileObjectPrefabSubGroup = tileObjectPrefabSubGroup;
-
 			this.type = type;
 			name = UIManager.SplitByCapitals(type.ToString());
 
+			this.groupType = groupType;
+			this.subGroupType = subGroupType;
+
 			this.instanceType = instanceType;
 
-			this.timeToBuild = timeToBuild;
+			this.layer = layer;
 
-			this.resourcesToBuild = resourcesToBuild;
+			this.bitmasking = bitmasking;
 
-			this.selectionModifiers = selectionModifiers;
+			this.blocksLight = blocksLight;
 
-			this.jobType = jobType;
-
-			this.flammability = flammability;
-
-			this.maxIntegrity = maxIntegrity;
+			this.integrity = integrity;
 
 			this.walkable = walkable;
 			this.walkSpeed = walkSpeed;
 
 			this.buildable = buildable;
 
-			this.layer = layer;
+			this.flammability = flammability;
 
-			this.addToTileWhenBuilt = addToTileWhenBuilt;
+			// Container
+			this.maxInventoryAmount = maxInventoryVolume;
 
-			this.blockingAmount = blockingAmount;
-
-			this.maxInventoryAmount = maxInventoryAmount;
-
+			// Light
 			this.maxLightDistance = maxLightDistance;
 			this.lightColour = lightColour;
 
+			// Sleep Spot
 			this.restComfortAmount = restComfortAmount;
 
-			this.growthTime = growthTime;
-			this.seed = seed;
+			// Manufacturing Object
+			this.usesFuel = usesFuel;
+
+			// Farm
+			this.growthTimeDays = growthTimeDays;
+			this.seedResource = seedResource;
 			this.harvestResource = harvestResource;
 
+			// Plants
+			this.plants = plants;
+
+			// Job
+			this.timeToBuild = timeToBuild;
+			this.resourcesToBuild = resourcesToBuild;
+			this.selectionModifiers = selectionModifiers;
+			this.jobType = jobType;
+			this.addToTileWhenBuilt = addToTileWhenBuilt;
+
+			// Sprites
 			baseSprite = Resources.Load<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-base");
 			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-bitmask").ToList();
 			activeSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-active").ToList();
@@ -1334,8 +1711,10 @@ public class ResourceManager : BaseManager {
 				baseSprite = bitmaskSprites[bitmaskSprites.Count - 1];
 			}
 
-			canRotate = (!bitmaskingTileObjects.Contains(type) && bitmaskSprites.Count > 0);
+			// Set Rotation
+			canRotate = (!bitmasking && bitmaskSprites.Count > 0);
 
+			// Multi Tile Positions
 			float largestX = 0;
 			float largestY = 0;
 
@@ -1363,35 +1742,43 @@ public class ResourceManager : BaseManager {
 		}
 	}
 
-	public TileObjectPrefab GetTileObjectPrefabByEnum(TileObjectPrefabsEnum topEnum) {
-		return tileObjectPrefabs.Find(top => top.type == topEnum);
+	public ObjectPrefab GetObjectPrefabByString(string objectString) {
+		return GetObjectPrefabByEnum((ObjectEnum)Enum.Parse(typeof(ObjectEnum), objectString));
 	}
 
-	public Dictionary<TileObjectPrefab, List<TileObjectInstance>> tileObjectInstances = new Dictionary<TileObjectPrefab, List<TileObjectInstance>>();
+	public ObjectPrefab GetObjectPrefabByEnum(ObjectEnum objectEnum) {
+		return objectPrefabs[objectEnum];
+	}
 
-	public List<TileObjectInstance> GetTileObjectInstanceList(TileObjectPrefab prefab) {
-		if (tileObjectInstances.ContainsKey(prefab)) {
-			return tileObjectInstances[prefab];
+	public List<ObjectPrefab> GetObjectPrefabs() {
+		return objectPrefabs.Values.ToList();
+	}
+
+	public Dictionary<ObjectPrefab, List<ObjectInstance>> objectInstances = new Dictionary<ObjectPrefab, List<ObjectInstance>>();
+
+	public List<ObjectInstance> GetObjectInstancesByPrefab(ObjectPrefab prefab) {
+		if (objectInstances.ContainsKey(prefab)) {
+			return objectInstances[prefab];
 		}
 		Debug.LogWarning("Tried accessing a tile object instance which isn't already in the list.");
 		return null;
 	}
 
-	public void AddTileObjectInstance(TileObjectInstance tileObjectInstance) {
-		if (tileObjectInstances.ContainsKey(tileObjectInstance.prefab)) {
-			tileObjectInstances[tileObjectInstance.prefab].Add(tileObjectInstance);
-			GameManager.uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Update, tileObjectInstance.prefab);
+	public void AddObjectInstance(ObjectInstance objectInstance) {
+		if (objectInstances.ContainsKey(objectInstance.prefab)) {
+			objectInstances[objectInstance.prefab].Add(objectInstance);
+			GameManager.uiM.ChangeObjectPrefabElements(UIManager.ChangeTypeEnum.Update, objectInstance.prefab);
 		} else {
-			tileObjectInstances.Add(tileObjectInstance.prefab, new List<TileObjectInstance>() { tileObjectInstance });
-			GameManager.uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Add, tileObjectInstance.prefab);
+			objectInstances.Add(objectInstance.prefab, new List<ObjectInstance>() { objectInstance });
+			GameManager.uiM.ChangeObjectPrefabElements(UIManager.ChangeTypeEnum.Add, objectInstance.prefab);
 		}
 	}
 
-	public void RemoveTileObjectInstance(TileObjectInstance instance) {
+	public void RemoveTileObjectInstance(ObjectInstance instance) {
 		switch (instance.prefab.instanceType) {
-			case TileObjectPrefabInstanceType.Normal:
+			case ObjectInstanceType.Normal:
 				break;
-			case TileObjectPrefabInstanceType.Container:
+			case ObjectInstanceType.Container:
 				Container container = (Container)instance;
 
 				if (GameManager.uiM.selectedContainer == container) {
@@ -1400,28 +1787,37 @@ public class ResourceManager : BaseManager {
 
 				containers.Remove(container);
 				break;
-			case TileObjectPrefabInstanceType.SleepSpot:
+			case ObjectInstanceType.TradingPost:
+				TradingPost tradingPost = (TradingPost)instance;
+
+				if (GameManager.uiM.selectedTradingPost == tradingPost) {
+					GameManager.uiM.SetSelectedTradingPost(null);
+				}
+
+				tradingPosts.Remove(tradingPost);
+				break;
+			case ObjectInstanceType.SleepSpot:
 				SleepSpot sleepSpot = (SleepSpot)instance;
 
 				sleepSpots.Remove(sleepSpot);
 				break;
-			case TileObjectPrefabInstanceType.LightSource:
+			case ObjectInstanceType.LightSource:
 				LightSource lightSource = (LightSource)instance;
 
 				lightSource.RemoveTileBrightnesses();
 
 				lightSources.Remove(lightSource);
 				break;
-			case TileObjectPrefabInstanceType.ManufacturingTileObject:
-				ManufacturingTileObject manufacturingTileObject = (ManufacturingTileObject)instance;
+			case ObjectInstanceType.ManufacturingObject:
+				ManufacturingObject manufacturingTileObject = (ManufacturingObject)instance;
 
 				if (GameManager.uiM.selectedMTO == manufacturingTileObject) {
 					GameManager.uiM.SetSelectedManufacturingTileObject(null);
 				}
 
-				manufacturingTileObjectInstances.Remove(manufacturingTileObject);
+				manufacturingObjectInstances.Remove(manufacturingTileObject);
 				break;
-			case TileObjectPrefabInstanceType.Farm:
+			case ObjectInstanceType.Farm:
 				Farm farm = (Farm)instance;
 
 				farm.tile.farm = null;
@@ -1434,44 +1830,48 @@ public class ResourceManager : BaseManager {
 		}
 
 
-		if (tileObjectInstances.ContainsKey(instance.prefab)) {
-			tileObjectInstances[instance.prefab].Remove(instance);
+		if (objectInstances.ContainsKey(instance.prefab)) {
+			objectInstances[instance.prefab].Remove(instance);
 
-			GameManager.uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Update, instance.prefab);
+			GameManager.uiM.ChangeObjectPrefabElements(UIManager.ChangeTypeEnum.Update, instance.prefab);
 		} else {
 			Debug.LogWarning("Tried removing a tile object instance which isn't in the list");
 		}
 
-		if (tileObjectInstances[instance.prefab].Count <= 0) {
-			tileObjectInstances.Remove(instance.prefab);
+		if (objectInstances[instance.prefab].Count <= 0) {
+			objectInstances.Remove(instance.prefab);
 
-			GameManager.uiM.ChangeObjectPrefabElements(UIManager.ChangeTypesEnum.Remove, instance.prefab);
+			GameManager.uiM.ChangeObjectPrefabElements(UIManager.ChangeTypeEnum.Remove, instance.prefab);
 		}
 	}
 
-	public TileObjectInstance CreateTileObjectInstance(TileObjectPrefab prefab, TileManager.Tile tile, int rotationIndex, bool addToList) {
-		TileObjectInstance instance = null;
+	public ObjectInstance CreateTileObjectInstance(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex, bool addToList) {
+		ObjectInstance instance = null;
 		switch (prefab.instanceType) {
-			case TileObjectPrefabInstanceType.Normal:
-				instance = new TileObjectInstance(prefab, tile, rotationIndex);
+			case ObjectInstanceType.Normal:
+				instance = new ObjectInstance(prefab, tile, rotationIndex);
 				break;
-			case TileObjectPrefabInstanceType.Container:
+			case ObjectInstanceType.Container:
 				instance = new Container(prefab, tile, rotationIndex);
 				containers.Add((Container)instance);
 				break;
-			case TileObjectPrefabInstanceType.SleepSpot:
+			case ObjectInstanceType.TradingPost:
+				instance = new TradingPost(prefab, tile, rotationIndex);
+				tradingPosts.Add((TradingPost)instance);
+				break;
+			case ObjectInstanceType.SleepSpot:
 				instance = new SleepSpot(prefab, tile, rotationIndex);
 				sleepSpots.Add((SleepSpot)instance);
 				break;
-			case TileObjectPrefabInstanceType.LightSource:
+			case ObjectInstanceType.LightSource:
 				instance = new LightSource(prefab, tile, rotationIndex);
 				lightSources.Add((LightSource)instance);
 				break;
-			case TileObjectPrefabInstanceType.ManufacturingTileObject:
-				instance = new ManufacturingTileObject(prefab, tile, rotationIndex);
-				manufacturingTileObjectInstances.Add((ManufacturingTileObject)instance);
+			case ObjectInstanceType.ManufacturingObject:
+				instance = new ManufacturingObject(prefab, tile, rotationIndex);
+				manufacturingObjectInstances.Add((ManufacturingObject)instance);
 				break;
-			case TileObjectPrefabInstanceType.Farm:
+			case ObjectInstanceType.Farm:
 				instance = new Farm(prefab, tile);
 				farms.Add((Farm)instance);
 				tile.farm = (Farm)instance;
@@ -1481,18 +1881,18 @@ public class ResourceManager : BaseManager {
 			Debug.LogError("Instance is null for prefab " + (prefab != null ? prefab.name : "null") + " at tile " + tile.obj.transform.position);
 		}
 		if (addToList) {
-			AddTileObjectInstance(instance);
+			AddObjectInstance(instance);
 		}
 		return instance;
 	}
 
-	public class TileObjectInstance {
+	public class ObjectInstance {
 
 		public readonly TileManager.Tile tile; // The tile that this object covers that is closest to the zeroPointTile (usually they are the same tile)
 		public readonly List<TileManager.Tile> additionalTiles = new List<TileManager.Tile>();
 		public readonly TileManager.Tile zeroPointTile; // The tile representing the (0,0) position of the object even if the object doesn't cover it
 
-		public readonly TileObjectPrefab prefab;
+		public readonly ObjectPrefab prefab;
 		public readonly GameObject obj;
 
 		public readonly int rotationIndex;
@@ -1501,7 +1901,7 @@ public class ResourceManager : BaseManager {
 
 		public float integrity;
 
-		public TileObjectInstance(TileObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) {
+		public ObjectInstance(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) {
 			this.prefab = prefab;
 
 			this.tile = tile;
@@ -1527,7 +1927,7 @@ public class ResourceManager : BaseManager {
 			obj.GetComponent<SpriteRenderer>().sortingOrder = 1 + prefab.layer; // Tile Object Sprite
 			obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
 
-			if (lightBlockingTileObjects.Contains(prefab.type)) {
+			if (prefab.blocksLight) {
 				foreach (LightSource lightSource in GameManager.resourceM.lightSources) {
 					foreach (TileManager.Tile objectTile in additionalTiles) {
 						if (lightSource.litTiles.Contains(objectTile)) {
@@ -1540,7 +1940,7 @@ public class ResourceManager : BaseManager {
 
 			SetColour(tile.sr.color);
 
-			integrity = prefab.maxIntegrity;
+			integrity = prefab.integrity;
 		}
 
 		public void FinishCreation() {
@@ -1563,11 +1963,11 @@ public class ResourceManager : BaseManager {
 		public void SetActiveSprite(JobManager.Job job) {
 			if (active) {
 				if (prefab.activeSprites.Count > 0) {
-					if (prefab.type == TileObjectPrefabsEnum.SplittingBlock) {
+					if (prefab.type == ObjectEnum.SplittingBlock) {
 						int customActiveSpriteIndex = 0;
-						if (job.createResource.type == ResourcesEnum.Wood) {
+						if (job.createResource.type == ResourceEnum.Wood) {
 							customActiveSpriteIndex = 0;
-						} else if (job.createResource.type == ResourcesEnum.Firewood) {
+						} else if (job.createResource.type == ResourceEnum.Firewood) {
 							customActiveSpriteIndex = 1;
 						}
 						obj.GetComponent<SpriteRenderer>().sprite = prefab.activeSprites[4 * customActiveSpriteIndex + rotationIndex];
@@ -1599,22 +1999,63 @@ public class ResourceManager : BaseManager {
 		return containers.Where(c => c.tile.region == region).ToList();
 	}
 
-	public class Container : TileObjectInstance {
+	public Container GetContainerOrChildOnTile(TileManager.Tile tile) {
+		Container container = null;
+		if (container == null) {
+			container = containers.Find(c => c.tile == tile);
+		}
+		if (container == null) {
+			container = GameManager.resourceM.tradingPosts.Find(tp => tp.tile == tile);
+		}
+		return container;
+	}
+
+	public class Container : ObjectInstance {
 
 		public Inventory inventory;
 
-		public Container(TileObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
+		public Container(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
 			inventory = new Inventory(null, this, prefab.maxInventoryAmount);
+		}
+	}
+
+	public List<TradingPost> tradingPosts = new List<TradingPost>();
+
+	public List<TradingPost> GetTradingPostsInRegion(TileManager.Map.Region region) {
+		return tradingPosts.Where(tp => tp.tile.region == region).ToList();
+	}
+
+	public List<ResourceAmount> GetAvailableResourcesInTradingPostsInRegion(TileManager.Map.Region region) {
+		List<ResourceAmount> availableResources = new List<ResourceAmount>();
+		foreach (TradingPost tradingPost in GetTradingPostsInRegion(region)) {
+			foreach (ResourceAmount resourceAmount in tradingPost.inventory.resources) {
+				ResourceAmount accessibleResource = availableResources.Find(ra => ra.resource == resourceAmount.resource);
+				if (accessibleResource != null) {
+					accessibleResource.amount += resourceAmount.amount;
+				} else {
+					availableResources.Add(new ResourceAmount(resourceAmount.resource, resourceAmount.amount));
+				}
+			}
+		}
+		return availableResources;
+	}
+
+	public class TradingPost : Container {
+
+		public List<ResourceAmount> targetResourceAmounts = new List<ResourceAmount>();
+
+		public TradingPost(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
+
 		}
 	}
 
 	public List<SleepSpot> sleepSpots = new List<SleepSpot>();
 
-	public class SleepSpot : TileObjectInstance {
+	public class SleepSpot : ObjectInstance {
 
 		public ColonistManager.Colonist occupyingColonist;
 
-		public SleepSpot(TileObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
+		public SleepSpot(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
 
 		}
 
@@ -1627,9 +2068,9 @@ public class ResourceManager : BaseManager {
 		}
 	}
 
-	public List<ManufacturingTileObject> manufacturingTileObjectInstances = new List<ManufacturingTileObject>();
+	public List<ManufacturingObject> manufacturingObjectInstances = new List<ManufacturingObject>();
 
-	public class ManufacturingTileObject : TileObjectInstance {
+	public class ManufacturingObject : ObjectInstance {
 
 		public Resource createResource;
 		public bool hasEnoughRequiredResources;
@@ -1642,7 +2083,7 @@ public class ResourceManager : BaseManager {
 
 		public List<JobManager.Job> jobBacklog = new List<JobManager.Job>();
 
-		public ManufacturingTileObject(TileObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
+		public ManufacturingObject(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
 
 		}
 
@@ -1651,17 +2092,17 @@ public class ResourceManager : BaseManager {
 
 			hasEnoughRequiredResources = createResource != null;
 			if (createResource != null) {
-				foreach (ResourceAmount resourceAmount in createResource.requiredResources) {
+				foreach (ResourceAmount resourceAmount in createResource.manufacturingResources) {
 					if (resourceAmount.resource.GetWorldTotalAmount() < resourceAmount.amount) {
 						hasEnoughRequiredResources = false;
 					}
 				}
 			}
 			if (createResource != null) {
-				if (createResource.requiredEnergy != 0) {
+				if (createResource.manufacturingEnergy != 0) {
 					hasEnoughFuel = fuelResource != null;
 					if (fuelResource != null && createResource != null) {
-						fuelResourcesRequired = Mathf.CeilToInt((createResource.requiredEnergy) / ((float)fuelResource.fuelEnergy));
+						fuelResourcesRequired = Mathf.CeilToInt((createResource.manufacturingEnergy) / ((float)fuelResource.fuelEnergy));
 						if (fuelResource.GetWorldTotalAmount() < fuelResourcesRequired) {
 							hasEnoughFuel = false;
 						}
@@ -1672,7 +2113,7 @@ public class ResourceManager : BaseManager {
 				}
 			}
 			if (active) {
-				if (canActivate && createResource.desiredAmount > createResource.GetWorldTotalAmount() && jobBacklog.Count < 1) {
+				if (canActivate && createResource.GetDesiredAmount() > createResource.GetWorldTotalAmount() && jobBacklog.Count < 1) {
 					GameManager.resourceM.CreateResource(createResource, 1, this);
 				}
 			}
@@ -1681,11 +2122,11 @@ public class ResourceManager : BaseManager {
 
 	public List<LightSource> lightSources = new List<LightSource>();
 
-	public class LightSource : TileObjectInstance {
+	public class LightSource : ObjectInstance {
 
 		public List<TileManager.Tile> litTiles = new List<TileManager.Tile>();
 
-		public LightSource(TileObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
+		public LightSource(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
 			SetTileBrightnesses();
 		}
 
@@ -1737,261 +2178,375 @@ public class ResourceManager : BaseManager {
 		}
 	}
 
-	public enum PlantGroupsEnum { None, Cactus, ColourfulBush, ColourfulTree, DeadTree, Bush, SnowTree, ThinTree, WideTree };
+	public enum PlantGroupPropertyEnum {
+		PlantGroup,
+		Type,
+		Plants
+	}
 
-	public static readonly List<PlantGroupsEnum> livingTreesAndBushes = new List<PlantGroupsEnum>() {
-		PlantGroupsEnum.ColourfulBush, PlantGroupsEnum.ColourfulTree, PlantGroupsEnum.Bush, PlantGroupsEnum.SnowTree, PlantGroupsEnum.ThinTree, PlantGroupsEnum.WideTree
+	public enum PlantPropertyEnum {
+		Plant,
+		Type,
+		Living,
+		Integrity,
+		Seed,
+		PlantJob,
+		ReturnResources,
+		HarvestResources
+	}
+
+	public enum PlantGroupEnum {
+		None,
+		Cactus,
+		Tree,
+		Bush
 	};
 
-	public static readonly Dictionary<ResourcesEnum, ResourcesEnum> seedToHarvestResource = new Dictionary<ResourcesEnum, ResourcesEnum>() {
-		{ ResourcesEnum.AppleSeed, ResourcesEnum.Apple },
-		{ ResourcesEnum.Blueberry, ResourcesEnum.Blueberry }
+	public enum PlantEnum {
+		None,
+		Cactus,
+		SnowTree,
+		ThinTree,
+		WideTree,
+		DeadTree,
+		Bush
 	};
 
-	public List<PlantGroup> plantGroups = new List<PlantGroup>();
+	public static readonly Dictionary<ResourceEnum, ResourceEnum> seedToHarvestResource = new Dictionary<ResourceEnum, ResourceEnum>() {
+		{ ResourceEnum.AppleSeed, ResourceEnum.Apple },
+		{ ResourceEnum.Blueberry, ResourceEnum.Blueberry }
+	};
+
+	public void CreatePlantPrefabs() {
+		List<KeyValuePair<string, object>> plantGroupProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/plants").text.Split('\n').ToList());
+		foreach (KeyValuePair<string, object> plantGroupProperty in plantGroupProperties) {
+			switch ((PlantGroupPropertyEnum)Enum.Parse(typeof(PlantGroupPropertyEnum), plantGroupProperty.Key)) {
+				case PlantGroupPropertyEnum.PlantGroup:
+
+					PlantGroupEnum? groupType = null;
+					List<PlantPrefab> prefabs = new List<PlantPrefab>();
+
+					foreach (KeyValuePair<string, object> plantGroupSubProperty in (List<KeyValuePair<string, object>>)plantGroupProperty.Value) {
+						switch ((PlantGroupPropertyEnum)Enum.Parse(typeof(PlantGroupPropertyEnum), plantGroupSubProperty.Key)) {
+							case PlantGroupPropertyEnum.Type:
+								groupType = (PlantGroupEnum)Enum.Parse(typeof(PlantGroupEnum), (string)plantGroupSubProperty.Value);
+								break;
+							case PlantGroupPropertyEnum.Plants:
+								foreach (KeyValuePair<string, object> plantProperty in (List<KeyValuePair<string, object>>)plantGroupSubProperty.Value) {
+									switch ((PlantPropertyEnum)Enum.Parse(typeof(PlantPropertyEnum), plantProperty.Key)) {
+										case PlantPropertyEnum.Plant:
+
+											PlantEnum? type = null;
+											bool? living = null;
+											int? integrity = null;
+											Resource seed = null;
+											List<ResourceRange> returnResources = new List<ResourceRange>();
+											List<ResourceRange> harvestResources = new List<ResourceRange>();
+
+											foreach (KeyValuePair<string, object> plantSubProperty in (List<KeyValuePair<string, object>>)plantProperty.Value) {
+												switch ((PlantPropertyEnum)Enum.Parse(typeof(PlantPropertyEnum), plantSubProperty.Key)) {
+													case PlantPropertyEnum.Type:
+														type = (PlantEnum)Enum.Parse(typeof(PlantEnum), (string)plantSubProperty.Value);
+														break;
+													case PlantPropertyEnum.Living:
+														living = bool.Parse((string)plantSubProperty.Value);
+														break;
+													case PlantPropertyEnum.Integrity:
+														integrity = int.Parse((string)plantSubProperty.Value);
+														break;
+													case PlantPropertyEnum.Seed:
+														seed = GetResourceByString((string)plantSubProperty.Value);
+														break;
+													case PlantPropertyEnum.ReturnResources:
+														foreach (string resourceRangeString in ((string)plantSubProperty.Value).Split(',')) {
+															Resource resource = GameManager.resourceM.GetResourceByString(resourceRangeString.Split(':')[0]);
+															int min = int.Parse(resourceRangeString.Split(':')[1].Split('-')[0]);
+															int max = int.Parse(resourceRangeString.Split(':')[1].Split('-')[1]);
+															returnResources.Add(new ResourceRange(resource, min, max));
+														}
+														break;
+													case PlantPropertyEnum.HarvestResources:
+														foreach (string resourceRangeString in ((string)plantSubProperty.Value).Split(',')) {
+															Resource resource = GameManager.resourceM.GetResourceByString(resourceRangeString.Split(':')[0]);
+															int min = int.Parse(resourceRangeString.Split(':')[1].Split('-')[0]);
+															int max = int.Parse(resourceRangeString.Split(':')[1].Split('-')[1]);
+															harvestResources.Add(new ResourceRange(resource, min, max));
+														}
+														break;
+													default:
+														Debug.LogError("Unknown plant sub property: " + plantSubProperty.Key + " " + plantSubProperty.Value);
+														break;
+												}
+											}
+
+											PlantPrefab plantPrefab = new PlantPrefab(
+												type.Value,
+												groupType.Value,
+												living.Value,
+												integrity.Value,
+												seed,
+												returnResources,
+												harvestResources
+											);
+											prefabs.Add(plantPrefab);
+											plantPrefabs.Add(type.Value, plantPrefab);
+
+											break;
+										default:
+											Debug.LogError("Unknown plant property: " + plantProperty.Key + " " + plantProperty.Value);
+											break;
+									}
+								}
+								break;
+							default:
+								Debug.LogError("Unknown plant group sub property: " + plantGroupSubProperty.Key + " " + plantGroupSubProperty.Value);
+								break;
+						}
+
+					}
+
+					PlantGroup plantGroup = new PlantGroup(
+						groupType.Value,
+						prefabs
+					);
+					plantGroups.Add(groupType.Value, plantGroup);
+
+					break;
+				default:
+					Debug.LogError("Unknown plant group property: " + plantGroupProperty.Key + " " + plantGroupProperty.Value);
+					break;
+
+			}
+		}
+	}
+
+	public Dictionary<PlantGroupEnum, PlantGroup> plantGroups = new Dictionary<PlantGroupEnum, PlantGroup>();
 
 	public class PlantGroup {
-		public PlantGroupsEnum type;
-		public string name;
+		public readonly PlantGroupEnum type;
+		public readonly string name;
 
-		public Resource seed;
+		public readonly List<PlantPrefab> prefabs;
 
-		public TileObjectPrefab plantPlantObjectPrefab;
-
-		public List<ResourceAmount> returnResources = new List<ResourceAmount>();
-
-		public List<Sprite> smallSprites = new List<Sprite>();
-		public List<Sprite> fullSprites = new List<Sprite>();
-
-		public Dictionary<ResourcesEnum, Dictionary<bool, List<Sprite>>> harvestResourceSprites = new Dictionary<ResourcesEnum, Dictionary<bool, List<Sprite>>>();
-
-		public float maxIntegrity;
-
-		public PlantGroup(PlantGroupsEnum type, string simpleName, Resource seed, TileObjectPrefab plantPlantObjectPrefab, List<ResourceAmount> returnResources, float maxIntegrity) {
+		public PlantGroup(
+			PlantGroupEnum type,
+			List<PlantPrefab> prefabs
+		) {
 			this.type = type;
-			name = simpleName;
+			name = UIManager.SplitByCapitals(type.ToString());
+
+			this.prefabs = prefabs;
+		}
+	}
+
+	public PlantGroup GetPlantGroupByEnum(PlantGroupEnum plantGroupEnum) {
+		return plantGroups[plantGroupEnum];
+	}
+
+	public Dictionary<PlantEnum, PlantPrefab> plantPrefabs = new Dictionary<PlantEnum, PlantPrefab>();
+
+	public class PlantPrefab {
+		public readonly PlantEnum type;
+		public readonly string name;
+
+		public readonly PlantGroupEnum groupType;
+
+		public readonly Resource seed;
+
+		public readonly bool living;
+
+		public readonly int integrity;
+
+		public readonly List<ResourceRange> returnResources;
+
+		public readonly List<ResourceRange> harvestResources;
+
+		public readonly List<Sprite> smallSprites;
+		public readonly List<Sprite> fullSprites;
+		public readonly Dictionary<Resource, Dictionary<bool, List<Sprite>>> harvestResourceSprites = new Dictionary<Resource, Dictionary<bool, List<Sprite>>>();
+
+		public PlantPrefab(
+			PlantEnum type,
+			PlantGroupEnum groupType,
+			bool living,
+			int integrity,
+			Resource seed,
+			List<ResourceRange> returnResources,
+			List<ResourceRange> harvestResources
+		) {
+			this.type = type;
+			name = UIManager.SplitByCapitals(type.ToString());
+
+			this.groupType = groupType;
+
+			this.living = living;
+
+			this.integrity = integrity;
 
 			this.seed = seed;
 
-			this.plantPlantObjectPrefab = plantPlantObjectPrefab;
-
 			this.returnResources = returnResources;
 
-			this.maxIntegrity = maxIntegrity;
+			this.harvestResources = harvestResources;
 
-			string typeString = type.ToString();
-			smallSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + typeString + "/" + typeString + "-small").ToList();
-			fullSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + typeString + "/" + typeString + "-full").ToList();
+			smallSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + type.ToString() + "/" + type.ToString() + "-small").ToList();
+			fullSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + type.ToString() + "/" + type.ToString() + "-full").ToList();
 
-			foreach (Resource resource in GameManager.resourceM.resources) {
+			foreach (Resource harvestResource in harvestResources.Select(rr => rr.resource)) {
 				Dictionary<bool, List<Sprite>> foundSpriteSizes = new Dictionary<bool, List<Sprite>>();
-				List<Sprite> smallResourceSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + typeString + "/" + resource.type.ToString() + "/" + typeString + "-small-" + resource.type.ToString().ToLower()).ToList();
+
+				List<Sprite> smallResourceSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + type.ToString() + "/" + harvestResource.type.ToString() + "/" + type.ToString() + "-small-" + harvestResource.type.ToString().ToLower()).ToList();
 				if (smallResourceSprites != null && smallResourceSprites.Count > 0) {
 					foundSpriteSizes.Add(true, smallResourceSprites);
 				}
-				List<Sprite> fullResourceSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + typeString + "/" + resource.type.ToString() + "/" + typeString + "-full-" + resource.type.ToString().ToLower()).ToList();
+
+				List<Sprite> fullResourceSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Plants/" + type.ToString() + "/" + harvestResource.type.ToString() + "/" + type.ToString() + "-full-" + harvestResource.type.ToString().ToLower()).ToList();
 				if (fullResourceSprites != null && fullResourceSprites.Count > 0) {
 					foundSpriteSizes.Add(false, fullResourceSprites);
 				}
+
 				if (foundSpriteSizes.Count > 0) {
-					harvestResourceSprites.Add(resource.type, foundSpriteSizes);
+					harvestResourceSprites.Add(harvestResource, foundSpriteSizes);
 				}
 			}
 		}
 	}
 
-	public void CreatePlantGroups() {
-		List<string> plantDataStringList = Resources.Load<TextAsset>(@"Data/plants").text.Replace("\t", string.Empty).Split(new string[] { "<PlantGroup>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-		foreach (string singlePlantDataString in plantDataStringList) {
-
-			PlantGroupsEnum type = PlantGroupsEnum.Cactus;
-			string name = string.Empty;
-			Resource seed = null;
-			TileObjectPrefab plantPlantObjectPrefab = null;
-			List<ResourceAmount> returnResources = new List<ResourceAmount>();
-			float maxIntegrity = 0;
-
-			List<string> singlePlantDataLineStringList = singlePlantDataString.Split('\n').ToList();
-			foreach (string singlePlantDataLineString in singlePlantDataLineStringList.Skip(1)) {
-				if (!string.IsNullOrEmpty(singlePlantDataLineString)) {
-
-					string label = singlePlantDataLineString.Split('>')[0].Replace("<", string.Empty);
-					string value = singlePlantDataLineString.Split('>')[1];
-
-					switch (label) {
-						case "Type":
-							type = (PlantGroupsEnum)Enum.Parse(typeof(PlantGroupsEnum), value);
-							break;
-						case "SimpleName":
-							name = UIManager.RemoveNonAlphanumericChars(value);
-							break;
-						case "Seed":
-							seed = GetResourceByEnum((ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), value));
-							break;
-						case "PlantPlantObjectPrefab":
-							plantPlantObjectPrefab = GetTileObjectPrefabByEnum((TileObjectPrefabsEnum)Enum.Parse(typeof(TileObjectPrefabsEnum), value));
-							break;
-						case "ReturnResources":
-							foreach (string returnResourceAmountString in value.Split(',')) {
-								Resource resource = GetResourceByEnum((ResourcesEnum)Enum.Parse(typeof(ResourcesEnum), returnResourceAmountString.Split(':')[0]));
-								int amount = int.Parse(returnResourceAmountString.Split(':')[1]);
-								returnResources.Add(new ResourceAmount(resource, amount));
-							}
-							break;
-						case "MaxIntegrity":
-							maxIntegrity = float.Parse(value);
-							break;
-						default:
-							MonoBehaviour.print("Unknown plant label: \"" + singlePlantDataLineString + "\"");
-							break;
-					}
-				}
-			}
-
-			plantGroups.Add(new PlantGroup(type, name, seed, plantPlantObjectPrefab, returnResources, maxIntegrity));
-		}
+	public PlantPrefab GetPlantPrefabByString(string plantString) {
+		return GetPlantPrefabByEnum((PlantEnum)Enum.Parse(typeof(PlantEnum), plantString));
 	}
 
-	public PlantGroup GetPlantGroupByEnum(PlantGroupsEnum plantGroup) {
-		return plantGroups.Find(group => group.type == plantGroup);
+	public PlantPrefab GetPlantPrefabByEnum(PlantEnum plantEnum) {
+		return plantPrefabs[plantEnum];
 	}
 
-	public class Plant {
-		public string name;
-
-		public PlantGroup group;
-		public TileManager.Tile tile;
-		public GameObject obj;
-
-		public bool small;
-
-		public float growthProgress = 0;
-
-		public Resource harvestResource;
-
-		public float integrity;
-
-		public Plant(PlantGroup group, TileManager.Tile tile, bool randomSmall, bool smallValue, List<Plant> smallPlants, bool giveHarvestResource, Resource specificHarvestResource) {
-			name = group.name;
-
-			this.group = group;
-			this.tile = tile;
-
-			obj = MonoBehaviour.Instantiate(GameManager.resourceM.tilePrefab, tile.obj.transform.position, Quaternion.identity);
-
-			SpriteRenderer pSR = obj.GetComponent<SpriteRenderer>();
-
-			small = (randomSmall ? UnityEngine.Random.Range(0f, 1f) < 0.1f : smallValue);
-
-			harvestResource = null;
-			if (giveHarvestResource) {
-				if (group.type == PlantGroupsEnum.WideTree && !small) {
-					if (UnityEngine.Random.Range(0f, 1f) <= 0.05f) {
-						harvestResource = GameManager.resourceM.GetResourceByEnum(ResourcesEnum.Apple);
-					}
-				} else if (group.type == PlantGroupsEnum.Bush && !small) {
-					if (UnityEngine.Random.Range(0f, 1f) <= 0.05f) {
-						harvestResource = GameManager.resourceM.GetResourceByEnum(ResourcesEnum.Blueberry);
-					}
-				}
-			}
-			if (specificHarvestResource != null) {
-				harvestResource = specificHarvestResource;
-			}
-
-			pSR.sprite = (small ? group.smallSprites[UnityEngine.Random.Range(0, group.smallSprites.Count)] : group.fullSprites[UnityEngine.Random.Range(0, group.fullSprites.Count)]);
-			if (harvestResource != null) {
-				name = harvestResource.name + " " + name;
-				if (group.harvestResourceSprites.ContainsKey(harvestResource.type)) {
-					if (group.harvestResourceSprites[harvestResource.type].ContainsKey(small)) {
-						pSR.sprite = group.harvestResourceSprites[harvestResource.type][small][UnityEngine.Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
-					}
-				}
-			}
-			pSR.sortingOrder = 1; // Plant Sprite
-
-			obj.name = "Plant: " + name + " " + pSR.sprite.name;
-			obj.transform.parent = tile.obj.transform;
-
-			if (small) {
-				smallPlants.Add(this);
-			}
-
-			integrity = group.maxIntegrity;
-		}
-
-		public List<ResourceAmount> GetResources() {
-			List<ResourceAmount> resourcesToReturn = new List<ResourceAmount>();
-			foreach (ResourceAmount resourceAmount in group.returnResources) {
-				int amount = Mathf.Clamp(resourceAmount.amount + UnityEngine.Random.Range(-2, 2), 1, int.MaxValue);
-				if (small && amount > 0) {
-					amount = Mathf.CeilToInt(amount / 2f);
-				}
-				resourcesToReturn.Add(new ResourceAmount(resourceAmount.resource, amount));
-			}
-			if (harvestResource != null) {
-				int randomRangeAmount = 1;
-				if (harvestResource.type == ResourcesEnum.Apple) {
-					randomRangeAmount = UnityEngine.Random.Range(1, 6);
-				} else if (harvestResource.type == ResourcesEnum.Blueberry) {
-					randomRangeAmount = UnityEngine.Random.Range(5, 20);
-				}
-				int amount = Mathf.Clamp(randomRangeAmount, 1, int.MaxValue);
-				if (small && amount > 0) {
-					amount = Mathf.CeilToInt(amount / 2f);
-				}
-				resourcesToReturn.Add(new ResourceAmount(harvestResource, amount));
-			}
-			return resourcesToReturn;
-		}
-
-		public void Grow(List<Plant> smallPlants) {
-			small = false;
-			obj.GetComponent<SpriteRenderer>().sprite = group.fullSprites[UnityEngine.Random.Range(0, group.fullSprites.Count)];
-			if (harvestResource != null) {
-				if (group.harvestResourceSprites.ContainsKey(harvestResource.type)) {
-					if (group.harvestResourceSprites[harvestResource.type].ContainsKey(small)) {
-						obj.GetComponent<SpriteRenderer>().sprite = group.harvestResourceSprites[harvestResource.type][small][UnityEngine.Random.Range(0, group.harvestResourceSprites[harvestResource.type][small].Count)];
-					}
-				}
-			}
-			smallPlants.Remove(this);
-		}
+	public List<PlantPrefab> GetPlantPrefabs() {
+		return plantPrefabs.Values.ToList();
 	}
 
-	public PlantGroup GetPlantGroupByBiome(TileManager.Biome biome, bool guaranteedTree) {
+	public PlantPrefab GetPlantPrefabByBiome(TileManager.Biome biome, bool guaranteedTree) {
 		if (guaranteedTree) {
-			List<PlantGroupsEnum> biomePlantGroupsEnums = biome.vegetationChances.Keys.Where(group => group != PlantGroupsEnum.DeadTree).ToList();
-			if (biomePlantGroupsEnums.Count > 0) {
-				return GetPlantGroupByEnum(biomePlantGroupsEnums[UnityEngine.Random.Range(0, biomePlantGroupsEnums.Count)]);
+			List<PlantEnum> biomePlantEnums = biome.plantChances.Keys.Where(plantEnum => plantEnum != PlantEnum.DeadTree).ToList();
+			if (biomePlantEnums.Count > 0) {
+				return GetPlantPrefabByEnum(biomePlantEnums[UnityEngine.Random.Range(0, biomePlantEnums.Count)]);
 			} else {
 				return null;
 			}
 		} else {
-			foreach (KeyValuePair<PlantGroupsEnum, float> kvp in biome.vegetationChances) {
-				PlantGroupsEnum plantGroup = kvp.Key;
-				if (UnityEngine.Random.Range(0f, 1f) < biome.vegetationChances[plantGroup]) {
-					return GetPlantGroupByEnum(plantGroup);
+			foreach (KeyValuePair<PlantEnum, float> plantChancesKVP in biome.plantChances) {
+				if (UnityEngine.Random.Range(0f, 1f) < biome.plantChances[plantChancesKVP.Key]) {
+					return GetPlantPrefabByEnum(plantChancesKVP.Key);
 				}
 			}
 		}
 		return null;
 	}
 
-	public static readonly Dictionary<ResourcesEnum, ResourcesEnum> farmSeedReturnResource = new Dictionary<ResourcesEnum, ResourcesEnum>() {
-		{ ResourcesEnum.WheatSeed, ResourcesEnum.Wheat },
-		{ ResourcesEnum.Potato, ResourcesEnum.Potato },
-		{ ResourcesEnum.CottonSeed, ResourcesEnum.Cotton }
+	public List<Plant> smallPlants = new List<Plant>();
+
+	public class Plant {
+		public readonly string name;
+
+		public readonly PlantPrefab prefab;
+		public readonly TileManager.Tile tile;
+
+		public readonly GameObject obj;
+
+		public float integrity;
+
+		public bool small;
+
+		public float growthProgress = 0;
+
+		public readonly Resource harvestResource;
+
+		public Plant(PlantPrefab prefab, TileManager.Tile tile, bool? small, bool randomHarvestResource, Resource specificHarvestResource) {
+			this.prefab = prefab;
+			this.tile = tile;
+
+			integrity = prefab.integrity;
+
+			this.small = small ?? UnityEngine.Random.Range(0, 100) <= 10;
+			if (this.small) {
+				GameManager.resourceM.smallPlants.Add(this);
+			}
+
+			harvestResource = null;
+			if (randomHarvestResource && prefab.harvestResources.Count > 0) {
+				if (UnityEngine.Random.Range(0, 100) <= 5) {
+					List<ResourceAmount> resourceChances = new List<ResourceAmount>();
+					foreach (Resource harvestResource in prefab.harvestResources.Select(rr => rr.resource)) {
+						resourceChances.Add(new ResourceAmount(harvestResource, UnityEngine.Random.Range(0, 100)));
+					}
+					harvestResource = resourceChances.OrderByDescending(ra => ra.amount).First().resource;
+				}
+			}
+			if (specificHarvestResource != null) {
+				harvestResource = specificHarvestResource;
+			}
+
+			obj = MonoBehaviour.Instantiate(GameManager.resourceM.tilePrefab, tile.obj.transform.position, Quaternion.identity);
+			SpriteRenderer sr = obj.GetComponent<SpriteRenderer>();
+			if (harvestResource != null) {
+				name = harvestResource.name + " " + prefab.name;
+				sr.sprite = prefab.harvestResourceSprites[harvestResource][this.small][UnityEngine.Random.Range(0, prefab.harvestResourceSprites[harvestResource][this.small].Count)];
+			} else {
+				name = prefab.name;
+				sr.sprite = this.small ? prefab.smallSprites[UnityEngine.Random.Range(0, prefab.smallSprites.Count)] : prefab.fullSprites[UnityEngine.Random.Range(0, prefab.fullSprites.Count)];
+			}
+			sr.sortingOrder = 1; // Plant Sprite
+
+			obj.name = "Plant: " + prefab.name + " " + sr.sprite.name;
+			obj.transform.parent = tile.obj.transform;
+		}
+
+		public void Grow() {
+			small = false;
+			if (harvestResource != null) {
+				obj.GetComponent<SpriteRenderer>().sprite = prefab.harvestResourceSprites[harvestResource][small][UnityEngine.Random.Range(0, prefab.harvestResourceSprites[harvestResource][small].Count)];
+			} else {
+				obj.GetComponent<SpriteRenderer>().sprite = prefab.fullSprites[UnityEngine.Random.Range(0, prefab.fullSprites.Count)];
+			}
+			GameManager.resourceM.smallPlants.Remove(this);
+		}
+
+		public void Remove() {
+			MonoBehaviour.Destroy(obj);
+			GameManager.resourceM.smallPlants.Remove(this);
+		}
+	}
+
+	public void GrowPlants() {
+		if (!GameManager.timeM.GetPaused() && GameManager.timeM.minuteChanged) {
+			List<Plant> growPlants = new List<Plant>();
+			foreach (Plant plant in smallPlants) {
+				plant.growthProgress += 1;
+				if (plant.growthProgress > TimeManager.dayLengthSeconds * 4) {
+					if (UnityEngine.Random.Range(0, 100) < (0.01f * (plant.growthProgress / TimeManager.dayLengthSeconds * 4))) {
+						growPlants.Add(plant);
+					}
+				}
+			}
+			foreach (Plant plant in growPlants) {
+				plant.Grow();
+			}
+		}
+	}
+
+	public static readonly Dictionary<ResourceEnum, ResourceEnum> farmSeedReturnResource = new Dictionary<ResourceEnum, ResourceEnum>() {
+		{ ResourceEnum.WheatSeed, ResourceEnum.Wheat },
+		{ ResourceEnum.Potato, ResourceEnum.Potato },
+		{ ResourceEnum.CottonSeed, ResourceEnum.Cotton }
 	};
-	public static readonly Dictionary<ResourcesEnum, TileObjectPrefabsEnum> farmSeedsTileObject = new Dictionary<ResourcesEnum, TileObjectPrefabsEnum>() {
-		{ ResourcesEnum.WheatSeed, TileObjectPrefabsEnum.WheatFarm },
-		{ ResourcesEnum.Potato, TileObjectPrefabsEnum.PotatoFarm },
-		{ ResourcesEnum.CottonSeed, TileObjectPrefabsEnum.CottonFarm }
+	public static readonly Dictionary<ResourceEnum, ObjectEnum> farmSeedsTileObject = new Dictionary<ResourceEnum, ObjectEnum>() {
+		{ ResourceEnum.WheatSeed, ObjectEnum.WheatFarm },
+		{ ResourceEnum.Potato, ObjectEnum.PotatoFarm },
+		{ ResourceEnum.CottonSeed, ObjectEnum.CottonFarm }
 	};
 
 	public List<Farm> farms = new List<Farm>();
 
-	public class Farm : TileObjectInstance {
+	public class Farm : ObjectInstance {
 
 		public readonly string name;
 
@@ -2004,7 +2559,7 @@ public class ResourceManager : BaseManager {
 		private readonly float precipitationGrowthMultiplier;
 		private readonly float temperatureGrowthMultipler;
 
-		public Farm(TileObjectPrefab prefab, TileManager.Tile tile) : base(prefab, tile, 0) {
+		public Farm(ObjectPrefab prefab, TileManager.Tile tile) : base(prefab, tile, 0) {
 			name = prefab.harvestResource.name + " Farm";
 
 			growProgressSprites = prefab.bitmaskSprites;
@@ -2019,14 +2574,14 @@ public class ResourceManager : BaseManager {
 		public override void Update() {
 			base.Update();
 
-			if (growTimer >= prefab.growthTime) {
+			if (growTimer >= prefab.growthTimeDays) {
 				if (!GameManager.jobM.JobOfTypeExistsAtTile(JobManager.JobTypesEnum.HarvestFarm, tile)) {
-					GameManager.jobM.CreateJob(new JobManager.Job(tile, GameManager.resourceM.GetTileObjectPrefabByEnum(TileObjectPrefabsEnum.HarvestFarm), 0));
+					GameManager.jobM.CreateJob(new JobManager.Job(tile, GameManager.resourceM.GetObjectPrefabByEnum(ObjectEnum.HarvestFarm), 0));
 				}
 			} else {
 				growTimer += CalculateGrowthRate();
 
-				int newGrowProgressSpriteIndex = Mathf.FloorToInt((growTimer / (prefab.growthTime + 10)) * growProgressSprites.Count);
+				int newGrowProgressSpriteIndex = Mathf.FloorToInt((growTimer / (prefab.growthTimeDays + 10)) * growProgressSprites.Count);
 				if (newGrowProgressSpriteIndex != growProgressSpriteIndex) {
 					growProgressSpriteIndex = newGrowProgressSpriteIndex;
 					obj.GetComponent<SpriteRenderer>().sprite = growProgressSprites[Mathf.Clamp(growProgressSpriteIndex, 0, maxSpriteIndex)];
@@ -2069,11 +2624,11 @@ public class ResourceManager : BaseManager {
 		return filteredLocationNames[UnityEngine.Random.Range(0, filteredLocationNames.Count)];
 	}
 
-	private int BitSumTileObjects(List<TileObjectPrefabsEnum> compareTileObjectTypes, List<TileManager.Tile> tileSurroundingTiles) {
+	private int BitSumTileObjects(List<ObjectEnum> compareTileObjectTypes, List<TileManager.Tile> tileSurroundingTiles) {
 		List<int> layers = new List<int>();
 		foreach (TileManager.Tile tile in tileSurroundingTiles) {
 			if (tile != null) {
-				foreach (KeyValuePair<int, TileObjectInstance> kvp in tile.objectInstances) {
+				foreach (KeyValuePair<int, ObjectInstance> kvp in tile.objectInstances) {
 					if (!layers.Contains(kvp.Key)) {
 						layers.Add(kvp.Key);
 					}
@@ -2121,12 +2676,12 @@ public class ResourceManager : BaseManager {
 		List<bool> sumTiles = new List<bool>() { false, false, false, false, false, false, false, false };
 
 		foreach (KeyValuePair<int, List<int>> layerSumTiles in layersSumTiles) {
-			foreach (TileObjectPrefabsEnum topEnum in compareTileObjectTypes) {
-				TileObjectPrefab top = GetTileObjectPrefabByEnum(topEnum);
+			foreach (ObjectEnum topEnum in compareTileObjectTypes) {
+				ObjectPrefab top = GetObjectPrefabByEnum(topEnum);
 				if (top.layer == layerSumTiles.Key) {
 					foreach (TileManager.Tile tile in tileSurroundingTiles) {
 						if (tile != null) {
-							TileObjectInstance topInstance = tile.GetAllObjectInstances().Find(instances => instances.prefab == top);
+							ObjectInstance topInstance = tile.GetAllObjectInstances().Find(instances => instances.prefab == top);
 							if (topInstance != null) {
 								if (layerSumTiles.Value[tileSurroundingTiles.IndexOf(tile)] > 0) {
 									sumTiles[tileSurroundingTiles.IndexOf(tile)] = true;
@@ -2149,21 +2704,21 @@ public class ResourceManager : BaseManager {
 		return sum;
 	}
 
-	private void BitmaskTileObjects(TileObjectInstance objectInstance, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, bool compareEquivalentTileObjects, List<TileObjectPrefabsEnum> customCompareTileObjectTypes) {
+	private void BitmaskTileObjects(ObjectInstance objectInstance, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, bool compareEquivalentTileObjects, List<ObjectEnum> customCompareTileObjectTypes) {
 		int sum = 0;
 		if (customBitSumInputs) {
 			sum = BitSumTileObjects(customCompareTileObjectTypes, (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
 		} else {
 			if (compareEquivalentTileObjects) {
-				if (floorEquivalentTileObjects.Contains(objectInstance.prefab.type)) {
-					sum = BitSumTileObjects(floorEquivalentTileObjects, (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
-				} else if (wallEquivalentTileObjects.Contains(objectInstance.prefab.type)) {
-					sum = BitSumTileObjects(wallEquivalentTileObjects, (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+				if (objectInstance.prefab.subGroupType == ObjectSubGroupEnum.Floors) {
+					sum = BitSumTileObjects(objectPrefabSubGroups[ObjectSubGroupEnum.Floors].prefabs.Select(prefab => prefab.type).ToList(), (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+				} else if (objectInstance.prefab.subGroupType == ObjectSubGroupEnum.Walls) {
+					sum = BitSumTileObjects(objectPrefabSubGroups[ObjectSubGroupEnum.Walls].prefabs.Select(top => top.type).ToList(), (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
 				} else {
-					sum = BitSumTileObjects(new List<TileObjectPrefabsEnum>() { objectInstance.prefab.type }, (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+					sum = BitSumTileObjects(new List<ObjectEnum>() { objectInstance.prefab.type }, (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
 				}
 			} else {
-				sum = BitSumTileObjects(new List<TileObjectPrefabsEnum>() { objectInstance.prefab.type }, (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+				sum = BitSumTileObjects(new List<ObjectEnum>() { objectInstance.prefab.type }, (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
 			}
 		}
 		SpriteRenderer oISR = objectInstance.obj.GetComponent<SpriteRenderer>();
@@ -2177,8 +2732,8 @@ public class ResourceManager : BaseManager {
 	public void Bitmask(List<TileManager.Tile> tilesToBitmask) {
 		foreach (TileManager.Tile tile in tilesToBitmask) {
 			if (tile != null && tile.GetAllObjectInstances().Count > 0) {
-				foreach (TileObjectInstance tileObjectInstance in tile.GetAllObjectInstances()) {
-					if (bitmaskingTileObjects.Contains(tileObjectInstance.prefab.type)) {
+				foreach (ObjectInstance tileObjectInstance in tile.GetAllObjectInstances()) {
+					if (tileObjectInstance.prefab.bitmasking) {
 						BitmaskTileObjects(tileObjectInstance, true, false, false, null);
 					} else {
 						if (tileObjectInstance.prefab.bitmaskSprites.Count > 0) {
