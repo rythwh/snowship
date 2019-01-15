@@ -172,16 +172,17 @@ public class UIManager : BaseManager {
 		mainMenuButtonsPanel.transform.Find("New-Button").GetComponent<Button>().onClick.AddListener(delegate { SetCreateUniverseActive(true); });
 
 		Button continueButton = mainMenuButtonsPanel.transform.Find("Continue-Button").GetComponent<Button>();
-		continueButton.onClick.AddListener(delegate { GameManager.persistenceM.ContinueFromMostRecentSave(); });
+
+		bool continueUniverseLoadable = GameManager.persistenceM.IsLastSaveUniverseLoadable();
+		continueButton.interactable = continueUniverseLoadable;
 
 		Image continuePreviewImage = continueButton.transform.Find("Preview-Image").GetComponent<Image>();
-
 		continueButton.GetComponent<HoverToggleScript>().Initialize(continuePreviewImage.gameObject, false);
 
 		PersistenceManager.LastSaveProperties lastSaveProperties = GameManager.persistenceM.GetLastSaveProperties();
-		bool lastSavePropertiesNull = lastSaveProperties == null;
-		continueButton.interactable = !lastSavePropertiesNull;
-		if (!lastSavePropertiesNull) {
+
+		if (continueUniverseLoadable && lastSaveProperties != null) {
+			continueButton.onClick.AddListener(delegate { GameManager.persistenceM.ContinueFromMostRecentSave(); });
 			continuePreviewImage.sprite = GameManager.persistenceM.LoadSaveImageFromSaveDirectoryPath(lastSaveProperties.lastSaveSavePath);
 		} else {
 			continuePreviewImage.sprite = GameManager.resourceM.clearSquareSprite;
