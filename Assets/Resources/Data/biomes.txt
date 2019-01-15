@@ -4,7 +4,7 @@
 		<Water>SnowIce
 		<Hole>SnowHole
 		<Ground>SnowStone
-		<Stone>Granite
+		<Stone>Basalt
 	<PlantChances>
 		<SnowTree>0.01
 		<DeadTree>0.01
@@ -15,7 +15,7 @@
 		<Water>SnowIce
 		<Hole>SnowHole
 		<Ground>Snow
-		<Stone>Granite
+		<Stone>Basalt
 	<Colour>FFFFFF
 <Biome>
 	<Type>Tundra
@@ -23,7 +23,7 @@
 		<Water>StoneIce
 		<Hole>StoneHole
 		<Ground>StoneThinGrass
-		<Stone>Granite
+		<Stone>Basalt
 	<PlantChances>
 		<Bush>0.2
 		<DeadTree>0.05
@@ -34,7 +34,7 @@
 		<Water>ColdGrassWater
 		<Hole>DirtHole
 		<Ground>ColdGrass
-		<Stone>Granite
+		<Stone>Basalt
 	<PlantChances>
 		<Bush>0.3
 		<ThinTree>0.025
@@ -45,7 +45,7 @@
 		<Water>DirtWater
 		<Hole>DirtHole
 		<Ground>Mud
-		<Stone>Granite
+		<Stone>Basalt
 	<PlantChances>
 		<Bush>0.2
 		<ThinTree>0.02
@@ -56,7 +56,7 @@
 		<Water>StoneWater
 		<Hole>StoneHole
 		<Ground>StoneSnow
-		<Stone>Granite
+		<Stone>Basalt
 	<PlantChances>
 		<ThinTree>0.01
 		<DeadTree>0.05

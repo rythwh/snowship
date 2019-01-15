@@ -1472,8 +1472,10 @@ public class TileManager : BaseManager {
 			public List<RegionBlock> surroundingRegionBlocks = new List<RegionBlock>();
 			public List<RegionBlock> horizontalSurroundingRegionBlocks = new List<RegionBlock>();
 
-			public RegionBlock(TileType regionTileType, int regionID) : base(regionTileType, regionID) {
+			public float lastBrightnessUpdate;
 
+			public RegionBlock(TileType regionTileType, int regionID) : base(regionTileType, regionID) {
+				lastBrightnessUpdate = 0;
 			}
 		}
 
@@ -2487,8 +2489,11 @@ public class TileManager : BaseManager {
 		public void SetTileBrightness(float time) {
 			Color newColour = GetTileColourAtHour(time);
 			foreach (RegionBlock visibleRegionBlock in visibleRegionBlocks) {
-				foreach (Tile tile in visibleRegionBlock.tiles) {
-					tile.SetColour(newColour, Mathf.FloorToInt(time));
+				if (!Mathf.Approximately(visibleRegionBlock.lastBrightnessUpdate, time)) {
+					visibleRegionBlock.lastBrightnessUpdate = time;
+					foreach (Tile tile in visibleRegionBlock.tiles) {
+						tile.SetColour(newColour, Mathf.FloorToInt(time));
+					}
 				}
 			}
 			foreach (LifeManager.Life life in GameManager.lifeM.life) {

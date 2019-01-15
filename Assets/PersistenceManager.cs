@@ -3978,10 +3978,41 @@ public class PersistenceManager : BaseManager {
 		loadingState = LoadingState.LoadedTime;
 	}
 
+	public bool IsUniverseLoadable(PersistenceUniverse persistenceUniverse) {
+		if (persistenceUniverse == null) {
+			return false;
+		}
+
+		bool gameVersionValid = persistenceUniverse.configurationProperties[ConfigurationProperty.GameVersion] == gameVersion.Value;
+		bool saveVersionValid = persistenceUniverse.configurationProperties[ConfigurationProperty.SaveVersion] == saveVersion.Value;
+		return gameVersionValid && saveVersionValid;
+	}
+
+	public bool IsLastSaveUniverseLoadable() {
+		LastSaveProperties lastSaveProperties = GetLastSaveProperties();
+
+		if (lastSaveProperties == null) {
+			return false;
+		}
+
+		PersistenceUniverse persistenceUniverse = GetPersistenceUniverses().Find(pu => string.Equals(Path.GetFullPath(pu.path), Path.GetFullPath(lastSaveProperties.lastSaveUniversePath), StringComparison.OrdinalIgnoreCase));
+
+		if (persistenceUniverse == null) {
+			return false;
+		}
+
+		return IsUniverseLoadable(persistenceUniverse);
+	}
+
 	public void ContinueFromMostRecentSave() {
 		LastSaveProperties lastSaveProperties = GetLastSaveProperties();
 
 		PersistenceUniverse persistenceUniverse = GetPersistenceUniverses().Find(pu => string.Equals(Path.GetFullPath(pu.path), Path.GetFullPath(lastSaveProperties.lastSaveUniversePath), StringComparison.OrdinalIgnoreCase));
+
+		if (!IsUniverseLoadable(persistenceUniverse)) {
+			return;
+		}
+
 		GameManager.persistenceM.ApplyLoadedConfiguration(persistenceUniverse);
 		GameManager.persistenceM.ApplyLoadedUniverse(persistenceUniverse);
 
