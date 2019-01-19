@@ -270,7 +270,7 @@ public class JobManager : BaseManager {
 		{ JobTypesEnum.PlantFarm, delegate (ColonistManager.Colonist colonist, Job job) {
 			JobManager.finishJobFunctions[JobTypesEnum.Build](colonist, job);
 			if (job.tile.tileType.classes[TileManager.TileTypeClassEnum.Dirt]) {
-				job.tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileManager.TileTypeEnum.Mud), true, false, false, false);
+				job.tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileManager.TileTypeEnum.Mud), false, true, false);
 			}
 		} },
 		{ JobTypesEnum.HarvestFarm, delegate (ColonistManager.Colonist colonist, Job job) {
@@ -305,17 +305,23 @@ public class JobManager : BaseManager {
 			}
 			ResourceManager.PlantPrefab chosenPlantPrefab = plantChances.OrderByDescending(kvp => kvp.Value).First().Key;
 			job.tile.SetPlant(false, new ResourceManager.Plant(chosenPlantPrefab, job.tile, true, false, job.prefab.plants[chosenPlantPrefab]));
-			GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+			GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
 		} },
 		{ JobTypesEnum.Mine, delegate (ColonistManager.Colonist colonist, Job job) {
 			foreach (ResourceManager.ResourceRange resourceRange in job.tile.tileType.resourceRanges) {
 				colonist.inventory.ChangeResourceAmount(resourceRange.resource, UnityEngine.Random.Range(resourceRange.min, resourceRange.max + 1), false);
 			}
-			job.tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileManager.TileTypeEnum.Dirt), true, true, true, false);
+			if (job.tile.roof) {
+				job.tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileManager.TileTypeEnum.Dirt), false, true, true);
+			} else {
+				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroupEnum.Ground], false, true, true);
+			}
+
+			//new System.Threading.Thread(() => GameManager.colonyM.colony.map.RemoveTileBrightnessEffect(job.tile)).Start(); // Performance bottleneck
 			GameManager.colonyM.colony.map.RemoveTileBrightnessEffect(job.tile);
+
 			foreach (ResourceManager.LightSource lightSource in GameManager.resourceM.lightSources) {
 				if (Vector2.Distance(job.tile.obj.transform.position, lightSource.obj.transform.position) <= lightSource.prefab.maxLightDistance) {
-					lightSource.RemoveTileBrightnesses();
 					lightSource.SetTileBrightnesses();
 				}
 			}
@@ -335,7 +341,7 @@ public class JobManager : BaseManager {
 				}
 			}
 			if (setToWater) {
-				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroupEnum.Water], true, true, true, false);
+				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroupEnum.Water], false, true, true);
 				foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
 					if (nTile != null && nTile.tileType.groupType == TileManager.TileTypeGroupEnum.Hole) {
 						List<TileManager.Tile> frontier = new List<TileManager.Tile>() { nTile };
@@ -345,7 +351,7 @@ public class JobManager : BaseManager {
 							currentTile = frontier[0];
 							frontier.RemoveAt(0);
 							checkedTiles.Add(currentTile);
-							currentTile.SetTileType(currentTile.biome.tileTypes[TileManager.TileTypeGroupEnum.Water], true, true, true, true);
+							currentTile.SetTileType(currentTile.biome.tileTypes[TileManager.TileTypeGroupEnum.Water], true, true, true);
 							foreach (TileManager.Tile nTile2 in currentTile.horizontalSurroundingTiles) {
 								if (nTile2 != null && nTile2.tileType.groupType == TileManager.TileTypeGroupEnum.Hole && !checkedTiles.Contains(nTile2)) {
 									frontier.Add(nTile2);
@@ -355,7 +361,7 @@ public class JobManager : BaseManager {
 					}
 				}
 			} else {
-				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroupEnum.Hole], true, true, true, false);
+				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroupEnum.Hole], false, true, true);
 			}
 		} },
 		{ JobTypesEnum.CreateResource, delegate (ColonistManager.Colonist colonist, Job job) {

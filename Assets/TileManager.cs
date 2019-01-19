@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 public class TileManager : BaseManager {
@@ -27,6 +28,7 @@ public class TileManager : BaseManager {
 		Walkable,
 		Buildable,
 		Bitmasking,
+		BlocksLight,
 		ResourceRanges
 	}
 
@@ -80,6 +82,7 @@ public class TileManager : BaseManager {
 											bool? walkable = null;
 											bool? buildable = null;
 											bool? bitmasking = null;
+											bool? blocksLight = null;
 											List<ResourceManager.ResourceRange> resourceRanges = new List<ResourceManager.ResourceRange>();
 
 											foreach (TileTypeClassEnum tileTypeClassEnum in Enum.GetValues(typeof(TileTypeClassEnum))) {
@@ -108,6 +111,9 @@ public class TileManager : BaseManager {
 													case TileTypePropertyEnum.Bitmasking:
 														bitmasking = bool.Parse((string)tileTypeSubProperty.Value);
 														break;
+													case TileTypePropertyEnum.BlocksLight:
+														blocksLight = bool.Parse((string)tileTypeSubProperty.Value);
+														break;
 													case TileTypePropertyEnum.ResourceRanges:
 														foreach (string resourceRangeString in ((string)tileTypeSubProperty.Value).Split(',')) {
 															ResourceManager.Resource resource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), resourceRangeString.Split(':')[0]));
@@ -130,6 +136,7 @@ public class TileManager : BaseManager {
 												walkable.Value,
 												buildable.Value,
 												bitmasking.Value,
+												blocksLight.Value,
 												resourceRanges
 											);
 											tileTypes.Add(tileType);
@@ -214,13 +221,15 @@ public class TileManager : BaseManager {
 
 		public readonly bool bitmasking;
 
+		public readonly bool blocksLight;
+
 		public readonly List<ResourceManager.ResourceRange> resourceRanges;
 
 		public readonly List<Sprite> baseSprites = new List<Sprite>();
 		public readonly List<Sprite> bitmaskSprites = new List<Sprite>();
 		public readonly List<Sprite> riverSprites = new List<Sprite>();
 
-		public TileType(TileTypeGroupEnum groupType, TileTypeEnum type, Dictionary<TileTypeClassEnum, bool> classes, float walkSpeed, bool walkable, bool buildable, bool bitmasking, List<ResourceManager.ResourceRange> resourceRanges) {
+		public TileType(TileTypeGroupEnum groupType, TileTypeEnum type, Dictionary<TileTypeClassEnum, bool> classes, float walkSpeed, bool walkable, bool buildable, bool bitmasking, bool blocksLight, List<ResourceManager.ResourceRange> resourceRanges) {
 			this.groupType = groupType;
 
 			this.type = type;
@@ -234,6 +243,8 @@ public class TileManager : BaseManager {
 			this.buildable = buildable;
 
 			this.bitmasking = bitmasking;
+
+			this.blocksLight = blocksLight;
 
 			this.resourceRanges = resourceRanges;
 
@@ -469,6 +480,12 @@ public class TileManager : BaseManager {
 			}
 			return false;
 		} },
+		{ ResourceManager.ResourceEnum.Chalk, delegate (Tile tile) {
+			if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
+				return true;
+			}
+			return false;
+		} }
 	};
 
 	public class ResourceVeinData {
@@ -495,7 +512,6 @@ public class TileManager : BaseManager {
 			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
 				{ TileTypeGroupEnum.Stone, TileTypeEnum.GoldOre }
 			},
-			//Mathf.CeilToInt(GameManager.colonyM.colony.map.mapData.mapSize / 50f),
 			50,
 			20,
 			15,
@@ -506,7 +522,6 @@ public class TileManager : BaseManager {
 			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
 				{ TileTypeGroupEnum.Stone, TileTypeEnum.SilverOre }
 			},
-			//Mathf.CeilToInt(GameManager.colonyM.colony.map.mapData.mapSize / 40f),
 			40,
 			20,
 			15,
@@ -517,7 +532,6 @@ public class TileManager : BaseManager {
 			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
 				{ TileTypeGroupEnum.Stone, TileTypeEnum.BronzeOre }
 			},
-			//Mathf.CeilToInt(GameManager.colonyM.colony.map.mapData.mapSize / 30f),
 			30,
 			20,
 			15,
@@ -528,7 +542,6 @@ public class TileManager : BaseManager {
 			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
 				{ TileTypeGroupEnum.Stone, TileTypeEnum.IronOre }
 			},
-			//Mathf.CeilToInt(GameManager.colonyM.colony.map.mapData.mapSize / 20f),
 			20,
 			20,
 			15,
@@ -539,11 +552,20 @@ public class TileManager : BaseManager {
 			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
 				{ TileTypeGroupEnum.Stone, TileTypeEnum.CopperOre }
 			},
-			//Mathf.CeilToInt(GameManager.colonyM.colony.map.mapData.mapSize / 15f),
 			15,
 			20,
 			15,
 			5
+		),
+		new ResourceVeinData(
+			ResourceManager.ResourceEnum.Chalk,
+			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
+				{ TileTypeGroupEnum.Stone, TileTypeEnum.Chalk }
+			},
+			100,
+			50,
+			40,
+			20
 		)
 	};
 
@@ -555,7 +577,6 @@ public class TileManager : BaseManager {
 				{ TileTypeGroupEnum.Ground, TileTypeEnum.Clay},
 				{ TileTypeGroupEnum.Stone, TileTypeEnum.Claystone }
 			},
-			//Mathf.CeilToInt(GameManager.colonyM.colony.map.mapData.mapSize / 10f),
 			10,
 			5,
 			10,
@@ -603,6 +624,8 @@ public class TileManager : BaseManager {
 
 		public bool buildable = false;
 
+		public bool blocksLight = false;
+
 		public bool roof = false;
 
 		public float brightness = 0;
@@ -618,6 +641,8 @@ public class TileManager : BaseManager {
 		public Dictionary<int, ResourceManager.ObjectInstance> objectInstances = new Dictionary<int, ResourceManager.ObjectInstance>();
 
 		public bool dugPreviously;
+
+		public bool visible;
 
 		public Tile(Map map, Vector2 position, float height) {
 			this.map = map;
@@ -640,28 +665,72 @@ public class TileManager : BaseManager {
 			SetTileTypeByHeight();
 		}
 
-		public void SetTileType(TileType tileType, bool bitmask, bool resetRegion, bool removeFromOldRegion, bool setBiomeTileType) {
+		public void SetTileType(TileType tileType, bool setBiomeTileType, bool bitmask, bool redetermineRegion) {
 			TileType oldTileType = this.tileType;
 			this.tileType = tileType;
+
 			if (setBiomeTileType && biome != null) {
 				SetBiome(biome, true);
 			}
+
 			walkable = tileType.walkable;
 			buildable = tileType.buildable;
+			blocksLight = tileType.blocksLight;
+
 			if (bitmask) {
-				map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList());
+				map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList(), true, !redetermineRegion); // Lighting automatically recalculated in RedetermineRegion()
 			}
+
 			if (plant != null && !tileType.classes[TileTypeClassEnum.Plantable]) {
 				plant.Remove();
 				plant = null;
 			}
-			if (resetRegion) {
-				ResetRegion(oldTileType, removeFromOldRegion);
+
+			if (redetermineRegion) {
+				RedetermineRegion(oldTileType);
 			}
+
 			SetWalkSpeed();
 		}
 
-		public void ResetRegion(TileType oldTileType, bool removeFromOldRegion) {
+		public void RedetermineRegion(TileType oldTileType) {
+			if (walkable != oldTileType.walkable) { // Difference in walkability
+				if (region != null) {
+					region.tiles.Remove(this);
+				}
+				if (walkable && !oldTileType.walkable) { // Type is walkable, old type wasn't (e.g. stone mined, now ground)
+					List<Map.Region> surroundingRegions = new List<Map.Region>();
+					bool anyVisible = false;
+					foreach (Tile tile in horizontalSurroundingTiles) {
+						if (tile != null && tile.region != null && !surroundingRegions.Contains(tile.region)) {
+							surroundingRegions.Add(tile.region);
+							if (tile.visible) {
+								anyVisible = true;
+							}
+						}
+					}
+					if (surroundingRegions.Count > 0) {
+						Map.Region largestRegion = surroundingRegions.OrderByDescending(r => r.tiles.Count).FirstOrDefault();
+						ChangeRegion(largestRegion, false, false);
+						surroundingRegions.Remove(largestRegion);
+						foreach (Map.Region surroundingRegion in surroundingRegions) {
+							foreach (Tile tile in surroundingRegion.tiles) {
+								tile.ChangeRegion(largestRegion, false, false);
+							}
+							surroundingRegion.tiles.Clear();
+							GameManager.colonyM.colony.map.regions.Remove(surroundingRegion);
+						}
+						if (region.visible != anyVisible) {
+							region.SetVisible(anyVisible);
+						}
+					} else {
+						ChangeRegion(new Map.Region(tileType, GameManager.colonyM.colony.map.regions[GameManager.colonyM.colony.map.regions.Count - 1].id + 1), false, false);
+					}
+				} else { // Type is not walkable, old type was walkable (e.g. was ground, now stone)
+					ChangeRegion(null, false, false);
+				}
+			}
+			/*
 			if (oldTileType.walkable != walkable && region != null) {
 				bool setParentTileRegion = false;
 				if (!oldTileType.walkable && walkable) { // If a non-walkable tile became a walkable tile (splits two non-walkable regions)
@@ -770,32 +839,38 @@ public class TileManager : BaseManager {
 					}
 				}
 			}
+			*/
+		}
+
+		public void ChangeRegion(Map.Region region, bool changeTileTypeToRegionType, bool bitmask) {
+			//if (this.region != null) {
+			//	this.region.tiles.Remove(this);
+			//}
+			this.region = region;
+			if (region != null) {
+				region.tiles.Add(this);
+				if (!map.regions.Contains(region)) {
+					map.regions.Add(region);
+				}
+				if (changeTileTypeToRegionType) {
+					SetTileType(region.tileType, true, bitmask, false);
+				}
+			}
 		}
 
 		public void SetTileTypeByHeight() {
 			if (height < map.mapData.terrainTypeHeights[TileTypeGroupEnum.Water]) {
-				SetTileType(GameManager.tileM.GetTileTypeByEnum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Water).defaultTileType), false, false, false, false);
+				SetTileType(GameManager.tileM.GetTileTypeByEnum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Water).defaultTileType), false, false, false);
 			} else if (height > map.mapData.terrainTypeHeights[TileTypeGroupEnum.Stone]) {
-				SetTileType(GameManager.tileM.GetTileTypeByEnum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Stone).defaultTileType), false, false, false, false);
+				SetTileType(GameManager.tileM.GetTileTypeByEnum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Stone).defaultTileType), false, false, false);
 			} else {
-				SetTileType(GameManager.tileM.GetTileTypeByEnum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Ground).defaultTileType), false, false, false, false);
-			}
-		}
-
-		public void ChangeRegion(Map.Region newRegion, bool changeTileTypeToRegionType, bool bitmask) {
-			region = newRegion;
-			region.tiles.Add(this);
-			if (!map.regions.Contains(region)) {
-				map.regions.Add(region);
-			}
-			if (changeTileTypeToRegionType) {
-				SetTileType(region.tileType, bitmask, false, false, true);
+				SetTileType(GameManager.tileM.GetTileTypeByEnum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Ground).defaultTileType), false, false, false);
 			}
 		}
 
 		public void SetBiome(Biome biome, bool setPlant) {
 			this.biome = biome;
-			SetTileType(biome.tileTypes[tileType.groupType], false, false, false, false);
+			SetTileType(biome.tileTypes[tileType.groupType], false, false, false);
 			if (setPlant && tileType.classes[TileTypeClassEnum.Plantable]) {
 				SetPlant(false, null);
 			}
@@ -827,20 +902,31 @@ public class TileManager : BaseManager {
 		public void PostChangeTileObject() {
 			walkable = tileType.walkable;
 			buildable = tileType.buildable;
+			blocksLight = tileType.blocksLight;
+
+			bool recalculatedLighting = false;
+			bool recalculatedRegion = false;
+
 			foreach (KeyValuePair<int, ResourceManager.ObjectInstance> layerToObjectInstance in objectInstances) {
 				if (layerToObjectInstance.Value != null) {
-					if (!layerToObjectInstance.Value.prefab.walkable) {
-						walkable = false;
-						map.RecalculateRegionsAtTile(this);
-
-						map.DetermineShadowTiles(new List<Tile>() { this }, true);
-
-						break;
-					}
 
 					// Object Instances are iterated from lowest layer to highest layer (sorted in AddObjectInstaceToLayer), 
 					// therefore, the highest layer is the buildable value that should be applied
 					buildable = layerToObjectInstance.Value.prefab.buildable;
+
+					if (!recalculatedLighting && layerToObjectInstance.Value.prefab.blocksLight) {
+						blocksLight = true;
+						map.RecalculateLighting(new List<Tile>() { this }, true);
+
+						recalculatedLighting = true;
+					}
+
+					if (!recalculatedRegion && !layerToObjectInstance.Value.prefab.walkable) {
+						walkable = false;
+						map.RecalculateRegionsAtTile(this);
+
+						recalculatedRegion = true;
+					}
 				}
 			}
 			SetWalkSpeed();
@@ -926,7 +1012,7 @@ public class TileManager : BaseManager {
 			}
 		}
 
-		public void SetColour(Color newColour, int hour, bool printInfo = false) {
+		public void SetColour(Color newColour, int hour) {
 			float currentHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f), lightSourceBrightness);
 			int nextHour = (hour == 23 ? 0 : hour + 1);
 			float nextHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(nextHour) ? brightnessAtHour[nextHour] : 1f), lightSourceBrightness);
@@ -976,6 +1062,72 @@ public class TileManager : BaseManager {
 
 		public float GetPrecipitation() {
 			return precipitation;
+		}
+
+		public bool IsVisibleToAColonist() {
+			if (walkable) {
+				foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
+					if (colonist.overTile.walkable) {
+						if (colonist.overTile.region == region) {
+							return true;
+						}
+					} else {
+						foreach (Tile tile in colonist.overTile.horizontalSurroundingTiles) {
+							if (tile != null && tile.visible) {
+								if (tile.region == region) {
+									return true;
+								}
+							}
+						}
+					}
+				}
+			}
+			for (int i = 0; i < surroundingTiles.Count; i++) {
+				Tile tile = surroundingTiles[i];
+				if (tile != null && tile.walkable) {
+					if (Map.diagonalCheckMap.ContainsKey(i)) {
+						bool skip = true;
+						foreach (int horizontalTileIndex in Map.diagonalCheckMap[i]) {
+							Tile horizontalTile = tile.surroundingTiles[horizontalTileIndex];
+							if (horizontalTile != null && horizontalTile.walkable) {
+								skip = false;
+								break;
+							}
+						}
+						if (skip) {
+							continue;
+						}
+					}
+					foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
+						if (colonist.overTile.region == tile.region) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		}
+
+		public void SetVisible(bool visible, bool recalculateBitmask, bool recalculateLighting) {
+			this.visible = visible;
+
+			obj.SetActive(visible);
+
+			if (plant != null) {
+				plant.SetVisible(visible);
+			}
+
+			foreach (ResourceManager.ObjectInstance objectInstance in GetAllObjectInstances()) {
+				objectInstance.SetVisible(visible);
+			}
+
+			if (recalculateBitmask) {
+				GameManager.colonyM.colony.map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList(), false, false);
+			}
+
+			if (recalculateLighting) {
+				GameManager.colonyM.colony.map.RecalculateLighting(new List<Tile>() { this }.Concat(surroundingTiles).ToList(), true);
+			}
 		}
 	}
 
@@ -1101,7 +1253,9 @@ public class TileManager : BaseManager {
 		} else if (mapInitializeType == MapInitializeType.LoadMap) {
 			GameManager.colonyM.LoadColony(GameManager.colonyM.colony, true);
 		}
-		
+
+		GameManager.colonyM.colony.map.SetInitialRegionVisibility();
+
 		GameManager.uiM.SetGameUIActive(true);
 	}
 
@@ -1118,11 +1272,13 @@ public class TileManager : BaseManager {
 
 			this.mapData = mapData;
 
+			DetermineShadowDirectionsAtHour(mapData.equatorOffset);
+
 			GameManager.tileM.startCoroutineReference.StartCoroutine(CreateMap());
 		}
 
 		public Map() {
-
+			DetermineShadowDirectionsAtHour(GameManager.colonyM.colony.mapData.equatorOffset);
 		}
 
 		public List<Tile> tiles = new List<Tile>();
@@ -1133,7 +1289,7 @@ public class TileManager : BaseManager {
 		public IEnumerator CreateMap() {
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Map", "Creating Tiles"); yield return null; }
 			CreateTiles();
-			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Map", "Validating"); yield return null; Bitmasking(tiles); }
+			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Map", "Validating"); yield return null; Bitmasking(tiles, false, false); }
 
 			if (mapData.preventEdgeTouching) {
 				PreventEdgeTouching();
@@ -1147,11 +1303,11 @@ public class TileManager : BaseManager {
 				GameManager.uiM.UpdateLoadingStateText("Terrain", "Merging Terrain with Planet"); yield return null;
 				SmoothHeightWithSurroundingPlanetTiles();
 				GameManager.uiM.UpdateLoadingStateText("Terrain", "Validating"); yield return null;
-				Bitmasking(tiles);
+				Bitmasking(tiles, false, false);
 			}
 
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Tile Type"); yield return null; }
-			SetTileRegions(true);
+			SetTileRegions(true, false);
 
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Terrain", "Reducing Terrain Noise"); yield return null; }
 			ReduceNoise();
@@ -1160,19 +1316,19 @@ public class TileManager : BaseManager {
 				GameManager.uiM.UpdateLoadingStateText("Rivers", "Determining Large River Paths"); yield return null;
 				CreateLargeRivers();
 				GameManager.uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Walkability"); yield return null;
-				SetTileRegions(false);
+				SetTileRegions(false, false);
 				GameManager.uiM.UpdateLoadingStateText("Terrain", "Reducing Terrain Noise"); yield return null;
 				ReduceNoise();
 			}
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Terrain", "Determining Regions by Walkability"); yield return null; }
-			SetTileRegions(false);
-			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Terrain", "Validating"); yield return null; Bitmasking(tiles); }
+			SetTileRegions(false, true);
+			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Terrain", "Validating"); yield return null; Bitmasking(tiles, false, false); }
 
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Rivers", "Determining Drainage Basins"); yield return null; }
 			DetermineDrainageBasins();
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Rivers", "Determining River Paths"); yield return null; }
 			CreateRivers();
-			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Rivers", "Validating"); yield return null; Bitmasking(tiles); }
+			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Rivers", "Validating"); yield return null; Bitmasking(tiles, false, false); }
 
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Biomes", "Calculating Temperature"); yield return null; }
 			CalculateTemperature();
@@ -1191,7 +1347,7 @@ public class TileManager : BaseManager {
 
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Biomes", "Setting Biomes"); yield return null; }
 			SetBiomes(mapData.actualMap);
-			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Biomes", "Validating"); yield return null; Bitmasking(tiles); }
+			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Biomes", "Validating"); yield return null; Bitmasking(tiles, false, false); }
 
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Region Blocks", "Determining Region Blocks"); yield return null; }
 			CreateRegionBlocks();
@@ -1203,20 +1359,18 @@ public class TileManager : BaseManager {
 				GameManager.uiM.UpdateLoadingStateText("Resources", "Creating Resource Veins"); yield return null;
 				SetResourceVeins();
 				GameManager.uiM.UpdateLoadingStateText("Resources", "Validating"); yield return null;
-				Bitmasking(tiles);
+				Bitmasking(tiles, false, false);
 
-				GameManager.uiM.UpdateLoadingStateText("Lighting", "Determining Hourly Shadow Directions"); yield return null;
-				DetermineShadowDirectionsAtHour();
 				GameManager.uiM.UpdateLoadingStateText("Lighting", "Calculating Shadows"); yield return null;
-				DetermineShadowTiles(tiles, false);
-				GameManager.uiM.UpdateLoadingStateText("Lighting", "Applying Shadows"); yield return null;
-				SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+				RecalculateLighting(tiles, false);
 				GameManager.uiM.UpdateLoadingStateText("Lighting", "Determining Visible Region Blocks"); yield return null;
 				DetermineVisibleRegionBlocks();
+				GameManager.uiM.UpdateLoadingStateText("Lighting", "Applying Shadows"); yield return null;
+				SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
 			}
 
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Lighting", "Validating"); yield return null; }
-			Bitmasking(tiles);
+			Bitmasking(tiles, false, false);
 
 			if (mapData.actualMap) { GameManager.uiM.UpdateLoadingStateText("Finalizing", string.Empty); yield return null; }
 			created = true;
@@ -1375,9 +1529,40 @@ public class TileManager : BaseManager {
 
 			public List<Region> connectedRegions = new List<Region>();
 
+			public bool visible;
+
 			public Region(TileType regionTileType, int regionID) {
 				tileType = regionTileType;
 				id = regionID;
+			}
+
+			public bool IsVisibleToAColonist() {
+				if (tileType.walkable) {
+					foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
+						if (colonist.overTile.region == this) {
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+
+			public void SetVisible(bool visible) {
+				this.visible = visible;
+
+				List<Tile> tilesToModify = new List<Tile>();
+				foreach (Tile tile in tiles) {
+					tile.SetVisible(visible, false, false); // bitmasking + lighting set en masse at end of method
+
+					tilesToModify.Add(tile);
+					tilesToModify.AddRange(tile.surroundingTiles);
+				}
+
+				tilesToModify = tilesToModify.Distinct().ToList();
+
+				GameManager.colonyM.colony.map.Bitmasking(tilesToModify, true, false);
+				GameManager.colonyM.colony.map.RecalculateLighting(tilesToModify, true);
+
 			}
 		}
 
@@ -1394,7 +1579,7 @@ public class TileManager : BaseManager {
 			}
 		}
 
-		public void SetTileRegions(bool splitByTileType) {
+		public void SetTileRegions(bool splitByTileType, bool removeNonWalkableRegions) {
 			regions.Clear();
 
 			EstablishInitialRegions(splitByTileType);
@@ -1402,9 +1587,13 @@ public class TileManager : BaseManager {
 			MergeConnectedRegions(splitByTileType);
 
 			RemoveEmptyRegions();
+
+			if (removeNonWalkableRegions) {
+				RemoveNonWalkableRegions();
+			}
 		}
 
-		void EstablishInitialRegions(bool splitByTileType) {
+		private void EstablishInitialRegions(bool splitByTileType) {
 			foreach (Tile tile in tiles) { // Go through all tiles
 				List<Region> foundRegions = new List<Region>(); // For each tile, store a list of the regions around them
 				for (int i = 0; i < tile.surroundingTiles.Count; i++) { // Go through the tiles around each tile
@@ -1426,7 +1615,7 @@ public class TileManager : BaseManager {
 			}
 		}
 
-		void FindConnectedRegions(bool splitByTileType) {
+		private void FindConnectedRegions(bool splitByTileType) {
 			foreach (Region region in regions) {
 				foreach (Tile tile in region.tiles) {
 					foreach (Tile nTile in tile.horizontalSurroundingTiles) {
@@ -1438,7 +1627,7 @@ public class TileManager : BaseManager {
 			}
 		}
 
-		void MergeConnectedRegions(bool splitByTileType) {
+		private void MergeConnectedRegions(bool splitByTileType) {
 			while (regions.Where(region => region.connectedRegions.Count > 0).ToList().Count > 0) { // While there are regions that have connected regions
 				foreach (Region region in regions) { // Go through each region
 					if (region.connectedRegions.Count > 0) { // If this region has connected regions
@@ -1475,7 +1664,7 @@ public class TileManager : BaseManager {
 			public float lastBrightnessUpdate;
 
 			public RegionBlock(TileType regionTileType, int regionID) : base(regionTileType, regionID) {
-				lastBrightnessUpdate = 0;
+				lastBrightnessUpdate = -1;
 			}
 		}
 
@@ -1604,7 +1793,7 @@ public class TileManager : BaseManager {
 			}
 		}
 
-		Region FindLowestRegion(List<Region> searchRegions) {
+		private Region FindLowestRegion(List<Region> searchRegions) {
 			Region lowestRegion = searchRegions[0];
 			foreach (Region region in searchRegions) {
 				if (region.id < lowestRegion.id) {
@@ -1614,7 +1803,7 @@ public class TileManager : BaseManager {
 			return lowestRegion;
 		}
 
-		void RemoveEmptyRegions() {
+		private void RemoveEmptyRegions() {
 			for (int i = 0; i < regions.Count; i++) {
 				if (regions[i].tiles.Count <= 0) {
 					regions.RemoveAt(i);
@@ -1624,6 +1813,28 @@ public class TileManager : BaseManager {
 
 			for (int i = 0; i < regions.Count; i++) {
 				regions[i].id = i;
+			}
+		}
+
+		private void RemoveNonWalkableRegions() {
+			List<Region> removeRegions = new List<Region>();
+			foreach (Region region in regions) {
+				if (!region.tileType.walkable) {
+					foreach (Tile tile in region.tiles) {
+						tile.ChangeRegion(null, false, false);
+					}
+					removeRegions.Add(region);
+				}
+			}
+			foreach (Region region in removeRegions) {
+				regions.Remove(region);
+			}
+		}
+
+		public void SetInitialRegionVisibility() {
+			// This only sets the "visible" variable itself, initial visibility is set on a per-tile basis in Map.Bitmasking()
+			foreach (Region region in regions) {
+				region.visible = region.IsVisibleToAColonist();
 			}
 		}
 
@@ -1677,7 +1888,7 @@ public class TileManager : BaseManager {
 						horizontalGroups.Remove(removeTile);
 					}
 					if (horizontalGroups.Count > 1) {
-						SetTileRegions(false);
+						SetTileRegions(false, true);
 					}
 				}
 			}
@@ -1861,7 +2072,7 @@ public class TileManager : BaseManager {
 				if (currentTile.tile == riverEndTile || (expandRadius == 0 && (currentTile.tile.tileType.groupType == TileTypeGroupEnum.Water || (currentTile.tile.horizontalSurroundingTiles.Find(tile => tile != null && tile.tileType.groupType == TileTypeGroupEnum.Water && RiversContainTile(tile, true).Key == null) != null)))) {
 					while (currentTile != null) {
 						river.Add(currentTile.tile);
-						currentTile.tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileTypeEnum.GrassWater), false, false, false, true);
+						currentTile.tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileTypeEnum.GrassWater), true, false, false);
 						currentTile = currentTile.cameFrom;
 					}
 					break;
@@ -1872,7 +2083,7 @@ public class TileManager : BaseManager {
 						if (rivers.Find(otherRiver => otherRiver.tiles.Find(riverTile => nTile == riverTile) != null) != null) {
 							frontier.Clear();
 							frontier.Add(new PathManager.PathfindingTile(nTile, currentTile, 0));
-							nTile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileTypeEnum.GrassWater), false, false, false, true);
+							nTile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileTypeEnum.GrassWater), true, false, false);
 							break;
 						}
 						float cost = Vector2.Distance(nTile.obj.transform.position, riverEndTile.obj.transform.position) + (nTile.height * (mapData.mapSize / 10f)) + UnityEngine.Random.Range(0, 10);
@@ -2289,7 +2500,7 @@ public class TileManager : BaseManager {
 						frontier.RemoveAt(0);
 						checkedTiles.Add(currentTile);
 
-						currentTile.SetTileType(GameManager.tileM.GetTileTypeByEnum(resourceVeinData.tileTypes[currentTile.tileType.groupType]), true, false, false, false);
+						currentTile.SetTileType(GameManager.tileM.GetTileTypeByEnum(resourceVeinData.tileTypes[currentTile.tileType.groupType]), false, true, false);
 
 						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
 							if (nTile != null && !checkedTiles.Contains(nTile) && !resourceVeinData.tileTypes.Values.Contains(nTile.tileType.type)) {
@@ -2426,19 +2637,27 @@ public class TileManager : BaseManager {
 			}
 		}
 
-		public void Bitmasking(List<Tile> tilesToBitmask) {
+		public void Bitmasking(List<Tile> tilesToBitmask, bool careAboutColonistVisibility, bool recalculateLighting) {
 			foreach (Tile tile in tilesToBitmask) {
 				if (tile != null) {
-					if (tile.tileType.bitmasking) {
-						BitmaskTile(tile, true, false, null, true);
-					} else {
-						if (!tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
-							tile.sr.sprite = tile.tileType.baseSprites[UnityEngine.Random.Range(0, tile.tileType.baseSprites.Count)];
+					if (!careAboutColonistVisibility || tile.IsVisibleToAColonist()) {
+						tile.SetVisible(true, false, false); // "true" on "recalculateBitmasking" would cause stack overflow
+						if (tile.tileType.bitmasking) {
+							BitmaskTile(tile, true, false, null, true);
+						} else {
+							if (!tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
+								tile.sr.sprite = tile.tileType.baseSprites[UnityEngine.Random.Range(0, tile.tileType.baseSprites.Count)];
+							}
 						}
+					} else {
+						tile.SetVisible(false, false, false); // "true" on "recalculateBitmasking" would cause stack overflow
 					}
 				}
 			}
 			BitmaskRiverStartTiles();
+			if (recalculateLighting) {
+				RecalculateLighting(tilesToBitmask, true);
+			}
 		}
 
 		void BitmaskRiverStartTiles() {
@@ -2482,14 +2701,14 @@ public class TileManager : BaseManager {
 						}
 					}
 				}
-				SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+				SetTileBrightness(GameManager.timeM.tileBrightnessTime, false);
 			}
 		}
 
-		public void SetTileBrightness(float time) {
+		public void SetTileBrightness(float time, bool forceUpdate) {
 			Color newColour = GetTileColourAtHour(time);
 			foreach (RegionBlock visibleRegionBlock in visibleRegionBlocks) {
-				if (!Mathf.Approximately(visibleRegionBlock.lastBrightnessUpdate, time)) {
+				if (forceUpdate || !Mathf.Approximately(visibleRegionBlock.lastBrightnessUpdate, time)) {
 					visibleRegionBlock.lastBrightnessUpdate = time;
 					foreach (Tile tile in visibleRegionBlock.tiles) {
 						tile.SetColour(newColour, Mathf.FloorToInt(time));
@@ -2502,6 +2721,15 @@ public class TileManager : BaseManager {
 			GameManager.cameraM.cameraComponent.backgroundColor = newColour * 0.5f;
 		}
 
+		private readonly Dictionary<int, Vector2> shadowDirectionAtHour = new Dictionary<int, Vector2>();
+		public void DetermineShadowDirectionsAtHour(float equatorOffset) {
+			for (int h = 0; h < 24; h++) {
+				float hShadow = (2f * ((h - 12f) / 24f)) * (1f - Mathf.Pow(equatorOffset, 2f));
+				float vShadow = Mathf.Pow(2f * ((h - 12f) / 24f), 2f) * equatorOffset + (equatorOffset / 2f);
+				shadowDirectionAtHour.Add(h, new Vector2(hShadow, vShadow) * 5f);
+			}
+		}
+
 		public float CalculateBrightnessLevelAtHour(float time) {
 			return ((-(1f / 144f)) * Mathf.Pow(((1 + (24 - (1 - time))) % 24) - 12, 2) + 1.2f);
 		}
@@ -2509,129 +2737,160 @@ public class TileManager : BaseManager {
 		public Color GetTileColourAtHour(float time) {
 			float r = Mathf.Clamp((Mathf.Pow(CalculateBrightnessLevelAtHour(0.4f * time + 7.2f), 10)) / 5f, 0f, 1f);
 			float g = Mathf.Clamp((Mathf.Pow(CalculateBrightnessLevelAtHour(0.5f * time + 6), 10)) / 5f - 0.2f, 0f, 1f);
-			float b = Mathf.Clamp((-1.5f * Mathf.Pow(Mathf.Cos((CalculateBrightnessLevelAtHour(2 * time + 12)) / 1.5f), 3) + 1.65f * (CalculateBrightnessLevelAtHour(time) / 2f)) + 0.7f, 0f, 1f);
+			float b = Mathf.Clamp((-1.5f * Mathf.Pow(Mathf.Cos(CalculateBrightnessLevelAtHour(2 * time + 12) / 1.5f), 3) + 1.65f * (CalculateBrightnessLevelAtHour(time) / 2f)) + 0.7f, 0f, 1f);
 			return new Color(r, g, b, 1f);
 		}
 
-		public bool TileBlocksLight(Tile tile) {
-			if (tile.GetAllObjectInstances().Find(toi => toi.prefab.blocksLight) != null) {
-				return true;
-			}
-			if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
-				return true;
-			}
-			return false;
-		}
-
 		public bool TileCanShadowTiles(Tile tile) {
-			return (TileBlocksLight(tile) && tile.surroundingTiles.Find(nTile => nTile != null && !TileBlocksLight(nTile)) != null) || (tile.roof && tile.tileType.groupType != TileTypeGroupEnum.Stone);
+			return tile.surroundingTiles.Any(nTile => nTile != null && !nTile.blocksLight) && (tile.blocksLight || tile.roof);
 		}
 
 		public bool TileCanBeShadowed(Tile tile) {
-			return (!TileBlocksLight(tile) && tile.GetAllObjectInstances().Find(instance => !instance.prefab.blocksLight) != null ? true : !TileBlocksLight(tile));
+			return !tile.blocksLight || (!tile.blocksLight && tile.roof);
 		}
 
-		private Dictionary<int, Vector2> shadowDirectionAtHour = new Dictionary<int, Vector2>();
-		public void DetermineShadowDirectionsAtHour() {
-			for (int h = 0; h < 24; h++) {
-				float hShadow = (2f * ((h - 12f) / 24f)) * (1f - Mathf.Pow(mapData.equatorOffset, 2f));
-				float vShadow = Mathf.Pow(2f * ((h - 12f) / 24f), 2f) * mapData.equatorOffset + (mapData.equatorOffset / 2f);
-				shadowDirectionAtHour.Add(h, new Vector2(hShadow, vShadow) * 5f);
-			}
+		//private Queue<LightingRecalculationJob> lightingRecalculationJobQueue = new Queue<LightingRecalculationJob>();
+
+		//private class LightingRecalculationJob {
+		//	public readonly List<Tile> tilesToRecalculate;
+		//	public readonly bool setBrightnessAtEnd;
+		//	public readonly bool forceBrightnessUpdate;
+
+		//	public LightingRecalculationJob(
+		//		List<Tile> tilesToRecalculate,
+		//		bool setBrightnessAtEnd,
+		//		bool forceBrightnessUpdate
+		//	) {
+		//		this.tilesToRecalculate = tilesToRecalculate;
+		//		this.setBrightnessAtEnd = setBrightnessAtEnd;
+		//		this.forceBrightnessUpdate = forceBrightnessUpdate;
+		//	}
+		//}
+
+		//public void RecalculateLighting(List<Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate = false) {
+		//	GameManager.tileM.startCoroutineReference.StartCoroutine(RecalculateLightingCoroutine(tilesToRecalculate, setBrightnessAtEnd, forceBrightnessUpdate));
+		//}
+
+		//private IEnumerator RecalculateLightingCoroutine(List<Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate) {
+		//	Thread thread = new Thread(() => DetermineShadowTiles(DetermineShadowSourceTiles(tilesToRecalculate)));
+		//	thread.Start();
+		//	while (thread.IsAlive) {
+		//		yield return null;
+		//	}
+
+		//	if (setBrightnessAtEnd) {
+		//		SetTileBrightness(GameManager.timeM.tileBrightnessTime, forceBrightnessUpdate);
+		//	}
+		//}
+
+		//public void RecalculateLighting(List<Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate = false) {
+		//	lightingRecalculationJobQueue.Enqueue(new LightingRecalculationJob(tilesToRecalculate, setBrightnessAtEnd, forceBrightnessUpdate));
+
+		//	if (lightingRecalculationJobQueue.Count == 1) {
+		//		GameManager.tileM.startCoroutineReference.StartCoroutine(RecalculateLightingCoroutine(lightingRecalculationJobQueue.Dequeue()));
+		//	}
+		//}
+
+		//private IEnumerator RecalculateLightingCoroutine(LightingRecalculationJob lightingRecalculationJob) {
+		//	Thread thread = new Thread(() => DetermineShadowTiles(DetermineShadowSourceTiles(lightingRecalculationJob.tilesToRecalculate)));
+		//	thread.Start();
+		//	while (thread.IsAlive) {
+		//		yield return null;
+		//	}
+
+		//	if (lightingRecalculationJob.setBrightnessAtEnd) {
+		//		SetTileBrightness(GameManager.timeM.tileBrightnessTime, lightingRecalculationJob.forceBrightnessUpdate);
+		//	}
+
+		//	if (lightingRecalculationJobQueue.Count > 0) {
+		//		GameManager.tileM.startCoroutineReference.StartCoroutine(RecalculateLightingCoroutine(lightingRecalculationJobQueue.Dequeue()));
+		//	}
+		//}
+
+		public void RecalculateLighting(List<Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate = false) {
+			List<Tile> shadowSourceTiles = DetermineShadowSourceTiles(tilesToRecalculate);
+			DetermineShadowTiles(shadowSourceTiles, setBrightnessAtEnd, forceBrightnessUpdate);
 		}
 
-		public void DetermineShadowTiles(List<Tile> tilesToInclude, bool setBrightnessAtEnd) {
-			List<Tile> shadowStartTiles = new List<Tile>();
-			foreach (Tile tile in tilesToInclude) {
-				if (TileCanShadowTiles(tile)) {
-					shadowStartTiles.Add(tile);
+		public List<Tile> DetermineShadowSourceTiles(List<Tile> tilesToRecalculate) {
+			List<Tile> shadowSourceTiles = new List<Tile>();
+			foreach (Tile tile in tilesToRecalculate) {
+				if (tile != null && TileCanShadowTiles(tile)) {
+					shadowSourceTiles.Add(tile);
 				}
 			}
+			return shadowSourceTiles;
+		}
+
+		private static readonly float distanceIncreaseAmount = 0.1f; // 0.1f
+		private void DetermineShadowTiles(List<Tile> shadowSourceTiles, bool setBrightnessAtEnd, bool forceBrightnessUpdate) {
 			for (int h = 0; h < 24; h++) {
 				Vector2 hourDirection = shadowDirectionAtHour[h];
+				float maxShadowDistanceAtHour = hourDirection.magnitude * 5f + (Mathf.Pow(h - 12, 2) / 6f);
+				float shadowedBrightnessAtHour = Mathf.Clamp(1 - (0.6f * CalculateBrightnessLevelAtHour(h)) + 0.3f, 0, 1);
 
-				foreach (Tile tile in shadowStartTiles) {
-					Vector2 tilePosition = tile.obj.transform.position;
-
-					float oppositeTileMaxHeight = 0;
-					float oppositeDistance = 0;
-					Tile oppositeTile = tile;
-					while (oppositeTile != null && !TileBlocksLight(oppositeTile)) {
-						if (oppositeTile.height >= oppositeTileMaxHeight) {
-							oppositeTileMaxHeight = oppositeTile.height;
-						}
-						Tile newOppositeTile = oppositeTile;
-						int sameCounter = 0;
-						while (newOppositeTile == oppositeTile) {
-							oppositeDistance += 0.1f;
-							newOppositeTile = GetTileFromPosition(tilePosition + ((-hourDirection) * oppositeDistance));
-							if (newOppositeTile == oppositeTile) {
-								if (sameCounter >= 4) {
-									break;
-								}
-								sameCounter += 1;
-							} else {
-								oppositeTile = newOppositeTile;
-								break;
-							}
-						}
-						if (sameCounter >= 4) {
-							break;
-						}
-					}
-					float heightModifer = (1 + (oppositeTileMaxHeight - mapData.terrainTypeHeights[TileTypeGroupEnum.Stone]));
-					float maxDistance = hourDirection.magnitude * heightModifer * 5f + (Mathf.Pow(h - 12, 2) / 6f);
+				foreach (Tile shadowSourceTile in shadowSourceTiles) {
+					bool shadowedAnyTile = false;
 
 					List<Tile> shadowTiles = new List<Tile>();
-					for (float distance = 0; distance <= maxDistance; distance += 0.1f) {
-						Vector2 nextTilePosition = tilePosition + (hourDirection * distance);
+					for (float distance = 0; distance <= maxShadowDistanceAtHour; distance += distanceIncreaseAmount) {
+						Vector2 nextTilePosition = shadowSourceTile.position/*(Vector2)shadowSourceTile.obj.transform.position*/ + (hourDirection * distance);
 						if (nextTilePosition.x < 0 || nextTilePosition.x >= mapData.mapSize || nextTilePosition.y < 0 || nextTilePosition.y >= mapData.mapSize) {
 							break;
 						}
-						Tile shadowTile = GetTileFromPosition(nextTilePosition);
-						if (shadowTiles.Contains(shadowTile)) {
-							distance += 0.1f;
+						Tile tileToShadow = GetTileFromPosition(nextTilePosition);
+						if (shadowTiles.Contains(tileToShadow)) {
+							distance += distanceIncreaseAmount;
 							continue;
 						}
-						if (shadowTile != tile) {
+						if (tileToShadow != shadowSourceTile) {
+							//if (shadowedAnyTile && TileCanShadowTiles(tileToShadow)) {
+							//	break;
+							//}
 							float newBrightness = 1;
-							if (TileCanBeShadowed(shadowTile)) {
-								newBrightness = Mathf.Clamp((1 - (0.6f * CalculateBrightnessLevelAtHour(h)) + 0.3f) /* / (1 - ((distance - (maxDistance / 2f)) / (maxDistance <= 0 ? 1 : maxDistance))) */, 0, 1);
-								if (shadowTile.brightnessAtHour.ContainsKey(h)) {
-									shadowTile.brightnessAtHour[h] = Mathf.Min(shadowTile.brightnessAtHour[h], newBrightness);
+							if (TileCanBeShadowed(tileToShadow)) {
+								shadowedAnyTile = true;
+								newBrightness = shadowedBrightnessAtHour;
+								if (tileToShadow.brightnessAtHour.ContainsKey(h)) {
+									tileToShadow.brightnessAtHour[h] = Mathf.Min(tileToShadow.brightnessAtHour[h], newBrightness);
 								} else {
-									shadowTile.brightnessAtHour.Add(h, newBrightness);
+									tileToShadow.brightnessAtHour.Add(h, newBrightness);
 								}
-								shadowTiles.Add(shadowTile);
+								shadowTiles.Add(tileToShadow);
 							} else {
-								if (shadowTile.blockingShadowsFrom.ContainsKey(h)) {
-									shadowTile.blockingShadowsFrom[h].Add(tile);
-								} else {
-									shadowTile.blockingShadowsFrom.Add(h, new List<Tile>() { tile });
+								if (shadowedAnyTile || Vector2.Distance(tileToShadow.position, shadowSourceTile.position) > maxShadowDistanceAtHour) { // Attempt 1
+								//if (!shadowSourceTile.surroundingTiles.Contains(tileToShadow)) { // Attempt 2
+								//if (shadowedAnyTile && !shadowSourceTile.surroundingTiles.Contains(tileToShadow) && TileCanShadowTiles(tileToShadow)) { // Attempt 3
+									if (tileToShadow.blockingShadowsFrom.ContainsKey(h)) {
+										tileToShadow.blockingShadowsFrom[h].Add(shadowSourceTile);
+									} else {
+										tileToShadow.blockingShadowsFrom.Add(h, new List<Tile>() { shadowSourceTile });
+									}
+									tileToShadow.blockingShadowsFrom[h] = tileToShadow.blockingShadowsFrom[h].Distinct().ToList();
+									break;
 								}
-								shadowTile.blockingShadowsFrom[h] = shadowTile.blockingShadowsFrom[h].Distinct().ToList();
 							}
-							if (shadowTile.shadowsFrom.ContainsKey(h)) {
-								if (shadowTile.shadowsFrom[h].ContainsKey(tile)) {
-									shadowTile.shadowsFrom[h][tile] = newBrightness;
+							if (tileToShadow.shadowsFrom.ContainsKey(h)) {
+								if (tileToShadow.shadowsFrom[h].ContainsKey(shadowSourceTile)) {
+									tileToShadow.shadowsFrom[h][shadowSourceTile] = newBrightness;
 								} else {
-									shadowTile.shadowsFrom[h].Add(tile, newBrightness);
+									tileToShadow.shadowsFrom[h].Add(shadowSourceTile, newBrightness);
 								}
 							} else {
-								shadowTile.shadowsFrom.Add(h, new Dictionary<Tile, float>() { { tile, newBrightness } });
+								tileToShadow.shadowsFrom.Add(h, new Dictionary<Tile, float>() { { shadowSourceTile, newBrightness } });
 							}
 						}
 					}
-					if (tile.shadowsTo.ContainsKey(h)) {
-						tile.shadowsTo[h].AddRange(shadowTiles);
+					if (shadowSourceTile.shadowsTo.ContainsKey(h)) {
+						shadowSourceTile.shadowsTo[h].AddRange(shadowTiles);
 					} else {
-						tile.shadowsTo.Add(h, shadowTiles);
+						shadowSourceTile.shadowsTo.Add(h, shadowTiles);
 					}
-					tile.shadowsTo[h] = tile.shadowsTo[h].Distinct().ToList();
+					shadowSourceTile.shadowsTo[h] = shadowSourceTile.shadowsTo[h].Distinct().ToList();
 				}
 			}
 			if (setBrightnessAtEnd) {
-				SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+				SetTileBrightness(GameManager.timeM.tileBrightnessTime, forceBrightnessUpdate);
 			}
 		}
 
@@ -2666,7 +2925,7 @@ public class TileManager : BaseManager {
 			tile.shadowsTo.Clear();
 			tile.blockingShadowsFrom.Clear();
 
-			DetermineShadowTiles(tilesToRecalculateShadowsFor.Distinct().ToList(), true);
+			RecalculateLighting(tilesToRecalculateShadowsFor.Distinct().ToList(), true);
 		}
 
 		public Tile GetTileFromPosition(Vector2 position) {

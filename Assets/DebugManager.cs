@@ -112,12 +112,12 @@ public class DebugManager : BaseManager {
 		viewwalkspeed,          // viewwalkspeed							-- sets the map overlay to colour each tile depending on its walk speed (black = 0, white = 1)
 		viewregionblocks,       // viewregionblocks							-- sets the map overlay to colour individual region blocks (region block colour is random)
 		viewsquareregionblocks, // viewsquareregionblocks					-- sets the map overlay to colour invididual square region blocks (square region block colour is random)
+		viewlightblockingtiles, // viewlightblockingtiles					-- higlights all tiles that block light
+		viewshadowstarttiles,   // viewshadowstarttiles						-- higlights all tiles that can start a shadow
 		viewshadowsfrom,        // viewshadowsfrom							-- highlights all tiles that affect the brightness of the selected tile through the day (green = earlier, pink = later)
 		viewshadowsto,          // viewshadowsto							-- highlights all tiles that the selected tile affects the brightness of through the day (green = earlier, pink = later)
-		viewblockingtiles,      // viewblockingtiles						-- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)
-		viewroofs,              // viewroofs								-- higlights all tiles with a roof above it
-		save,                   // save (filename)							-- without (filename): saves the name normally. with (filename): saves the game to the specified file name. will overwrite
-		load                    // load (filename)							-- without (filename): loads the most recent save. with (filename): loads the file named (filename). will not save first
+		viewblockingfrom,       // viewblockingfrom							-- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)
+		viewroofs               // viewroofs								-- higlights all tiles with a roof above it
 	};
 
 	private Dictionary<Commands, string> commandHelpOutputs = new Dictionary<Commands, string>() {
@@ -166,12 +166,12 @@ public class DebugManager : BaseManager {
 		{Commands.viewwalkspeed,"viewwalkspeed -- sets the map overlay to colour each tile depending on its walk speed (black = 0, white = 1)" },
 		{Commands.viewregionblocks,"viewregionblocks -- sets the map overlay to colour individual region blocks (region block colour is random)" },
 		{Commands.viewsquareregionblocks,"viewsquareregionblocks -- sets the map overlay to colour invididual square region blocks (square region block colour is random)" },
+		{Commands.viewlightblockingtiles,"viewlightblockingtiles -- higlights all tiles that block light" },
+		{Commands.viewshadowstarttiles,"viewshadowstarttiles -- higlights all tiles that can start a shadow" },
 		{Commands.viewshadowsfrom,"viewshadowsfrom -- highlights all tiles that affect the brightness of the selected tile through the day (green = earlier, pink = later)" },
 		{Commands.viewshadowsto,"viewshadowsto -- highlights all tiles that the selected tile affects the brightness of through the day (green = earlier, pink = later)" },
-		{Commands.viewblockingtiles,"viewblockingtiles -- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)" },
-		{Commands.viewroofs,"viewroofs -- higlights all tiles with a roof above it" },
-		{Commands.save,"save (filename) -- without (filename): saves the game normally. with (filename): saves the game to the specified file name. will overwrite" },
-		{Commands.load,"load (filename) -- without (filename): loads the most recent save. with (filename): loads the file named (filename). will not save first" }
+		{Commands.viewblockingfrom,"viewblockingfrom -- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)" },
+		{Commands.viewroofs,"viewroofs -- higlights all tiles with a roof above it" }
 	};
 
 	public void ParseCommandInput() {
@@ -227,7 +227,7 @@ public class DebugManager : BaseManager {
 	private float holdHour = 12;
 
 	public void ToggleSunCycleUpdate() {
-		GameManager.colonyM.colony.map.SetTileBrightness(holdHour);
+		GameManager.colonyM.colony.map.SetTileBrightness(holdHour, true);
 	}
 
 	private int viewRiverAtIndex = 0;
@@ -627,6 +627,7 @@ public class DebugManager : BaseManager {
 		commandFunctions.Add(Commands.selecttilemouse, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				selectTileMouseToggle = !selectTileMouseToggle;
+				OutputToConsole("State: " + (selectTileMouseToggle ? "On" : "Off"));
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
@@ -755,11 +756,11 @@ public class DebugManager : BaseManager {
 					if (selectedTiles.Count > 0) {
 						foreach (TileManager.Tile tile in selectedTiles) {
 							bool previousWalkableState = tile.walkable;
-							tile.SetTileType(tileType, true, true, true, false);
+							tile.SetTileType(tileType, false, true, true);
 							if (!previousWalkableState && tile.walkable) {
 								GameManager.colonyM.colony.map.RemoveTileBrightnessEffect(tile);
 							} else if (previousWalkableState && !tile.walkable) {
-								GameManager.colonyM.colony.map.DetermineShadowTiles(new List<TileManager.Tile>() { tile }, true);
+								GameManager.colonyM.colony.map.RecalculateLighting(new List<TileManager.Tile>() { tile }, true);
 							}
 							counter += 1;
 						}
@@ -897,7 +898,7 @@ public class DebugManager : BaseManager {
 						if (selectedTiles.Count > 0) {
 							foreach (TileManager.Tile tile in selectedTiles) {
 								tile.SetPlant(false, new ResourceManager.Plant(plantPrefab, tile, small, true, null));
-								GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+								GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
 								if (tile.plant != null) {
 									counter += 1;
 								}
@@ -987,7 +988,7 @@ public class DebugManager : BaseManager {
 					if (time >= 0 && time < 24) {
 						holdHour = time;
 						GameManager.timeM.SetTime(time);
-						GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+						GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
 					} else {
 						OutputToConsole("ERROR: Time out of range.");
 					}
@@ -1024,8 +1025,8 @@ public class DebugManager : BaseManager {
 				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
 					tile.sr.color = Color.white;
 				}
-				GameManager.colonyM.colony.map.Bitmasking(GameManager.colonyM.colony.map.tiles);
-				GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+				GameManager.colonyM.colony.map.Bitmasking(GameManager.colonyM.colony.map.tiles, true, true);
+				GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
@@ -1089,7 +1090,7 @@ public class DebugManager : BaseManager {
 		});
 		commandFunctions.Add(Commands.viewresourceveins, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				GameManager.colonyM.colony.map.Bitmasking(GameManager.colonyM.colony.map.tiles);
+				GameManager.colonyM.colony.map.Bitmasking(GameManager.colonyM.colony.map.tiles, false, true);
 				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
 					if (tile.tileType.resourceRanges.Find(rr => TileManager.resourceVeinValidTileFunctions.ContainsKey(rr.resource.type)) == null) {
 						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
@@ -1229,9 +1230,32 @@ public class DebugManager : BaseManager {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
+		commandFunctions.Add(Commands.viewlightblockingtiles, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 0) {
+				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
+					tile.SetVisible(true, false, false);
+					if (tile.blocksLight) {
+						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
+						tile.sr.color = Color.red;
+					}
+				}
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
+		commandFunctions.Add(Commands.viewshadowstarttiles, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 0) {
+				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.DetermineShadowSourceTiles(GameManager.colonyM.colony.map.tiles)) {
+					tile.SetVisible(true, false, false);
+					tile.sr.color = Color.red;
+				}
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
 		commandFunctions.Add(Commands.viewshadowsfrom, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				GameManager.colonyM.colony.map.SetTileBrightness(12);
+				GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
 				if (selectedTiles.Count > 0) {
 					foreach (TileManager.Tile tile in selectedTiles) {
 						foreach (KeyValuePair<int, Dictionary<TileManager.Tile, float>> shadowsFromKVP in tile.shadowsFrom) {
@@ -1243,13 +1267,33 @@ public class DebugManager : BaseManager {
 				} else {
 					OutputToConsole("No tiles are currently selected.");
 				}
+			} else if (parameters.Count == 1) {
+				GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
+				if (selectedTiles.Count > 0) {
+					int hour = -1;
+					if (int.TryParse(parameters[0], out hour)) {
+						if (hour >= 0 && hour <= 23) {
+							foreach (TileManager.Tile tile in selectedTiles) {
+								foreach (KeyValuePair<TileManager.Tile, float> sTile in tile.shadowsFrom[hour]) {
+									sTile.Key.SetColour(new Color(hour / 24f, 1 - (hour / 24f), hour / 24f, 1f), 12);
+								}
+							}
+						} else {
+							OutputToConsole("ERROR: Hour out of range (0 [inclusive] to 23 [inclusive]).");
+						}
+					} else {
+						OutputToConsole("ERROR: Unable to parse hour as int.");
+					}
+				} else {
+					OutputToConsole("No tiles are currently selected.");
+				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
 		commandFunctions.Add(Commands.viewshadowsto, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				GameManager.colonyM.colony.map.SetTileBrightness(12);
+				GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
 				if (selectedTiles.Count > 0) {
 					foreach (TileManager.Tile tile in selectedTiles) {
 						foreach (KeyValuePair<int, List<TileManager.Tile>> shadowsToKVP in tile.shadowsTo) {
@@ -1261,13 +1305,33 @@ public class DebugManager : BaseManager {
 				} else {
 					OutputToConsole("No tiles are currently selected.");
 				}
+			} else if (parameters.Count == 1) {
+				GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
+				if (selectedTiles.Count > 0) {
+					int hour = -1;
+					if (int.TryParse(parameters[0], out hour)) {
+						if (hour >= 0 && hour <= 23) {
+							foreach (TileManager.Tile tile in selectedTiles) {
+								foreach (TileManager.Tile sTile in tile.shadowsTo[hour]) {
+									sTile.SetColour(new Color(hour / 24f, 1 - (hour / 24f), hour / 24f, 1f), 12);
+								}
+							}
+						} else {
+							OutputToConsole("ERROR: Hour out of range (0 [inclusive] to 23 [inclusive]).");
+						}
+					} else {
+						OutputToConsole("ERROR: Unable to parse hour as int.");
+					}
+				} else {
+					OutputToConsole("No tiles are currently selected.");
+				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
 		});
-		commandFunctions.Add(Commands.viewblockingtiles, delegate (Commands selectedCommand, List<string> parameters) {
+		commandFunctions.Add(Commands.viewblockingfrom, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				GameManager.colonyM.colony.map.SetTileBrightness(12);
+				GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
 				if (selectedTiles.Count > 0) {
 					foreach (TileManager.Tile tile in selectedTiles) {
 						foreach (KeyValuePair<int, List<TileManager.Tile>> blockingShadowsFromKVP in tile.blockingShadowsFrom) {
@@ -1279,6 +1343,26 @@ public class DebugManager : BaseManager {
 				} else {
 					OutputToConsole("No tiles are currently selected.");
 				}
+			} else if (parameters.Count == 1) {
+				GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
+				if (selectedTiles.Count > 0) {
+					int hour = -1;
+					if (int.TryParse(parameters[0], out hour)) {
+						if (hour >= 0 && hour <= 23) {
+							foreach (TileManager.Tile tile in selectedTiles) {
+								foreach (TileManager.Tile blockingShadowsFromTile in tile.blockingShadowsFrom[hour]) {
+									blockingShadowsFromTile.SetColour(Color.red, 12);
+								}
+							}
+						} else {
+							OutputToConsole("ERROR: Hour out of range (0 [inclusive] to 23 [inclusive]).");
+						}
+					} else {
+						OutputToConsole("ERROR: Unable to parse hour as int.");
+					}
+				} else {
+					OutputToConsole("No tiles are currently selected.");
+				}
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}
@@ -1286,25 +1370,12 @@ public class DebugManager : BaseManager {
 		commandFunctions.Add(Commands.viewroofs, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
+					tile.SetVisible(true, false, false);
 					if (tile.roof) {
 						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 						tile.sr.color = Color.red;
 					}
 				}
-			} else {
-				OutputToConsole("ERROR: Invalid number of parameters specified.");
-			}
-		});
-		commandFunctions.Add(Commands.load, delegate (Commands selectedCommand, List<string> parameters) {
-			if (parameters.Count == 0) {
-				OutputToConsole("Currently has no function.");
-			} else {
-				OutputToConsole("ERROR: Invalid number of parameters specified.");
-			}
-		});
-		commandFunctions.Add(Commands.save, delegate (Commands selectedCommand, List<string> parameters) {
-			if (parameters.Count == 0) {
-				OutputToConsole("Currently has no function.");
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}

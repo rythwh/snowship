@@ -20,6 +20,8 @@ public class LifeManager : BaseManager {
 
 		public bool dead = false;
 
+		public bool visible;
+
 		public enum Gender { Male, Female };
 
 		public Life(TileManager.Tile spawnTile, float startingHealth) {
@@ -47,6 +49,7 @@ public class LifeManager : BaseManager {
 				overTileChanged = true;
 				overTile = newOverTile;
 				SetColour(overTile.sr.color);
+				SetVisible(overTile.visible);
 			}
 			MoveToTile(null, false);
 			SetMoveSprite();
@@ -141,6 +144,12 @@ public class LifeManager : BaseManager {
 		public virtual void Remove() {
 			MonoBehaviour.Destroy(obj);
 			GameManager.lifeM.life.Remove(this);
+		}
+
+		public void SetVisible(bool visible) {
+			this.visible = visible;
+
+			obj.SetActive(visible);
 		}
 	}
 }
