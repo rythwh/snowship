@@ -1245,7 +1245,7 @@ public class PersistenceManager : BaseManager {
 				}
 			}
 
-			GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+			ApplyMapBitmasking(originalTiles, modifiedTiles, map);
 
 			loadingState = LoadingState.FinishedLoading;
 			GameManager.tileM.mapState = TileManager.MapState.Generated;
@@ -1565,7 +1565,7 @@ public class PersistenceManager : BaseManager {
 				tile.temperature = modifiedTile != null && modifiedTile.tileTemperature.HasValue ? modifiedTile.tileTemperature.Value : originalTile.tileTemperature.Value;
 				tile.SetPrecipitation(modifiedTile != null && modifiedTile.tilePrecipitation.HasValue ? modifiedTile.tilePrecipitation.Value : originalTile.tilePrecipitation.Value);
 				tile.SetBiome(modifiedTile != null && modifiedTile.tileBiome != null ? modifiedTile.tileBiome : originalTile.tileBiome, false);
-				tile.SetTileType(modifiedTile != null && modifiedTile.tileType != null ? modifiedTile.tileType : originalTile.tileType, false, false, false, false);
+				tile.SetTileType(modifiedTile != null && modifiedTile.tileType != null ? modifiedTile.tileType : originalTile.tileType, false, false, false);
 				tile.roof = modifiedTile != null && modifiedTile.tileRoof.HasValue ? modifiedTile.tileRoof.Value : originalTile.tileRoof.Value;
 				tile.dugPreviously = modifiedTile != null && modifiedTile.tileDug.HasValue ? modifiedTile.tileDug.Value : originalTile.tileDug.Value;
 
@@ -1597,18 +1597,19 @@ public class PersistenceManager : BaseManager {
 		map.SetSurroundingTiles();
 		map.SetMapEdgeTiles();
 		map.SetSortedMapEdgeTiles();
-		map.SetTileRegions(false);
+		map.SetTileRegions(false, true);
 
 		map.DetermineDrainageBasins();
 
 		map.CreateRegionBlocks();
 
-		map.DetermineShadowDirectionsAtHour();
-		map.DetermineShadowTiles(map.tiles, false);
-		map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
-		map.DetermineVisibleRegionBlocks();
+		map.RecalculateLighting(map.tiles, true, true);
 
-		map.Bitmasking(map.tiles);
+		loadingState = LoadingState.LoadedMap;
+	}
+
+	private void ApplyMapBitmasking(List<PersistenceTile> originalTiles, List<PersistenceTile> modifiedTiles, TileManager.Map map) {
+		map.Bitmasking(map.tiles, true, false);
 
 		for (int i = 0; i < map.tiles.Count; i++) {
 			TileManager.Tile tile = map.tiles[i];
@@ -1640,8 +1641,6 @@ public class PersistenceManager : BaseManager {
 				tile.plant.obj.GetComponent<SpriteRenderer>().sprite = plantSprite;
 			}
 		}
-
-		loadingState = LoadingState.LoadedMap;
 	}
 
 	public enum RiverProperty {

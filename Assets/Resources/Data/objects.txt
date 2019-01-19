@@ -33,6 +33,48 @@
 					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 				<Object>
+					<Type>BasaltWall
+					<Layer>2
+					<Bitmasking>true
+					<BlocksLight>true
+					<Integrity>3000
+					<WalkSpeed>1
+					<Walkable>false
+					<Buildable>true
+					<Flammability>0
+					<TimeToBuild>5
+					<ResourcesToBuild>Basalt:5
+					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+					<JobType>Build
+				<Object>
+					<Type>SandstoneWall
+					<Layer>2
+					<Bitmasking>true
+					<BlocksLight>true
+					<Integrity>2000
+					<WalkSpeed>1
+					<Walkable>false
+					<Buildable>true
+					<Flammability>0
+					<TimeToBuild>5
+					<ResourcesToBuild>Sandstone:5
+					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+					<JobType>Build
+				<Object>
+					<Type>CompactedSnowWall
+					<Layer>2
+					<Bitmasking>true
+					<BlocksLight>true
+					<Integrity>500
+					<WalkSpeed>1
+					<Walkable>false
+					<Buildable>true
+					<Flammability>1
+					<TimeToBuild>5
+					<ResourcesToBuild>Snow:20
+					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+					<JobType>Build
+				<Object>
 					<Type>BrickWall
 					<Layer>2
 					<Bitmasking>true

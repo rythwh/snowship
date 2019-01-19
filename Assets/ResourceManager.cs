@@ -1173,7 +1173,7 @@ public class ResourceManager : BaseManager {
 	}
 
 	public enum ObjectEnum {
-		WoodenWall, GraniteWall, BrickWall,
+		WoodenWall, GraniteWall, BasaltWall, SandstoneWall, CompactedSnowWall, BrickWall,
 		WoodenFence,
 		WoodenDoor,
 		WoodenFloor, BrickFloor,
@@ -1894,12 +1894,15 @@ public class ResourceManager : BaseManager {
 
 		public readonly ObjectPrefab prefab;
 		public readonly GameObject obj;
+		public readonly SpriteRenderer sr;
 
 		public readonly int rotationIndex;
 
 		public bool active;
 
 		public float integrity;
+
+		public bool visible;
 
 		public ObjectInstance(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) {
 			this.prefab = prefab;
@@ -1922,16 +1925,16 @@ public class ResourceManager : BaseManager {
 			this.rotationIndex = rotationIndex;
 
 			obj = MonoBehaviour.Instantiate(GameManager.resourceM.tilePrefab, zeroPointTile.obj.transform, false);
+			sr = obj.GetComponent<SpriteRenderer>();
 			obj.transform.position += (Vector3)prefab.anchorPositionOffset[rotationIndex];
 			obj.name = "Tile Object Instance: " + prefab.name;
-			obj.GetComponent<SpriteRenderer>().sortingOrder = 1 + prefab.layer; // Tile Object Sprite
-			obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
+			sr.sortingOrder = 1 + prefab.layer; // Tile Object Sprite
+			sr.sprite = prefab.baseSprite;
 
 			if (prefab.blocksLight) {
 				foreach (LightSource lightSource in GameManager.resourceM.lightSources) {
 					foreach (TileManager.Tile objectTile in additionalTiles) {
 						if (lightSource.litTiles.Contains(objectTile)) {
-							lightSource.RemoveTileBrightnesses();
 							lightSource.SetTileBrightnesses();
 						}
 					}
@@ -1957,7 +1960,7 @@ public class ResourceManager : BaseManager {
 		}
 
 		public void SetColour(Color newColour) {
-			obj.GetComponent<SpriteRenderer>().color = new Color(newColour.r, newColour.g, newColour.b, 1f);
+			sr.color = new Color(newColour.r, newColour.g, newColour.b, 1f);
 		}
 
 		public void SetActiveSprite(JobManager.Job job) {
@@ -1970,16 +1973,16 @@ public class ResourceManager : BaseManager {
 						} else if (job.createResource.type == ResourceEnum.Firewood) {
 							customActiveSpriteIndex = 1;
 						}
-						obj.GetComponent<SpriteRenderer>().sprite = prefab.activeSprites[4 * customActiveSpriteIndex + rotationIndex];
+						sr.sprite = prefab.activeSprites[4 * customActiveSpriteIndex + rotationIndex];
 					} else {
-						obj.GetComponent<SpriteRenderer>().sprite = prefab.activeSprites[rotationIndex];
+						sr.sprite = prefab.activeSprites[rotationIndex];
 					}
 				}
 			} else {
 				if (prefab.bitmaskSprites.Count > 0) {
-					obj.GetComponent<SpriteRenderer>().sprite = prefab.bitmaskSprites[rotationIndex];
+					sr.sprite = prefab.bitmaskSprites[rotationIndex];
 				} else {
-					obj.GetComponent<SpriteRenderer>().sprite = prefab.baseSprite;
+					sr.sprite = prefab.baseSprite;
 				}
 			}
 		}
@@ -1990,6 +1993,12 @@ public class ResourceManager : BaseManager {
 
 		public virtual void Update() {
 
+		}
+
+		public void SetVisible(bool visible) {
+			this.visible = visible;
+
+			obj.SetActive(visible);
 		}
 	}
 
@@ -2131,6 +2140,7 @@ public class ResourceManager : BaseManager {
 		}
 
 		public void SetTileBrightnesses() {
+			RemoveTileBrightnesses();
 			List<TileManager.Tile> newLitTiles = new List<TileManager.Tile>();
 			foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
 				float distance = Vector2.Distance(tile.obj.transform.position, this.tile.obj.transform.position);
@@ -2142,7 +2152,7 @@ public class ResourceManager : BaseManager {
 						while ((obj.transform.position - lightVector).magnitude <= distance) {
 							TileManager.Tile lightVectorTile = GameManager.colonyM.colony.map.GetTileFromPosition(lightVector);
 							if (lightVectorTile != this.tile) {
-								if (GameManager.colonyM.colony.map.TileBlocksLight(lightVectorTile)) {
+								if (lightVectorTile.blocksLight/*GameManager.colonyM.colony.map.TileBlocksLight(lightVectorTile)*/) {
 									/*
 									if (!lightVectorTile.horizontalSurroundingTiles.Any(t => newLitTiles.Contains(t) && !tileM.map.TileBlocksLight(t))) {
 										lightTile = false;
@@ -2164,7 +2174,7 @@ public class ResourceManager : BaseManager {
 					}
 				}
 			}
-			GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+			GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
 			litTiles.AddRange(newLitTiles);
 		}
 
@@ -2174,7 +2184,7 @@ public class ResourceManager : BaseManager {
 			}
 			litTiles.Clear();
 			tile.RemoveLightSourceBrightness(this);
-			GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime);
+			GameManager.colonyM.colony.map.SetTileBrightness(GameManager.timeM.tileBrightnessTime, true);
 		}
 	}
 
@@ -2451,6 +2461,7 @@ public class ResourceManager : BaseManager {
 		public readonly TileManager.Tile tile;
 
 		public readonly GameObject obj;
+		public readonly SpriteRenderer sr;
 
 		public float integrity;
 
@@ -2459,6 +2470,8 @@ public class ResourceManager : BaseManager {
 		public float growthProgress = 0;
 
 		public readonly Resource harvestResource;
+
+		public bool visible;
 
 		public Plant(PlantPrefab prefab, TileManager.Tile tile, bool? small, bool randomHarvestResource, Resource specificHarvestResource) {
 			this.prefab = prefab;
@@ -2486,7 +2499,7 @@ public class ResourceManager : BaseManager {
 			}
 
 			obj = MonoBehaviour.Instantiate(GameManager.resourceM.tilePrefab, tile.obj.transform.position, Quaternion.identity);
-			SpriteRenderer sr = obj.GetComponent<SpriteRenderer>();
+			sr = obj.GetComponent<SpriteRenderer>();
 			if (harvestResource != null) {
 				name = harvestResource.name + " " + prefab.name;
 				sr.sprite = prefab.harvestResourceSprites[harvestResource][this.small][UnityEngine.Random.Range(0, prefab.harvestResourceSprites[harvestResource][this.small].Count)];
@@ -2503,9 +2516,9 @@ public class ResourceManager : BaseManager {
 		public void Grow() {
 			small = false;
 			if (harvestResource != null) {
-				obj.GetComponent<SpriteRenderer>().sprite = prefab.harvestResourceSprites[harvestResource][small][UnityEngine.Random.Range(0, prefab.harvestResourceSprites[harvestResource][small].Count)];
+				sr.sprite = prefab.harvestResourceSprites[harvestResource][small][UnityEngine.Random.Range(0, prefab.harvestResourceSprites[harvestResource][small].Count)];
 			} else {
-				obj.GetComponent<SpriteRenderer>().sprite = prefab.fullSprites[UnityEngine.Random.Range(0, prefab.fullSprites.Count)];
+				sr.sprite = prefab.fullSprites[UnityEngine.Random.Range(0, prefab.fullSprites.Count)];
 			}
 			GameManager.resourceM.smallPlants.Remove(this);
 		}
@@ -2513,6 +2526,12 @@ public class ResourceManager : BaseManager {
 		public void Remove() {
 			MonoBehaviour.Destroy(obj);
 			GameManager.resourceM.smallPlants.Remove(this);
+		}
+
+		public void SetVisible(bool visible) {
+			this.visible = visible;
+
+			obj.SetActive(visible);
 		}
 	}
 

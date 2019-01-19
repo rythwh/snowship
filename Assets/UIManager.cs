@@ -1772,109 +1772,124 @@ public class UIManager : BaseManager {
 
 	public void UpdateTileInformation() {
 		if (mouseOverTile != null) {
+
+			foreach (GameObject tileResourceElement in tileResourceElements) {
+				tileResourceElement.SetActive(false);
+			}
+
+			foreach (GameObject plantObjectElement in plantObjectElements) {
+				plantObjectElement.SetActive(false);
+			}
+
 			foreach (KeyValuePair<int, List<GameObject>> tileObjectElementKVP in tileObjectElements) {
 				foreach (GameObject tileObjectDataElement in tileObjectElementKVP.Value) {
 					tileObjectDataElement.SetActive(false);
 				}
 			}
 
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage-Panel/TileInfoElement-TileImage").GetComponent<Image>().sprite = mouseOverTile.obj.GetComponent<SpriteRenderer>().sprite;
+			if (mouseOverTile.IsVisibleToAColonist()) {
 
-			foreach (GameObject tileResourceElement in tileResourceElements) {
-				tileResourceElement.SetActive(false);
-			}
-			if (mouseOverTile.tileType.resourceRanges.Count > 0) {
-				for (int i = 0; i < mouseOverTile.tileType.resourceRanges.Count; i++) {
-					ResourceManager.ResourceRange resourceRange = mouseOverTile.tileType.resourceRanges[i];
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage-Panel/TileInfoElement-TileImage").GetComponent<Image>().sprite = mouseOverTile.sr.sprite;
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage-Panel/TileInfoElement-TileImage").GetComponent<Image>().color = Color.white;
 
-					if (tileResourceElements.Count <= i) {
-						tileResourceElements.Add(MonoBehaviour.Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ResourceData-Panel"), tileInformation.transform, false));
+				string tileTypeString = mouseOverTile.tileType.name;
+				if (mouseOverTile.tileType.classes[TileManager.TileTypeClassEnum.LiquidWater]) {
+					tileTypeString = "Water";
+				} else if (mouseOverTile.tileType.groupType == TileManager.TileTypeGroupEnum.Water) {
+					tileTypeString = "Ice";
+				}
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Type").GetComponent<Text>().text = tileTypeString;
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.biome.name;
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Temperature").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.temperature) + "°C";
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Precipitation").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.GetPrecipitation() * 100f) + "%";
+
+				if (mouseOverTile.tileType.resourceRanges.Count > 0) {
+					for (int i = 0; i < mouseOverTile.tileType.resourceRanges.Count; i++) {
+						ResourceManager.ResourceRange resourceRange = mouseOverTile.tileType.resourceRanges[i];
+
+						if (tileResourceElements.Count <= i) {
+							tileResourceElements.Add(MonoBehaviour.Instantiate(Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ResourceData-Panel"), tileInformation.transform, false));
+						}
+
+						GameObject tileResourceElement = tileResourceElements[i];
+						tileResourceElement.SetActive(true);
+						tileResourceElement.transform.Find("TileInfo-ResourceData-Value").GetComponent<Text>().text = resourceRange.resource.name;
+						tileResourceElement.transform.Find("TileInfo-ResourceData-Image").GetComponent<Image>().sprite = resourceRange.resource.image;
+						tileResourceElement.GetComponent<Image>().color = GetColour(Colours.LightGrey200);
 					}
-
-					GameObject tileResourceElement = tileResourceElements[i];
-					tileResourceElement.SetActive(true);
-					tileResourceElement.transform.Find("TileInfo-ResourceData-Value").GetComponent<Text>().text = resourceRange.resource.name;
-					tileResourceElement.transform.Find("TileInfo-ResourceData-Image").GetComponent<Image>().sprite = resourceRange.resource.image;
-					tileResourceElement.GetComponent<Image>().color = GetColour(Colours.LightGrey200);
 				}
-			}
 
-			if (mouseOverTile.plant != null) {
-				foreach (GameObject plantObjectElement in plantObjectElements) {
-					plantObjectElement.SetActive(true);
+				if (mouseOverTile.plant != null) {
+					foreach (GameObject plantObjectElement in plantObjectElements) {
+						plantObjectElement.SetActive(true);
+					}
+					plantObjectElements[0].GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
+					plantObjectElements[1].transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "Plant";
+					plantObjectElements[1].transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.name;
+					plantObjectElements[1].transform.Find("TileInfo-ObjectData-Image-Panel/TileInfo-ObjectData-Image").GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
+
+					if (mouseOverTile.plant.prefab.integrity > 0) {
+						plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
+						plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = mouseOverTile.plant.prefab.integrity;
+						plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().value = mouseOverTile.plant.integrity;
+						plantObjectElements[1].transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(GetColour(Colours.LightRed), GetColour(Colours.LightGreen), mouseOverTile.plant.integrity / mouseOverTile.plant.prefab.integrity);
+					} else {
+						plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
+						plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = 1;
+						plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().value = 1;
+						plantObjectElements[1].transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = GetColour(Colours.LightGrey200);
+					}
 				}
-				plantObjectElements[0].GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
-				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = "Plant";
-				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = mouseOverTile.plant.name;
-				plantObjectElements[1].transform.Find("TileInfo-ObjectData-Image-Panel/TileInfo-ObjectData-Image").GetComponent<Image>().sprite = mouseOverTile.plant.obj.GetComponent<SpriteRenderer>().sprite;
 
-				if (mouseOverTile.plant.prefab.integrity > 0) {
-					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
-					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = mouseOverTile.plant.prefab.integrity;
-					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().value = mouseOverTile.plant.integrity;
-					plantObjectElements[1].transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(GetColour(Colours.LightRed), GetColour(Colours.LightGreen), mouseOverTile.plant.integrity / mouseOverTile.plant.prefab.integrity);
-				} else {
-					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
-					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = 1;
-					plantObjectElements[1].transform.Find("Integrity-Slider").GetComponent<Slider>().value = 1;
-					plantObjectElements[1].transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = GetColour(Colours.LightGrey200);
-				}
-			} else {
-				foreach (GameObject plantObjectElement in plantObjectElements) {
-					plantObjectElement.SetActive(false);
-				}
-			}
-			if (mouseOverTile.GetAllObjectInstances().Count > 0) {
-				foreach (ResourceManager.ObjectInstance tileObject in mouseOverTile.GetAllObjectInstances().OrderBy(o => o.prefab.layer).ToList()) {
-					if (!tileObjectElements.ContainsKey(tileObject.prefab.layer)) {
-						GameObject spriteObject = MonoBehaviour.Instantiate(GameManager.resourceM.tileImage, tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage-Panel/TileInfoElement-TileImage"), false);
-						spriteObject.name = layerToLayerNameMap[tileObject.prefab.layer];
+				if (mouseOverTile.GetAllObjectInstances().Count > 0) {
+					foreach (ResourceManager.ObjectInstance tileObject in mouseOverTile.GetAllObjectInstances().OrderBy(o => o.prefab.layer).ToList()) {
+						if (!tileObjectElements.ContainsKey(tileObject.prefab.layer)) {
+							GameObject spriteObject = MonoBehaviour.Instantiate(GameManager.resourceM.tileImage, tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage-Panel/TileInfoElement-TileImage"), false);
+							spriteObject.name = layerToLayerNameMap[tileObject.prefab.layer];
 
-						GameObject dataObject = MonoBehaviour.Instantiate(GameManager.resourceM.objectDataPanel, tileInformation.transform, false);
-						dataObject.name = layerToLayerNameMap[tileObject.prefab.layer];
+							GameObject dataObject = MonoBehaviour.Instantiate(GameManager.resourceM.objectDataPanel, tileInformation.transform, false);
+							dataObject.name = layerToLayerNameMap[tileObject.prefab.layer];
 
-						tileObjectElements.Add(tileObject.prefab.layer, new List<GameObject>() {
+							tileObjectElements.Add(tileObject.prefab.layer, new List<GameObject>() {
 							spriteObject,
 							dataObject
 						});
+						}
+
+						GameObject tileLayerSpriteObject = tileObjectElements[tileObject.prefab.layer][0];
+						tileLayerSpriteObject.GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
+						tileLayerSpriteObject.SetActive(true);
+
+						GameObject tileObjectDataObject = tileObjectElements[tileObject.prefab.layer][1];
+						tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = layerToLayerNameMap[tileObject.prefab.layer];
+						tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
+						tileObjectDataObject.transform.Find("TileInfo-ObjectData-Image-Panel/TileInfo-ObjectData-Image").GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
+
+						if (tileObject.prefab.integrity > 0) {
+							tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
+							tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = tileObject.prefab.integrity;
+							tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().value = tileObject.integrity;
+							tileObjectDataObject.transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(GetColour(Colours.LightRed), GetColour(Colours.LightGreen), tileObject.integrity / tileObject.prefab.integrity);
+						} else {
+							tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
+							tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = 1;
+							tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().value = 1;
+							tileObjectDataObject.transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = GetColour(Colours.LightGrey200);
+						}
+
+						tileObjectDataObject.SetActive(true);
 					}
-
-					GameObject tileLayerSpriteObject = tileObjectElements[tileObject.prefab.layer][0];
-					tileLayerSpriteObject.GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
-					tileLayerSpriteObject.SetActive(true);
-
-					GameObject tileObjectDataObject = tileObjectElements[tileObject.prefab.layer][1];
-					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Label").GetComponent<Text>().text = layerToLayerNameMap[tileObject.prefab.layer];
-					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Value").GetComponent<Text>().text = tileObject.prefab.name;
-					tileObjectDataObject.transform.Find("TileInfo-ObjectData-Image-Panel/TileInfo-ObjectData-Image").GetComponent<Image>().sprite = tileObject.obj.GetComponent<SpriteRenderer>().sprite;
-
-					if (tileObject.prefab.integrity > 0) {
-						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
-						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = tileObject.prefab.integrity;
-						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().value = tileObject.integrity;
-						tileObjectDataObject.transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = Color.Lerp(GetColour(Colours.LightRed), GetColour(Colours.LightGreen), tileObject.integrity / tileObject.prefab.integrity);
-					} else {
-						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().minValue = 0;
-						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().maxValue = 1;
-						tileObjectDataObject.transform.Find("Integrity-Slider").GetComponent<Slider>().value = 1;
-						tileObjectDataObject.transform.Find("Integrity-Slider/Fill Area/Fill").GetComponent<Image>().color = GetColour(Colours.LightGrey200);
-					}
-
-					tileObjectDataObject.SetActive(true);
 				}
-			}
 
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Position").GetComponent<Text>().text = "(" + Mathf.FloorToInt(mouseOverTile.obj.transform.position.x) + ", " + Mathf.FloorToInt(mouseOverTile.obj.transform.position.y) + ")";
-			string tileTypeString = mouseOverTile.tileType.name;
-			if (mouseOverTile.tileType.classes[TileManager.TileTypeClassEnum.LiquidWater]) {
-				tileTypeString = "Water";
-			} else if (mouseOverTile.tileType.groupType == TileManager.TileTypeGroupEnum.Water) {
-				tileTypeString = "Ice";
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel").GetComponent<RectTransform>().sizeDelta = new Vector2(140, 100);
+			} else {
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage-Panel/TileInfoElement-TileImage").GetComponent<Image>().sprite = GameManager.resourceM.whiteSquareSprite;
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage-Panel/TileInfoElement-TileImage").GetComponent<Image>().color = GameManager.cameraM.cameraComponent.backgroundColor;
+
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Type").GetComponent<Text>().text = "Undiscovered";
+
+				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel").GetComponent<RectTransform>().sizeDelta = new Vector2(140, 37);
 			}
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Type").GetComponent<Text>().text = tileTypeString;
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Biome").GetComponent<Text>().text = mouseOverTile.biome.name;
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Temperature").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.temperature) + "°C";
-			tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Precipitation").GetComponent<Text>().text = Mathf.RoundToInt(mouseOverTile.GetPrecipitation() * 100f) + "%";
 
 			if (!tileInformation.activeSelf) {
 				tileInformation.SetActive(true);

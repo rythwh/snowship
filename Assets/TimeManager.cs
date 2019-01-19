@@ -60,7 +60,7 @@ public class TimeManager : BaseManager {
 				minute += 1;
 				timer = 0;
 				if (minute % 10 == 0) {
-					GameManager.colonyM.colony.map.SetTileBrightness(tileBrightnessTime);
+					GameManager.colonyM.colony.map.SetTileBrightness(tileBrightnessTime, false);
 				}
 				minuteChanged = true;
 				if (minute >= 60) {
