@@ -28,6 +28,20 @@ public class ResourceManager : BaseManager {
 		objectDataPanel = Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel");
 	}
 
+	public GameObject tileParent;
+	public GameObject colonistParent;
+	public GameObject traderParent;
+	public GameObject selectionParent;
+	public GameObject jobParent;
+
+	public void SetGameObjectReferences() {
+		tileParent = GameObject.Find("TileParent");
+		colonistParent = GameObject.Find("ColonistParent");
+		traderParent = GameObject.Find("TraderParent");
+		selectionParent = GameObject.Find("SelectionParent");
+		jobParent = GameObject.Find("JobParent");
+	}
+
 	public override void Update() {
 		CalculateResourceTotals();
 
@@ -69,9 +83,9 @@ public class ResourceManager : BaseManager {
 	}
 
 	public enum ResourceManufacturingPropertyEnum {
-		ObjectSubGroups,
 		Objects,
 		ManufacturingEnergy,
+		ManufacturingTime,
 		Resources
 	}
 
@@ -101,10 +115,10 @@ public class ResourceManager : BaseManager {
 	public enum ResourceEnum {
 		None,
 		Dirt, Mud, Andesite, Basalt, Diorite, Granite, Kimberlite, Obsidian, Rhyolite, Chalk, Claystone, Coal, Flint, Lignite, Limestone, Sandstone, Anthracite, Marble, Quartz, Slate,
-			Clay, Log, Snow, Sand, Cactus, Leaf, Sap,
+			Clay, Log, Snow, Sand, Cactus, Leaf, Grass, Sap,
 		GoldOre, SilverOre, BronzeOre, IronOre, CopperOre,
 		Gold, Silver, Bronze, Iron, Copper,
-		Wood, Firewood, Charcoal, Brick, Glass, Cotton, Cloth,
+		Wood, Firewood, Charcoal, Mudbrick, Brick, Glass, Cotton, Cloth,
 		WheatSeed, CottonSeed, TreeSeed, AppleSeed, BushSeed, CactusSeed,
 		Wheat,
 		Potato, BakedPotato, Blueberry, Apple, BakedApple,
@@ -161,9 +175,9 @@ public class ResourceManager : BaseManager {
 											int? fuelEnergy = 0;
 
 											// Manufacturing
-											List<ObjectSubGroupEnum> manufacturingObjectSubGroups = new List<ObjectSubGroupEnum>();
-											List<ObjectEnum> manufacturingObjects = new List<ObjectEnum>();
+											Dictionary<ObjectSubGroupEnum, List<ObjectEnum>> manufacturingObjects = new Dictionary<ObjectSubGroupEnum, List<ObjectEnum>>();
 											int? manufacturingEnergy = 0;
+											int? manufacturingTime = 0;
 											// manufacturingResources -> manufacturingResourcesTemp
 
 											// Clothing
@@ -221,18 +235,26 @@ public class ResourceManager : BaseManager {
 													case ResourcePropertyEnum.Manufacturing:
 														foreach (KeyValuePair<string, object> manufacturingProperty in (List<KeyValuePair<string, object>>)resourceSubProperty.Value) {
 															switch ((ResourceManufacturingPropertyEnum)Enum.Parse(typeof(ResourceManufacturingPropertyEnum), manufacturingProperty.Key)) {
-																case ResourceManufacturingPropertyEnum.ObjectSubGroups:
-																	foreach (string objectSubGroupString in ((string)manufacturingProperty.Value).Split(',')) {
-																		manufacturingObjectSubGroups.Add((ObjectSubGroupEnum)Enum.Parse(typeof(ObjectSubGroupEnum), objectSubGroupString));
-																	}
-																	break;
 																case ResourceManufacturingPropertyEnum.Objects:
-																	foreach (string objectString in ((string)manufacturingProperty.Value).Split(',')) {
-																		manufacturingObjects.Add((ObjectEnum)Enum.Parse(typeof(ObjectEnum), objectString));
+																	foreach (string objectSubGroupString in ((string)manufacturingProperty.Value).Split(';')) {
+																		ObjectSubGroupEnum objectSubGroupEnum = (ObjectSubGroupEnum)Enum.Parse(typeof(ObjectSubGroupEnum), objectSubGroupString.Split(':')[0]);
+																		manufacturingObjects.Add(
+																			objectSubGroupEnum,
+																			null
+																		);
+																		manufacturingObjects[objectSubGroupEnum] = new List<ObjectEnum>();
+																		if (objectSubGroupString.Split(':').Count() > 1) {
+																			foreach (string objectString in objectSubGroupString.Split(':')[1].Split(',')) {
+																				manufacturingObjects[objectSubGroupEnum].Add((ObjectEnum)Enum.Parse(typeof(ObjectEnum), objectString));
+																			}
+																		}
 																	}
 																	break;
 																case ResourceManufacturingPropertyEnum.ManufacturingEnergy:
 																	manufacturingEnergy = int.Parse((string)manufacturingProperty.Value);
+																	break;
+																case ResourceManufacturingPropertyEnum.ManufacturingTime:
+																	manufacturingTime = int.Parse((string)manufacturingProperty.Value);
 																	break;
 																case ResourceManufacturingPropertyEnum.Resources:
 																	manufacturingResourcesTemp.Add(type.Value, new List<KeyValuePair<ResourceEnum, float>>());
@@ -297,9 +319,9 @@ public class ResourceManager : BaseManager {
 													volume.Value,
 													price.Value,
 													fuelEnergy.Value,
-													manufacturingObjectSubGroups,
 													manufacturingObjects,
 													manufacturingEnergy.Value,
+													manufacturingTime.Value,
 													foodNutrition.Value
 												);
 												resources.Add(food);
@@ -325,9 +347,9 @@ public class ResourceManager : BaseManager {
 														volume.Value,
 														price.Value,
 														fuelEnergy.Value,
-														manufacturingObjectSubGroups,
 														manufacturingObjects,
 														manufacturingEnergy.Value,
+														manufacturingTime.Value,
 														clothingPrefab,
 														colour
 													);
@@ -343,9 +365,9 @@ public class ResourceManager : BaseManager {
 													volume.Value,
 													price.Value,
 													fuelEnergy.Value,
-													manufacturingObjectSubGroups,
 													manufacturingObjects,
-													manufacturingEnergy.Value
+													manufacturingEnergy.Value,
+													manufacturingTime.Value
 												);
 												resources.Add(resource);
 												this.resources.Add(type.Value, resource);
@@ -480,9 +502,9 @@ public class ResourceManager : BaseManager {
 		public readonly int fuelEnergy;
 
 		// Manufacturing
-		public readonly List<ObjectSubGroupEnum> manufacturingObjectSubGroups;
-		public readonly List<ObjectEnum> manufacturingObjects;
+		public readonly Dictionary<ObjectSubGroupEnum, List<ObjectEnum>> manufacturingObjects;
 		public readonly int manufacturingEnergy;
+		public readonly int manufacturingTime;
 		public readonly List<ResourceAmount> manufacturingResources = new List<ResourceAmount>(); // Filled in CreateResources() after all resources created
 		public int amountCreated = 1; // Can't be readonly
 
@@ -498,7 +520,7 @@ public class ResourceManager : BaseManager {
 		private int availableAmount;
 
 		// UI
-		public UIManager.ResourceElement resourceListElement; // REMOVE THIS (replace with a UIManager Dictionary<ResourceEnum, ResourceElement> and access like that
+		public UIManager.ResourceElement resourceListElement; // TODO REMOVE THIS (replace with a UIManager Dictionary<ResourceEnum, ResourceElement> and access like that
 
 		public Resource(
 			ResourceEnum type,
@@ -508,9 +530,9 @@ public class ResourceManager : BaseManager {
 			int volume,
 			int price,
 			int fuelEnergy,
-			List<ObjectSubGroupEnum> manufacturingObjectSubGroups,
-			List<ObjectEnum> manufacturingObjects,
-			int manufacturingEnergy
+			Dictionary<ObjectSubGroupEnum, List<ObjectEnum>> manufacturingObjects,
+			int manufacturingEnergy,
+			int manufacturingTime
 		) {
 			this.type = type;
 			name = UIManager.SplitByCapitals(type.ToString());
@@ -530,9 +552,9 @@ public class ResourceManager : BaseManager {
 			this.fuelEnergy = fuelEnergy;
 
 			// Manufacturing
-			this.manufacturingObjectSubGroups = manufacturingObjectSubGroups;
 			this.manufacturingObjects = manufacturingObjects;
 			this.manufacturingEnergy = manufacturingEnergy;
+			this.manufacturingTime = manufacturingTime;
 		}
 
 		public int GetDesiredAmount() {
@@ -648,9 +670,9 @@ public class ResourceManager : BaseManager {
 			int volume,
 			int price,
 			int fuelEnergy,
-			List<ObjectSubGroupEnum> manufacturingObjectSubGroups,
-			List<ObjectEnum> manufacturingObjects,
+			Dictionary<ObjectSubGroupEnum, List<ObjectEnum>> manufacturingObjects,
 			int manufacturingEnergy,
+			int manufacturingTime,
 			int nutrition
 		) : base(
 			type,
@@ -660,9 +682,9 @@ public class ResourceManager : BaseManager {
 			volume,
 			price,
 			fuelEnergy,
-			manufacturingObjectSubGroups,
 			manufacturingObjects,
-			manufacturingEnergy
+			manufacturingEnergy,
+			manufacturingTime
 		) {
 			this.nutrition = nutrition;
 		}
@@ -726,9 +748,9 @@ public class ResourceManager : BaseManager {
 			int volume,
 			int price,
 			int fuelEnergy,
-			List<ObjectSubGroupEnum> manufacturingObjectSubGroups,
-			List<ObjectEnum> manufacturingObjects,
+			Dictionary<ObjectSubGroupEnum, List<ObjectEnum>> manufacturingObjects,
 			int manufacturingEnergy,
+			int manufacturingTime,
 			ClothingPrefab prefab,
 			string colour
 		) : base(
@@ -739,9 +761,9 @@ public class ResourceManager : BaseManager {
 			volume,
 			price,
 			fuelEnergy,
-			manufacturingObjectSubGroups,
 			manufacturingObjects,
-			manufacturingEnergy
+			manufacturingEnergy,
+			manufacturingTime
 		) {
 			this.prefab = prefab;
 			this.colour = colour;
@@ -858,7 +880,7 @@ public class ResourceManager : BaseManager {
 
 	public void CreateResource(Resource resource, int amount, ManufacturingObject manufacturingTileObject) {
 		for (int i = 0; i < amount; i++) {
-			JobManager.Job job = new JobManager.Job(manufacturingTileObject.tile, GetObjectPrefabByEnum(ObjectEnum.CreateResource), 0);
+			JobManager.Job job = new JobManager.Job(manufacturingTileObject.tile, GetObjectPrefabByEnum(ObjectEnum.CreateResource), null, 0);
 			job.SetCreateResourceData(resource, manufacturingTileObject);
 			GameManager.jobM.CreateJob(job);
 			manufacturingTileObject.jobBacklog.Add(job);
@@ -873,27 +895,59 @@ public class ResourceManager : BaseManager {
 		public HumanManager.Human human;
 		public Container container;
 
-		public int maxAmount;
+		//public int maxAmount;
 
-		public Inventory(HumanManager.Human human, Container container, int maxAmount) {
+		public int maxWeight;
+		public int maxVolume;
+
+		public Inventory(HumanManager.Human human, Container container, /*int maxAmount*/int maxWeight, int maxVolume) {
 			this.human = human;
 			this.container = container;
-			this.maxAmount = maxAmount;
+			//this.maxAmount = maxAmount;
+			this.maxWeight = maxWeight;
+			this.maxVolume = maxVolume;
 		}
 
-		public int CountResources() {
-			return (resources.Sum(resource => resource.amount) + reservedResources.Sum(reservedResource => reservedResource.resources.Sum(rr => rr.amount)));
+		//public int CountResources() {
+		//	return resources.Sum(resource => resource.amount) + reservedResources.Sum(reservedResource => reservedResource.resources.Sum(rr => rr.amount));
+		//}
+
+		public int TotalWeight() {
+			return resources.Sum(ra => ra.amount * ra.resource.weight) + reservedResources.Sum(rr => rr.resources.Sum(ra => ra.amount * ra.resource.weight));
+		}
+
+		public int TotalVolume() {
+			return resources.Sum(ra => ra.amount * ra.resource.volume) + reservedResources.Sum(rr => rr.resources.Sum(ra => ra.amount * ra.resource.volume));
 		}
 
 		public int ChangeResourceAmount(Resource resource, int amount, bool limitToMaxAmount) {
-			int remainingAmount = 0;
+			//int remainingAmount = 0;
+
+			//int remainingWeight = 0;
+			//int remainingVolume = 0;
+
+			int highestOverflowAmount = 0;
+
 			if (limitToMaxAmount && amount > 0) {
-				remainingAmount = maxAmount - (CountResources() + amount);
-				if (remainingAmount < 0) {
-					remainingAmount = Mathf.Abs(remainingAmount);
-					amount -= remainingAmount;
-				} else {
-					remainingAmount = 0;
+				//remainingAmount = maxAmount - (CountResources() + amount);
+				
+				//remainingWeight = maxWeight - (TotalWeight() + (amount * resource.weight));
+				//remainingVolume = maxVolume - (TotalVolume() + (amount * resource.volume));
+
+				//if (remainingAmount < 0) {
+				//	remainingAmount = Mathf.Abs(remainingAmount);
+				//	amount -= remainingAmount;
+				//} else {
+				//	remainingAmount = 0;
+				//}
+
+				int weightOverflowAmount = ((resource.weight * amount) - TotalWeight()) / resource.weight;
+				int volumeOverflowAmount = ((resource.volume * amount) - TotalVolume()) / resource.volume;
+
+				highestOverflowAmount = Mathf.Max(weightOverflowAmount, volumeOverflowAmount);
+
+				if (highestOverflowAmount > 0) {
+					amount -= highestOverflowAmount;
 				}
 			}
 
@@ -923,7 +977,8 @@ public class ResourceManager : BaseManager {
 			GameManager.uiM.SetSelectedTradingPostInfo();
 			GameManager.jobM.UpdateColonistJobs();
 
-			return remainingAmount;
+			//return remainingAmount;
+			return highestOverflowAmount;
 		}
 
 		public bool ReserveResources(List<ResourceAmount> resourcesToReserve, HumanManager.Human humanReservingResources) {
@@ -1106,14 +1161,6 @@ public class ResourceManager : BaseManager {
 		return returnResources;
 	}
 
-	
-
-	
-
-	
-
-
-
 	public enum ObjectGroupPropertyEnum {
 		Group,
 		Type,
@@ -1166,15 +1213,26 @@ public class ResourceManager : BaseManager {
 		HarvestResource,
 		Plants,
 		TimeToBuild,
-		ResourcesToBuild,
+		CommonResources,
+		Variations,
 		SelectionModifiers,
 		JobType,
 		AddToTileWhenBuilt
 	}
 
+	public enum VariationPropertyEnum {
+		Variation,
+		Name,
+		UniqueResources,
+		WalkSpeed,
+		Integrity,
+		Flammability,
+		TimeToBuild
+	}
+
 	public enum ObjectEnum {
-		WoodenWall, GraniteWall, BasaltWall, SandstoneWall, CompactedSnowWall, BrickWall,
-		WoodenFence,
+		Wall,
+		Fence,
 		WoodenDoor,
 		WoodenFloor, BrickFloor,
 		WoodenDock,
@@ -1184,10 +1242,10 @@ public class ResourceManager : BaseManager {
 		WoodenTable,
 		Torch, WoodenLamp,
 		TradingPost,
-		StoneFurnace,
-		CottonGin, SplittingBlock, SplittingLog, Anvil, Loom, SowingTable,
+		Furnace,
+		CottonGin, SplittingBlock, SplittingLog, Anvil, Loom, SowingTable, BrickFormer,
 		ChopPlant, PlantPlant, PlantAppleTree, PlantBlueberryBush,
-		Mine, Dig,
+		Mine, Dig, Fill,
 		RemoveFloor, RemoveObject, RemoveAll,
 		Cancel,
 		IncreasePriority, DecreasePriority,
@@ -1276,9 +1334,10 @@ public class ResourceManager : BaseManager {
 
 																	// Job
 																	int? timeToBuild = null;
-																	List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
+																	List<ResourceAmount> commonResources = new List<ResourceAmount>();
+																	List<Variation> variations = new List<Variation>();
 																	List<JobManager.SelectionModifiersEnum> selectionModifiers = new List<JobManager.SelectionModifiersEnum>();
-																	JobManager.JobTypesEnum? jobType = null;
+																	JobManager.JobEnum? jobType = null;
 																	bool? addToTileWhenBuilt = true;
 
 																	foreach (KeyValuePair<string, object> objectSubProperty in (List<KeyValuePair<string, object>>)objectProperty.Value) {
@@ -1365,9 +1424,60 @@ public class ResourceManager : BaseManager {
 																			case ObjectPropertyEnum.TimeToBuild:
 																				timeToBuild = int.Parse((string)objectSubProperty.Value);
 																				break;
-																			case ObjectPropertyEnum.ResourcesToBuild:
+																			case ObjectPropertyEnum.CommonResources:
 																				foreach (string resourceAmountString in ((string)objectSubProperty.Value).Split(',')) {
-																					resourcesToBuild.Add(new ResourceAmount(GetResourceByString(resourceAmountString.Split(':')[0]), int.Parse(resourceAmountString.Split(':')[1])));
+																					commonResources.Add(new ResourceAmount(GetResourceByString(resourceAmountString.Split(':')[0]), int.Parse(resourceAmountString.Split(':')[1])));
+																				}
+																				break;
+																			case ObjectPropertyEnum.Variations:
+																				foreach (KeyValuePair<string, object> variationsProperty in (List<KeyValuePair<string, object>>)objectSubProperty.Value) {
+																					switch ((VariationPropertyEnum)Enum.Parse(typeof(VariationPropertyEnum), variationsProperty.Key)) {
+																						case VariationPropertyEnum.Variation:
+
+																							string variationName = null;
+																							List<ResourceAmount> variationUniqueResources = new List<ResourceAmount>();
+																							float? variationWalkSpeed = null;
+																							int? variationIntegrity = null;
+																							float? variationFlammability = null;
+																							int? variationTimeToBuild = null;
+
+																							foreach (KeyValuePair<string, object> variationProperty in (List<KeyValuePair<string, object>>)variationsProperty.Value) {
+																								switch ((VariationPropertyEnum)Enum.Parse(typeof(VariationPropertyEnum), variationProperty.Key)) {
+																									case VariationPropertyEnum.Name:
+																										variationName = UIManager.RemoveNonAlphanumericChars((string)variationProperty.Value);
+																										break;
+																									case VariationPropertyEnum.UniqueResources:
+																										foreach (string resourceAmountString in ((string)variationProperty.Value).Split(',')) {
+																											variationUniqueResources.Add(new ResourceAmount(GetResourceByString(resourceAmountString.Split(':')[0]), int.Parse(resourceAmountString.Split(':')[1])));
+																										}
+																										break;
+																									case VariationPropertyEnum.WalkSpeed:
+																										variationWalkSpeed = float.Parse((string)variationProperty.Value);
+																										break;
+																									case VariationPropertyEnum.Integrity:
+																										variationIntegrity = int.Parse((string)variationProperty.Value);
+																										break;
+																									case VariationPropertyEnum.Flammability:
+																										variationFlammability = float.Parse((string)variationProperty.Value);
+																										break;
+																									case VariationPropertyEnum.TimeToBuild:
+																										variationTimeToBuild = int.Parse((string)variationProperty.Value);
+																										break;
+																								}
+																							}
+
+																							variations.Add(new Variation(
+																								null, // Set after objectPrefab is created below
+																								variationName,
+																								variationUniqueResources,
+																								variationWalkSpeed ?? walkSpeed.Value,
+																								variationIntegrity ?? integrity.Value,
+																								variationFlammability ?? flammability.Value,
+																								variationTimeToBuild ?? timeToBuild.Value
+																							));
+
+																							break;
+																					}
 																				}
 																				break;
 																			case ObjectPropertyEnum.SelectionModifiers:
@@ -1376,7 +1486,7 @@ public class ResourceManager : BaseManager {
 																				}
 																				break;
 																			case ObjectPropertyEnum.JobType:
-																				jobType = (JobManager.JobTypesEnum)Enum.Parse(typeof(JobManager.JobTypesEnum), (string)objectSubProperty.Value);
+																				jobType = (JobManager.JobEnum)Enum.Parse(typeof(JobManager.JobEnum), (string)objectSubProperty.Value);
 																				break;
 																			case ObjectPropertyEnum.AddToTileWhenBuilt:
 																				addToTileWhenBuilt = bool.Parse((string)objectSubProperty.Value);
@@ -1448,11 +1558,15 @@ public class ResourceManager : BaseManager {
 																		harvestResource,
 																		plants,
 																		timeToBuild.Value,
-																		resourcesToBuild,
+																		commonResources,
+																		variations,
 																		selectionModifiers,
 																		jobType.Value,
 																		addToTileWhenBuilt.Value
 																	);
+																	foreach (Variation variation in objectPrefab.variations) {
+																		variation.prefab = objectPrefab;
+																	}
 																	prefabs.Add(objectPrefab);
 																	objectPrefabs.Add(type.Value, objectPrefab);
 
@@ -1554,6 +1668,43 @@ public class ResourceManager : BaseManager {
 		return objectPrefabSubGroups[objectSubGroupEnum];
 	}
 
+	public class Variation {
+		public ObjectPrefab prefab; // Can't be readonly because set after instantiation
+
+		public readonly string name;
+		public readonly List<ResourceAmount> uniqueResources;
+		public readonly float walkSpeed;
+		public readonly int integrity;
+		public readonly float flammability;
+		public readonly int timeToBuild;
+
+		public readonly string instanceName;
+
+		public Variation(
+			ObjectPrefab prefab,
+			string name,
+			List<ResourceAmount> uniqueResources,
+			float walkSpeed,
+			int integrity,
+			float flammability,
+			int timeToBuild
+		) {
+			this.prefab = prefab;
+			this.name = name;
+			this.uniqueResources = uniqueResources;
+			this.walkSpeed = walkSpeed;
+			this.integrity = integrity;
+			this.flammability = flammability;
+			this.timeToBuild = timeToBuild;
+		}
+
+		public static bool Equals(Variation v1, Variation v2) {
+			return ((v1 == null) && (v2 == null)) || (v1 == null || v2 == null) || (v1.name == v2.name);
+		}
+
+		public static readonly Variation nullVariation = new Variation(null, null, null, 0, 0, 0, 0);
+	}
+
 	public Dictionary<ObjectEnum, ObjectPrefab> objectPrefabs = new Dictionary<ObjectEnum, ObjectPrefab>();
 
 	public class ObjectPrefab {
@@ -1586,7 +1737,8 @@ public class ResourceManager : BaseManager {
 		public readonly float flammability;
 
 		// Container
-		public readonly int maxInventoryAmount;
+		public readonly int maxInventoryWeight;
+		public readonly int maxInventoryVolume;
 
 		// Light Source
 		public readonly int maxLightDistance;
@@ -1608,15 +1760,24 @@ public class ResourceManager : BaseManager {
 
 		// Job
 		public readonly int timeToBuild;
-		public readonly List<ResourceAmount> resourcesToBuild = new List<ResourceAmount>();
+		public readonly List<ResourceAmount> commonResources = new List<ResourceAmount>();
+		public readonly List<Variation> variations = new List<Variation>();
 		public readonly List<JobManager.SelectionModifiersEnum> selectionModifiers = new List<JobManager.SelectionModifiersEnum>();
-		public readonly JobManager.JobTypesEnum jobType;
+		public readonly JobManager.JobEnum jobType;
 		public readonly bool addToTileWhenBuilt;
 
 		// Sprites
-		public readonly Sprite baseSprite;
-		public readonly List<Sprite> bitmaskSprites = new List<Sprite>();
-		public readonly List<Sprite> activeSprites = new List<Sprite>();
+
+		public enum SpriteType {
+			Base,
+			Bitmask,
+			Active
+		}
+
+		public readonly Dictionary<Variation, Dictionary<SpriteType, List<Sprite>>> sprites = new Dictionary<Variation, Dictionary<SpriteType, List<Sprite>>>();
+
+		// UI State
+		public Variation lastSelectedVariation; // Used to show the most recently selected variation on the UI
 
 		public ObjectPrefab(
 			ObjectEnum type,
@@ -1643,13 +1804,16 @@ public class ResourceManager : BaseManager {
 			Resource harvestResource,
 			Dictionary<PlantPrefab, Resource> plants,
 			int timeToBuild,
-			List<ResourceAmount> resourcesToBuild,
+			List<ResourceAmount> commonResources,
+			List<Variation> variations,
 			List<JobManager.SelectionModifiersEnum> selectionModifiers,
-			JobManager.JobTypesEnum jobType,
+			JobManager.JobEnum jobType,
 			bool addToTileWhenBuilt
 		) {
 			this.type = type;
 			name = UIManager.SplitByCapitals(type.ToString());
+
+			this.variations = variations;
 
 			this.groupType = groupType;
 			this.subGroupType = subGroupType;
@@ -1672,7 +1836,8 @@ public class ResourceManager : BaseManager {
 			this.flammability = flammability;
 
 			// Container
-			this.maxInventoryAmount = maxInventoryVolume;
+			this.maxInventoryWeight = maxInventoryWeight;
+			this.maxInventoryVolume = maxInventoryVolume;
 
 			// Light
 			this.maxLightDistance = maxLightDistance;
@@ -1694,25 +1859,59 @@ public class ResourceManager : BaseManager {
 
 			// Job
 			this.timeToBuild = timeToBuild;
-			this.resourcesToBuild = resourcesToBuild;
+			this.commonResources = commonResources;
 			this.selectionModifiers = selectionModifiers;
 			this.jobType = jobType;
 			this.addToTileWhenBuilt = addToTileWhenBuilt;
 
 			// Sprites
-			baseSprite = Resources.Load<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-base");
-			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-bitmask").ToList();
-			activeSprites = Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-active").ToList();
+			if (variations.Count == 0) {
+				Dictionary<SpriteType, List<Sprite>> spriteGroups = new Dictionary<SpriteType, List<Sprite>> {
+					{ SpriteType.Base, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-base").ToList() },
+					{ SpriteType.Bitmask, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-bitmask").ToList() },
+					{ SpriteType.Active, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-active").ToList() }
+				};
+				sprites.Add(Variation.nullVariation, spriteGroups);
+			} else {
+				foreach (Variation variation in variations) {
+					Dictionary<SpriteType, List<Sprite>> spriteGroups = new Dictionary<SpriteType, List<Sprite>> {
+						{ SpriteType.Base, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + variation.name + "/" + (variation.name + " " + name).Replace(' ', '-') + "-base").ToList() },
+						{ SpriteType.Bitmask, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + variation.name + "/" + (variation.name + " " + name).Replace(' ', '-') + "-bitmask").ToList() },
+						{ SpriteType.Active, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + variation.name + "/" + (variation.name + " " + name).Replace(' ', '-') + "-active").ToList() }
+					};
 
-			if (baseSprite == null && bitmaskSprites.Count > 0) {
-				baseSprite = bitmaskSprites[0];
+					sprites.Add(variation, spriteGroups);
+				}
 			}
-			if (jobType == JobManager.JobTypesEnum.PlantFarm) {
-				baseSprite = bitmaskSprites[bitmaskSprites.Count - 1];
+
+			bool allSpritesHaveBitmasking = true;
+			int bitmaskSpritesCount = -1;
+
+			foreach (Dictionary<SpriteType, List<Sprite>> spriteGroups in sprites.Values) {
+				if (spriteGroups[SpriteType.Base].Count == 0 && spriteGroups[SpriteType.Bitmask].Count > 0) {
+					spriteGroups[SpriteType.Base].Add(spriteGroups[SpriteType.Bitmask][0]);
+				}
+
+				if (jobType == JobManager.JobEnum.PlantFarm) {
+					spriteGroups[SpriteType.Base] = new List<Sprite>() { harvestResource.image };
+				}
+
+				if (spriteGroups[SpriteType.Bitmask].Count == 0) {
+					allSpritesHaveBitmasking = false;
+				}
+
+				if (bitmaskSpritesCount == -1 || bitmaskSpritesCount == spriteGroups[SpriteType.Bitmask].Count) {
+					bitmaskSpritesCount = spriteGroups[SpriteType.Bitmask].Count;
+				} else {
+					Debug.LogError("Differing number of bitmask sprites between different variations on object: " + name);
+					foreach (Variation variation in variations) {
+						Debug.Log(variation.name + " " + GetBitmaskSpritesForVariation(variation).Count);
+					}
+				}
 			}
 
 			// Set Rotation
-			canRotate = (!bitmasking && bitmaskSprites.Count > 0);
+			canRotate = !bitmasking && allSpritesHaveBitmasking;
 
 			// Multi Tile Positions
 			float largestX = 0;
@@ -1722,7 +1921,7 @@ public class ResourceManager : BaseManager {
 				multiTilePositions.Add(new Vector2(0, 0));
 			}
 
-			for (int i = 0; i < (bitmaskSprites.Count > 0 ? bitmaskSprites.Count : 1); i++) {
+			for (int i = 0; i < (allSpritesHaveBitmasking ? bitmaskSpritesCount : 1); i++) {
 				if (i == 0 || i > 0 && canRotate) {
 					this.multiTilePositions.Add(i, new List<Vector2>());
 					if (i == 0) {
@@ -1738,6 +1937,72 @@ public class ResourceManager : BaseManager {
 					dimensions.Add(i, new Vector2(largestX + 1, largestY + 1));
 					anchorPositionOffset.Add(i, new Vector2(largestX / 2, largestY / 2));
 				}
+			}
+
+			lastSelectedVariation = variations.Count > 0 ? variations[0] : null;
+		}
+
+		public void SetVariation(Variation variation) {
+			lastSelectedVariation = variation;
+		}
+
+		public Variation GetVariationFromString(string variationName) {
+			return variations.Count > 0
+				? variations.Find(v => v.name.Replace(" ", string.Empty).ToLower() == variationName.Replace(" ", string.Empty).ToLower())
+				: null;
+		}
+
+		public string GetInstanceNameFromVariation(Variation variation) {
+			return variation == null
+				? name
+				: variation.name + (string.IsNullOrEmpty(variation.name) ? string.Empty : " ") + name;
+		}
+
+		public Sprite GetBaseSpriteForVariation(Variation variation) {
+			if (variation == null) {
+				if (variations.Count > 0) {
+					if (sprites[variations[0]][SpriteType.Base].Count <= 0) {
+						return null;
+					} else {
+						return sprites[variations[0]][SpriteType.Base][0];
+					}
+				} else {
+					if (sprites.ContainsKey(Variation.nullVariation)) {
+						return sprites[Variation.nullVariation][SpriteType.Base][0];
+					} else {
+						return null;
+					}
+				}
+			} else {
+				if (sprites[variation][SpriteType.Base].Count <= 0) {
+					return null;
+				} else {
+					return sprites[variation][SpriteType.Base][0];
+				}
+			}
+		}
+
+		public List<Sprite> GetBitmaskSpritesForVariation(Variation variation) {
+			if (variation == null) {
+				if (variations.Count > 0) {
+					return sprites[variations[0]][SpriteType.Bitmask];
+				} else {
+					return sprites[Variation.nullVariation][SpriteType.Bitmask];
+				}
+			} else {
+				return sprites[variation][SpriteType.Bitmask];
+			}
+		}
+
+		public List<Sprite> GetActiveSpritesForVariation(Variation variation) {
+			if (variation == null) {
+				if (variations.Count > 0) {
+					return sprites[variations[0]][SpriteType.Active];
+				} else {
+					return sprites[Variation.nullVariation][SpriteType.Active];
+				}
+			} else {
+				return sprites[variation][SpriteType.Active];
 			}
 		}
 	}
@@ -1845,34 +2110,34 @@ public class ResourceManager : BaseManager {
 		}
 	}
 
-	public ObjectInstance CreateTileObjectInstance(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex, bool addToList) {
+	public ObjectInstance CreateTileObjectInstance(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex, bool addToList) {
 		ObjectInstance instance = null;
 		switch (prefab.instanceType) {
 			case ObjectInstanceType.Normal:
-				instance = new ObjectInstance(prefab, tile, rotationIndex);
+				instance = new ObjectInstance(prefab, variation, tile, rotationIndex);
 				break;
 			case ObjectInstanceType.Container:
-				instance = new Container(prefab, tile, rotationIndex);
+				instance = new Container(prefab, variation, tile, rotationIndex);
 				containers.Add((Container)instance);
 				break;
 			case ObjectInstanceType.TradingPost:
-				instance = new TradingPost(prefab, tile, rotationIndex);
+				instance = new TradingPost(prefab, variation, tile, rotationIndex);
 				tradingPosts.Add((TradingPost)instance);
 				break;
 			case ObjectInstanceType.SleepSpot:
-				instance = new SleepSpot(prefab, tile, rotationIndex);
+				instance = new SleepSpot(prefab, variation, tile, rotationIndex);
 				sleepSpots.Add((SleepSpot)instance);
 				break;
 			case ObjectInstanceType.LightSource:
-				instance = new LightSource(prefab, tile, rotationIndex);
+				instance = new LightSource(prefab, variation, tile, rotationIndex);
 				lightSources.Add((LightSource)instance);
 				break;
 			case ObjectInstanceType.ManufacturingObject:
-				instance = new ManufacturingObject(prefab, tile, rotationIndex);
+				instance = new ManufacturingObject(prefab, variation, tile, rotationIndex);
 				manufacturingObjectInstances.Add((ManufacturingObject)instance);
 				break;
 			case ObjectInstanceType.Farm:
-				instance = new Farm(prefab, tile);
+				instance = new Farm(prefab, variation, tile);
 				farms.Add((Farm)instance);
 				tile.farm = (Farm)instance;
 				break;
@@ -1893,6 +2158,7 @@ public class ResourceManager : BaseManager {
 		public readonly TileManager.Tile zeroPointTile; // The tile representing the (0,0) position of the object even if the object doesn't cover it
 
 		public readonly ObjectPrefab prefab;
+		public readonly Variation variation;
 		public readonly GameObject obj;
 		public readonly SpriteRenderer sr;
 
@@ -1904,8 +2170,9 @@ public class ResourceManager : BaseManager {
 
 		public bool visible;
 
-		public ObjectInstance(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) {
+		public ObjectInstance(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex) {
 			this.prefab = prefab;
+			this.variation = variation;
 
 			this.tile = tile;
 			zeroPointTile = tile;
@@ -1929,7 +2196,7 @@ public class ResourceManager : BaseManager {
 			obj.transform.position += (Vector3)prefab.anchorPositionOffset[rotationIndex];
 			obj.name = "Tile Object Instance: " + prefab.name;
 			sr.sortingOrder = 1 + prefab.layer; // Tile Object Sprite
-			sr.sprite = prefab.baseSprite;
+			sr.sprite = prefab.GetBaseSpriteForVariation(variation);
 
 			if (prefab.blocksLight) {
 				foreach (LightSource lightSource in GameManager.resourceM.lightSources) {
@@ -1965,7 +2232,7 @@ public class ResourceManager : BaseManager {
 
 		public void SetActiveSprite(JobManager.Job job) {
 			if (active) {
-				if (prefab.activeSprites.Count > 0) {
+				if (prefab.GetActiveSpritesForVariation(variation).Count > 0) {
 					if (prefab.type == ObjectEnum.SplittingBlock) {
 						int customActiveSpriteIndex = 0;
 						if (job.createResource.type == ResourceEnum.Wood) {
@@ -1973,16 +2240,16 @@ public class ResourceManager : BaseManager {
 						} else if (job.createResource.type == ResourceEnum.Firewood) {
 							customActiveSpriteIndex = 1;
 						}
-						sr.sprite = prefab.activeSprites[4 * customActiveSpriteIndex + rotationIndex];
+						sr.sprite = prefab.GetActiveSpritesForVariation(variation)[4 * customActiveSpriteIndex + rotationIndex];
 					} else {
-						sr.sprite = prefab.activeSprites[rotationIndex];
+						sr.sprite = prefab.GetActiveSpritesForVariation(variation)[rotationIndex];
 					}
 				}
 			} else {
-				if (prefab.bitmaskSprites.Count > 0) {
-					sr.sprite = prefab.bitmaskSprites[rotationIndex];
+				if (prefab.GetBitmaskSpritesForVariation(variation).Count > 0) {
+					sr.sprite = prefab.GetBitmaskSpritesForVariation(variation)[rotationIndex];
 				} else {
-					sr.sprite = prefab.baseSprite;
+					sr.sprite = prefab.GetBaseSpriteForVariation(variation);
 				}
 			}
 		}
@@ -2023,8 +2290,8 @@ public class ResourceManager : BaseManager {
 
 		public Inventory inventory;
 
-		public Container(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
-			inventory = new Inventory(null, this, prefab.maxInventoryAmount);
+		public Container(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex) : base(prefab, variation, tile, rotationIndex) {
+			inventory = new Inventory(null, this, prefab.maxInventoryWeight, prefab.maxInventoryVolume);
 		}
 	}
 
@@ -2053,7 +2320,7 @@ public class ResourceManager : BaseManager {
 
 		public List<ResourceAmount> targetResourceAmounts = new List<ResourceAmount>();
 
-		public TradingPost(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
+		public TradingPost(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex) : base(prefab, variation, tile, rotationIndex) {
 
 		}
 	}
@@ -2064,7 +2331,7 @@ public class ResourceManager : BaseManager {
 
 		public ColonistManager.Colonist occupyingColonist;
 
-		public SleepSpot(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
+		public SleepSpot(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex) : base(prefab, variation, tile, rotationIndex) {
 
 		}
 
@@ -2092,7 +2359,7 @@ public class ResourceManager : BaseManager {
 
 		public List<JobManager.Job> jobBacklog = new List<JobManager.Job>();
 
-		public ManufacturingObject(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
+		public ManufacturingObject(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex) : base(prefab, variation, tile, rotationIndex) {
 
 		}
 
@@ -2135,7 +2402,7 @@ public class ResourceManager : BaseManager {
 
 		public List<TileManager.Tile> litTiles = new List<TileManager.Tile>();
 
-		public LightSource(ObjectPrefab prefab, TileManager.Tile tile, int rotationIndex) : base(prefab, tile, rotationIndex) {
+		public LightSource(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex) : base(prefab, variation, tile, rotationIndex) {
 			SetTileBrightnesses();
 		}
 
@@ -2578,10 +2845,10 @@ public class ResourceManager : BaseManager {
 		private readonly float precipitationGrowthMultiplier;
 		private readonly float temperatureGrowthMultipler;
 
-		public Farm(ObjectPrefab prefab, TileManager.Tile tile) : base(prefab, tile, 0) {
+		public Farm(ObjectPrefab prefab, Variation variation, TileManager.Tile tile) : base(prefab, variation, tile, 0) {
 			name = prefab.harvestResource.name + " Farm";
 
-			growProgressSprites = prefab.bitmaskSprites;
+			growProgressSprites = prefab.GetBitmaskSpritesForVariation(variation);
 			maxSpriteIndex = growProgressSprites.Count - 1;
 
 			precipitationGrowthMultiplier = CalculatePrecipitationGrowthMultiplierForTile(tile);
@@ -2593,14 +2860,14 @@ public class ResourceManager : BaseManager {
 		public override void Update() {
 			base.Update();
 
-			if (growTimer >= prefab.growthTimeDays) {
-				if (!GameManager.jobM.JobOfTypeExistsAtTile(JobManager.JobTypesEnum.HarvestFarm, tile)) {
-					GameManager.jobM.CreateJob(new JobManager.Job(tile, GameManager.resourceM.GetObjectPrefabByEnum(ObjectEnum.HarvestFarm), 0));
+			if (growTimer >= prefab.growthTimeDays * TimeManager.dayLengthSeconds) {
+				if (!GameManager.jobM.JobOfTypeExistsAtTile(JobManager.JobEnum.HarvestFarm, tile)) {
+					GameManager.jobM.CreateJob(new JobManager.Job(tile, GameManager.resourceM.GetObjectPrefabByEnum(ObjectEnum.HarvestFarm), null, 0));
 				}
 			} else {
 				growTimer += CalculateGrowthRate();
 
-				int newGrowProgressSpriteIndex = Mathf.FloorToInt((growTimer / (prefab.growthTimeDays + 10)) * growProgressSprites.Count);
+				int newGrowProgressSpriteIndex = Mathf.FloorToInt((growTimer / ((prefab.growthTimeDays * TimeManager.dayLengthSeconds) + 10)) * growProgressSprites.Count);
 				if (newGrowProgressSpriteIndex != growProgressSpriteIndex) {
 					growProgressSpriteIndex = newGrowProgressSpriteIndex;
 					obj.GetComponent<SpriteRenderer>().sprite = growProgressSprites[Mathf.Clamp(growProgressSpriteIndex, 0, maxSpriteIndex)];
@@ -2742,25 +3009,25 @@ public class ResourceManager : BaseManager {
 		}
 		SpriteRenderer oISR = objectInstance.obj.GetComponent<SpriteRenderer>();
 		if (sum >= 16) {
-			oISR.sprite = objectInstance.prefab.bitmaskSprites[TileManager.Map.bitmaskMap[sum]];
+			oISR.sprite = objectInstance.prefab.GetBitmaskSpritesForVariation(objectInstance.variation)[TileManager.Map.bitmaskMap[sum]];
 		} else {
-			oISR.sprite = objectInstance.prefab.bitmaskSprites[sum];
+			oISR.sprite = objectInstance.prefab.GetBitmaskSpritesForVariation(objectInstance.variation)[sum];
 		}
 	}
 
 	public void Bitmask(List<TileManager.Tile> tilesToBitmask) {
 		foreach (TileManager.Tile tile in tilesToBitmask) {
 			if (tile != null && tile.GetAllObjectInstances().Count > 0) {
-				foreach (ObjectInstance tileObjectInstance in tile.GetAllObjectInstances()) {
-					if (tileObjectInstance.prefab.bitmasking) {
-						BitmaskTileObjects(tileObjectInstance, true, false, false, null);
+				foreach (ObjectInstance objectInstance in tile.GetAllObjectInstances()) {
+					if (objectInstance.prefab.bitmasking) {
+						BitmaskTileObjects(objectInstance, true, false, false, null);
 					} else {
-						if (tileObjectInstance.prefab.bitmaskSprites.Count > 0) {
-							if (tileObjectInstance.prefab.jobType != JobManager.JobTypesEnum.PlantFarm) {
-								tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.bitmaskSprites[tileObjectInstance.rotationIndex];
+						if (objectInstance.prefab.GetBitmaskSpritesForVariation(objectInstance.variation).Count > 0) {
+							if (objectInstance.prefab.jobType != JobManager.JobEnum.PlantFarm) {
+								objectInstance.obj.GetComponent<SpriteRenderer>().sprite = objectInstance.prefab.GetBitmaskSpritesForVariation(objectInstance.variation)[objectInstance.rotationIndex];
 							}
 						} else {
-							tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.baseSprite;
+							objectInstance.obj.GetComponent<SpriteRenderer>().sprite = objectInstance.prefab.GetBaseSpriteForVariation(objectInstance.variation);
 						}
 					}
 				}

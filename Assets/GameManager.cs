@@ -20,20 +20,26 @@ public class GameManager : MonoBehaviour {
 	public static readonly UniverseManager universeM = new UniverseManager();
 
 	public static readonly List<BaseManager> managers = new List<BaseManager>() {
-		cameraM,
-		caravanM,
-		colonistM,
-		debugM,
-		humanM,
-		jobM,
-		lifeM,
-		persistenceM,
-		planetM,
-		resourceM,
-		tileM,
 		timeM,
+		debugM,
+
+		resourceM,
+
+		lifeM,
+		humanM,
+		colonistM,
+		jobM,
+		caravanM,
+
+
+		tileM,
+		planetM,
+		universeM,
+
+		persistenceM,
+
 		uiM,
-		universeM
+		cameraM,
 	};
 
 	public void Awake() {
@@ -42,6 +48,7 @@ public class GameManager : MonoBehaviour {
 		uiM.SetStartCoroutineReference(this);
 
 		resourceM.SetResourceReferences();
+		resourceM.SetGameObjectReferences();
 		resourceM.CreateResources();
 		resourceM.CreatePlantPrefabs();
 		resourceM.CreateObjectPrefabs();

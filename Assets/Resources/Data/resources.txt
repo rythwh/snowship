@@ -152,6 +152,11 @@
 			<Volume>10
 			<Price>1
 		<Resource>
+			<Type>Grass
+			<Weight>1
+			<Volume>2
+			<Price>1
+		<Resource>
 			<Type>Sap
 			<Weight>1
 			<Volume>1
@@ -194,7 +199,7 @@
 			<Volume>500
 			<Price>300
 			<Manufacturing>
-				<ObjectSubGroups>Furnaces
+				<Objects>Furnaces
 				<ManufacturingEnergy>50
 				<Resources>GoldOre:1
 		<Resource>
@@ -204,7 +209,7 @@
 			<Volume>500
 			<Price>200
 			<Manufacturing>
-				<ObjectSubGroups>Furnaces
+				<Objects>Furnaces
 				<ManufacturingEnergy>50
 				<Resources>SilverOre:1
 		<Resource>
@@ -214,7 +219,7 @@
 			<Volume>500
 			<Price>100
 			<Manufacturing>
-				<ObjectSubGroups>Furnaces
+				<Objects>Furnaces
 				<ManufacturingEnergy>50
 				<Resources>BronzeOre:1
 		<Resource>
@@ -224,7 +229,7 @@
 			<Volume>500
 			<Price>150
 			<Manufacturing>
-				<ObjectSubGroups>Furnaces
+				<Objects>Furnaces
 				<ManufacturingEnergy>50
 				<Resources>IronOre:1
 		<Resource>
@@ -234,7 +239,7 @@
 			<Volume>500
 			<Price>250
 			<Manufacturing>
-				<ObjectSubGroups>Furnaces
+				<Objects>Furnaces
 				<ManufacturingEnergy>50
 				<Resources>CopperOre:1
 <ResourceGroup>
@@ -249,9 +254,7 @@
 			<Fuel>
 				<FuelEnergy>12
 			<Manufacturing>
-				<ObjectSubGroups>Processing
-				<Objects>SplittingBlock,SplittingLog
-				<ManufacturingEnergy>0
+				<Objects>Processing:SplittingBlock,SplittingLog
 				<Resources>Log:0.25
 		<Resource>
 			<Type>Firewood
@@ -262,9 +265,7 @@
 			<Fuel>
 				<FuelEnergy>20
 			<Manufacturing>
-				<ObjectSubGroups>Processing
-				<Objects>SplittingBlock,SplittingLog
-				<ManufacturingEnergy>0
+				<Objects>Processing:SplittingBlock,SplittingLog
 				<Resources>Wood:0.5
 		<Resource>
 			<Type>Charcoal
@@ -275,9 +276,18 @@
 			<Fuel>
 				<FuelEnergy>25
 			<Manufacturing>
-				<ObjectSubGroups>Furnaces
+				<Objects>Furnaces
 				<ManufacturingEnergy>20
 				<Resources>Firewood:0.5
+		<Resource>
+			<Type>Mudbrick
+			<Classes>Manufacturable
+			<Weight>3150
+			<Volume>1500
+			<Price>15
+			<Manufacturing>
+				<Objects>Processing:BrickFormer;Furnaces
+				<Resources>Mud:0.1,Clay:0.1,Grass:0.1
 		<Resource>
 			<Type>Brick
 			<Classes>Manufacturable
@@ -285,7 +295,7 @@
 			<Volume>1500
 			<Price>30
 			<Manufacturing>
-				<ObjectSubGroups>Furnaces
+				<Objects>Furnaces
 				<ManufacturingEnergy>30
 				<Resources>Clay:2
 		<Resource>
@@ -295,7 +305,7 @@
 			<Volume>2500
 			<Price>40
 			<Manufacturing>
-				<ObjectSubGroups>Furnaces
+				<Objects>Furnaces
 				<ManufacturingEnergy>50
 				<Resources>Sand:2
 		<Resource>
@@ -312,9 +322,7 @@
 			<Fuel>
 				<FuelEnergy>2
 			<Manufacturing>
-				<ObjectSubGroups>Processing
-				<Objects>CottonGin
-				<ManufacturingEnergy>0
+				<Objects>Processing:CottonGin
 				<Resources>Cotton:20
 <ResourceGroup>
 	<Type>Seeds
@@ -377,7 +385,7 @@
 			<Food>
 				<Nutrition>25
 			<Manufacturing>
-				<ObjectSubGroups>Furnaces
+				<Objects>Furnaces
 				<ManufacturingEnergy>50
 				<Resources>Potato:1
 		<Resource>
@@ -405,7 +413,7 @@
 			<Food>
 				<Nutrition>15
 			<Manufacturing>
-				<ObjectSubGroups>Furnaces
+				<Objects>Furnaces
 				<ManufacturingEnergy>20
 				<Resources>Apple:1
 <ResourceGroup>
@@ -418,9 +426,7 @@
 			<Volume>10
 			<Price>100
 			<Manufacturing>
-				<ObjectSubGroups>Processing
-				<Objects>Anvil
-				<ManufacturingEnergy>0
+				<Objects>Processing:Anvil
 				<Resources>Gold:0.1
 		<Resource>
 			<Type>SilverCoin
@@ -429,9 +435,7 @@
 			<Volume>10
 			<Price>75
 			<Manufacturing>
-				<ObjectSubGroups>Processing
-				<Objects>Anvil
-				<ManufacturingEnergy>0
+				<Objects>Processing:Anvil
 				<Resources>Silver:0.1
 		<Resource>
 			<Type>BronzeCoin
@@ -440,9 +444,7 @@
 			<Volume>10
 			<Price>50
 			<Manufacturing>
-				<ObjectSubGroups>Processing
-				<Objects>Anvil
-				<ManufacturingEnergy>0
+				<Objects>Processing:Anvil
 				<Resources>Bronze:0.1
 <ResourceGroup>
 	<Type>Clothing
@@ -454,9 +456,7 @@
 			<Volume>300
 			<Price>100
 			<Manufacturing>
-				<ObjectSubGroups>Processing
-				<Objects>Loom
-				<ManufacturingEnergy>0
+				<Objects>Processing:Loom
 				<Resources>Cloth:5
 			<Clothing>
 				<Appearance>Top
@@ -471,9 +471,7 @@
 			<Volume>150
 			<Price>75
 			<Manufacturing>
-				<ObjectSubGroups>Processing
-				<Objects>Loom
-				<ManufacturingEnergy>0
+				<Objects>Processing:Loom
 				<Resources>Cloth:2
 			<Clothing>
 				<Appearance>Top
@@ -488,9 +486,7 @@
 			<Volume>500
 			<Price>50
 			<Manufacturing>
-				<ObjectSubGroups>Processing
-				<Objects>SowingTable
-				<ManufacturingEnergy>0
+				<Objects>Processing:SowingTable
 				<Resources>Cloth:10
 			<Clothing>
 				<Appearance>Backpack

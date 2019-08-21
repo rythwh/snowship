@@ -616,6 +616,10 @@ public class PersistenceManager : BaseManager {
 			SaveTime(timeFile);
 			timeFile.Close();
 
+			StreamWriter uiFile = CreateFileAtDirectory(saveDirectoryPath, "ui.snowship");
+			SaveUI(uiFile);
+			uiFile.Close();
+
 			string lastSaveDateTime = GenerateSaveDateTimeString();
 			string lastSaveTimeChunk = GenerateDateTimeString();
 
@@ -1099,6 +1103,7 @@ public class PersistenceManager : BaseManager {
 		LoadingCaravans, LoadedCaravans,
 		LoadingJobs, LoadedJobs,
 		LoadingColonists, LoadedColonists,
+		LoadingUI, LoadedUI,
 		FinishedLoading
 	}
 
@@ -1246,6 +1251,7 @@ public class PersistenceManager : BaseManager {
 			}
 
 			ApplyMapBitmasking(originalTiles, modifiedTiles, map);
+			map.SetInitialRegionVisibility();
 
 			loadingState = LoadingState.FinishedLoading;
 			GameManager.tileM.mapState = TileManager.MapState.Generated;
@@ -2562,7 +2568,8 @@ public class PersistenceManager : BaseManager {
 				leaving = persistenceCaravan.leaving.Value
 			};
 
-			caravan.inventory.maxAmount = persistenceCaravan.persistenceInventory.maxAmount.Value;
+			caravan.inventory.maxWeight = persistenceCaravan.persistenceInventory.maxWeight.Value;
+			caravan.inventory.maxVolume = persistenceCaravan.persistenceInventory.maxVolume.Value;
 			foreach (ResourceManager.ResourceAmount resourceAmount in persistenceCaravan.persistenceInventory.resources) {
 				caravan.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 			}
@@ -2607,7 +2614,8 @@ public class PersistenceManager : BaseManager {
 				trader.moveSprites = GameManager.humanM.humanMoveSprites[trader.bodyIndices[HumanManager.Human.Appearance.Skin]];
 				trader.bodyIndices[HumanManager.Human.Appearance.Hair] = persistenceTrader.persistenceHuman.hairIndex.Value;
 
-				trader.inventory.maxAmount = persistenceTrader.persistenceHuman.persistenceInventory.maxAmount.Value;
+				trader.inventory.maxWeight = persistenceTrader.persistenceHuman.persistenceInventory.maxWeight.Value;
+				trader.inventory.maxVolume = persistenceTrader.persistenceHuman.persistenceInventory.maxVolume.Value;
 				foreach (ResourceManager.ResourceAmount resourceAmount in persistenceTrader.persistenceHuman.persistenceInventory.resources) {
 					trader.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 				}
@@ -2633,7 +2641,11 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public enum ColonistProperty {
-		Colonist, Life, Human, Profession, OldProfession, PlayerMoved, Job, StoredJob, Skills, Traits, Needs, BaseHappiness, EffectiveHappiness, HappinessModifiers
+		Colonist, Life, Human, PlayerMoved, Job, StoredJob, Professions, Skills, Traits, Needs, BaseHappiness, EffectiveHappiness, HappinessModifiers
+	}
+
+	public enum ProfessionProperty {
+		Profession, Name, Priority
 	}
 
 	public enum SkillProperty {
@@ -2660,9 +2672,6 @@ public class PersistenceManager : BaseManager {
 
 			WriteHumanLines(file, colonist, 1);
 
-			file.WriteLine(CreateKeyValueString(ColonistProperty.Profession, colonist.profession.name, 1));
-			file.WriteLine(CreateKeyValueString(ColonistProperty.OldProfession, colonist.oldProfession.name, 1));
-
 			file.WriteLine(CreateKeyValueString(ColonistProperty.PlayerMoved, colonist.playerMoved, 1));
 
 			if (colonist.job != null) {
@@ -2670,6 +2679,14 @@ public class PersistenceManager : BaseManager {
 			}
 			if (colonist.storedJob != null) {
 				WriteJobLines(file, colonist.storedJob, JobProperty.StoredJob, 1);
+			}
+
+			file.WriteLine(CreateKeyValueString(ColonistProperty.Professions, string.Empty, 1));
+			foreach (ColonistManager.ProfessionInstance profession in colonist.professions) {
+				file.WriteLine(CreateKeyValueString(ProfessionProperty.Profession, string.Empty, 2));
+
+				file.WriteLine(CreateKeyValueString(ProfessionProperty.Name, profession.prefab.type, 3));
+				file.WriteLine(CreateKeyValueString(ProfessionProperty.Priority, profession.GetPriority(), 3));
 			}
 
 			file.WriteLine(CreateKeyValueString(ColonistProperty.Skills, string.Empty, 1));
@@ -2719,11 +2736,10 @@ public class PersistenceManager : BaseManager {
 		public PersistenceLife persistenceLife;
 		public PersistenceHuman persistenceHuman;
 
-		public ColonistManager.Profession profession;
-		public ColonistManager.Profession oldProfession;
 		public bool? playerMoved;
 		public PersistenceJob persistenceJob;
 		public PersistenceJob persistenceStoredJob;
+		public List<PersistenceProfession> persistenceProfessions;
 		public List<PersistenceSkill> persistenceSkills;
 		public List<PersistenceTrait> persistenceTraits;
 		public List<PersistenceNeed> persistenceNeeds;
@@ -2734,11 +2750,10 @@ public class PersistenceManager : BaseManager {
 		public PersistenceColonist(
 			PersistenceLife persistenceLife,
 			PersistenceHuman persistenceHuman,
-			ColonistManager.Profession profession,
-			ColonistManager.Profession oldProfession,
 			bool? playerMoved,
 			PersistenceJob persistenceJob,
 			PersistenceJob persistenceStoredJob,
+			List<PersistenceProfession> persistenceProfessions,
 			List<PersistenceSkill> persistenceSkills,
 			List<PersistenceTrait> persistenceTraits,
 			List<PersistenceNeed> persistenceNeeds,
@@ -2748,11 +2763,10 @@ public class PersistenceManager : BaseManager {
 		) {
 			this.persistenceLife = persistenceLife;
 			this.persistenceHuman = persistenceHuman;
-			this.profession = profession;
-			this.oldProfession = oldProfession;
 			this.playerMoved = playerMoved;
 			this.persistenceJob = persistenceJob;
 			this.persistenceStoredJob = persistenceStoredJob;
+			this.persistenceProfessions = persistenceProfessions;
 			this.persistenceSkills = persistenceSkills;
 			this.persistenceTraits = persistenceTraits;
 			this.persistenceNeeds = persistenceNeeds;
@@ -2762,14 +2776,27 @@ public class PersistenceManager : BaseManager {
 		}
 	}
 
+	public class PersistenceProfession {
+		public ColonistManager.ProfessionEnum? type;
+		public int? priority;
+
+		public PersistenceProfession(
+			ColonistManager.ProfessionEnum? type,
+			int? priority
+		) {
+			this.type = type;
+			this.priority = priority;
+		}
+	}
+
 	public class PersistenceSkill {
-		public ColonistManager.SkillTypeEnum? type;
+		public ColonistManager.SkillEnum? type;
 		public int? level;
 		public float? nextLevelExperience;
 		public float? currentExperience;
 
 		public PersistenceSkill(
-			ColonistManager.SkillTypeEnum? type,
+			ColonistManager.SkillEnum? type,
 			int? level,
 			float? nextLevelExperience,
 			float? currentExperience
@@ -2782,19 +2809,19 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public class PersistenceTrait {
-		public ColonistManager.TraitsEnum? type;
+		public ColonistManager.TraitEnum? type;
 
-		public PersistenceTrait(ColonistManager.TraitsEnum? type) {
+		public PersistenceTrait(ColonistManager.TraitEnum? type) {
 			this.type = type;
 		}
 	}
 
 	public class PersistenceNeed {
-		public ColonistManager.NeedsEnum? type;
+		public ColonistManager.NeedEnum? type;
 		public float? value;
 
 		public PersistenceNeed(
-			ColonistManager.NeedsEnum? type,
+			ColonistManager.NeedEnum? type,
 			float? value
 		) {
 			this.type = type;
@@ -2803,11 +2830,11 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public class PersistenceHappinessModifier {
-		public ColonistManager.HappinessModifiersEnum? type;
+		public ColonistManager.HappinessModifierEnum? type;
 		public float? timeRemaining;
 
 		public PersistenceHappinessModifier(
-			ColonistManager.HappinessModifiersEnum? type,
+			ColonistManager.HappinessModifierEnum? type,
 			float? timeRemaining
 		) {
 			this.type = type;
@@ -2828,11 +2855,10 @@ public class PersistenceManager : BaseManager {
 					PersistenceLife persistenceLife = null;
 					PersistenceHuman persistenceHuman = null;
 
-					ColonistManager.Profession profession = null;
-					ColonistManager.Profession oldProfession = null;
 					bool? playerMoved = null;
 					PersistenceJob persistenceJob = null;
 					PersistenceJob persistenceStoredJob = null;
+					List<PersistenceProfession> persistenceProfessions = new List<PersistenceProfession>();
 					List<PersistenceSkill> persistenceSkills = new List<PersistenceSkill>();
 					List<PersistenceTrait> persistenceTraits = new List<PersistenceTrait>();
 					List<PersistenceNeed> persistenceNeeds = new List<PersistenceNeed>();
@@ -2848,12 +2874,6 @@ public class PersistenceManager : BaseManager {
 							case ColonistProperty.Human:
 								persistenceHuman = LoadPersistenceHuman((List<KeyValuePair<string, object>>)colonistProperty.Value);
 								break;
-							case ColonistProperty.Profession:
-								profession = GameManager.colonistM.FindProfessionByType((ColonistManager.ProfessionTypeEnum)Enum.Parse(typeof(ColonistManager.ProfessionTypeEnum), (string)colonistProperty.Value));
-								break;
-							case ColonistProperty.OldProfession:
-								oldProfession = GameManager.colonistM.FindProfessionByType((ColonistManager.ProfessionTypeEnum)Enum.Parse(typeof(ColonistManager.ProfessionTypeEnum), (string)colonistProperty.Value));
-								break;
 							case ColonistProperty.PlayerMoved:
 								playerMoved = bool.Parse((string)colonistProperty.Value);
 								break;
@@ -2863,12 +2883,45 @@ public class PersistenceManager : BaseManager {
 							case ColonistProperty.StoredJob:
 								persistenceStoredJob = LoadPersistenceJob((List<KeyValuePair<string, object>>)colonistProperty.Value);
 								break;
+							case ColonistProperty.Professions:
+								foreach (KeyValuePair<string, object> professionProperty in (List<KeyValuePair<string, object>>)colonistProperty.Value) {
+									switch ((ProfessionProperty)Enum.Parse(typeof(ProfessionProperty), professionProperty.Key)) {
+										case ProfessionProperty.Profession:
+
+											ColonistManager.ProfessionEnum? professionType = null;
+											int? professionPriority = null;
+
+											foreach (KeyValuePair<string, object> professionSubProperty in (List<KeyValuePair<string, object>>)professionProperty.Value) {
+												switch ((ProfessionProperty)Enum.Parse(typeof(ProfessionProperty), professionSubProperty.Key)) {
+													case ProfessionProperty.Name:
+														professionType = (ColonistManager.ProfessionEnum)Enum.Parse(typeof(ColonistManager.ProfessionEnum), (string)professionSubProperty.Value);
+														break;
+													case ProfessionProperty.Priority:
+														professionPriority = int.Parse((string)professionSubProperty.Value);
+														break;
+													default:
+														Debug.LogError("Unknown profession sub property: " + professionSubProperty.Key + " " + professionSubProperty.Value);
+														break;
+												}
+											}
+
+											persistenceProfessions.Add(new PersistenceProfession(
+												professionType,
+												professionPriority
+											));
+											break;
+										default:
+											Debug.LogError("Unknown profession property: " + professionProperty.Key + " " + professionProperty.Value);
+											break;
+									}
+								}
+								break;
 							case ColonistProperty.Skills:
 								foreach (KeyValuePair<string, object> skillProperty in (List<KeyValuePair<string, object>>)colonistProperty.Value) {
 									switch ((SkillProperty)Enum.Parse(typeof(SkillProperty), skillProperty.Key)) {
 										case SkillProperty.Skill:
 
-											ColonistManager.SkillTypeEnum? skillType = null;
+											ColonistManager.SkillEnum? skillType = null;
 											int? skillLevel = null;
 											float? skillNextLevelExperience = null;
 											float? skillCurrentExperience = null;
@@ -2876,7 +2929,7 @@ public class PersistenceManager : BaseManager {
 											foreach (KeyValuePair<string, object> skillSubProperty in (List<KeyValuePair<string, object>>)skillProperty.Value) {
 												switch ((SkillProperty)Enum.Parse(typeof(SkillProperty), skillSubProperty.Key)) {
 													case SkillProperty.Type:
-														skillType = (ColonistManager.SkillTypeEnum)Enum.Parse(typeof(ColonistManager.SkillTypeEnum), (string)skillSubProperty.Value);
+														skillType = (ColonistManager.SkillEnum)Enum.Parse(typeof(ColonistManager.SkillEnum), (string)skillSubProperty.Value);
 														break;
 													case SkillProperty.Level:
 														skillLevel = int.Parse((string)skillSubProperty.Value);
@@ -2888,12 +2941,17 @@ public class PersistenceManager : BaseManager {
 														skillCurrentExperience = float.Parse((string)skillSubProperty.Value);
 														break;
 													default:
-														Debug.LogError("Unknown skill property: " + skillSubProperty.Key + " " + skillSubProperty.Value);
+														Debug.LogError("Unknown skill sub property: " + skillSubProperty.Key + " " + skillSubProperty.Value);
 														break;
 												}
 											}
 
-											persistenceSkills.Add(new PersistenceSkill(skillType, skillLevel, skillNextLevelExperience, skillCurrentExperience));
+											persistenceSkills.Add(new PersistenceSkill(
+												skillType, 
+												skillLevel, 
+												skillNextLevelExperience, 
+												skillCurrentExperience
+											));
 											break;
 										default:
 											Debug.LogError("Unknown skill property: " + skillProperty.Key + " " + skillProperty.Value);
@@ -2906,20 +2964,22 @@ public class PersistenceManager : BaseManager {
 									switch ((TraitProperty)Enum.Parse(typeof(TraitProperty), traitProperty.Key)) {
 										case TraitProperty.Trait:
 
-											ColonistManager.TraitsEnum? traitType = null;
+											ColonistManager.TraitEnum? traitType = null;
 
 											foreach (KeyValuePair<string, object> traitSubProperty in (List<KeyValuePair<string, object>>)traitProperty.Value) {
 												switch ((TraitProperty)Enum.Parse(typeof(TraitProperty), traitSubProperty.Key)) {
 													case TraitProperty.Type:
-														traitType = (ColonistManager.TraitsEnum)Enum.Parse(typeof(ColonistManager.TraitsEnum), (string)traitSubProperty.Value);
+														traitType = (ColonistManager.TraitEnum)Enum.Parse(typeof(ColonistManager.TraitEnum), (string)traitSubProperty.Value);
 														break;
 													default:
-														Debug.LogError("Unknown trait property: " + traitSubProperty.Key + " " + traitSubProperty.Value);
+														Debug.LogError("Unknown trait sub property: " + traitSubProperty.Key + " " + traitSubProperty.Value);
 														break;
 												}
 											}
 
-											persistenceTraits.Add(new PersistenceTrait(traitType));
+											persistenceTraits.Add(new PersistenceTrait(
+												traitType
+											));
 											break;
 										default:
 											Debug.LogError("Unknown trait property: " + traitProperty.Key + " " + traitProperty.Value);
@@ -2932,24 +2992,27 @@ public class PersistenceManager : BaseManager {
 									switch ((NeedProperty)Enum.Parse(typeof(NeedProperty), needProperty.Key)) {
 										case NeedProperty.Need:
 
-											ColonistManager.NeedsEnum? needType = null;
+											ColonistManager.NeedEnum? needType = null;
 											float? needValue = null;
 
 											foreach (KeyValuePair<string, object> needSubProperty in (List<KeyValuePair<string, object>>)needProperty.Value) {
 												switch ((NeedProperty)Enum.Parse(typeof(NeedProperty), needSubProperty.Key)) {
 													case NeedProperty.Type:
-														needType = (ColonistManager.NeedsEnum)Enum.Parse(typeof(ColonistManager.NeedsEnum), (string)needSubProperty.Value);
+														needType = (ColonistManager.NeedEnum)Enum.Parse(typeof(ColonistManager.NeedEnum), (string)needSubProperty.Value);
 														break;
 													case NeedProperty.Value:
 														needValue = float.Parse((string)needSubProperty.Value);
 														break;
 													default:
-														Debug.LogError("Unknown need property: " + needSubProperty.Key + " " + needSubProperty.Value);
+														Debug.LogError("Unknown need sub property: " + needSubProperty.Key + " " + needSubProperty.Value);
 														break;
 												}
 											}
 
-											persistenceNeeds.Add(new PersistenceNeed(needType, needValue));
+											persistenceNeeds.Add(new PersistenceNeed(
+												needType, 
+												needValue
+											));
 											break;
 										default:
 											Debug.LogError("Unknown need property: " + needProperty.Key + " " + needProperty.Value);
@@ -2968,19 +3031,19 @@ public class PersistenceManager : BaseManager {
 									switch ((HappinessModifierProperty)Enum.Parse(typeof(HappinessModifierProperty), happinessModifierProperty.Key)) {
 										case HappinessModifierProperty.HappinessModifier:
 
-											ColonistManager.HappinessModifiersEnum? happinessModifierType = null;
+											ColonistManager.HappinessModifierEnum? happinessModifierType = null;
 											float? happinessModifierTimeRemaining = null;
 
 											foreach (KeyValuePair<string, object> happinessModifierSubProperty in (List<KeyValuePair<string, object>>)happinessModifierProperty.Value) {
 												switch ((HappinessModifierProperty)Enum.Parse(typeof(HappinessModifierProperty), happinessModifierSubProperty.Key)) {
 													case HappinessModifierProperty.Type:
-														happinessModifierType = (ColonistManager.HappinessModifiersEnum)Enum.Parse(typeof(ColonistManager.HappinessModifiersEnum), (string)happinessModifierSubProperty.Value);
+														happinessModifierType = (ColonistManager.HappinessModifierEnum)Enum.Parse(typeof(ColonistManager.HappinessModifierEnum), (string)happinessModifierSubProperty.Value);
 														break;
 													case HappinessModifierProperty.TimeRemaining:
 														happinessModifierTimeRemaining = float.Parse((string)happinessModifierSubProperty.Value);
 														break;
 													default:
-														Debug.LogError("Unknown happiness modifier property: " + happinessModifierSubProperty.Key + " " + happinessModifierSubProperty.Value);
+														Debug.LogError("Unknown happiness modifier sub property: " + happinessModifierSubProperty.Key + " " + happinessModifierSubProperty.Value);
 														break;
 												}
 											}
@@ -3002,11 +3065,10 @@ public class PersistenceManager : BaseManager {
 					persistenceColonists.Add(new PersistenceColonist(
 						persistenceLife,
 						persistenceHuman,
-						profession,
-						oldProfession,
 						playerMoved,
 						persistenceJob,
 						persistenceStoredJob,
+						persistenceProfessions,
 						persistenceSkills,
 						persistenceTraits,
 						persistenceNeeds,
@@ -3029,12 +3091,10 @@ public class PersistenceManager : BaseManager {
 		foreach (PersistenceColonist persistenceColonist in persistenceColonists) {
 			ColonistManager.Colonist colonist = new ColonistManager.Colonist(
 				GameManager.colonyM.colony.map.GetTileFromPosition(persistenceColonist.persistenceLife.position.Value),
-				persistenceColonist.profession,
 				persistenceColonist.persistenceLife.health.Value
 			) {
 				gender = persistenceColonist.persistenceLife.gender.Value,
 				previousPosition = persistenceColonist.persistenceLife.previousPosition.Value,
-				oldProfession = persistenceColonist.oldProfession,
 				playerMoved = persistenceColonist.playerMoved.Value,
 			};
 
@@ -3046,7 +3106,8 @@ public class PersistenceManager : BaseManager {
 			colonist.moveSprites = GameManager.humanM.humanMoveSprites[colonist.bodyIndices[HumanManager.Human.Appearance.Skin]];
 			colonist.bodyIndices[HumanManager.Human.Appearance.Hair] = persistenceColonist.persistenceHuman.hairIndex.Value;
 
-			colonist.inventory.maxAmount = persistenceColonist.persistenceHuman.persistenceInventory.maxAmount.Value;
+			colonist.inventory.maxWeight = persistenceColonist.persistenceHuman.persistenceInventory.maxWeight.Value;
+			colonist.inventory.maxVolume = persistenceColonist.persistenceHuman.persistenceInventory.maxVolume.Value;
 			foreach (ResourceManager.ResourceAmount resourceAmount in persistenceColonist.persistenceHuman.persistenceInventory.resources) {
 				colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 			}
@@ -3068,6 +3129,11 @@ public class PersistenceManager : BaseManager {
 
 			if (persistenceColonist.persistenceLife.pathEndPosition.HasValue) {
 				colonist.MoveToTile(GameManager.colonyM.colony.map.GetTileFromPosition(persistenceColonist.persistenceLife.pathEndPosition.Value), true);
+			}
+
+			foreach (PersistenceProfession persistenceProfession in persistenceColonist.persistenceProfessions) {
+				ColonistManager.ProfessionInstance profession = colonist.GetProfessionFromEnum(persistenceProfession.type.Value);
+				profession.SetPriority(persistenceProfession.priority.Value);
 			}
 
 			foreach (PersistenceSkill persistenceSkill in persistenceColonist.persistenceSkills) {
@@ -3112,7 +3178,7 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public enum JobProperty {
-		Job, StoredJob, Type, Position, RotationIndex, Priority, Started, Progress, ColonistBuildTime, ResourcesToBuild, ColonistResources, ContainerPickups, Plant, CreateResource, ActiveTileObject, TransferResources
+		Job, StoredJob, Type, Variation, Position, RotationIndex, Priority, Started, Progress, ColonistBuildTime, ResourcesToBuild, ColonistResources, ContainerPickups, Plant, CreateResource, ActiveTileObject, TransferResources
 	}
 
 	public enum ContainerPickupProperty {
@@ -3129,6 +3195,7 @@ public class PersistenceManager : BaseManager {
 		file.WriteLine(CreateKeyValueString(jobType, string.Empty, startLevel));
 
 		file.WriteLine(CreateKeyValueString(JobProperty.Type, job.prefab.type, startLevel + 1));
+		file.WriteLine(CreateKeyValueString(JobProperty.Variation, job.variation == null ? "null" : job.variation.name, startLevel + 1));
 		file.WriteLine(CreateKeyValueString(JobProperty.Position, FormatVector2ToString(job.tile.obj.transform.position), startLevel + 1));
 		file.WriteLine(CreateKeyValueString(JobProperty.RotationIndex, job.rotationIndex, startLevel + 1));
 		file.WriteLine(CreateKeyValueString(JobProperty.Priority, job.priority, startLevel + 1));
@@ -3187,6 +3254,7 @@ public class PersistenceManager : BaseManager {
 
 	public class PersistenceJob {
 		public ResourceManager.ObjectEnum? type;
+		public string variation;
 		public Vector2? position;
 		public int? rotationIndex;
 		public int? priority;
@@ -3202,6 +3270,7 @@ public class PersistenceManager : BaseManager {
 
 		public PersistenceJob(
 			ResourceManager.ObjectEnum? type,
+			string variation,
 			Vector2? position,
 			int? rotationIndex,
 			int? priority,
@@ -3216,6 +3285,7 @@ public class PersistenceManager : BaseManager {
 			List<ResourceManager.ResourceAmount> transferResources
 		) {
 			this.type = type;
+			this.variation = variation;
 			this.position = position;
 			this.rotationIndex = rotationIndex;
 			this.priority = priority;
@@ -3262,6 +3332,7 @@ public class PersistenceManager : BaseManager {
 
 	public PersistenceJob LoadPersistenceJob(List<KeyValuePair<string, object>> properties) {
 		ResourceManager.ObjectEnum? type = null;
+		string variation = null;
 		Vector2? position = null;
 		int? rotationIndex = null;
 		int? priority = null;
@@ -3280,6 +3351,9 @@ public class PersistenceManager : BaseManager {
 			switch (jobPropertyKey) {
 				case JobProperty.Type:
 					type = (ResourceManager.ObjectEnum)Enum.Parse(typeof(ResourceManager.ObjectEnum), (string)jobProperty.Value);
+					break;
+				case JobProperty.Variation:
+					variation = UIManager.RemoveNonAlphanumericChars((string)jobProperty.Value);
 					break;
 				case JobProperty.Position:
 					position = new Vector2(float.Parse(((string)jobProperty.Value).Split(',')[0]), float.Parse(((string)jobProperty.Value).Split(',')[1]));
@@ -3372,6 +3446,7 @@ public class PersistenceManager : BaseManager {
 
 					activeTileObject = new PersistenceObject(
 						activeTileObjectType,
+						null,
 						activeTileObjectZeroPointTilePosition,
 						null, null, null, null, null, null, null, null, null
 					);
@@ -3393,6 +3468,7 @@ public class PersistenceManager : BaseManager {
 
 		return new PersistenceJob(
 			type,
+			variation,
 			position,
 			rotationIndex,
 			priority,
@@ -3429,6 +3505,7 @@ public class PersistenceManager : BaseManager {
 		JobManager.Job job = new JobManager.Job(
 			GameManager.colonyM.colony.map.GetTileFromPosition(persistenceJob.position.Value),
 			GameManager.resourceM.GetObjectPrefabByEnum(persistenceJob.type.Value),
+			GameManager.resourceM.GetObjectPrefabByEnum(persistenceJob.type.Value).GetVariationFromString(persistenceJob.variation),
 			persistenceJob.rotationIndex.Value
 		) {
 			started = persistenceJob.started ?? false,
@@ -3452,7 +3529,7 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public enum TileObjectProperty {
-		Object, Type, Position, RotationIndex, Integrity, Active, Container, ManufacturingTileObject, Farm, SleepSpot
+		Object, Type, Variation, Position, RotationIndex, Integrity, Active, Container, ManufacturingTileObject, Farm, SleepSpot
 	}
 
 	public enum ContainerProperty {
@@ -3477,6 +3554,7 @@ public class PersistenceManager : BaseManager {
 				file.WriteLine(CreateKeyValueString(TileObjectProperty.Object, string.Empty, 0));
 
 				file.WriteLine(CreateKeyValueString(TileObjectProperty.Type, instance.prefab.type, 1));
+				file.WriteLine(CreateKeyValueString(TileObjectProperty.Variation, instance.variation == null ? "null" : instance.variation.name, 1));
 				file.WriteLine(CreateKeyValueString(TileObjectProperty.Position, FormatVector2ToString(instance.zeroPointTile.obj.transform.position), 1));
 				file.WriteLine(CreateKeyValueString(TileObjectProperty.RotationIndex, instance.rotationIndex, 1));
 				file.WriteLine(CreateKeyValueString(TileObjectProperty.Integrity, instance.integrity, 1));
@@ -3512,6 +3590,7 @@ public class PersistenceManager : BaseManager {
 
 	public class PersistenceObject {
 		public ResourceManager.ObjectEnum? type;
+		public string variation;
 		public Vector2? zeroPointTilePosition;
 		public int? rotationIndex;
 		public float? integrity;
@@ -3533,6 +3612,7 @@ public class PersistenceManager : BaseManager {
 
 		public PersistenceObject(
 			ResourceManager.ObjectEnum? type,
+			string variation,
 			Vector2? zeroPointTilePosition,
 			int? rotationIndex,
 			float? integrity,
@@ -3545,6 +3625,7 @@ public class PersistenceManager : BaseManager {
 			string occupyingColonistName
 		) {
 			this.type = type;
+			this.variation = variation;
 			this.zeroPointTilePosition = zeroPointTilePosition;
 			this.rotationIndex = rotationIndex;
 			this.integrity = integrity;
@@ -3571,6 +3652,7 @@ public class PersistenceManager : BaseManager {
 				case TileObjectProperty.Object:
 
 					ResourceManager.ObjectEnum? type = null;
+					string variation = null;
 					Vector2? zeroPointTilePosition = null;
 					int? rotationIndex = null;
 					float? integrity = null;
@@ -3594,6 +3676,9 @@ public class PersistenceManager : BaseManager {
 						switch ((TileObjectProperty)Enum.Parse(typeof(TileObjectProperty), tileObjectProperty.Key)) {
 							case TileObjectProperty.Type:
 								type = (ResourceManager.ObjectEnum)Enum.Parse(typeof(ResourceManager.ObjectEnum), (string)tileObjectProperty.Value);
+								break;
+							case TileObjectProperty.Variation:
+								variation = UIManager.RemoveNonAlphanumericChars((string)tileObjectProperty.Value);
 								break;
 							case TileObjectProperty.Position:
 								zeroPointTilePosition = new Vector2(float.Parse(((string)tileObjectProperty.Value).Split(',')[0]), float.Parse(((string)tileObjectProperty.Value).Split(',')[1]));
@@ -3666,6 +3751,7 @@ public class PersistenceManager : BaseManager {
 
 					persistenceObjects.Add(new PersistenceObject(
 						type,
+						variation,
 						zeroPointTilePosition,
 						rotationIndex,
 						integrity,
@@ -3695,6 +3781,7 @@ public class PersistenceManager : BaseManager {
 			ResourceManager.ObjectPrefab tileObjectPrefab = GameManager.resourceM.GetObjectPrefabByEnum(persistenceObject.type.Value);
 			ResourceManager.ObjectInstance tileObjectInstance = GameManager.resourceM.CreateTileObjectInstance(
 				tileObjectPrefab,
+				tileObjectPrefab.GetVariationFromString(persistenceObject.variation),
 				zeroPointTile,
 				persistenceObject.rotationIndex.Value,
 				true
@@ -3706,7 +3793,8 @@ public class PersistenceManager : BaseManager {
 				case ResourceManager.ObjectInstanceType.Container:
 				case ResourceManager.ObjectInstanceType.TradingPost:
 					ResourceManager.Container container = (ResourceManager.Container)tileObjectInstance;
-					container.inventory.maxAmount = persistenceObject.persistenceInventory.maxAmount.Value;
+					container.inventory.maxWeight = persistenceObject.persistenceInventory.maxWeight.Value;
+					container.inventory.maxVolume = persistenceObject.persistenceInventory.maxVolume.Value;
 					foreach (ResourceManager.ResourceAmount resourceAmount in persistenceObject.persistenceInventory.resources) {
 						container.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 					}
@@ -3731,18 +3819,19 @@ public class PersistenceManager : BaseManager {
 			tileObjectInstance.obj.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 1f);
 			tileObjectInstance.FinishCreation();
 			if (tileObjectInstance.prefab.canRotate) {
-				tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.bitmaskSprites[tileObjectInstance.rotationIndex];
+				tileObjectInstance.obj.GetComponent<SpriteRenderer>().sprite = tileObjectInstance.prefab.GetBitmaskSpritesForVariation(tileObjectInstance.variation)[tileObjectInstance.rotationIndex];
 			}
 		}
 	}
 
 	public enum InventoryProperty {
-		Inventory, MaxAmount, Resources, ReservedResources, HumanName, ContainerPosition
+		Inventory, MaxWeight, MaxVolume, Resources, ReservedResources, HumanName, ContainerPosition
 	}
 
 	private void WriteInventoryLines(StreamWriter file, ResourceManager.Inventory inventory, int startLevel) {
 		file.WriteLine(CreateKeyValueString(InventoryProperty.Inventory, string.Empty, startLevel));
-		file.WriteLine(CreateKeyValueString(InventoryProperty.MaxAmount, inventory.maxAmount, startLevel + 1));
+		file.WriteLine(CreateKeyValueString(InventoryProperty.MaxWeight, inventory.maxWeight, startLevel + 1));
+		file.WriteLine(CreateKeyValueString(InventoryProperty.MaxVolume, inventory.maxVolume, startLevel + 1));
 		if (inventory.human != null) {
 			file.WriteLine(CreateKeyValueString(InventoryProperty.HumanName, inventory.human.name, startLevel + 1));
 		}
@@ -3769,20 +3858,23 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public class PersistenceInventory {
-		public int? maxAmount;
+		public int? maxWeight;
+		public int? maxVolume;
 		public List<ResourceManager.ResourceAmount> resources;
 		public List<KeyValuePair<string, List<ResourceManager.ResourceAmount>>> reservedResources;
 		public string humanName;
 		public Vector2? containerZeroPointTilePosition;
 
 		public PersistenceInventory(
-			int? maxAmount,
+			int? maxWeight,
+			int? maxVolume,
 			List<ResourceManager.ResourceAmount> resources,
 			List<KeyValuePair<string, List<ResourceManager.ResourceAmount>>> reservedResources,
 			string humanName,
 			Vector2? containerZeroPointTilePosition
 		) {
-			this.maxAmount = maxAmount;
+			this.maxWeight = maxWeight;
+			this.maxVolume = maxVolume;
 			this.resources = resources;
 			this.reservedResources = reservedResources;
 			this.humanName = humanName;
@@ -3791,7 +3883,8 @@ public class PersistenceManager : BaseManager {
 	}
 
 	private PersistenceInventory LoadPersistenceInventory(List<KeyValuePair<string, object>> properties) {
-		int? maxAmount = null;
+		int? maxWeight = null;
+		int? maxVolume = null;
 		List<ResourceManager.ResourceAmount> resources = new List<ResourceManager.ResourceAmount>();
 		List<KeyValuePair<string, List<ResourceManager.ResourceAmount>>> reservedResources = new List<KeyValuePair<string, List<ResourceManager.ResourceAmount>>>();
 		string humanName = null;
@@ -3800,8 +3893,11 @@ public class PersistenceManager : BaseManager {
 		foreach (KeyValuePair<string, object> inventoryProperty in properties) {
 			InventoryProperty inventoryPropertyKey = (InventoryProperty)Enum.Parse(typeof(InventoryProperty), inventoryProperty.Key);
 			switch (inventoryPropertyKey) {
-				case InventoryProperty.MaxAmount:
-					maxAmount = int.Parse((string)inventoryProperty.Value);
+				case InventoryProperty.MaxWeight:
+					maxWeight = int.Parse((string)inventoryProperty.Value);
+					break;
+				case InventoryProperty.MaxVolume:
+					maxVolume = int.Parse((string)inventoryProperty.Value);
 					break;
 				case InventoryProperty.Resources:
 					foreach (KeyValuePair<string, object> resourceAmountProperty in (List<KeyValuePair<string, object>>)inventoryProperty.Value) {
@@ -3855,7 +3951,7 @@ public class PersistenceManager : BaseManager {
 			}
 		}
 
-		return new PersistenceInventory(maxAmount, resources, reservedResources, humanName, containerZeroPointTilePosition);
+		return new PersistenceInventory(maxWeight, maxVolume, resources, reservedResources, humanName, containerZeroPointTilePosition);
 	}
 
 	private void WriteResourceAmountLines(StreamWriter file, ResourceManager.ResourceAmount resourceAmount, int startLevel) {
@@ -3937,14 +4033,14 @@ public class PersistenceManager : BaseManager {
 	}
 
 	public enum TimeProperty {
-		Minute, Hour, Day, Month, Year
+		Minute, Hour, Day, Season, Year
 	}
 
 	public void SaveTime(StreamWriter file) {
 		file.WriteLine(CreateKeyValueString(TimeProperty.Minute, GameManager.timeM.GetMinute(), 0));
 		file.WriteLine(CreateKeyValueString(TimeProperty.Hour, GameManager.timeM.GetHour(), 0));
 		file.WriteLine(CreateKeyValueString(TimeProperty.Day, GameManager.timeM.GetDay(), 0));
-		file.WriteLine(CreateKeyValueString(TimeProperty.Month, GameManager.timeM.GetMonth(), 0));
+		file.WriteLine(CreateKeyValueString(TimeProperty.Season, GameManager.timeM.GetSeason(), 0));
 		file.WriteLine(CreateKeyValueString(TimeProperty.Year, GameManager.timeM.GetYear(), 0));
 	}
 
@@ -3962,8 +4058,8 @@ public class PersistenceManager : BaseManager {
 				case TimeProperty.Day:
 					GameManager.timeM.SetDay(int.Parse((string)value));
 					break;
-				case TimeProperty.Month:
-					GameManager.timeM.SetMonth(int.Parse((string)value));
+				case TimeProperty.Season:
+					GameManager.timeM.SetSeason((TimeManager.Season)Enum.Parse(typeof(TimeManager.Season), (string)value));
 					break;
 				case TimeProperty.Year:
 					GameManager.timeM.SetYear(int.Parse((string)value));
@@ -3975,6 +4071,73 @@ public class PersistenceManager : BaseManager {
 		}
 
 		loadingState = LoadingState.LoadedTime;
+	}
+
+	public enum UIProperty {
+		ObjectPrefabs
+	}
+
+	public enum ObjectPrefabProperty {
+		ObjectPrefab, Type, LastSelectedVariation
+	}
+
+	public void SaveUI(StreamWriter file) {
+		file.WriteLine(CreateKeyValueString(UIProperty.ObjectPrefabs, string.Empty, 0));
+		foreach (ResourceManager.ObjectPrefab objectPrefab in GameManager.resourceM.GetObjectPrefabs()) {
+			file.WriteLine(CreateKeyValueString(ObjectPrefabProperty.ObjectPrefab, string.Empty, 1));
+
+			file.WriteLine(CreateKeyValueString(ObjectPrefabProperty.Type, objectPrefab.type, 2));
+			file.WriteLine(CreateKeyValueString(ObjectPrefabProperty.LastSelectedVariation, (objectPrefab.lastSelectedVariation == null ? "null" : objectPrefab.lastSelectedVariation.name), 2));
+		}
+	}
+
+	public void LoadUI(string path) {
+		foreach (KeyValuePair<string, object> property in GetKeyValuePairsFromFile(path)) {
+			switch ((UIProperty)Enum.Parse(typeof(UIProperty), property.Key)) {
+				case UIProperty.ObjectPrefabs:
+
+					Dictionary<ResourceManager.ObjectPrefab, ResourceManager.Variation> lastSelectedVariations = new Dictionary<ResourceManager.ObjectPrefab, ResourceManager.Variation>();
+
+					foreach (KeyValuePair<string, object> objectPrefabProperty in (List<KeyValuePair<string, object>>)property.Value) {
+						switch ((ObjectPrefabProperty)Enum.Parse(typeof(ObjectPrefabProperty), objectPrefabProperty.Key)) {
+							case ObjectPrefabProperty.ObjectPrefab:
+
+								ResourceManager.ObjectPrefab objectPrefab = null;
+								ResourceManager.Variation lastSelectedVariation = null;
+
+								foreach (KeyValuePair<string, object> objectPrefabSubProperty in (List<KeyValuePair<string, object>>)objectPrefabProperty.Value) {
+									switch ((ObjectPrefabProperty)Enum.Parse(typeof(ObjectPrefabProperty), objectPrefabSubProperty.Key)) {
+										case ObjectPrefabProperty.Type:
+											objectPrefab = GameManager.resourceM.GetObjectPrefabByString((string)objectPrefabSubProperty.Value);
+											break;
+										case ObjectPrefabProperty.LastSelectedVariation:
+											lastSelectedVariation = objectPrefab.GetVariationFromString((string)objectPrefabSubProperty.Value);
+											break;
+										default:
+											Debug.LogError("Unknown object prefab sub property: " + objectPrefabSubProperty.Key + " " + objectPrefabSubProperty.Value);
+											break;
+									}
+								}
+
+								lastSelectedVariations.Add(objectPrefab, lastSelectedVariation);
+
+								break;
+							default:
+								Debug.LogError("Unknown object prefab property: " + objectPrefabProperty.Key + " " + objectPrefabProperty.Value);
+								break;
+						}
+					}
+
+					foreach (ResourceManager.ObjectPrefab objectPrefab in GameManager.resourceM.GetObjectPrefabs()) {
+						objectPrefab.lastSelectedVariation = lastSelectedVariations[objectPrefab];
+					}
+
+					break;
+				default:
+					Debug.LogError("Unknown UI property: " + property.Key + " " + property.Value);
+					break;
+			}
+		}
 	}
 
 	public bool IsUniverseLoadable(PersistenceUniverse persistenceUniverse) {

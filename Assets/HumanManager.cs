@@ -86,7 +86,7 @@ public class HumanManager : BaseManager {
 
 			moveSprites = GameManager.humanM.humanMoveSprites[bodyIndices[Appearance.Skin]];
 
-			inventory = new ResourceManager.Inventory(this, null, 50);
+			inventory = new ResourceManager.Inventory(this, null, 50000, 50000);
 
 			SetName(GameManager.humanM.GetName(gender));
 
@@ -121,16 +121,7 @@ public class HumanManager : BaseManager {
 		}
 
 		public void SetNameCanvas(string name) {
-			Font nameCanvasFont = Resources.Load<Font>(@"UI/Fonts/Quicksand/Quicksand-Bold");
 			nameCanvas.transform.Find("NameBackground-Image/Name-Text").GetComponent<Text>().text = name;
-			Canvas.ForceUpdateCanvases(); // The charInfo.advance is not calculated until the text is rendered
-			int textWidthPixels = 0;
-			foreach (char character in name) {
-				CharacterInfo charInfo;
-				nameCanvasFont.GetCharacterInfo(character, out charInfo, 48, FontStyle.Normal);
-				textWidthPixels += charInfo.advance;
-			}
-			nameCanvas.transform.Find("NameBackground-Image").GetComponent<RectTransform>().sizeDelta = new Vector2(textWidthPixels / 2.8f, 20);
 		}
 
 		public void SetNameColour(Color nameColour) {
@@ -140,7 +131,7 @@ public class HumanManager : BaseManager {
 		public override void Update() {
 			base.Update();
 
-			nameCanvas.transform.Find("NameBackground-Image").localScale = Vector2.one * Mathf.Clamp(GameManager.cameraM.cameraComponent.orthographicSize, 2, 10) * 0.0025f;
+			nameCanvas.transform.Find("NameBackground-Image").localScale = Vector2.one * Mathf.Clamp(GameManager.cameraM.cameraComponent.orthographicSize, 2, 10) * 0.001f;
 			nameCanvas.transform.Find("NameBackground-Image/HealthIndicator-Image").GetComponent<Image>().color = Color.Lerp(UIManager.GetColour(UIManager.Colours.LightRed), UIManager.GetColour(UIManager.Colours.LightGreen), health);
 
 			SetMoveSprite();
