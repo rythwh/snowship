@@ -159,7 +159,7 @@ public class CaravanManager : BaseManager {
 		private List<Trader> removeTraders = new List<Trader>();
 
 		public Caravan() {
-			inventory = new ResourceManager.Inventory(null, null, int.MaxValue);
+			inventory = new ResourceManager.Inventory(null, null, int.MaxValue, int.MaxValue);
 		}
 
 		public Caravan(int numTraders, CaravanTypeEnum caravanType, List<TileManager.Tile> spawnTiles, TileManager.Tile targetTile) {
@@ -175,7 +175,7 @@ public class CaravanManager : BaseManager {
 				spawnTiles.Remove(spawnTile);
 			}
 
-			inventory = new ResourceManager.Inventory(null, null, int.MaxValue);
+			inventory = new ResourceManager.Inventory(null, null, int.MaxValue, int.MaxValue);
 
 			resourceGroup = GameManager.resourceM.GetRandomResourceGroup();
 			foreach (ResourceManager.Resource resource in resourceGroup.resources.OrderBy(r => UnityEngine.Random.Range(0f, 1f))) { // Randomize resource group list
@@ -382,7 +382,7 @@ public class CaravanManager : BaseManager {
 		public Trader(TileManager.Tile spawnTile, float startingHealth, Caravan caravan) : base(spawnTile, startingHealth) {
 			this.caravan = caravan;
 
-			obj.transform.SetParent(GameObject.Find("TraderParent").transform, false);
+			obj.transform.SetParent(GameManager.resourceM.traderParent.transform, false);
 		}
 
 		public override void SetName(string name) {
@@ -416,6 +416,7 @@ public class CaravanManager : BaseManager {
 					JobManager.Job job = new JobManager.Job(
 						tradingPost.tile,
 						GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.CollectResources),
+						null,
 						0
 					) {
 						transferResources = new List<ResourceManager.ResourceAmount>()

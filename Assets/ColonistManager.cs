@@ -22,28 +22,139 @@ public class ColonistManager : BaseManager {
 		}
 	}
 
-	public enum SkillTypeEnum { Building, Mining, Digging, Farming, Forestry, Crafting };
+	public enum ProfessionEnum { Building, Terraforming, Farming, Forestry, Crafting, Hauling };
+
+	public List<ProfessionPrefab> professionPrefabs = new List<ProfessionPrefab>();
+
+	public class ProfessionPrefab {
+
+		public ProfessionEnum type;
+		public string name;
+
+		public List<JobManager.JobEnum> jobs;
+
+		public ProfessionPrefab(
+			ProfessionEnum type,
+			List<JobManager.JobEnum> jobs
+		) {
+			this.type = type;
+			name = UIManager.SplitByCapitals(type.ToString());
+
+			this.jobs = jobs;
+		}
+	}
+
+	public ProfessionPrefab GetProfessionFromEnum(ProfessionEnum type) {
+		return professionPrefabs.Find(profession => profession.type == type);
+	}
+
+	public enum ProfessionPropertyEnum { Profession, Type, Jobs }
+
+	public void CreateColonistProfessions() {
+		List<KeyValuePair<string, object>> professionProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/colonistProfessions").text.Split('\n').ToList());
+		foreach (KeyValuePair<string, object> professionProperty in professionProperties) {
+			switch ((ProfessionPropertyEnum)Enum.Parse(typeof(ProfessionPropertyEnum), professionProperty.Key)) {
+				case ProfessionPropertyEnum.Profession:
+
+					ProfessionEnum? type = null;
+					List<JobManager.JobEnum> jobs = new List<JobManager.JobEnum>();
+
+					foreach (KeyValuePair<string, object> professionSubProperty in (List<KeyValuePair<string, object>>)professionProperty.Value) {
+						switch ((ProfessionPropertyEnum)Enum.Parse(typeof(ProfessionPropertyEnum), professionSubProperty.Key)) {
+							case ProfessionPropertyEnum.Type:
+								type = (ProfessionEnum)Enum.Parse(typeof(ProfessionEnum), (string)professionSubProperty.Value);
+								break;
+							case ProfessionPropertyEnum.Jobs:
+								foreach (string jobString in ((string)professionSubProperty.Value).Split(',')) {
+									jobs.Add((JobManager.JobEnum)Enum.Parse(typeof(JobManager.JobEnum), jobString));
+								}
+								break;
+							default:
+								Debug.LogError("Unknown profession sub property: " + professionSubProperty.Key + " " + professionSubProperty.Value);
+								break;
+						}
+
+					}
+
+					ProfessionPrefab profession = new ProfessionPrefab(
+						type.Value,
+						jobs
+					);
+					professionPrefabs.Add(profession);
+
+					break;
+				default:
+					Debug.LogError("Unknown profession property: " + professionProperty.Key + " " + professionProperty.Value);
+					break;
+			}
+		}
+	}
+
+	public class ProfessionInstance {
+		public readonly ProfessionPrefab prefab;
+		public readonly Colonist colonist;
+
+		private int priority;
+
+		public ProfessionInstance(
+			ProfessionPrefab prefab,
+			Colonist colonist,
+			int priority
+		) {
+			this.prefab = prefab;
+			this.colonist = colonist;
+			this.priority = priority;
+		}
+
+		public int GetPriority() {
+			return priority;
+		}
+
+		public void SetPriority(int priority) {
+			if (priority > colonist.professions.Count) {
+				priority = 0;
+			}
+
+			if (priority < 0) {
+				priority = colonist.professions.Count;
+			}
+
+			this.priority = priority;
+
+			GameManager.jobM.UpdateSingleColonistJobs(colonist);
+		}
+
+		public void IncreasePriority() {
+			SetPriority(priority + 1);
+		}
+
+		public void DecreasePriority() {
+			SetPriority(priority - 1);
+		}
+	}
+
+	public enum SkillEnum { Building, Mining, Digging, Farming, Forestry, Crafting };
 
 	public class SkillPrefab {
 
-		public SkillTypeEnum type;
+		public SkillEnum type;
 		public string name;
 
-		public Dictionary<JobManager.JobTypesEnum, float> affectedJobTypes = new Dictionary<JobManager.JobTypesEnum, float>();
+		public Dictionary<JobManager.JobEnum, float> affectedJobTypes = new Dictionary<JobManager.JobEnum, float>();
 
 		public SkillPrefab(List<string> data) {
-			type = (SkillTypeEnum)Enum.Parse(typeof(SkillTypeEnum), data[0]);
+			type = (SkillEnum)Enum.Parse(typeof(SkillEnum), data[0]);
 			name = type.ToString();
 
 			foreach (string affectedJobTypeString in data[1].Split(';')) {
 				List<string> affectedJobTypeData = affectedJobTypeString.Split(',').ToList();
-				affectedJobTypes.Add((JobManager.JobTypesEnum)Enum.Parse(typeof(JobManager.JobTypesEnum), affectedJobTypeData[0]), float.Parse(affectedJobTypeData[1]));
+				affectedJobTypes.Add((JobManager.JobEnum)Enum.Parse(typeof(JobManager.JobEnum), affectedJobTypeData[0]), float.Parse(affectedJobTypeData[1]));
 			}
 		}
 	}
 
 	public SkillPrefab GetSkillPrefabFromString(string skillTypeString) {
-		return skillPrefabs.Find(skillPrefab => skillPrefab.type == (SkillTypeEnum)Enum.Parse(typeof(SkillTypeEnum), skillTypeString));
+		return skillPrefabs.Find(skillPrefab => skillPrefab.type == (SkillEnum)Enum.Parse(typeof(SkillEnum), skillTypeString));
 	}
 
 	public class SkillInstance {
@@ -59,7 +170,8 @@ public class ColonistManager : BaseManager {
 			this.prefab = prefab;
 
 			if (randomStartingLevel) {
-				level = UnityEngine.Random.Range((colonist.profession.primarySkill != null && colonist.profession.primarySkill.type == prefab.type ? Mathf.RoundToInt(colonist.profession.skillRandomMaxValues[prefab] / 2f) : 0), colonist.profession.skillRandomMaxValues[prefab]);
+				//level = UnityEngine.Random.Range((colonist.profession.primarySkill != null && colonist.profession.primarySkill.type == prefab.type ? Mathf.RoundToInt(colonist.profession.skillRandomMaxValues[prefab] / 2f) : 0), colonist.profession.skillRandomMaxValues[prefab]);
+				level = UnityEngine.Random.Range(0, 7);
 			} else {
 				level = startingLevel;
 			}
@@ -100,69 +212,7 @@ public class ColonistManager : BaseManager {
 		}
 	}
 
-	public enum ProfessionTypeEnum { Nothing, Builder, Miner, Farmer, Forester, Maker };
-
-	public List<Profession> professions = new List<Profession>();
-
-	public class Profession {
-		public ProfessionTypeEnum type;
-		public string name;
-
-		public string description;
-
-		public SkillPrefab primarySkill;
-
-		public Dictionary<SkillPrefab, int> skillRandomMaxValues = new Dictionary<SkillPrefab, int>();
-
-		public List<Colonist> colonistsInProfessionAtStart = new List<Colonist>();
-		public List<Colonist> colonistsInProfession = new List<Colonist>();
-
-		public Profession(List<string> data) {
-			type = (ProfessionTypeEnum)Enum.Parse(typeof(ProfessionTypeEnum), data[0]);
-			name = type.ToString();
-
-			description = data[1];
-
-			int primarySkillString = 0;
-			if (!int.TryParse(data[2], out primarySkillString)) {
-				primarySkill = GameManager.colonistM.GetSkillPrefabFromString(data[2]);
-			}
-
-			foreach (string skillRandomMaxValueData in data[3].Split(';')) {
-				List<string> skillRandomMaxValue = skillRandomMaxValueData.Split(',').ToList();
-				skillRandomMaxValues.Add(GameManager.colonistM.GetSkillPrefabFromString(skillRandomMaxValue[0]), int.Parse(skillRandomMaxValue[1]));
-			}
-		}
-
-		public double CalculateSkillLevelFromPrimarySkill(Colonist colonist, bool round, int decimalPlaces) {
-			if (type != ProfessionTypeEnum.Nothing) {
-				SkillInstance skillInstance = colonist.skills.Find(skill => skill.prefab == primarySkill);
-				double skillLevel = skillInstance.level + (skillInstance.currentExperience / skillInstance.nextLevelExperience);
-				if (round) {
-					return Math.Round(skillLevel, decimalPlaces);
-				}
-				return skillLevel;
-			}
-			return 0;
-		}
-	}
-
-	public Profession FindProfessionByType(ProfessionTypeEnum type) {
-		return professions.Find(profession => profession.type == type);
-	}
-
-	public void CreateColonistProfessions() {
-		List<string> stringProfessions = Resources.Load<TextAsset>(@"Data/colonistProfessions").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
-		foreach (string stringProfession in stringProfessions) {
-			List<string> stringProfessionData = stringProfession.Split('/').ToList();
-			professions.Add(new Profession(stringProfessionData));
-		}
-		foreach (Profession profession in professions) {
-			profession.name = UIManager.SplitByCapitals(profession.name);
-		}
-	}
-
-	public enum TraitsEnum {
+	public enum TraitEnum {
 		Lazy, Workaholic,
 		Alcoholic,
 		Antisocial, Socialite,
@@ -174,7 +224,7 @@ public class ColonistManager : BaseManager {
 
 	public class TraitPrefab {
 
-		public TraitsEnum type;
+		public TraitEnum type;
 		public string name;
 
 		public float effectAmount;
@@ -185,7 +235,7 @@ public class ColonistManager : BaseManager {
 	}
 
 	public TraitPrefab GetTraitPrefabFromString(string traitTypeString) {
-		return traitPrefabs.Find(traitPrefab => traitPrefab.type == (TraitsEnum)Enum.Parse(typeof(TraitsEnum), traitTypeString));
+		return traitPrefabs.Find(traitPrefab => traitPrefab.type == (TraitEnum)Enum.Parse(typeof(TraitEnum), traitTypeString));
 	}
 
 	public class TraitInstance {
@@ -199,52 +249,52 @@ public class ColonistManager : BaseManager {
 		}
 	}
 
-	public enum NeedsEnum { Rest, Water, Food, Temperature, Shelter, Clothing, Safety, Social, Esteem, Relaxation };
+	public enum NeedEnum { Rest, Water, Food, Temperature, Shelter, Clothing, Safety, Social, Esteem, Relaxation };
 
 	// TODO Add "relatedNeeds" variable to JobPrefab and then find a way to delete this
-	private List<JobManager.JobTypesEnum> needRelatedJobs = new List<JobManager.JobTypesEnum>() {
-		JobManager.JobTypesEnum.CollectFood, JobManager.JobTypesEnum.Eat,
-		JobManager.JobTypesEnum.CollectWater, JobManager.JobTypesEnum.Drink,
-		JobManager.JobTypesEnum.Sleep
+	private List<JobManager.JobEnum> needRelatedJobs = new List<JobManager.JobEnum>() {
+		JobManager.JobEnum.CollectFood, JobManager.JobEnum.Eat,
+		JobManager.JobEnum.CollectWater, JobManager.JobEnum.Drink,
+		JobManager.JobEnum.Sleep
 	};
 
 	// TODO Add "relatedNeeds" variable to JobPrefab and then find a way to delete this
-	private Dictionary<JobManager.JobTypesEnum, NeedsEnum> jobToNeedMap = new Dictionary<JobManager.JobTypesEnum, NeedsEnum>() {
-		{ JobManager.JobTypesEnum.Sleep, NeedsEnum.Rest },
-		{ JobManager.JobTypesEnum.CollectWater, NeedsEnum.Water },
-		{ JobManager.JobTypesEnum.Drink, NeedsEnum.Water },
-		{ JobManager.JobTypesEnum.CollectFood, NeedsEnum.Food },
-		{ JobManager.JobTypesEnum.Eat, NeedsEnum.Food }
+	private Dictionary<JobManager.JobEnum, NeedEnum> jobToNeedMap = new Dictionary<JobManager.JobEnum, NeedEnum>() {
+		{ JobManager.JobEnum.Sleep, NeedEnum.Rest },
+		{ JobManager.JobEnum.CollectWater, NeedEnum.Water },
+		{ JobManager.JobEnum.Drink, NeedEnum.Water },
+		{ JobManager.JobEnum.CollectFood, NeedEnum.Food },
+		{ JobManager.JobEnum.Eat, NeedEnum.Food }
 	};
 
-	public Dictionary<NeedsEnum, Func<NeedInstance, float>> needsValueSpecialIncreases = new Dictionary<NeedsEnum, Func<NeedInstance, float>>();
+	public Dictionary<NeedEnum, Func<NeedInstance, float>> needsValueSpecialIncreases = new Dictionary<NeedEnum, Func<NeedInstance, float>>();
 
 	public void InitializeNeedsValueSpecialIncreases() {
-		needsValueSpecialIncreases.Add(NeedsEnum.Rest, delegate (NeedInstance need) {
+		needsValueSpecialIncreases.Add(NeedEnum.Rest, delegate (NeedInstance need) {
 			float totalSpecialIncrease = 0;
 			if (!GameManager.timeM.isDay) {
 				totalSpecialIncrease += 0.05f;
 			}
-			HappinessModifierInstance hmi = need.colonist.happinessModifiers.Find(findHMI => findHMI.prefab.group.type == HappinessModifierGroupsEnum.Rest);
-			if (hmi.prefab.type == HappinessModifiersEnum.Rested) {
+			HappinessModifierInstance hmi = need.colonist.happinessModifiers.Find(findHMI => findHMI.prefab.group.type == HappinessModifierGroupEnum.Rest);
+			if (hmi.prefab.type == HappinessModifierEnum.Rested) {
 				totalSpecialIncrease -= (need.prefab.baseIncreaseRate * 0.8f);
 			}
 			return totalSpecialIncrease;
 		});
-		needsValueSpecialIncreases.Add(NeedsEnum.Water, delegate (NeedInstance need) {
+		needsValueSpecialIncreases.Add(NeedEnum.Water, delegate (NeedInstance need) {
 			float totalSpecialIncrease = 0;
-			HappinessModifierInstance hmi = need.colonist.happinessModifiers.Find(findHMI => findHMI.prefab.group.type == HappinessModifierGroupsEnum.Water);
-			if (hmi.prefab.type == HappinessModifiersEnum.Quenched) {
+			HappinessModifierInstance hmi = need.colonist.happinessModifiers.Find(findHMI => findHMI.prefab.group.type == HappinessModifierGroupEnum.Water);
+			if (hmi.prefab.type == HappinessModifierEnum.Quenched) {
 				totalSpecialIncrease -= (need.prefab.baseIncreaseRate * 0.5f);
 			}
 			return totalSpecialIncrease;
 		});
-		needsValueSpecialIncreases.Add(NeedsEnum.Food, delegate (NeedInstance need) {
+		needsValueSpecialIncreases.Add(NeedEnum.Food, delegate (NeedInstance need) {
 			float totalSpecialIncrease = 0;
-			HappinessModifierInstance hmi = need.colonist.happinessModifiers.Find(findHMI => findHMI.prefab.group.type == HappinessModifierGroupsEnum.Food);
-			if (hmi.prefab.type == HappinessModifiersEnum.Stuffed) {
+			HappinessModifierInstance hmi = need.colonist.happinessModifiers.Find(findHMI => findHMI.prefab.group.type == HappinessModifierGroupEnum.Food);
+			if (hmi.prefab.type == HappinessModifierEnum.Stuffed) {
 				totalSpecialIncrease -= (need.prefab.baseIncreaseRate * 0.9f);
-			} else if (hmi.prefab.type == HappinessModifiersEnum.Full) {
+			} else if (hmi.prefab.type == HappinessModifierEnum.Full) {
 				totalSpecialIncrease -= (need.prefab.baseIncreaseRate * 0.5f);
 			}
 			return totalSpecialIncrease;
@@ -307,7 +357,7 @@ public class ColonistManager : BaseManager {
 				if (closestFood.Key.container != null) {
 					ResourceManager.Container container = closestFood.Key.container;
 					container.inventory.ReserveResources(resourcesToReserve, need.colonist);
-					JobManager.Job job = new JobManager.Job(container.tile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.CollectFood), 0);
+					JobManager.Job job = new JobManager.Job(container.tile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.CollectFood), null, 0);
 					need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, job, null, null));
 					return true;
 				} else if (closestFood.Key.human != null) {
@@ -317,7 +367,7 @@ public class ColonistManager : BaseManager {
 				}
 			}
 		} else {
-			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(need.colonist.overTile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.Eat), 0), null, null));
+			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(need.colonist.overTile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.Eat), null, 0), null, null));
 			return true;
 		}
 		return false;
@@ -371,20 +421,20 @@ public class ColonistManager : BaseManager {
 			if (validSleepSpots.Count > 0) {
 				ResourceManager.SleepSpot chosenSleepSpot = validSleepSpots.OrderByDescending(sleepSpot => sleepSpot.prefab.restComfortAmount / (PathManager.RegionBlockDistance(need.colonist.overTile.regionBlock, sleepSpot.tile.regionBlock, true, true, false) + 1)).ToList()[0];
 				chosenSleepSpot.StartSleeping(need.colonist);
-				need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(chosenSleepSpot.tile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.Sleep), 0), null, null));
+				need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(chosenSleepSpot.tile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.Sleep), null, 0), null, null));
 				return true;
 			}
 		}
 		if (sleepAnywhere) {
-			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(need.colonist.overTile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.Sleep), 0), null, null));
+			need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, new JobManager.Job(need.colonist.overTile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.Sleep), null, 0), null, null));
 			return true;
 		}
 		return false;
 	}
 
-	public static readonly Dictionary<NeedsEnum, Func<NeedInstance, bool>> needsValueFunctions = new Dictionary<NeedsEnum, Func<NeedInstance, bool>>() {
-		{ NeedsEnum.Food, delegate (NeedInstance need) {
-			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.CollectFood || need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Eat)) {
+	public static readonly Dictionary<NeedEnum, Func<NeedInstance, bool>> needsValueFunctions = new Dictionary<NeedEnum, Func<NeedInstance, bool>>() {
+		{ NeedEnum.Food, delegate (NeedInstance need) {
+			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobEnum.CollectFood || need.colonist.job.prefab.jobType == JobManager.JobEnum.Eat)) {
 				if (need.prefab.critValueAction && need.GetValue() >= need.prefab.critValue) {
 					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * GameManager.timeM.deltaTime);
 					if (GameManager.colonistM.FindAvailableResourceAmount(ResourceManager.ResourceGroupEnum.Foods, need.colonist, false, false) > 0) { // true, true
@@ -418,9 +468,9 @@ public class ColonistManager : BaseManager {
 			}
 			return false;
 		} },
-		{ NeedsEnum.Water, delegate (NeedInstance need) {
+		{ NeedEnum.Water, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
-			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.CollectWater || need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Drink)) {
+			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobEnum.CollectWater || need.colonist.job.prefab.jobType == JobManager.JobEnum.Drink)) {
 				if (need.prefab.critValueAction && need.GetValue() >= need.prefab.critValue) {
 					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * GameManager.timeM.deltaTime);
 					// TODO Find Water Here (Maximum Priority)
@@ -439,8 +489,8 @@ public class ColonistManager : BaseManager {
 			}
 			return false;
 		} },
-		{ NeedsEnum.Rest, delegate (NeedInstance need) {
-			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobTypesEnum.Sleep)) {
+		{ NeedEnum.Rest, delegate (NeedInstance need) {
+			if (need.colonist.job == null || !(need.colonist.job.prefab.jobType == JobManager.JobEnum.Sleep)) {
 				if (need.prefab.critValueAction && need.GetValue() >= need.prefab.critValue) {
 					need.colonist.ChangeHealthValue(need.prefab.healthDecreaseRate * GameManager.timeM.deltaTime);
 					if (GameManager.timeM.minuteChanged) {
@@ -469,31 +519,31 @@ public class ColonistManager : BaseManager {
 			}
 			return false;
 		} },
-		{ NeedsEnum.Clothing, delegate (NeedInstance need) {
+		{ NeedEnum.Clothing, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		} },
-		{ NeedsEnum.Shelter, delegate (NeedInstance need) {
+		{ NeedEnum.Shelter, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		} },
-		{ NeedsEnum.Temperature, delegate (NeedInstance need) {
+		{ NeedEnum.Temperature, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		} },
-		{ NeedsEnum.Safety, delegate (NeedInstance need) {
+		{ NeedEnum.Safety, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		} },
-		{ NeedsEnum.Social, delegate (NeedInstance need) {
+		{ NeedEnum.Social, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		} },
-		{ NeedsEnum.Esteem, delegate (NeedInstance need) {
+		{ NeedEnum.Esteem, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		} },
-		{ NeedsEnum.Relaxation, delegate (NeedInstance need) {
+		{ NeedEnum.Relaxation, delegate (NeedInstance need) {
 			need.SetValue(0); // Value set to 0 while need not being used
 			return false;
 		} }
@@ -510,7 +560,7 @@ public class ColonistManager : BaseManager {
 	(days * 1440) * BRI = pointsAfterDays
 
 	Convert points between 0-100 to days
-	(paintsAfterDays / BRI) / 1440 = days
+	(pointsAfterDays / BRI) / 1440 = days
 
 	0	NeedName/
 	1	0.01/		BRI			Base rate of increase per second while conditions met
@@ -534,7 +584,7 @@ public class ColonistManager : BaseManager {
 
 	public class NeedPrefab {
 
-		public NeedsEnum type;
+		public NeedEnum type;
 		public string name;
 
 		public float baseIncreaseRate;
@@ -555,12 +605,12 @@ public class ColonistManager : BaseManager {
 
 		public int priority;
 
-		public Dictionary<TraitsEnum, float> traitsAffectingThisNeed = new Dictionary<TraitsEnum, float>();
+		public Dictionary<TraitEnum, float> traitsAffectingThisNeed = new Dictionary<TraitEnum, float>();
 
-		public List<JobManager.JobTypesEnum> relatedJobs = new List<JobManager.JobTypesEnum>();
+		public List<JobManager.JobEnum> relatedJobs = new List<JobManager.JobEnum>();
 
 		public NeedPrefab(
-			NeedsEnum type,
+			NeedEnum type,
 			float baseIncreaseRate,
 			bool minValueAction,
 			float minValue,
@@ -572,8 +622,8 @@ public class ColonistManager : BaseManager {
 			float healthDecreaseRate,
 			int clampValue,
 			int priority,
-			Dictionary<TraitsEnum, float> traitsAffectingThisNeed,
-			List<JobManager.JobTypesEnum> relatedJobs
+			Dictionary<TraitEnum, float> traitsAffectingThisNeed,
+			List<JobManager.JobEnum> relatedJobs
 		) {
 			this.type = type;
 			name = UIManager.SplitByCapitals(type.ToString());
@@ -602,12 +652,12 @@ public class ColonistManager : BaseManager {
 		}
 	}
 
-	public NeedPrefab GetNeedPrefabFromEnum(NeedsEnum needsEnumValue) {
+	public NeedPrefab GetNeedPrefabFromEnum(NeedEnum needsEnumValue) {
 		return needPrefabs.Find(needPrefab => needPrefab.type == needsEnumValue);
 	}
 
 	public NeedPrefab GetNeedPrefabFromString(string needTypeString) {
-		return needPrefabs.Find(needPrefab => needPrefab.type == (NeedsEnum)Enum.Parse(typeof(NeedsEnum), needTypeString));
+		return needPrefabs.Find(needPrefab => needPrefab.type == (NeedEnum)Enum.Parse(typeof(NeedEnum), needTypeString));
 	}
 
 	public class NeedInstance {
@@ -649,7 +699,7 @@ public class ColonistManager : BaseManager {
 		List<string> needDataStringList = Resources.Load<TextAsset>(@"Data/colonistNeeds").text.Replace("\t", string.Empty).Split(new string[] { "<Need>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
 		foreach (string singleNeedDataString in needDataStringList) {
 
-			NeedsEnum type = NeedsEnum.Rest;
+			NeedEnum type = NeedEnum.Rest;
 			float baseIncreaseRate = 0;
 			bool minValueAction = false;
 			float minValue = 0;
@@ -661,8 +711,8 @@ public class ColonistManager : BaseManager {
 			float healthDecreaseRate = 0;
 			int clampValue = 0;
 			int priority = 0;
-			Dictionary<TraitsEnum, float> traitsAffectingThisNeed = new Dictionary<TraitsEnum, float>();
-			List<JobManager.JobTypesEnum> relatedJobs = new List<JobManager.JobTypesEnum>();
+			Dictionary<TraitEnum, float> traitsAffectingThisNeed = new Dictionary<TraitEnum, float>();
+			List<JobManager.JobEnum> relatedJobs = new List<JobManager.JobEnum>();
 
 			List<string> singleNeedDataLineStringList = singleNeedDataString.Split('\n').ToList();
 			foreach (string singleNeedDataLineString in singleNeedDataLineStringList.Skip(1)) {
@@ -673,7 +723,7 @@ public class ColonistManager : BaseManager {
 
 					switch (label) {
 						case "Type":
-							type = (NeedsEnum)Enum.Parse(typeof(NeedsEnum), value);
+							type = (NeedEnum)Enum.Parse(typeof(NeedEnum), value);
 							break;
 						case "BaseIncreaseRate":
 							baseIncreaseRate = float.Parse(value);
@@ -711,7 +761,7 @@ public class ColonistManager : BaseManager {
 						case "TraitsAffectingThisNeed":
 							if (!string.IsNullOrEmpty(UIManager.RemoveNonAlphanumericChars(value))) {
 								foreach (string traitsAffectingThisNeedString in value.Split(',')) {
-									TraitsEnum traitEnum = (TraitsEnum)Enum.Parse(typeof(TraitsEnum), traitsAffectingThisNeedString.Split(':')[0]);
+									TraitEnum traitEnum = (TraitEnum)Enum.Parse(typeof(TraitEnum), traitsAffectingThisNeedString.Split(':')[0]);
 									float multiplier = float.Parse(traitsAffectingThisNeedString.Split(':')[1]);
 									traitsAffectingThisNeed.Add(traitEnum, multiplier);
 								}
@@ -720,7 +770,7 @@ public class ColonistManager : BaseManager {
 						case "RelatedJobs":
 							if (!string.IsNullOrEmpty(UIManager.RemoveNonAlphanumericChars(value))) {
 								foreach (string relatedJobString in value.Split(',')) {
-									JobManager.JobTypesEnum jobTypeEnum = (JobManager.JobTypesEnum)Enum.Parse(typeof(JobManager.JobTypesEnum), relatedJobString);
+									JobManager.JobEnum jobTypeEnum = (JobManager.JobEnum)Enum.Parse(typeof(JobManager.JobEnum), relatedJobString);
 									relatedJobs.Add(jobTypeEnum);
 								}
 							}
@@ -736,48 +786,48 @@ public class ColonistManager : BaseManager {
 		}
 	}
 
-	public static readonly Dictionary<HappinessModifierGroupsEnum, Action<Colonist>> happinessModifierFunctions = new Dictionary<HappinessModifierGroupsEnum, Action<Colonist>>() {
-		{ HappinessModifierGroupsEnum.Death, delegate (Colonist colonist) {
+	public static readonly Dictionary<HappinessModifierGroupEnum, Action<Colonist>> happinessModifierFunctions = new Dictionary<HappinessModifierGroupEnum, Action<Colonist>>() {
+		{ HappinessModifierGroupEnum.Death, delegate (Colonist colonist) {
 			// TODO Implement colonists viewing deaths and being sad
 		} },
-		{ HappinessModifierGroupsEnum.Rest, delegate (Colonist colonist) {
-			NeedInstance restNeed = colonist.needs.Find(ni => ni.prefab.type == NeedsEnum.Rest);
+		{ HappinessModifierGroupEnum.Rest, delegate (Colonist colonist) {
+			NeedInstance restNeed = colonist.needs.Find(ni => ni.prefab.type == NeedEnum.Rest);
 			if (restNeed.GetValue() >= restNeed.prefab.maxValue) {
-				colonist.AddHappinessModifier(HappinessModifiersEnum.Exhausted);
+				colonist.AddHappinessModifier(HappinessModifierEnum.Exhausted);
 			} else if (restNeed.GetValue() >= restNeed.prefab.minValue) {
-				colonist.AddHappinessModifier(HappinessModifiersEnum.Tired);
+				colonist.AddHappinessModifier(HappinessModifierEnum.Tired);
 			} else {
-				colonist.RemoveHappinessModifier(HappinessModifiersEnum.Exhausted);
-				colonist.RemoveHappinessModifier(HappinessModifiersEnum.Tired);
+				colonist.RemoveHappinessModifier(HappinessModifierEnum.Exhausted);
+				colonist.RemoveHappinessModifier(HappinessModifierEnum.Tired);
 			}
 		} },
-		{ HappinessModifierGroupsEnum.Water, delegate (Colonist colonist) {
-			NeedInstance waterNeed = colonist.needs.Find(ni => ni.prefab.type == NeedsEnum.Water);
+		{ HappinessModifierGroupEnum.Water, delegate (Colonist colonist) {
+			NeedInstance waterNeed = colonist.needs.Find(ni => ni.prefab.type == NeedEnum.Water);
 			if (waterNeed.GetValue() >= waterNeed.prefab.maxValue) {
-				colonist.AddHappinessModifier(HappinessModifiersEnum.Dehydrated);
+				colonist.AddHappinessModifier(HappinessModifierEnum.Dehydrated);
 			} else if (waterNeed.GetValue() >= waterNeed.prefab.minValue) {
-				colonist.AddHappinessModifier(HappinessModifiersEnum.Thirsty);
+				colonist.AddHappinessModifier(HappinessModifierEnum.Thirsty);
 			} else {
-				colonist.RemoveHappinessModifier(HappinessModifiersEnum.Dehydrated);
-				colonist.RemoveHappinessModifier(HappinessModifiersEnum.Thirsty);
+				colonist.RemoveHappinessModifier(HappinessModifierEnum.Dehydrated);
+				colonist.RemoveHappinessModifier(HappinessModifierEnum.Thirsty);
 			}
 		} },
-		{ HappinessModifierGroupsEnum.Food, delegate (Colonist colonist) {
-			NeedInstance foodNeed = colonist.needs.Find(ni => ni.prefab.type == NeedsEnum.Food);
+		{ HappinessModifierGroupEnum.Food, delegate (Colonist colonist) {
+			NeedInstance foodNeed = colonist.needs.Find(ni => ni.prefab.type == NeedEnum.Food);
 			if (foodNeed.GetValue() >= foodNeed.prefab.maxValue) {
-				colonist.AddHappinessModifier(HappinessModifiersEnum.Starving);
+				colonist.AddHappinessModifier(HappinessModifierEnum.Starving);
 			} else if (foodNeed.GetValue() >= foodNeed.prefab.minValue) {
-				colonist.AddHappinessModifier(HappinessModifiersEnum.Hungry);
+				colonist.AddHappinessModifier(HappinessModifierEnum.Hungry);
 			} else {
-				colonist.RemoveHappinessModifier(HappinessModifiersEnum.Starving);
-				colonist.RemoveHappinessModifier(HappinessModifiersEnum.Hungry);
+				colonist.RemoveHappinessModifier(HappinessModifierEnum.Starving);
+				colonist.RemoveHappinessModifier(HappinessModifierEnum.Hungry);
 			}
 		} },
-		{ HappinessModifierGroupsEnum.Inventory, delegate (Colonist colonist) {
-			if (colonist.inventory.CountResources() > colonist.inventory.maxAmount) {
-				colonist.AddHappinessModifier(HappinessModifiersEnum.Overencumbered);
+		{ HappinessModifierGroupEnum.Inventory, delegate (Colonist colonist) {
+			if (colonist.inventory.TotalWeight() > colonist.inventory.maxWeight) {
+				colonist.AddHappinessModifier(HappinessModifierEnum.Overencumbered);
 			} else {
-				colonist.RemoveHappinessModifier(HappinessModifiersEnum.Overencumbered);
+				colonist.RemoveHappinessModifier(HappinessModifierEnum.Overencumbered);
 			}
 		} }
 	};
@@ -791,14 +841,14 @@ public class ColonistManager : BaseManager {
 		}
 	}
 
-	public enum HappinessModifierGroupsEnum {
+	public enum HappinessModifierGroupEnum {
 		Death,
 		Food,
 		Water,
 		Rest,
 		Inventory
 	};
-	public enum HappinessModifiersEnum {
+	public enum HappinessModifierEnum {
 		WitnessDeath,
 		Stuffed, Full, Hungry, Starving,
 		Dehydrated, Thirsty, Quenched,
@@ -809,7 +859,7 @@ public class ColonistManager : BaseManager {
 	public List<HappinessModifierGroup> happinessModifierGroups = new List<HappinessModifierGroup>();
 
 	public class HappinessModifierGroup {
-		public HappinessModifierGroupsEnum type;
+		public HappinessModifierGroupEnum type;
 		public string name;
 
 		public List<HappinessModifierPrefab> prefabs = new List<HappinessModifierPrefab>();
@@ -817,7 +867,7 @@ public class ColonistManager : BaseManager {
 		public HappinessModifierGroup(string stringHappinessModifierGroup) {
 			List<string> stringHappinessModifiers = stringHappinessModifierGroup.Split(new string[] { "<HappinessModifier>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
-			type = (HappinessModifierGroupsEnum)Enum.Parse(typeof(HappinessModifierGroupsEnum), stringHappinessModifiers[0]);
+			type = (HappinessModifierGroupEnum)Enum.Parse(typeof(HappinessModifierGroupEnum), stringHappinessModifiers[0]);
 			name = UIManager.SplitByCapitals(type.ToString());
 
 			foreach (string stringHappinessModifier in stringHappinessModifiers.Skip(1)) {
@@ -826,7 +876,7 @@ public class ColonistManager : BaseManager {
 		}
 	}
 
-	public HappinessModifierGroup GetHappinessModifierGroupFromEnum(HappinessModifierGroupsEnum happinessModifierGroupEnum) {
+	public HappinessModifierGroup GetHappinessModifierGroupFromEnum(HappinessModifierGroupEnum happinessModifierGroupEnum) {
 		return happinessModifierGroups.Find(hmiGroup => hmiGroup.type == happinessModifierGroupEnum);
 	}
 
@@ -834,7 +884,7 @@ public class ColonistManager : BaseManager {
 
 	public class HappinessModifierPrefab {
 
-		public HappinessModifiersEnum type;
+		public HappinessModifierEnum type;
 		public string name = string.Empty;
 
 		public HappinessModifierGroup group = null;
@@ -858,7 +908,7 @@ public class ColonistManager : BaseManager {
 
 					switch (label) {
 						case "Type":
-							type = (HappinessModifiersEnum)Enum.Parse(typeof(HappinessModifiersEnum), value);
+							type = (HappinessModifierEnum)Enum.Parse(typeof(HappinessModifierEnum), value);
 							name = UIManager.SplitByCapitals(type.ToString());
 							break;
 						case "EffectAmount":
@@ -885,12 +935,12 @@ public class ColonistManager : BaseManager {
 		}
 	}
 
-	public HappinessModifierPrefab GetHappinessModifierPrefabFromEnum(HappinessModifiersEnum happinessModifierEnum) {
+	public HappinessModifierPrefab GetHappinessModifierPrefabFromEnum(HappinessModifierEnum happinessModifierEnum) {
 		return happinessModifierPrefabs.Find(hmiPrefab => hmiPrefab.type == happinessModifierEnum);
 	}
 
 	public HappinessModifierPrefab GetHappinessModifierPrefabFromString(string happinessModifierTypeString) {
-		return happinessModifierPrefabs.Find(happiessModifierPrefab => happiessModifierPrefab.type == (HappinessModifiersEnum)Enum.Parse(typeof(HappinessModifiersEnum), happinessModifierTypeString));
+		return happinessModifierPrefabs.Find(happiessModifierPrefab => happiessModifierPrefab.type == (HappinessModifierEnum)Enum.Parse(typeof(HappinessModifierEnum), happinessModifierTypeString));
 	}
 
 	public class HappinessModifierInstance {
@@ -924,9 +974,8 @@ public class ColonistManager : BaseManager {
 		public JobManager.Job storedJob;
 		public JobManager.Job needJob;
 
-		// Profession
-		public Profession profession;
-		public Profession oldProfession;
+		// Professions
+		public List<ProfessionInstance> professions = new List<ProfessionInstance>();
 
 		// Skills
 		public List<SkillInstance> skills = new List<SkillInstance>();
@@ -943,29 +992,39 @@ public class ColonistManager : BaseManager {
 		public float effectiveHappiness = 100;
 		public List<HappinessModifierInstance> happinessModifiers = new List<HappinessModifierInstance>();
 
-		public Colonist(TileManager.Tile spawnTile, Profession profession, float startingHealth) : base(spawnTile, startingHealth) {
-			obj.transform.SetParent(GameObject.Find("ColonistParent").transform, false);
+		public Colonist(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
+			obj.transform.SetParent(GameManager.resourceM.colonistParent.transform, false);
 
-			this.profession = profession;
-			profession.colonistsInProfessionAtStart.Add(this);
-			profession.colonistsInProfession.Add(this);
+			foreach (ProfessionPrefab professionPrefab in GameManager.colonistM.professionPrefabs) {
+				professions.Add(new ProfessionInstance(
+						professionPrefab, 
+						this, 
+						Mathf.RoundToInt(GameManager.colonistM.professionPrefabs.Count / 2f)
+				));
+			}
 
 			foreach (SkillPrefab skillPrefab in GameManager.colonistM.skillPrefabs) {
-				skills.Add(new SkillInstance(this, skillPrefab, true, 0));
+				skills.Add(new SkillInstance(
+						this, 
+						skillPrefab, 
+						true, 
+						0
+				));
 			}
 
 			foreach (NeedPrefab needPrefab in GameManager.colonistM.needPrefabs) {
-				needs.Add(new NeedInstance(this, needPrefab));
+				needs.Add(new NeedInstance(
+						this, 
+						needPrefab
+				));
 			}
 			needs = needs.OrderBy(need => need.prefab.priority).ToList();
-
-			oldProfession = GameManager.colonistM.professions.Find(findProfession => findProfession.type == ProfessionTypeEnum.Nothing);
 
 			GameManager.colonistM.colonists.Add(this);
 		}
 
 		public override void Update() {
-			moveSpeedMultiplier = (-((inventory.CountResources() - inventory.maxAmount) / (float)inventory.maxAmount)) + 1;
+			moveSpeedMultiplier = (-((inventory.TotalWeight() - inventory.maxWeight) / (float)inventory.maxWeight)) + 1;
 			moveSpeedMultiplier = Mathf.Clamp(moveSpeedMultiplier, 0.1f, 1f);
 
 			if (playerMoved && path.Count <= 0) {
@@ -997,8 +1056,9 @@ public class ColonistManager : BaseManager {
 			if (job == null) {
 				if (path.Count <= 0) {
 					List<ResourceManager.Container> validEmptyInventoryContainers = FindValidContainersToEmptyInventory();
-					int inventoryCount = inventory.CountResources();
-					if (validEmptyInventoryContainers.Count > 0 && ((inventoryCount >= inventory.maxAmount) || (inventoryCount > 0 && GameManager.jobM.GetColonistJobsCountForColonist(this) <= 0))) {
+					int inventoryWeight = inventory.TotalWeight();
+					int inventoryVolume = inventory.TotalVolume();
+					if (validEmptyInventoryContainers.Count > 0 && (((inventoryWeight >= inventory.maxWeight) || (inventoryVolume >= inventory.maxVolume)) || ((inventoryWeight > 0 || inventoryVolume > 0) && GameManager.jobM.GetColonistJobsCountForColonist(this) <= 0))) {
 						EmptyInventory(validEmptyInventoryContainers);
 					} else {
 						Wander(null, 0);
@@ -1026,14 +1086,14 @@ public class ColonistManager : BaseManager {
 		}
 
 		public List<ResourceManager.Container> FindValidContainersToEmptyInventory() {
-			return GameManager.resourceM.GetContainersInRegion(overTile.region).Where(container => container.inventory.CountResources() < container.inventory.maxAmount).ToList();
+			return GameManager.resourceM.GetContainersInRegion(overTile.region).Where(container => container.inventory.TotalWeight() < container.inventory.maxWeight && container.inventory.TotalVolume() < container.inventory.maxVolume).ToList();
 		}
 
 		public void EmptyInventory(List<ResourceManager.Container> validContainers) {
-			if (inventory.CountResources() > 0 && validContainers.Count > 0) {
+			if (inventory.TotalWeight() > 0 && inventory.TotalVolume() > 0 && validContainers.Count > 0) {
 				ReturnJob();
 				ResourceManager.Container closestContainer = validContainers.OrderBy(container => PathManager.RegionBlockDistance(container.tile.regionBlock, overTile.regionBlock, true, true, false)).ToList()[0];
-				SetJob(new JobManager.ColonistJob(this, new JobManager.Job(closestContainer.tile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.EmptyInventory), 0), null, null));
+				SetJob(new JobManager.ColonistJob(this, new JobManager.Job(closestContainer.tile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.EmptyInventory), null, 0), null, null));
 			}
 		}
 
@@ -1079,7 +1139,7 @@ public class ColonistManager : BaseManager {
 			}
 		}
 
-		public void AddHappinessModifier(HappinessModifiersEnum happinessModifierEnum) {
+		public void AddHappinessModifier(HappinessModifierEnum happinessModifierEnum) {
 			HappinessModifierInstance hmi = new HappinessModifierInstance(this, GameManager.colonistM.GetHappinessModifierPrefabFromEnum(happinessModifierEnum));
 			HappinessModifierInstance sameGroupHMI = happinessModifiers.Find(findHMI => hmi.prefab.group.type == findHMI.prefab.group.type);
 			if (sameGroupHMI != null) {
@@ -1091,7 +1151,7 @@ public class ColonistManager : BaseManager {
 			}
 		}
 
-		public void RemoveHappinessModifier(HappinessModifiersEnum happinessModifierEnum) {
+		public void RemoveHappinessModifier(HappinessModifierEnum happinessModifierEnum) {
 			happinessModifiers.Remove(happinessModifiers.Find(findHMI => findHMI.prefab.type == happinessModifierEnum));
 			if (GameManager.humanM.selectedHuman == this) {
 				GameManager.uiM.RemakeSelectedColonistHappinessModifiers();
@@ -1134,11 +1194,11 @@ public class ColonistManager : BaseManager {
 
 			job.jobProgress *= (1 + (1 - GetJobSkillMultiplier(job.prefab.jobType)));
 
-			if (job.prefab.jobType == JobManager.JobTypesEnum.Eat) {
-				job.jobProgress += needs.Find(need => need.prefab.type == NeedsEnum.Food).GetValue();
+			if (job.prefab.jobType == JobManager.JobEnum.Eat) {
+				job.jobProgress += needs.Find(need => need.prefab.type == NeedEnum.Food).GetValue();
 			}
-			if (job.prefab.jobType == JobManager.JobTypesEnum.Sleep) {
-				job.jobProgress += 20f * (needs.Find(need => need.prefab.type == NeedsEnum.Rest).GetValue());
+			if (job.prefab.jobType == JobManager.JobEnum.Sleep) {
+				job.jobProgress += 20f * (needs.Find(need => need.prefab.type == NeedEnum.Rest).GetValue());
 			}
 
 			job.colonistBuildTime = job.jobProgress;
@@ -1148,15 +1208,15 @@ public class ColonistManager : BaseManager {
 
 		public void WorkJob() {
 
-			if (job.prefab.jobType == JobManager.JobTypesEnum.HarvestFarm && job.tile.farm == null) {
+			if (job.prefab.jobType == JobManager.JobEnum.HarvestFarm && job.tile.farm == null) {
 				job.jobUIElement.Remove();
 				job.Remove();
 				job = null;
 				return;
 			} else if (
-				job.prefab.jobType == JobManager.JobTypesEnum.EmptyInventory ||
-				job.prefab.jobType == JobManager.JobTypesEnum.CollectFood ||
-				job.prefab.jobType == JobManager.JobTypesEnum.PickupResources) {
+				job.prefab.jobType == JobManager.JobEnum.EmptyInventory ||
+				job.prefab.jobType == JobManager.JobEnum.CollectFood ||
+				job.prefab.jobType == JobManager.JobEnum.PickupResources) {
 
 				ResourceManager.Container containerOnTile = GameManager.resourceM.containers.Find(container => container.tile == job.tile);
 				if (containerOnTile == null) {
@@ -1165,10 +1225,10 @@ public class ColonistManager : BaseManager {
 					job = null;
 					return;
 				}
-			} else if (job.prefab.jobType == JobManager.JobTypesEnum.Sleep) {
-				float currentRestValue = needs.Find(need => need.prefab.type == NeedsEnum.Rest).GetValue();
+			} else if (job.prefab.jobType == JobManager.JobEnum.Sleep) {
+				float currentRestValue = needs.Find(need => need.prefab.type == NeedEnum.Rest).GetValue();
 				float originalRestValue = currentRestValue / (job.jobProgress / job.colonistBuildTime);
-				needs.Find(need => need.prefab.type == NeedsEnum.Rest).SetValue(originalRestValue * ((job.jobProgress - 1f * GameManager.timeM.deltaTime) / job.colonistBuildTime));
+				needs.Find(need => need.prefab.type == NeedEnum.Rest).SetValue(originalRestValue * ((job.jobProgress - 1f * GameManager.timeM.deltaTime) / job.colonistBuildTime));
 			}
 
 			if (job.activeTileObject != null) {
@@ -1195,11 +1255,11 @@ public class ColonistManager : BaseManager {
 
 			MonoBehaviour.Destroy(finishedJob.jobPreview);
 			if (finishedJob.prefab.addToTileWhenBuilt) {
-				finishedJob.tile.SetTileObject(GameManager.resourceM.CreateTileObjectInstance(finishedJob.prefab, finishedJob.tile, finishedJob.rotationIndex, true));
+				finishedJob.tile.SetTileObject(GameManager.resourceM.CreateTileObjectInstance(finishedJob.prefab, finishedJob.variation, finishedJob.tile, finishedJob.rotationIndex, true));
 				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 1f);
 				finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).FinishCreation();
 				if (finishedJob.prefab.canRotate) {
-					finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().sprite = finishedJob.prefab.bitmaskSprites[finishedJob.rotationIndex];
+					finishedJob.tile.GetObjectInstanceAtLayer(finishedJob.prefab.layer).obj.GetComponent<SpriteRenderer>().sprite = finishedJob.prefab.GetBitmaskSpritesForVariation(finishedJob.variation)[finishedJob.rotationIndex];
 				}
 			}
 
@@ -1320,27 +1380,24 @@ public class ColonistManager : BaseManager {
 			}
 		}
 
-		public SkillInstance GetSkillFromJobType(JobManager.JobTypesEnum jobType) {
-			return skills.Find(findSkill => findSkill.prefab.affectedJobTypes.ContainsKey(jobType));
+		public ProfessionInstance GetProfessionFromEnum(ProfessionEnum type) {
+			return professions.Find(p => p.prefab.type == type);
 		}
 
-		public float GetJobSkillMultiplier(JobManager.JobTypesEnum jobType) {
+		public SkillInstance GetSkillFromEnum(SkillEnum type) {
+			return skills.Find(s => s.prefab.type == type);
+		}
+
+		public SkillInstance GetSkillFromJobType(JobManager.JobEnum jobType) {
+			return skills.Find(s => s.prefab.affectedJobTypes.ContainsKey(jobType));
+		}
+
+		public float GetJobSkillMultiplier(JobManager.JobEnum jobType) {
 			SkillInstance skill = GetSkillFromJobType(jobType);
 			if (skill != null) {
 				return 1 * (-(1f / (((skill.prefab.affectedJobTypes[jobType]) * (skill.level)) + 1)) + 1);
 			}
 			return 1.0f;
-		}
-
-		public void ChangeProfession(Profession newProfession) {
-			if (profession != newProfession) {
-				profession.colonistsInProfession.Remove(this);
-				oldProfession = profession;
-				profession = newProfession;
-				if (newProfession != null) {
-					profession.colonistsInProfession.Add(this);
-				}
-			}
 		}
 
 		public override void SetName(string name) {
@@ -1405,7 +1462,7 @@ public class ColonistManager : BaseManager {
 				}
 				TileManager.Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[UnityEngine.Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[UnityEngine.Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
 
-				new Colonist(colonistSpawnTile, professions[UnityEngine.Random.Range(0, professions.Count)], 1);
+				new Colonist(colonistSpawnTile, 1);
 			}
 
 			GameManager.uiM.SetColonistElements();

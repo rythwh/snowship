@@ -650,7 +650,7 @@ public class TileManager : BaseManager {
 			this.position = position;
 
 			obj = MonoBehaviour.Instantiate(GameManager.resourceM.tilePrefab, new Vector2(position.x + 0.5f, position.y + 0.5f), Quaternion.identity);
-			obj.transform.SetParent(GameObject.Find("TileParent").transform, true);
+			obj.transform.SetParent(GameManager.resourceM.tileParent.transform, true);
 			obj.name = "Tile: " + position;
 
 			sr = obj.GetComponent<SpriteRenderer>();
@@ -714,15 +714,16 @@ public class TileManager : BaseManager {
 						ChangeRegion(largestRegion, false, false);
 						surroundingRegions.Remove(largestRegion);
 						foreach (Map.Region surroundingRegion in surroundingRegions) {
+							if (surroundingRegion.visible != anyVisible) {
+								surroundingRegion.SetVisible(anyVisible, false, true);
+							}
 							foreach (Tile tile in surroundingRegion.tiles) {
 								tile.ChangeRegion(largestRegion, false, false);
 							}
 							surroundingRegion.tiles.Clear();
 							GameManager.colonyM.colony.map.regions.Remove(surroundingRegion);
 						}
-						if (region.visible != anyVisible) {
-							region.SetVisible(anyVisible);
-						}
+						region.SetVisible(anyVisible, true, false);
 					} else {
 						ChangeRegion(new Map.Region(tileType, GameManager.colonyM.colony.map.regions[GameManager.colonyM.colony.map.regions.Count - 1].id + 1), false, false);
 					}
@@ -1083,12 +1084,12 @@ public class TileManager : BaseManager {
 				}
 			}
 			for (int i = 0; i < surroundingTiles.Count; i++) {
-				Tile tile = surroundingTiles[i];
-				if (tile != null && tile.walkable) {
+				Tile surroundingTile = surroundingTiles[i];
+				if (surroundingTile != null && surroundingTile.walkable) {
 					if (Map.diagonalCheckMap.ContainsKey(i)) {
 						bool skip = true;
 						foreach (int horizontalTileIndex in Map.diagonalCheckMap[i]) {
-							Tile horizontalTile = tile.surroundingTiles[horizontalTileIndex];
+							Tile horizontalTile = surroundingTile.surroundingTiles[horizontalTileIndex];
 							if (horizontalTile != null && horizontalTile.walkable) {
 								skip = false;
 								break;
@@ -1099,7 +1100,7 @@ public class TileManager : BaseManager {
 						}
 					}
 					foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
-						if (colonist.overTile.region == tile.region) {
+						if (colonist.overTile.region == surroundingTile.region) {
 							return true;
 						}
 					}
@@ -1108,7 +1109,7 @@ public class TileManager : BaseManager {
 			return false;
 		}
 
-		public void SetVisible(bool visible, bool recalculateBitmask, bool recalculateLighting) {
+		public void SetVisible(bool visible) {
 			this.visible = visible;
 
 			obj.SetActive(visible);
@@ -1119,14 +1120,6 @@ public class TileManager : BaseManager {
 
 			foreach (ResourceManager.ObjectInstance objectInstance in GetAllObjectInstances()) {
 				objectInstance.SetVisible(visible);
-			}
-
-			if (recalculateBitmask) {
-				GameManager.colonyM.colony.map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList(), false, false);
-			}
-
-			if (recalculateLighting) {
-				GameManager.colonyM.colony.map.RecalculateLighting(new List<Tile>() { this }.Concat(surroundingTiles).ToList(), true);
 			}
 		}
 	}
@@ -1547,12 +1540,12 @@ public class TileManager : BaseManager {
 				return false;
 			}
 
-			public void SetVisible(bool visible) {
+			public void SetVisible(bool visible, bool bitmasking, bool recalculateLighting) {
 				this.visible = visible;
 
 				List<Tile> tilesToModify = new List<Tile>();
 				foreach (Tile tile in tiles) {
-					tile.SetVisible(visible, false, false); // bitmasking + lighting set en masse at end of method
+					tile.SetVisible(this.visible);
 
 					tilesToModify.Add(tile);
 					tilesToModify.AddRange(tile.surroundingTiles);
@@ -1560,8 +1553,13 @@ public class TileManager : BaseManager {
 
 				tilesToModify = tilesToModify.Distinct().ToList();
 
-				GameManager.colonyM.colony.map.Bitmasking(tilesToModify, true, false);
-				GameManager.colonyM.colony.map.RecalculateLighting(tilesToModify, true);
+				if (bitmasking) {
+					GameManager.colonyM.colony.map.Bitmasking(tilesToModify, true, false);
+				}
+
+				if (recalculateLighting) {
+					GameManager.colonyM.colony.map.RecalculateLighting(tilesToModify, true);
+				}
 
 			}
 		}
@@ -2641,7 +2639,7 @@ public class TileManager : BaseManager {
 			foreach (Tile tile in tilesToBitmask) {
 				if (tile != null) {
 					if (!careAboutColonistVisibility || tile.IsVisibleToAColonist()) {
-						tile.SetVisible(true, false, false); // "true" on "recalculateBitmasking" would cause stack overflow
+						tile.SetVisible(true); // "true" on "recalculateBitmasking" would cause stack overflow
 						if (tile.tileType.bitmasking) {
 							BitmaskTile(tile, true, false, null, true);
 						} else {
@@ -2650,7 +2648,7 @@ public class TileManager : BaseManager {
 							}
 						}
 					} else {
-						tile.SetVisible(false, false, false); // "true" on "recalculateBitmasking" would cause stack overflow
+						tile.SetVisible(false); // "true" on "recalculateBitmasking" would cause stack overflow
 					}
 				}
 			}
@@ -2749,64 +2747,6 @@ public class TileManager : BaseManager {
 			return !tile.blocksLight || (!tile.blocksLight && tile.roof);
 		}
 
-		//private Queue<LightingRecalculationJob> lightingRecalculationJobQueue = new Queue<LightingRecalculationJob>();
-
-		//private class LightingRecalculationJob {
-		//	public readonly List<Tile> tilesToRecalculate;
-		//	public readonly bool setBrightnessAtEnd;
-		//	public readonly bool forceBrightnessUpdate;
-
-		//	public LightingRecalculationJob(
-		//		List<Tile> tilesToRecalculate,
-		//		bool setBrightnessAtEnd,
-		//		bool forceBrightnessUpdate
-		//	) {
-		//		this.tilesToRecalculate = tilesToRecalculate;
-		//		this.setBrightnessAtEnd = setBrightnessAtEnd;
-		//		this.forceBrightnessUpdate = forceBrightnessUpdate;
-		//	}
-		//}
-
-		//public void RecalculateLighting(List<Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate = false) {
-		//	GameManager.tileM.startCoroutineReference.StartCoroutine(RecalculateLightingCoroutine(tilesToRecalculate, setBrightnessAtEnd, forceBrightnessUpdate));
-		//}
-
-		//private IEnumerator RecalculateLightingCoroutine(List<Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate) {
-		//	Thread thread = new Thread(() => DetermineShadowTiles(DetermineShadowSourceTiles(tilesToRecalculate)));
-		//	thread.Start();
-		//	while (thread.IsAlive) {
-		//		yield return null;
-		//	}
-
-		//	if (setBrightnessAtEnd) {
-		//		SetTileBrightness(GameManager.timeM.tileBrightnessTime, forceBrightnessUpdate);
-		//	}
-		//}
-
-		//public void RecalculateLighting(List<Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate = false) {
-		//	lightingRecalculationJobQueue.Enqueue(new LightingRecalculationJob(tilesToRecalculate, setBrightnessAtEnd, forceBrightnessUpdate));
-
-		//	if (lightingRecalculationJobQueue.Count == 1) {
-		//		GameManager.tileM.startCoroutineReference.StartCoroutine(RecalculateLightingCoroutine(lightingRecalculationJobQueue.Dequeue()));
-		//	}
-		//}
-
-		//private IEnumerator RecalculateLightingCoroutine(LightingRecalculationJob lightingRecalculationJob) {
-		//	Thread thread = new Thread(() => DetermineShadowTiles(DetermineShadowSourceTiles(lightingRecalculationJob.tilesToRecalculate)));
-		//	thread.Start();
-		//	while (thread.IsAlive) {
-		//		yield return null;
-		//	}
-
-		//	if (lightingRecalculationJob.setBrightnessAtEnd) {
-		//		SetTileBrightness(GameManager.timeM.tileBrightnessTime, lightingRecalculationJob.forceBrightnessUpdate);
-		//	}
-
-		//	if (lightingRecalculationJobQueue.Count > 0) {
-		//		GameManager.tileM.startCoroutineReference.StartCoroutine(RecalculateLightingCoroutine(lightingRecalculationJobQueue.Dequeue()));
-		//	}
-		//}
-
 		public void RecalculateLighting(List<Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate = false) {
 			List<Tile> shadowSourceTiles = DetermineShadowSourceTiles(tilesToRecalculate);
 			DetermineShadowTiles(shadowSourceTiles, setBrightnessAtEnd, forceBrightnessUpdate);
@@ -2830,11 +2770,12 @@ public class TileManager : BaseManager {
 				float shadowedBrightnessAtHour = Mathf.Clamp(1 - (0.6f * CalculateBrightnessLevelAtHour(h)) + 0.3f, 0, 1);
 
 				foreach (Tile shadowSourceTile in shadowSourceTiles) {
+					Vector2 shadowSourceTilePosition = shadowSourceTile.obj.transform.position;
 					bool shadowedAnyTile = false;
 
 					List<Tile> shadowTiles = new List<Tile>();
 					for (float distance = 0; distance <= maxShadowDistanceAtHour; distance += distanceIncreaseAmount) {
-						Vector2 nextTilePosition = shadowSourceTile.position/*(Vector2)shadowSourceTile.obj.transform.position*/ + (hourDirection * distance);
+						Vector2 nextTilePosition = shadowSourceTilePosition + (hourDirection * distance);
 						if (nextTilePosition.x < 0 || nextTilePosition.x >= mapData.mapSize || nextTilePosition.y < 0 || nextTilePosition.y >= mapData.mapSize) {
 							break;
 						}
@@ -2844,9 +2785,6 @@ public class TileManager : BaseManager {
 							continue;
 						}
 						if (tileToShadow != shadowSourceTile) {
-							//if (shadowedAnyTile && TileCanShadowTiles(tileToShadow)) {
-							//	break;
-							//}
 							float newBrightness = 1;
 							if (TileCanBeShadowed(tileToShadow)) {
 								shadowedAnyTile = true;
@@ -2858,9 +2796,7 @@ public class TileManager : BaseManager {
 								}
 								shadowTiles.Add(tileToShadow);
 							} else {
-								if (shadowedAnyTile || Vector2.Distance(tileToShadow.position, shadowSourceTile.position) > maxShadowDistanceAtHour) { // Attempt 1
-								//if (!shadowSourceTile.surroundingTiles.Contains(tileToShadow)) { // Attempt 2
-								//if (shadowedAnyTile && !shadowSourceTile.surroundingTiles.Contains(tileToShadow) && TileCanShadowTiles(tileToShadow)) { // Attempt 3
+								if (shadowedAnyTile || Vector2.Distance(tileToShadow.position, shadowSourceTile.position) > maxShadowDistanceAtHour) {
 									if (tileToShadow.blockingShadowsFrom.ContainsKey(h)) {
 										tileToShadow.blockingShadowsFrom[h].Add(shadowSourceTile);
 									} else {

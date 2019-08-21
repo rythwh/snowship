@@ -87,7 +87,8 @@ public class DebugManager : BaseManager {
 		deselectbuildable,      // deselectbuildable						-- deselect all tiles in the selection that are buildable
 		changetiletype,         // changetiletype <tileType>				-- changes the tile type of the selected tile(s) to <tileType>
 		listtiletypes,          // listtiletypes							-- lists all tile types
-		changetileobj,          // changetileobj <tileObj> (rotationIndex)	-- changes the tile object of the selected tile(s) to <tileObj> with (rotationIndex) (int - value depends on obj)
+		changetileobj,          // changetileobj <tileObj> <variation> (rotationIndex)
+								//											-- changes the tile object of the selected tile(s) to <tileObj> <variation> with (rotationIndex) (int - value depends on obj)
 		removetileobj,          // removetileobj (layer)					-- without (layer): removes all tile objects on the selected tile(s). with (layer): removes the tile object at (layer)
 		listtileobjs,           // listtileobjs								-- lists all tile objs
 		changetileplant,        // changetileplant <plantType> <small>		-- changes the tile plant of the selected tile(s) to <plantType> and size large if (small = false), otherwise small
@@ -117,7 +118,8 @@ public class DebugManager : BaseManager {
 		viewshadowsfrom,        // viewshadowsfrom							-- highlights all tiles that affect the brightness of the selected tile through the day (green = earlier, pink = later)
 		viewshadowsto,          // viewshadowsto							-- highlights all tiles that the selected tile affects the brightness of through the day (green = earlier, pink = later)
 		viewblockingfrom,       // viewblockingfrom							-- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)
-		viewroofs               // viewroofs								-- higlights all tiles with a roof above it
+		viewroofs,              // viewroofs								-- higlights all tiles with a roof above it
+		listjobs				// listjobs (colonist)						-- list all jobs and their costs for each colonist or for a specific colonist with the (colonist) argument
 	};
 
 	private Dictionary<Commands, string> commandHelpOutputs = new Dictionary<Commands, string>() {
@@ -142,7 +144,7 @@ public class DebugManager : BaseManager {
 		{Commands.deselectbuildable,"deselectbuildable -- deselect all tiles in the selection that are buildable" },
 		{Commands.changetiletype,"changetiletype <tileType> -- changes the tile type of the selected tile to <tileType>" },
 		{Commands.listtiletypes,"listtiletypes -- lists all tile types" },
-		{Commands.changetileobj,"changetileobj <tileObj> -- changes the tile object of the selected tile to <tileObj>" },
+		{Commands.changetileobj,"changetileobj <tileObj> <variation> (rotationIndex) -- changes the tile object of the selected tile(s) to <tileObj> <variation> with (rotationIndex) (int - value depends on obj)" },
 		{Commands.removetileobj,"removetileobj (layer) -- without (layer): removes all tile objects on the selected tile(s). with (layer): removes the tile object at (layer)" },
 		{Commands.listtileobjs,"listtileobjs -- lists all tile objs" },
 		{Commands.changetileplant,"changetileplant <plantType> <small> -- changes the tile plant of the selected tile(s) to <plantType> and size large if (small = false), otherwise small" },
@@ -171,7 +173,8 @@ public class DebugManager : BaseManager {
 		{Commands.viewshadowsfrom,"viewshadowsfrom -- highlights all tiles that affect the brightness of the selected tile through the day (green = earlier, pink = later)" },
 		{Commands.viewshadowsto,"viewshadowsto -- highlights all tiles that the selected tile affects the brightness of through the day (green = earlier, pink = later)" },
 		{Commands.viewblockingfrom,"viewblockingfrom -- highlights all tiles that the selected tile blocks shadows from (tiles that have shadows that were cut short because this tile was in the way)" },
-		{Commands.viewroofs,"viewroofs -- higlights all tiles with a roof above it" }
+		{Commands.viewroofs,"viewroofs -- higlights all tiles with a roof above it" },
+		{Commands.listjobs,"listjobs (colonist) -- list all jobs and their costs for each colonist or for a specific colonist with the (colonist) argument" }
 	};
 
 	public void ParseCommandInput() {
@@ -786,19 +789,22 @@ public class DebugManager : BaseManager {
 		});
 		commandFunctions.Add(Commands.changetileobj, delegate (Commands selectedCommand, List<string> parameters) {
 			int counter = 0;
-			if (parameters.Count == 2) {
+			if (parameters.Count == 3) {
 				ResourceManager.ObjectPrefab tileObjectPrefab = GameManager.resourceM.GetObjectPrefabByString(parameters[0]);
 				if (tileObjectPrefab != null) {
+					// Variation doesn't need a null check because everything is designed around it working regardless of whether it's null or not
+					ResourceManager.Variation variation = tileObjectPrefab.GetVariationFromString(parameters[1]);
+
 					int rotation = 0;
 					if (int.TryParse(parameters[1], out rotation)) {
-						if (rotation >= 0 && rotation < tileObjectPrefab.bitmaskSprites.Count) {
+						if (rotation >= 0 && rotation < tileObjectPrefab.GetBitmaskSpritesForVariation(variation).Count) {
 							if (selectedTiles.Count > 0) {
 								foreach (TileManager.Tile tile in selectedTiles) {
 									if (tile.objectInstances.ContainsKey(tileObjectPrefab.layer) && tile.objectInstances[tileObjectPrefab.layer] != null) {
 										GameManager.resourceM.RemoveTileObjectInstance(tile.objectInstances[tileObjectPrefab.layer]);
 										tile.RemoveTileObjectAtLayer(tileObjectPrefab.layer);
 									}
-									tile.SetTileObject(GameManager.resourceM.CreateTileObjectInstance(tileObjectPrefab, tile, rotation, true));
+									tile.SetTileObject(GameManager.resourceM.CreateTileObjectInstance(tileObjectPrefab, variation, tile, rotation, true));
 									tile.GetObjectInstanceAtLayer(tileObjectPrefab.layer).FinishCreation();
 									counter += 1;
 								}
@@ -814,16 +820,19 @@ public class DebugManager : BaseManager {
 				} else {
 					OutputToConsole("ERROR: Unable to parse tile object.");
 				}
-			} else if (parameters.Count == 1) {
+			} else if (parameters.Count == 2) {
 				ResourceManager.ObjectPrefab tileObjectPrefab = GameManager.resourceM.GetObjectPrefabByString(parameters[0]);
 				if (tileObjectPrefab != null) {
+					// Variation doesn't need a null check because everything is designed around it working regardless of whether it's null or not
+					ResourceManager.Variation variation = tileObjectPrefab.GetVariationFromString(parameters[1]);
+
 					if (selectedTiles.Count > 0) {
 						foreach (TileManager.Tile tile in selectedTiles) {
 							if (tile.objectInstances.ContainsKey(tileObjectPrefab.layer) && tile.objectInstances[tileObjectPrefab.layer] != null) {
 								GameManager.resourceM.RemoveTileObjectInstance(tile.objectInstances[tileObjectPrefab.layer]);
 								tile.RemoveTileObjectAtLayer(tileObjectPrefab.layer);
 							}
-							tile.SetTileObject(GameManager.resourceM.CreateTileObjectInstance(tileObjectPrefab, tile, 0, true));
+							tile.SetTileObject(GameManager.resourceM.CreateTileObjectInstance(tileObjectPrefab, variation, tile, 0, true));
 							tile.GetObjectInstanceAtLayer(tileObjectPrefab.layer).FinishCreation();
 							counter += 1;
 						}
@@ -1233,7 +1242,7 @@ public class DebugManager : BaseManager {
 		commandFunctions.Add(Commands.viewlightblockingtiles, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
-					tile.SetVisible(true, false, false);
+					tile.SetVisible(true);
 					if (tile.blocksLight) {
 						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 						tile.sr.color = Color.red;
@@ -1246,7 +1255,7 @@ public class DebugManager : BaseManager {
 		commandFunctions.Add(Commands.viewshadowstarttiles, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.DetermineShadowSourceTiles(GameManager.colonyM.colony.map.tiles)) {
-					tile.SetVisible(true, false, false);
+					tile.SetVisible(true);
 					tile.sr.color = Color.red;
 				}
 			} else {
@@ -1370,12 +1379,26 @@ public class DebugManager : BaseManager {
 		commandFunctions.Add(Commands.viewroofs, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
 				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
-					tile.SetVisible(true, false, false);
+					tile.SetVisible(true);
 					if (tile.roof) {
 						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 						tile.sr.color = Color.red;
 					}
 				}
+			} else {
+				OutputToConsole("ERROR: Invalid number of parameters specified.");
+			}
+		});
+		commandFunctions.Add(Commands.listjobs, delegate (Commands selectedCommand, List<string> parameters) {
+			if (parameters.Count == 0) {
+				foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
+					OutputToConsole(colonist.name);
+					foreach (JobManager.Job job in GameManager.jobM.GetSortedJobs(colonist)) {
+						OutputToConsole("\t" + job.prefab.jobType + " " + job.prefab.type + " " + GameManager.jobM.CalculateJobCost(colonist, job, null));
+					}
+				}
+			} else if (parameters.Count == 1) {
+
 			} else {
 				OutputToConsole("ERROR: Invalid number of parameters specified.");
 			}

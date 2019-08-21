@@ -5,7 +5,8 @@ using UnityEngine;
 public class UniverseManager : BaseManager {
 
 	public static string GetRandomUniverseName() {
-		return GameManager.resourceM.GetRandomLocationName();
+		//return GameManager.resourceM.GetRandomLocationName();
+		return "Universe " + System.DateTime.Today.ToString("ddMMyyyy");
 	}
 
 	public Universe universe = null;

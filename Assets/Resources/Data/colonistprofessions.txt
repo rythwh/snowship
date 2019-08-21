@@ -1,54 +1,18 @@
-Nothing/
-	was never particularly good at anything./
-	0/
-		Building,2;
-		Mining,2;
-		Digging,2;
-		Farming,2;
-		Forestry,2;
-		Crafting,2`
-Builder/
-	swims in pools of concrete./
-	Building/
-		Building,5;
-		Mining,3;
-		Digging,3;
-		Farming,2;
-		Forestry,2;
-		Crafting,2`
-Miner/
-	allergic to fresh air./
-	Mining/
-		Building,3;
-		Mining,5;
-		Digging,3;
-		Farming,2;
-		Forestry,2;
-		Crafting,2`
-Farmer/
-	sleeps on bails of hay./
-	Farming/
-		Building,2;
-		Mining,2;
-		Digging,3;
-		Farming,5;
-		Forestry,2;
-		Crafting,2`
-Forester/
-	turns trees into logs with surgical precision./
-	Forestry/
-		Building,2;
-		Mining,2;
-		Digging,2;
-		Farming,4;
-		Forestry,5;
-		Crafting,2`
-Maker/
-	primary tools include glue and duct tape./
-	Crafting/
-		Building,2;
-		Mining,2;
-		Digging,2;
-		Farming,2;
-		Forestry,2;
-		Crafting,5
+<Profession>
+	<Type>Building
+	<Jobs>Build,Remove
+<Profession>
+	<Type>Terraforming
+	<Jobs>Mine,Dig,Fill
+<Profession>
+	<Type>Farming
+	<Jobs>PlantFarm,HarvestFarm
+<Profession>
+	<Type>Forestry
+	<Jobs>ChopPlant,PlantPlant
+<Profession>
+	<Type>Crafting
+	<Jobs>CreateResource
+<Profession>
+	<Type>Hauling
+	<Jobs>TransferResources,CollectResources

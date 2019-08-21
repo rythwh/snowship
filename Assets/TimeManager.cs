@@ -5,7 +5,17 @@ public class TimeManager : BaseManager {
 
 	public static readonly int dayLengthSeconds = 1440; // Number of seconds in 1 in-game day
 
+	public enum Season {
+		Spring,
+		Summer,
+		Autumn,
+		Winter
+	}
+
 	private bool paused;
+
+	private int permanentDeltaTimeMultiplier = 2;
+	private int permanentTimerMultiplier = 2;
 
 	private int pauseTimeModifier = 0;
 	private int timeModifier = 0;
@@ -20,8 +30,8 @@ public class TimeManager : BaseManager {
 
 	private int minute = 0;
 	private int hour = 8;
-	private int day = 1;
-	private int month = 1;
+	private int day = 25;
+	private int season = 4;
 	private int year = 1;
 
 	public bool isDay;
@@ -52,9 +62,9 @@ public class TimeManager : BaseManager {
 			if (Input.GetKeyDown(KeyCode.Space) && !GameManager.uiM.pauseMenu.activeSelf && !GameManager.uiM.playerTyping) {
 				TogglePause();
 			}
-			deltaTime = Time.deltaTime * timeModifier;
+			deltaTime = Time.deltaTime * timeModifier * permanentDeltaTimeMultiplier;
 
-			timer += deltaTime;
+			timer += deltaTime * permanentTimerMultiplier;
 			minuteChanged = false;
 			if (timer >= 1) {
 				minute += 1;
@@ -70,11 +80,11 @@ public class TimeManager : BaseManager {
 						day += 1;
 						hour = 0;
 						if (day > 30) {
-							month += 1;
+							season += 1;
 							day = 1;
-							if (month > 12) {
+							if (season > 4) {
 								year += 1;
-								month = 1;
+								season = 1;
 							}
 						}
 					}
@@ -82,7 +92,7 @@ public class TimeManager : BaseManager {
 			}
 			isDay = (hour >= 6 && hour <= 18);
 
-			GameManager.uiM.UpdateDateTimeInformation(minute, hour, day, month, year, isDay);
+			GameManager.uiM.UpdateDateTimeInformation(minute, hour, day, GetSeason(), year, isDay);
 		}
 	}
 
@@ -124,7 +134,7 @@ public class TimeManager : BaseManager {
 	}
 
 	public string GetDateString() {
-		return (day + "," + month + "," + year);
+		return (day + "," + season + "," + year);
 	}
 
 	public int GetMinute() {
@@ -147,16 +157,34 @@ public class TimeManager : BaseManager {
 		return day;
 	}
 
+	public string GetDayWithSuffix(int day) {
+		if (day.ToString().Length > 0) {
+			int dayLastDigit = int.Parse(day.ToString()[0].ToString());
+			return day + (
+				dayLastDigit == 1 ? "st"
+				: dayLastDigit == 2 ? "nd"
+				: dayLastDigit == 3 ? "rd"
+				: "th"
+			);
+		} else {
+			return day.ToString();
+		}
+	}
+
 	public void SetDay(int day) {
 		this.day = day;
 	}
 
-	public int GetMonth() {
-		return month;
+	public Season GetSeason() {
+		return (Season)season;
 	}
 
-	public void SetMonth(int month) {
-		this.month = month;
+	public void SetSeason(int season) {
+		this.season = season;
+	}
+
+	public void SetSeason(Season season) {
+		this.season = (int)season;
 	}
 
 	public int GetYear() {

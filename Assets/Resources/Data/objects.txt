@@ -5,7 +5,7 @@
 			<Type>Walls
 			<Objects>
 				<Object>
-					<Type>WoodenWall
+					<Type>Wall
 					<Layer>2
 					<Bitmasking>true
 					<BlocksLight>true
@@ -13,95 +13,62 @@
 					<WalkSpeed>1
 					<Walkable>false
 					<Buildable>true
-					<Flammability>1
-					<TimeToBuild>5
-					<ResourcesToBuild>Wood:5
-					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
-					<JobType>Build
-				<Object>
-					<Type>GraniteWall
-					<Layer>2
-					<Bitmasking>true
-					<BlocksLight>true
-					<Integrity>4000
-					<WalkSpeed>1
-					<Walkable>false
-					<Buildable>true
 					<Flammability>0
 					<TimeToBuild>5
-					<ResourcesToBuild>Granite:5
-					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
-					<JobType>Build
-				<Object>
-					<Type>BasaltWall
-					<Layer>2
-					<Bitmasking>true
-					<BlocksLight>true
-					<Integrity>3000
-					<WalkSpeed>1
-					<Walkable>false
-					<Buildable>true
-					<Flammability>0
-					<TimeToBuild>5
-					<ResourcesToBuild>Basalt:5
-					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
-					<JobType>Build
-				<Object>
-					<Type>SandstoneWall
-					<Layer>2
-					<Bitmasking>true
-					<BlocksLight>true
-					<Integrity>2000
-					<WalkSpeed>1
-					<Walkable>false
-					<Buildable>true
-					<Flammability>0
-					<TimeToBuild>5
-					<ResourcesToBuild>Sandstone:5
-					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
-					<JobType>Build
-				<Object>
-					<Type>CompactedSnowWall
-					<Layer>2
-					<Bitmasking>true
-					<BlocksLight>true
-					<Integrity>500
-					<WalkSpeed>1
-					<Walkable>false
-					<Buildable>true
-					<Flammability>1
-					<TimeToBuild>5
-					<ResourcesToBuild>Snow:20
-					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
-					<JobType>Build
-				<Object>
-					<Type>BrickWall
-					<Layer>2
-					<Bitmasking>true
-					<BlocksLight>true
-					<Integrity>2500
-					<WalkSpeed>1
-					<Walkable>false
-					<Buildable>true
-					<Flammability>0
-					<TimeToBuild>10
-					<ResourcesToBuild>Brick:5
+					<Variations>
+						<Variation>
+							<Name>Mudbrick
+							<UniqueResources>Mudbrick:5
+							<Integrity>700
+						<Variation>
+							<Name>Wood
+							<UniqueResources>Wood:5
+							<Integrity>1000
+							<Flammability>1
+						<Variation>
+							<Name>Granite
+							<UniqueResources>Granite:5
+							<Integrity>4000
+						<Variation>
+							<Name>Basalt
+							<UniqueResources>Basalt:5
+							<Integrity>3000
+						<Variation>
+							<Name>Sandstone
+							<UniqueResources>Sandstone:5
+							<Integrity>2000
+						<Variation>
+							<Name>Compacted Snow
+							<UniqueResources>Snow:20
+							<Integrity>500
+							<Flammability>1
+							<TimeToBuild>20
+						<Variation>
+							<Name>Brick
+							<UniqueResources>Brick:5
+							<Integrity>2500
+							<TimeToBuild>10
 					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 		<SubGroup>
 			<Type>Fences
 			<Objects>
 				<Object>
-					<Type>WoodenFence
+					<Type>Fence
 					<Layer>2
 					<Bitmasking>true
 					<Integrity>300
 					<WalkSpeed>1
 					<Walkable>false
 					<Buildable>true
-					<Flammability>1
+					<Flammability>0
 					<TimeToBuild>5
-					<ResourcesToBuild>Wood:3
+					<Variations>
+						<Variation>
+							<Name>Wood
+							<UniqueResources>Wood:3
+							<Integrity>300
+							<Flammability>1
 					<SelectionModifiers>Outline,Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 		<SubGroup>
@@ -117,7 +84,7 @@
 					<Buildable>true
 					<Flammability>1
 					<TimeToBuild>5
-					<ResourcesToBuild>Wood:2
+					<CommonResources>Wood:2
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 		<SubGroup>
@@ -133,7 +100,7 @@
 					<Buildable>true
 					<Flammability>1
 					<TimeToBuild>5
-					<ResourcesToBuild>Wood:2
+					<CommonResources>Wood:2
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs,OmitFarms
 					<JobType>Build
 				<Object>
@@ -146,7 +113,7 @@
 					<Buildable>true
 					<Flammability>1
 					<TimeToBuild>10
-					<ResourcesToBuild>Brick:2
+					<CommonResources>Brick:2
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs,OmitFarms
 					<JobType>Build
 		<SubGroup>
@@ -162,7 +129,7 @@
 					<Buildable>true
 					<Flammability>1
 					<TimeToBuild>5
-					<ResourcesToBuild>Wood:6
+					<CommonResources>Wood:6
 					<SelectionModifiers>Walkable,LiquidWaterTypes,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs,OmitFarms
 					<JobType>Build
 <Group>
@@ -183,7 +150,7 @@
 					<MaxInventoryVolume>100
 					<MaxInventoryWeight>Max
 					<TimeToBuild>5
-					<ResourcesToBuild>Wood:1
+					<CommonResources>Wood:1
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 				<Object>
@@ -198,7 +165,7 @@
 					<MaxInventoryVolume>250
 					<MaxInventoryWeight>Max
 					<TimeToBuild>10
-					<ResourcesToBuild>Wood:3
+					<CommonResources>Wood:3
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 				<Object>
@@ -213,7 +180,7 @@
 					<MaxInventoryVolume>100
 					<MaxInventoryWeight>Max
 					<TimeToBuild>10
-					<ResourcesToBuild>Wood:4
+					<CommonResources>Wood:4
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 		<SubGroup>
@@ -230,7 +197,7 @@
 					<Flammability>1
 					<RestComfortAmount>10
 					<TimeToBuild>10
-					<ResourcesToBuild>Wood:4,Cloth:2
+					<CommonResources>Wood:4,Cloth:2
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 		<SubGroup>
@@ -245,7 +212,7 @@
 					<Buildable>true
 					<Flammability>1
 					<TimeToBuild>5
-					<ResourcesToBuild>Wood:2
+					<CommonResources>Wood:2
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 		<SubGroup>
@@ -261,7 +228,7 @@
 					<Buildable>true
 					<Flammability>1
 					<TimeToBuild>5
-					<ResourcesToBuild>Wood:4
+					<CommonResources>Wood:4
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 		<SubGroup>
@@ -279,7 +246,7 @@
 					<MaxLightDistance>10
 					<LightColour>E67E22
 					<TimeToBuild>3
-					<ResourcesToBuild>Wood:2
+					<CommonResources>Wood:2
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 				<Object>
@@ -294,7 +261,7 @@
 					<MaxLightDistance>7
 					<LightColour>E67E22
 					<TimeToBuild>5
-					<ResourcesToBuild>Wood:1,Glass:1
+					<CommonResources>Wood:1,Glass:1
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 		<SubGroup>
@@ -312,7 +279,7 @@
 					<MaxInventoryVolume>500
 					<MaxInventoryWeight>Max
 					<TimeToBuild>5
-					<ResourcesToBuild>Wood:4
+					<CommonResources>Wood:4
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 <Group>
@@ -322,7 +289,7 @@
 			<Type>Furnaces
 			<Objects>
 				<Object>
-					<Type>StoneFurnace
+					<Type>Furnace
 					<InstanceType>ManufacturingObject
 					<Layer>2
 					<Integrity>500
@@ -332,7 +299,19 @@
 					<Flammability>0
 					<UsesFuel>true
 					<TimeToBuild>10
-					<ResourcesToBuild>Basalt:5
+					<Variations>
+						<Variation>
+							<Name>Mudbrick
+							<UniqueResources>Mudbrick:5
+						<Variation>
+							<Name>Basalt
+							<UniqueResources>Basalt:5
+						<Variation>
+							<Name>Granite
+							<UniqueResources>Granite:5
+						<Variation>
+							<Name>Sandstone
+							<UniqueResources>Sandstone:5
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 		<SubGroup>
@@ -350,7 +329,7 @@
 					<MultiTilePositions>0,0;1,0
 					<UsesFuel>false
 					<TimeToBuild>30
-					<ResourcesToBuild>Wood:6,Iron:2
+					<CommonResources>Wood:6,Iron:2
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 				<Object>
@@ -364,7 +343,7 @@
 					<Flammability>0
 					<UsesFuel>false
 					<TimeToBuild>5
-					<ResourcesToBuild>Basalt:1
+					<CommonResources>Basalt:1
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 				<Object>
@@ -378,7 +357,7 @@
 					<Flammability>1
 					<UsesFuel>false
 					<TimeToBuild>2
-					<ResourcesToBuild>Log:1
+					<CommonResources>Log:1
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 				<Object>
@@ -392,7 +371,7 @@
 					<Flammability>0
 					<UsesFuel>false
 					<TimeToBuild>10
-					<ResourcesToBuild>Iron:2
+					<CommonResources>Iron:2
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 				<Object>
@@ -406,7 +385,7 @@
 					<Flammability>0.5
 					<UsesFuel>false
 					<TimeToBuild>15
-					<ResourcesToBuild>Wood:3,Iron:1
+					<CommonResources>Wood:3,Iron:1
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 				<Object>
@@ -420,7 +399,21 @@
 					<Flammability>1
 					<UsesFuel>false
 					<TimeToBuild>15
-					<ResourcesToBuild>Wood:4,Iron:1
+					<CommonResources>Wood:4,Iron:1
+					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
+					<JobType>Build
+				<Object>
+					<Type>BrickFormer
+					<InstanceType>ManufacturingObject
+					<Layer>2
+					<Integrity>50
+					<WalkSpeed>0.25
+					<Walkable>true
+					<Buildable>true
+					<Flammability>1
+					<UsesFuel>false
+					<TimeToBuild>5
+					<CommonResources>Wood:6
 					<SelectionModifiers>Walkable,Buildable,OmitSameLayerObjectInstances,OmitPlants,OmitSameLayerJobs
 					<JobType>Build
 <Group>
@@ -442,7 +435,7 @@
 					<Seed>WheatSeed
 					<HarvestResource>Wheat
 					<TimeToBuild>2
-					<ResourcesToBuild>WheatSeed:1
+					<CommonResources>WheatSeed:1
 					<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs
 					<JobType>PlantFarm
 				<Object>
@@ -458,7 +451,7 @@
 					<Seed>Potato
 					<HarvestResource>Potato
 					<TimeToBuild>2
-					<ResourcesToBuild>Potato:1
+					<CommonResources>Potato:1
 					<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs
 					<JobType>PlantFarm
 				<Object>
@@ -474,7 +467,7 @@
 					<Seed>CottonSeed
 					<HarvestResource>Cotton
 					<TimeToBuild>2
-					<ResourcesToBuild>CottonSeed:1
+					<CommonResources>CottonSeed:1
 					<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs
 					<JobType>PlantFarm
 		<SubGroup>
@@ -505,7 +498,7 @@
 					<Layer>0
 					<Plants>WideTree:None,ThinTree:None
 					<TimeToBuild>2
-					<ResourcesToBuild>TreeSeed:1
+					<CommonResources>TreeSeed:1
 					<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,LivingTreeOrBushBiomes
 					<JobType>PlantPlant
 					<AddToTileWhenBuilt>false
@@ -514,7 +507,7 @@
 					<Layer>0
 					<Plants>Bush:None
 					<TimeToBuild>2
-					<ResourcesToBuild>BushSeed:1
+					<CommonResources>BushSeed:1
 					<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,LivingTreeOrBushBiomes
 					<JobType>PlantPlant
 					<AddToTileWhenBuilt>false
@@ -523,7 +516,7 @@
 					<Layer>0
 					<Plants>Cactus:None
 					<TimeToBuild>2
-					<ResourcesToBuild>CactusSeed:1
+					<CommonResources>CactusSeed:1
 					<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,CactusBiomes
 					<JobType>PlantPlant
 					<AddToTileWhenBuilt>false
@@ -532,7 +525,7 @@
 					<Layer>0
 					<Plants>WideTree:Apple
 					<TimeToBuild>2
-					<ResourcesToBuild>AppleSeed:1
+					<CommonResources>AppleSeed:1
 					<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,LivingTreeOrBushBiomes
 					<JobType>PlantPlant
 					<AddToTileWhenBuilt>false
@@ -541,7 +534,7 @@
 					<Layer>0
 					<Plants>Bush:Blueberry
 					<TimeToBuild>2
-					<ResourcesToBuild>Blueberry:1
+					<CommonResources>Blueberry:1
 					<SelectionModifiers>Walkable,Buildable,OmitObjects,OmitPlants,OmitSameLayerJobs,LivingTreeOrBushBiomes
 					<JobType>PlantPlant
 					<AddToTileWhenBuilt>false
@@ -561,6 +554,14 @@
 					<TimeToBuild>3
 					<SelectionModifiers>OmitNonCoastWater,OmitHoles,OmitPreviousDig,OmitStoneTypes,OmitObjects,OmitPlants,OmitSameLayerJobs
 					<JobType>Dig
+					<AddToTileWhenBuilt>false
+				<Object>
+					<Type>Fill
+					<Layer>0
+					<TimeToBuild>3
+					<CommonResources>Dirt:4
+					<SelectionModifiers>Fillable,OmitObjects,OmitPlants,OmitSameLayerJobs
+					<JobType>Fill
 					<AddToTileWhenBuilt>false
 		<SubGroup>
 			<Type>Remove
