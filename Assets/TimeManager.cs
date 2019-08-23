@@ -14,8 +14,8 @@ public class TimeManager : BaseManager {
 
 	private bool paused;
 
-	private int permanentDeltaTimeMultiplier = 2;
-	private int permanentTimerMultiplier = 2;
+	private readonly int permanentDeltaTimeMultiplier = 2;
+	private readonly int permanentTimerMultiplier = 2;
 
 	private int pauseTimeModifier = 0;
 	private int timeModifier = 0;
@@ -28,11 +28,11 @@ public class TimeManager : BaseManager {
 
 	private float timer = 0;
 
-	private int minute = 0;
-	private int hour = 8;
-	private int day = 25;
-	private int season = 4;
-	private int year = 1;
+	private int minute = 0; // 0
+	private int hour = 8; // 8
+	private int day = 1; // 1
+	private Season season = Season.Spring; // Season.Spring
+	private int year = 1; // 1
 
 	public bool isDay;
 
@@ -82,9 +82,9 @@ public class TimeManager : BaseManager {
 						if (day > 30) {
 							season += 1;
 							day = 1;
-							if (season > 4) {
+							if (season > Season.Winter) {
 								year += 1;
-								season = 1;
+								season = Season.Spring;
 							}
 						}
 					}
@@ -159,7 +159,7 @@ public class TimeManager : BaseManager {
 
 	public string GetDayWithSuffix(int day) {
 		if (day.ToString().Length > 0) {
-			int dayLastDigit = int.Parse(day.ToString()[0].ToString());
+			int dayLastDigit = int.Parse(day.ToString()[day.ToString().Length - 1].ToString());
 			return day + (
 				dayLastDigit == 1 ? "st"
 				: dayLastDigit == 2 ? "nd"
@@ -176,15 +176,15 @@ public class TimeManager : BaseManager {
 	}
 
 	public Season GetSeason() {
-		return (Season)season;
+		return season;
 	}
 
 	public void SetSeason(int season) {
-		this.season = season;
+		this.season = (Season)season;
 	}
 
 	public void SetSeason(Season season) {
-		this.season = (int)season;
+		this.season = season;
 	}
 
 	public int GetYear() {
