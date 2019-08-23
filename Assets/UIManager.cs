@@ -15,7 +15,7 @@ public class UIManager : BaseManager {
 	}
 
 	public static readonly string gameVersionString = "Snowship " + PersistenceManager.gameVersion.Value;
-	public static readonly string disclaimerText = "<size=20>" + gameVersionString + "</size>\nSnowship by Ryan White - flizzehh.itch.io/snowship\nThis game is a work in progress and subject to major changes.";
+	public static readonly string disclaimerText = "Snowship by Ryan White - flizzehh.itch.io/snowship\n<size=20>" + gameVersionString + "</size>";
 
 	public bool playerTyping = false;
 
@@ -2903,7 +2903,7 @@ public class UIManager : BaseManager {
 
 			obj = MonoBehaviour.Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ColonistInfoElement-Panel"), transform, false);
 
-			obj.GetComponent<RectTransform>().sizeDelta = new Vector2(180, obj.GetComponent<RectTransform>().sizeDelta.y);
+			obj.GetComponent<RectTransform>().sizeDelta = new Vector2(135, obj.GetComponent<RectTransform>().sizeDelta.y);
 
 			obj.transform.Find("BodySprite").GetComponent<Image>().sprite = colonist.moveSprites[0];
 			obj.transform.Find("Name").GetComponent<Text>().text = colonist.name;
@@ -2958,7 +2958,7 @@ public class UIManager : BaseManager {
 
 			obj = MonoBehaviour.Instantiate(Resources.Load<GameObject>(@"UI/UIElements/CaravanElement-Panel"), transform, false);
 
-			obj.GetComponent<RectTransform>().sizeDelta = new Vector2(180, obj.GetComponent<RectTransform>().sizeDelta.y);
+			obj.GetComponent<RectTransform>().sizeDelta = new Vector2(135, obj.GetComponent<RectTransform>().sizeDelta.y);
 
 			obj.GetComponent<Button>().onClick.AddListener(delegate { GameManager.humanM.SetSelectedHuman(caravan.traders[0]); });
 
@@ -3089,7 +3089,7 @@ public class UIManager : BaseManager {
 			}
 
 			if (colonist != null) {
-				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, 77);
+				obj.GetComponent<RectTransform>().sizeDelta = new Vector2(obj.GetComponent<RectTransform>().sizeDelta.x, 134);
 
 				colonistObj = MonoBehaviour.Instantiate(Resources.Load<GameObject>(@"UI/UIElements/ColonistInfoElement-Panel"), obj.transform.Find("Content"), false);
 				colonistObj.transform.Find("BodySprite").GetComponent<Image>().sprite = colonist.moveSprites[0];
@@ -3198,8 +3198,9 @@ public class UIManager : BaseManager {
 
 	public void UpdateDateTimeInformation(int minute, int hour, int day, TimeManager.Season season, int year, bool isDay) {
 		dateTimeInformationPanel.transform.Find("DateTimeInformation-Speed-Text").GetComponent<Text>().text = GameManager.timeM.GetTimeModifier() > 0 ? new string('>', GameManager.timeM.GetTimeModifier()) : "-";
-		dateTimeInformationPanel.transform.Find("DateTimeInformation-Time-Text").GetComponent<Text>().text = GameManager.timeM.Get12HourTime() + ":" + (minute < 10 ? ("0" + minute) : minute.ToString()) + (hour < 12 || hour > 23 ? "AM" : "PM") + " (" + (isDay ? "D" : "N") + ")";
-		dateTimeInformationPanel.transform.Find("DateTimeInformation-Date-Text").GetComponent<Text>().text = GameManager.timeM.GetDayWithSuffix(GameManager.timeM.GetDay()) + " of " + season + ", " + year;
+		dateTimeInformationPanel.transform.Find("DateTimeInformation-Time-Text").GetComponent<Text>().text = GameManager.timeM.Get12HourTime() + ":" + (minute < 10 ? ("0" + minute) : minute.ToString()) + " " + (hour < 12 || hour > 23 ? "AM" : "PM") + " (" + (isDay ? "D" : "N") + ")";
+		dateTimeInformationPanel.transform.Find("DateTimeInformation-Date-Text").GetComponent<Text>().text = GameManager.timeM.GetDayWithSuffix(GameManager.timeM.GetDay()) + " of " + season;
+		dateTimeInformationPanel.transform.Find("DateTimeInformation-Year-Text").GetComponent<Text>().text = "Year " + year;
 	}
 
 	public void SelectionSizeCanvasSetActive(bool active) {
