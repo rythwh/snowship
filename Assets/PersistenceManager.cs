@@ -186,34 +186,20 @@ public class PersistenceManager : BaseManager {
 		canvas.SetActive(true);
 	}
 
-	public WWW CreateWWWForFile(string path) {
-		WWW www = new WWW(path);
-		if (string.IsNullOrEmpty(www.error)) {
-			return www;
+	private Sprite LoadSpriteFromImageFile(string path, int x = 280, int y = 158) {
+		if (File.Exists(path)) {
+			byte[] fileData = File.ReadAllBytes(path);
+			Texture2D texture = new Texture2D(x, y);
+			texture.LoadImage(fileData);
+			return Sprite.Create(texture, new Rect(Vector2.zero, new Vector2(texture.width, texture.height)), Vector2.zero);
 		}
 		return null;
-	}
-
-	private Sprite LoadSaveImage(WWW www) {
-		Sprite saveImage = null;
-		while (!www.isDone) {
-			continue;
-		}
-		if (string.IsNullOrEmpty(www.error)) {
-			Texture2D texture = new Texture2D(280, 158, TextureFormat.RGB24, false);
-			www.LoadImageIntoTexture(texture);
-			saveImage = Sprite.Create(texture, new Rect(new Vector2(0, 0), new Vector2(texture.width, texture.height)), new Vector2(0, 0));
-		}
-		return saveImage;
 	}
 
 	public Sprite LoadSaveImageFromSaveDirectoryPath(string saveDirectoryPath) {
 		string screenshotPath = Directory.GetFiles(saveDirectoryPath).ToList().Find(f => Path.GetExtension(f).ToLower() == ".png");
 		if (screenshotPath != null) {
-			WWW www = CreateWWWForFile(screenshotPath);
-			if (www != null) {
-				return LoadSaveImage(www);
-			}
+			return LoadSpriteFromImageFile(screenshotPath);
 		}
 		return null;
 	}
@@ -924,13 +910,7 @@ public class PersistenceManager : BaseManager {
 				if (saveDirectories.Count > 0) {
 					string screenshotPath = Directory.GetFiles(saveDirectories[0]).ToList().Find(f => Path.GetExtension(f).ToLower() == ".png");
 					if (screenshotPath != null) {
-						WWW www = CreateWWWForFile(screenshotPath);
-						if (www != null) {
-							Sprite saveImage = LoadSaveImage(www);
-							if (saveImage != null) {
-								persistenceColony.lastSaveImage = saveImage;
-							}
-						}
+						persistenceColony.lastSaveImage = LoadSpriteFromImageFile(screenshotPath);
 					}
 				}
 				persistenceColonies.Add(persistenceColony);
@@ -1053,13 +1033,7 @@ public class PersistenceManager : BaseManager {
 
 				string screenshotPath = Directory.GetFiles(saveDirectoryPath).ToList().Find(f => Path.GetExtension(f).ToLower() == ".png");
 				if (screenshotPath != null) {
-					WWW www = CreateWWWForFile(screenshotPath);
-					if (www != null) {
-						Sprite saveImage = LoadSaveImage(www);
-						if (saveImage != null) {
-							persistenceSave.image = saveImage;
-						}
-					}
+					persistenceSave.image = LoadSpriteFromImageFile(screenshotPath);
 				}
 				persistenceSaves.Add(persistenceSave);
 			}
