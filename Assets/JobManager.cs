@@ -62,6 +62,9 @@ public class JobManager : BaseManager {
 			this.variation = variation;
 
 			resourcesToBuild.AddRange(prefab.commonResources);
+			if (variation != null) {
+				resourcesToBuild.AddRange(variation.uniqueResources);
+			}
 
 			this.rotationIndex = rotationIndex;
 
@@ -992,7 +995,7 @@ public class JobManager : BaseManager {
 	}
 
 	public KeyValuePair<bool, List<List<ResourceManager.ResourceAmount>>> CalculateColonistResourcesToPickup(ColonistManager.Colonist colonist, List<ResourceManager.ResourceAmount> resourcesToFind) {
-		bool colonistHasAllResources = false;
+		bool colonistHasAllResources = true;
 		List<ResourceManager.ResourceAmount> resourcesColonistHas = new List<ResourceManager.ResourceAmount>();
 		List<ResourceManager.ResourceAmount> resourcesToPickup = new List<ResourceManager.ResourceAmount>();
 		foreach (ResourceManager.ResourceAmount resourceAmount in resourcesToFind) {
