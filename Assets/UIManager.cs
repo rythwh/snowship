@@ -3067,24 +3067,16 @@ public class UIManager : BaseManager {
 
 			bool hasPriority = job.priority != 0;
 
-			GameObject priorityPanel = jobInfo.transform.Find("Priority-Panel").gameObject;
-			Image priorityPanelImage = priorityPanel.GetComponent<Image>();
-			Text priorityText = priorityPanel.transform.Find("Priority").GetComponent<Text>();
-
-			priorityPanel.SetActive(hasPriority);
+			Text priorityText = jobInfo.transform.Find("Priority").GetComponent<Text>();
 
 			if (hasPriority) {
 				priorityText.text = job.priority.ToString();
 				if (job.priority > 0) {
-					priorityPanelImage.color = GetColour(Colours.DarkYellow);
-					priorityText.color = GetColour(Colours.DarkGrey50);
+					priorityText.color = GetColour(Colours.DarkYellow);
 				} else if (job.priority < 0) {
-					priorityPanelImage.color = GetColour(Colours.DarkRed);
-					priorityText.color = GetColour(Colours.LightGrey220);
+					priorityText.color = GetColour(Colours.DarkRed);
 				}
 			} else {
-				priorityPanelImage.color = GetColour(Colours.DarkGrey50);
-				priorityText.color = GetColour(Colours.LightGrey220);
 				priorityText.text = string.Empty;
 			}
 

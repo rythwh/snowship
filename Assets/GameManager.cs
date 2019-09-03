@@ -57,6 +57,7 @@ public class GameManager : MonoBehaviour {
 		tileM.CreateTileTypes();
 		tileM.CreateBiomes();
 		tileM.CreateBiomeRanges();
+		tileM.CreateResourceVeins();
 
 		humanM.CreateNames();
 		humanM.CreateHumanSprites();
