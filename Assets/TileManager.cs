@@ -441,6 +441,137 @@ public class TileManager : BaseManager {
 		}
 	}
 
+	public class ResourceVein {
+		public ResourceManager.ResourceEnum resourceType;
+		public Dictionary<TileTypeGroupEnum, TileTypeEnum> tileTypes;
+		public int numVeinsByMapSize = 0;
+		public int veinDistance = 0;
+		public int veinSize = 0;
+		public int veinSizeRange = 0;
+
+		public ResourceVein(ResourceManager.ResourceEnum resourceType, Dictionary<TileTypeGroupEnum, TileTypeEnum> tileTypes, int numVeinsByMapSize, int veinDistance, int veinSize, int veinSizeRange) {
+			this.resourceType = resourceType;
+			this.tileTypes = tileTypes;
+			this.numVeinsByMapSize = numVeinsByMapSize;
+			this.veinDistance = veinDistance;
+			this.veinSize = veinSize;
+			this.veinSizeRange = veinSizeRange;
+		}
+	}
+
+	public enum ResourceVeinGroupPropertyEnum {
+		VeinGroup,
+		Type,
+		Veins
+	}
+
+	public enum ResourceVeinPropertyEnum {
+		Vein,
+		ResourceType,
+		TileTypes,
+		NumVeinsByMapSize,
+		VeinDistance,
+		VeinSize,
+		VeinSizeRange
+	}
+
+	public enum ResourceVeinGroupEnum {
+		Stone, Coast
+	}
+
+	public void CreateResourceVeins() {
+		List<KeyValuePair<string, object>> resourceVeinGroupProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/resource-veins").text.Split('\n').ToList());
+		foreach (KeyValuePair<string, object> resourceVeinGroupProperty in resourceVeinGroupProperties) {
+			switch ((ResourceVeinGroupPropertyEnum)Enum.Parse(typeof(ResourceVeinGroupPropertyEnum), resourceVeinGroupProperty.Key)) {
+				case ResourceVeinGroupPropertyEnum.VeinGroup:
+
+					ResourceVeinGroupEnum? groupType = null;
+					List<ResourceVein> resourceVeins = new List<ResourceVein>();
+
+					foreach (KeyValuePair<string, object> resourceVeinGroupSubProperty in (List<KeyValuePair<string, object>>)resourceVeinGroupProperty.Value) {
+						switch ((ResourceVeinGroupPropertyEnum)Enum.Parse(typeof(ResourceVeinGroupPropertyEnum), resourceVeinGroupSubProperty.Key)) {
+							case ResourceVeinGroupPropertyEnum.Type:
+								groupType = (ResourceVeinGroupEnum)Enum.Parse(typeof(ResourceVeinGroupEnum), (string)resourceVeinGroupSubProperty.Value);
+								break;
+							case ResourceVeinGroupPropertyEnum.Veins:
+								foreach (KeyValuePair<string, object> resourceVeinProperty in (List<KeyValuePair<string, object>>)resourceVeinGroupSubProperty.Value) {
+									switch ((ResourceVeinPropertyEnum)Enum.Parse(typeof(ResourceVeinPropertyEnum), resourceVeinProperty.Key)) {
+										case ResourceVeinPropertyEnum.Vein:
+
+											ResourceManager.ResourceEnum? resourceType = null;
+											Dictionary<TileTypeGroupEnum, TileTypeEnum> tileTypes = new Dictionary<TileTypeGroupEnum, TileTypeEnum>();
+											int? numVeinsByMapSize = null;
+											int? veinDistance = null;
+											int? veinSize = null;
+											int? veinSizeRange = null;
+
+											foreach (KeyValuePair<string, object> resourceVeinSubProperty in (List<KeyValuePair<string, object>>)resourceVeinProperty.Value) {
+												switch ((ResourceVeinPropertyEnum)Enum.Parse(typeof(ResourceVeinPropertyEnum), resourceVeinSubProperty.Key)) {
+													case ResourceVeinPropertyEnum.ResourceType:
+														resourceType = (ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)resourceVeinSubProperty.Value);
+														break;
+													case ResourceVeinPropertyEnum.TileTypes:
+														foreach (string tileTypesString in ((string)resourceVeinSubProperty.Value).Split(',')) {
+															TileTypeGroupEnum tileTypeGroup = (TileTypeGroupEnum)Enum.Parse(typeof(TileTypeGroupEnum), tileTypesString.Split(':')[0]);
+															TileTypeEnum tileType = (TileTypeEnum)Enum.Parse(typeof(TileTypeEnum), tileTypesString.Split(':')[1]);
+															tileTypes.Add(tileTypeGroup, tileType);
+														}
+														break;
+													case ResourceVeinPropertyEnum.NumVeinsByMapSize:
+														numVeinsByMapSize = int.Parse((string)resourceVeinSubProperty.Value);
+														break;
+													case ResourceVeinPropertyEnum.VeinDistance:
+														veinDistance = int.Parse((string)resourceVeinSubProperty.Value);
+														break;
+													case ResourceVeinPropertyEnum.VeinSize:
+														veinSize = int.Parse((string)resourceVeinSubProperty.Value);
+														break;
+													case ResourceVeinPropertyEnum.VeinSizeRange:
+														veinSizeRange = int.Parse((string)resourceVeinSubProperty.Value);
+														break;
+													default:
+														Debug.LogError("Unknown resource vein sub property: " + resourceVeinSubProperty.Key + " " + resourceVeinSubProperty.Value);
+														break;
+												}
+											}
+
+											ResourceVein resourceVein = new ResourceVein(
+												resourceType.Value,
+												tileTypes,
+												numVeinsByMapSize.Value,
+												veinDistance.Value,
+												veinSize.Value,
+												veinSizeRange.Value
+											);
+											resourceVeins.Add(resourceVein);
+
+											break;
+										default:
+											Debug.LogError("Unknown resource vein property: " + resourceVeinProperty.Key + " " + resourceVeinProperty.Value);
+											break;
+									}
+								}
+								break;
+							default:
+								Debug.LogError("Unknown resource vein group sub property: " + resourceVeinGroupSubProperty.Key + " " + resourceVeinGroupSubProperty.Value);
+								break;
+						}
+
+					}
+
+					this.resourceVeins.Add(groupType.Value, resourceVeins);
+
+					break;
+				default:
+					Debug.LogError("Unknown resource vein group property: " + resourceVeinGroupProperty.Key + " " + resourceVeinGroupProperty.Value);
+					break;
+
+			}
+		}
+	}
+
+	public Dictionary<ResourceVeinGroupEnum, List<ResourceVein>> resourceVeins = new Dictionary<ResourceVeinGroupEnum, List<ResourceVein>>();
+
 	public static readonly Dictionary<ResourceManager.ResourceEnum, Func<Tile, bool>> resourceVeinValidTileFunctions = new Dictionary<ResourceManager.ResourceEnum, Func<Tile, bool>>() {
 		{ ResourceManager.ResourceEnum.Clay, delegate (Tile tile) {
 			if (((tile.tileType.groupType == TileTypeGroupEnum.Water && tile.horizontalSurroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroupEnum.Water) != null) || (tile.tileType.groupType != TileTypeGroupEnum.Water)) && (tile.tileType.groupType != TileTypeGroupEnum.Stone)) {
@@ -488,107 +619,11 @@ public class TileManager : BaseManager {
 		} }
 	};
 
-	public class ResourceVeinData {
-		public ResourceManager.ResourceEnum resourceType;
-		public Dictionary<TileTypeGroupEnum, TileTypeEnum> tileTypes;
-		public int numVeinsByMapSize = 0;
-		public int veinDistance = 0;
-		public int veinSize = 0;
-		public int veinSizeRange = 0;
-
-		public ResourceVeinData(ResourceManager.ResourceEnum resourceType, Dictionary<TileTypeGroupEnum, TileTypeEnum> tileTypes, int numVeinsByMapSize, int veinDistance, int veinSize, int veinSizeRange) {
-			this.resourceType = resourceType;
-			this.tileTypes = tileTypes;
-			this.numVeinsByMapSize = numVeinsByMapSize;
-			this.veinDistance = veinDistance;
-			this.veinSize = veinSize;
-			this.veinSizeRange = veinSizeRange;
-		}
-	}
-
-	public static readonly List<ResourceVeinData> stoneVeins = new List<ResourceVeinData>() {
-		new ResourceVeinData(
-			ResourceManager.ResourceEnum.GoldOre,
-			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
-				{ TileTypeGroupEnum.Stone, TileTypeEnum.GoldOre }
-			},
-			50,
-			20,
-			15,
-			5
-		),
-		new ResourceVeinData(
-			ResourceManager.ResourceEnum.SilverOre,
-			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
-				{ TileTypeGroupEnum.Stone, TileTypeEnum.SilverOre }
-			},
-			40,
-			20,
-			15,
-			5
-		),
-		new ResourceVeinData(
-			ResourceManager.ResourceEnum.BronzeOre,
-			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
-				{ TileTypeGroupEnum.Stone, TileTypeEnum.BronzeOre }
-			},
-			30,
-			20,
-			15,
-			5
-		),
-		new ResourceVeinData(
-			ResourceManager.ResourceEnum.IronOre,
-			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
-				{ TileTypeGroupEnum.Stone, TileTypeEnum.IronOre }
-			},
-			20,
-			20,
-			15,
-			5
-		),
-		new ResourceVeinData(
-			ResourceManager.ResourceEnum.CopperOre,
-			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
-				{ TileTypeGroupEnum.Stone, TileTypeEnum.CopperOre }
-			},
-			15,
-			20,
-			15,
-			5
-		),
-		new ResourceVeinData(
-			ResourceManager.ResourceEnum.Chalk,
-			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
-				{ TileTypeGroupEnum.Stone, TileTypeEnum.Chalk }
-			},
-			100,
-			50,
-			40,
-			20
-		)
-	};
-
-	public static readonly List<ResourceVeinData> coastVeins = new List<ResourceVeinData>() {
-		new ResourceVeinData(
-			ResourceManager.ResourceEnum.Clay,
-			new Dictionary<TileTypeGroupEnum, TileTypeEnum>() {
-				{ TileTypeGroupEnum.Water, TileTypeEnum.ClayWater },
-				{ TileTypeGroupEnum.Ground, TileTypeEnum.Clay},
-				{ TileTypeGroupEnum.Stone, TileTypeEnum.Claystone }
-			},
-			10,
-			5,
-			10,
-			5
-		)
-	};
-
 	public static readonly Dictionary<int, List<List<int>>> nonWalkableSurroundingTilesComparatorMap = new Dictionary<int, List<List<int>>>() {
-		{0, new List<List<int>>() { new List<int>() { 4,1,5,2 },new List<int>() { 7,3,6,2 } } },
-		{1, new List<List<int>>() { new List<int>() { 4,0,7,3},new List<int>() { 5,2,6,3 } } },
-		{2, new List<List<int>>() { new List<int>() { 5,1,4,0 },new List<int>() { 6,3,7,0 } } },
-		{3, new List<List<int>>() { new List<int>() { 6,2,5,1 },new List<int>() { 7,0,4,1 } } }
+		{0, new List<List<int>>() { new List<int>() { 4, 1, 5, 2 }, new List<int>() { 7, 3, 6, 2 } } },
+		{1, new List<List<int>>() { new List<int>() { 4, 0, 7, 3 }, new List<int>() { 5, 2, 6, 3 } } },
+		{2, new List<List<int>>() { new List<int>() { 5, 1, 4, 0 }, new List<int>() { 6, 3, 7, 0 } } },
+		{3, new List<List<int>>() { new List<int>() { 6, 2, 5, 1 }, new List<int>() { 7, 0, 4, 1 } } }
 	};
 
 	public class Tile {
@@ -2440,32 +2475,37 @@ public class TileManager : BaseManager {
 		}
 
 		public void SetResourceVeins() {
+
 			List<Tile> stoneTiles = new List<Tile>();
-			foreach (Tile tile in tiles) {
-				if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
-					stoneTiles.Add(tile);
+			foreach (RegionBlock regionBlock in regionBlocks) {
+				if (regionBlock.tileType.groupType == TileTypeGroupEnum.Stone) {
+					stoneTiles.AddRange(regionBlock.tiles);
 				}
 			}
 			if (stoneTiles.Count > 0) {
-				foreach (ResourceVeinData resourceVeinData in stoneVeins) {
-					PlaceResourceVeins(resourceVeinData, stoneTiles);
+				foreach (ResourceVein resourceVein in GameManager.tileM.resourceVeins[ResourceVeinGroupEnum.Stone]) {
+					PlaceResourceVeins(resourceVein, stoneTiles);
 				}
 			}
 
 			List<Tile> coastTiles = new List<Tile>();
-			foreach (Tile tile in tiles) {
-				if (tile.tileType.groupType == TileTypeGroupEnum.Water && tile.surroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroupEnum.Water) != null) {
-					coastTiles.Add(tile);
+			foreach (RegionBlock regionBlock in regionBlocks) {
+				if (regionBlock.tileType.groupType == TileTypeGroupEnum.Water) {
+					foreach (Tile tile in regionBlock.tiles) {
+						if (tile.surroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroupEnum.Water) != null) {
+							coastTiles.Add(tile);
+						}
+					}
 				}
 			}
 			if (coastTiles.Count > 0) {
-				foreach (ResourceVeinData resourceVeinData in coastVeins) {
-					PlaceResourceVeins(resourceVeinData, coastTiles);
+				foreach (ResourceVein resourceVein in GameManager.tileM.resourceVeins[ResourceVeinGroupEnum.Coast]) {
+					PlaceResourceVeins(resourceVein, coastTiles);
 				}
 			}
 		}
 
-		void PlaceResourceVeins(ResourceVeinData resourceVeinData, List<Tile> mediumTiles) {
+		void PlaceResourceVeins(ResourceVein resourceVeinData, List<Tile> mediumTiles) {
 			List<Tile> previousVeinStartTiles = new List<Tile>();
 			for (int i = 0; i < Mathf.CeilToInt(mapData.mapSize / (float)resourceVeinData.numVeinsByMapSize); i++) {
 				List<Tile> validVeinStartTiles = mediumTiles.Where(tile => !resourceVeinData.tileTypes.ContainsValue(tile.tileType.type) && resourceVeinData.tileTypes.ContainsKey(tile.tileType.groupType) && resourceVeinValidTileFunctions[resourceVeinData.resourceType](tile)).ToList();
@@ -2628,7 +2668,7 @@ public class TileManager : BaseManager {
 				if (tile.tileType.baseSprites.Count > 0 && !tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
 					tile.sr.sprite = tile.tileType.baseSprites[UnityEngine.Random.Range(0, tile.tileType.baseSprites.Count)];
 				}
-				if (stoneVeins.Find(rvd => rvd.tileTypes.ContainsValue(tile.tileType.type)) != null) {
+				if (GameManager.tileM.resourceVeins[ResourceVeinGroupEnum.Stone].Find(rvd => rvd.tileTypes.ContainsValue(tile.tileType.type)) != null) {
 					TileType biomeTileType = tile.biome.tileTypes[tile.tileType.groupType];
 					tile.sr.sprite = biomeTileType.baseSprites[UnityEngine.Random.Range(0, biomeTileType.baseSprites.Count)];
 				}
