@@ -54,10 +54,10 @@ public class GameManager : MonoBehaviour {
 		resourceM.CreateObjectPrefabs();
 		resourceM.LoadLocationNames();
 
-		tileM.CreateTileTypes();
-		tileM.CreateBiomes();
+		TileManager.TileType.InitializeTileTypes();
+		TileManager.Biome.InitializeBiomes();
 		tileM.CreateBiomeRanges();
-		tileM.CreateResourceVeins();
+		TileManager.ResourceVein.InitializeResourceVeins();
 
 		humanM.CreateNames();
 		humanM.CreateHumanSprites();

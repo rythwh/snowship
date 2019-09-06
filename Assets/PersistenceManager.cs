@@ -861,7 +861,7 @@ public class PersistenceManager : BaseManager {
 		file.WriteLine(CreateKeyValueString(ColonyProperty.AveragePrecipitation, colony.map.mapData.averagePrecipitation, 0));
 
 		file.WriteLine(CreateKeyValueString(ColonyProperty.TerrainTypeHeights, string.Empty, 0));
-		foreach (KeyValuePair<TileManager.TileTypeGroupEnum, float> terrainTypeHeight in colony.map.mapData.terrainTypeHeights) {
+		foreach (KeyValuePair<TileManager.TileTypeGroup.TypeEnum, float> terrainTypeHeight in colony.map.mapData.terrainTypeHeights) {
 			file.WriteLine(CreateKeyValueString(terrainTypeHeight.Key, terrainTypeHeight.Value, 1));
 		}
 
@@ -884,7 +884,7 @@ public class PersistenceManager : BaseManager {
 		public int size;
 		public float averageTemperature;
 		public float averagePrecipitation;
-		public Dictionary<TileManager.TileTypeGroupEnum, float> terrainTypeHeights = new Dictionary<TileManager.TileTypeGroupEnum, float>();
+		public Dictionary<TileManager.TileTypeGroup.TypeEnum, float> terrainTypeHeights = new Dictionary<TileManager.TileTypeGroup.TypeEnum, float>();
 		public List<int> surroundingPlanetTileHeights = new List<int>();
 		public bool onRiver;
 		public List<int> surroundingPlanetTileRivers = new List<int>();
@@ -952,7 +952,7 @@ public class PersistenceManager : BaseManager {
 					break;
 				case ColonyProperty.TerrainTypeHeights:
 					foreach (KeyValuePair<string, object> terrainTypeHeightProperty in (List<KeyValuePair<string, object>>)property.Value) {
-						TileManager.TileTypeGroupEnum terrainTypeHeightPropertyKey = (TileManager.TileTypeGroupEnum)Enum.Parse(typeof(TileManager.TileTypeGroupEnum), terrainTypeHeightProperty.Key);
+						TileManager.TileTypeGroup.TypeEnum terrainTypeHeightPropertyKey = (TileManager.TileTypeGroup.TypeEnum)Enum.Parse(typeof(TileManager.TileTypeGroup.TypeEnum), terrainTypeHeightProperty.Key);
 						persistenceColony.terrainTypeHeights.Add(terrainTypeHeightPropertyKey, float.Parse((string)terrainTypeHeightProperty.Value));
 					}
 					break;
@@ -1346,7 +1346,7 @@ public class PersistenceManager : BaseManager {
 								tileHeight = float.Parse((string)tileProperty.Value);
 								break;
 							case TileProperty.TileType:
-								tileType = GameManager.tileM.GetTileTypeByString((string)tileProperty.Value);
+								tileType = TileManager.TileType.GetTileTypeByString((string)tileProperty.Value);
 								break;
 							case TileProperty.Temperature:
 								tileTemperature = float.Parse((string)tileProperty.Value);
@@ -1355,7 +1355,7 @@ public class PersistenceManager : BaseManager {
 								tilePrecipitation = float.Parse((string)tileProperty.Value);
 								break;
 							case TileProperty.Biome:
-								tileBiome = GameManager.tileM.GetBiomeByString((string)tileProperty.Value);
+								tileBiome = TileManager.Biome.GetBiomeByString((string)tileProperty.Value);
 								break;
 							case TileProperty.Roof:
 								tileRoof = bool.Parse((string)tileProperty.Value);
@@ -2326,7 +2326,7 @@ public class PersistenceManager : BaseManager {
 								CaravanManager.Location.Wealth? locationWealth = null;
 								CaravanManager.Location.ResourceRichness? locationResourceRichness = null;
 								CaravanManager.Location.CitySize? locationCitySize = null;
-								TileManager.BiomeTypeEnum? locationBiomeType = null;
+								TileManager.Biome.TypeEnum? locationBiomeType = null;
 
 								foreach (KeyValuePair<string, object> locationProperty in (List<KeyValuePair<string, object>>)caravanProperty.Value) {
 									switch ((LocationProperty)Enum.Parse(typeof(LocationProperty), locationProperty.Key)) {
@@ -2343,7 +2343,7 @@ public class PersistenceManager : BaseManager {
 											locationCitySize = (CaravanManager.Location.CitySize)Enum.Parse(typeof(CaravanManager.Location.CitySize), (string)locationProperty.Value);
 											break;
 										case LocationProperty.BiomeType:
-											locationBiomeType = (TileManager.BiomeTypeEnum)Enum.Parse(typeof(TileManager.BiomeTypeEnum), (string)locationProperty.Value);
+											locationBiomeType = (TileManager.Biome.TypeEnum)Enum.Parse(typeof(TileManager.Biome.TypeEnum), (string)locationProperty.Value);
 											break;
 										default:
 											Debug.LogError("Unknown location property: " + locationProperty.Key + " " + locationProperty.Value);

@@ -754,7 +754,7 @@ public class DebugManager : BaseManager {
 		commandFunctions.Add(Commands.changetiletype, delegate (Commands selectedCommand, List<string> parameters) {
 			int counter = 0;
 			if (parameters.Count == 1) {
-				TileManager.TileType tileType = GameManager.tileM.GetTileTypes().Find(tt => tt.type.ToString() == parameters[0]);
+				TileManager.TileType tileType = TileManager.TileType.GetTileTypeByString(parameters[0]);
 				if (tileType != null) {
 					if (selectedTiles.Count > 0) {
 						foreach (TileManager.Tile tile in selectedTiles) {
@@ -780,7 +780,7 @@ public class DebugManager : BaseManager {
 		});
 		commandFunctions.Add(Commands.listtiletypes, delegate (Commands selectedCommand, List<string> parameters) {
 			if (parameters.Count == 0) {
-				foreach (TileManager.TileType tileType in GameManager.tileM.GetTileTypes()) {
+				foreach (TileManager.TileType tileType in TileManager.TileType.tileTypes) {
 					OutputToConsole(tileType.type.ToString());
 				}
 			} else {
@@ -1101,7 +1101,7 @@ public class DebugManager : BaseManager {
 			if (parameters.Count == 0) {
 				GameManager.colonyM.colony.map.Bitmasking(GameManager.colonyM.colony.map.tiles, false, true);
 				foreach (TileManager.Tile tile in GameManager.colonyM.colony.map.tiles) {
-					if (tile.tileType.resourceRanges.Find(rr => TileManager.resourceVeinValidTileFunctions.ContainsKey(rr.resource.type)) == null) {
+					if (tile.tileType.resourceRanges.Find(rr => TileManager.ResourceVein.resourceVeinValidTileFunctions.ContainsKey(rr.resource.type)) == null) {
 						tile.sr.sprite = GameManager.resourceM.whiteSquareSprite;
 						tile.sr.color = Color.white;
 					}

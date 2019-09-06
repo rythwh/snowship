@@ -277,8 +277,8 @@ public class JobManager : BaseManager {
 		} },
 		{ JobEnum.PlantFarm, delegate (ColonistManager.Colonist colonist, Job job) {
 			JobManager.finishJobFunctions[JobEnum.Build](colonist, job);
-			if (job.tile.tileType.classes[TileManager.TileTypeClassEnum.Dirt]) {
-				job.tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileManager.TileTypeEnum.Mud), false, true, false);
+			if (job.tile.tileType.classes[TileManager.TileType.ClassEnum.Dirt]) {
+				job.tile.SetTileType(TileManager.TileType.GetTileTypeByEnum(TileManager.TileType.TypeEnum.Mud), false, true, false);
 			}
 		} },
 		{ JobEnum.HarvestFarm, delegate (ColonistManager.Colonist colonist, Job job) {
@@ -320,9 +320,9 @@ public class JobManager : BaseManager {
 				colonist.inventory.ChangeResourceAmount(resourceRange.resource, UnityEngine.Random.Range(resourceRange.min, resourceRange.max + 1), false);
 			}
 			if (job.tile.roof) {
-				job.tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileManager.TileTypeEnum.Dirt), false, true, true);
+				job.tile.SetTileType(TileManager.TileType.GetTileTypeByEnum(TileManager.TileType.TypeEnum.Dirt), false, true, true);
 			} else {
-				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroupEnum.Ground], false, true, true);
+				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroup.TypeEnum.Ground], false, true, true);
 			}
 
 			GameManager.colonyM.colony.map.RemoveTileBrightnessEffect(job.tile);
@@ -338,19 +338,19 @@ public class JobManager : BaseManager {
 			foreach (ResourceManager.ResourceRange resourceRange in job.tile.tileType.resourceRanges) {
 				colonist.inventory.ChangeResourceAmount(resourceRange.resource, UnityEngine.Random.Range(resourceRange.min, resourceRange.max + 1), false);
 			}
-			bool setToWater = job.tile.tileType.groupType == TileManager.TileTypeGroupEnum.Water;
+			bool setToWater = job.tile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Water;
 			if (!setToWater) {
 				foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
-					if (nTile != null && nTile.tileType.groupType == TileManager.TileTypeGroupEnum.Water) {
+					if (nTile != null && nTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Water) {
 						setToWater = true;
 						break;
 					}
 				}
 			}
 			if (setToWater) {
-				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroupEnum.Water], false, true, true);
+				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroup.TypeEnum.Water], false, true, true);
 				foreach (TileManager.Tile nTile in job.tile.horizontalSurroundingTiles) {
-					if (nTile != null && nTile.tileType.groupType == TileManager.TileTypeGroupEnum.Hole) {
+					if (nTile != null && nTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Hole) {
 						List<TileManager.Tile> frontier = new List<TileManager.Tile>() { nTile };
 						List<TileManager.Tile> checkedTiles = new List<TileManager.Tile>() { };
 						TileManager.Tile currentTile = nTile;
@@ -358,9 +358,9 @@ public class JobManager : BaseManager {
 							currentTile = frontier[0];
 							frontier.RemoveAt(0);
 							checkedTiles.Add(currentTile);
-							currentTile.SetTileType(currentTile.biome.tileTypes[TileManager.TileTypeGroupEnum.Water], true, true, true);
+							currentTile.SetTileType(currentTile.biome.tileTypes[TileManager.TileTypeGroup.TypeEnum.Water], true, true, true);
 							foreach (TileManager.Tile nTile2 in currentTile.horizontalSurroundingTiles) {
-								if (nTile2 != null && nTile2.tileType.groupType == TileManager.TileTypeGroupEnum.Hole && !checkedTiles.Contains(nTile2)) {
+								if (nTile2 != null && nTile2.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Hole && !checkedTiles.Contains(nTile2)) {
 									frontier.Add(nTile2);
 								}
 							}
@@ -368,11 +368,11 @@ public class JobManager : BaseManager {
 					}
 				}
 			} else {
-				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroupEnum.Hole], false, true, true);
+				job.tile.SetTileType(job.tile.biome.tileTypes[TileManager.TileTypeGroup.TypeEnum.Hole], false, true, true);
 			}
 		} },
 		{ JobEnum.Fill, delegate (ColonistManager.Colonist colonist, Job job) {
-			TileManager.TileType fillType = GameManager.tileM.GetTileTypeByEnum(TileManager.TileTypeEnum.Dirt);
+			TileManager.TileType fillType = TileManager.TileType.GetTileTypeByEnum(TileManager.TileType.TypeEnum.Dirt);
 			job.tile.dugPreviously = false;
 			foreach (ResourceManager.ResourceRange resourceRange in fillType.resourceRanges) {
 				colonist.inventory.ChangeResourceAmount(resourceRange.resource, -(resourceRange.max + 1), true);
@@ -584,25 +584,25 @@ public class JobManager : BaseManager {
 			return !posTile.buildable;
 		} },
 		{ SelectionModifiersEnum.StoneTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
-			return posTile.tileType.groupType == TileManager.TileTypeGroupEnum.Stone;
+			return posTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Stone;
 		} },
 		{ SelectionModifiersEnum.OmitStoneTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
-			return posTile.tileType.groupType != TileManager.TileTypeGroupEnum.Stone;
+			return posTile.tileType.groupType != TileManager.TileTypeGroup.TypeEnum.Stone;
 		} },
 		{ SelectionModifiersEnum.AllWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
-			return posTile.tileType.groupType == TileManager.TileTypeGroupEnum.Water;
+			return posTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Water;
 		} },
 		{ SelectionModifiersEnum.OmitAllWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
-			return posTile.tileType.groupType != TileManager.TileTypeGroupEnum.Water;
+			return posTile.tileType.groupType != TileManager.TileTypeGroup.TypeEnum.Water;
 		} },
 		{ SelectionModifiersEnum.LiquidWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
-			return posTile.tileType.classes[TileManager.TileTypeClassEnum.LiquidWater];
+			return posTile.tileType.classes[TileManager.TileType.ClassEnum.LiquidWater];
 		} },
 		{ SelectionModifiersEnum.OmitLiquidWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
-			return !posTile.tileType.classes[TileManager.TileTypeClassEnum.LiquidWater];
+			return !posTile.tileType.classes[TileManager.TileType.ClassEnum.LiquidWater];
 		} },
 		{ SelectionModifiersEnum.OmitNonStoneAndWaterTypes, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
-			return posTile.tileType.groupType != TileManager.TileTypeGroupEnum.Water && posTile.tileType.groupType != TileManager.TileTypeGroupEnum.Stone;
+			return posTile.tileType.groupType != TileManager.TileTypeGroup.TypeEnum.Water && posTile.tileType.groupType != TileManager.TileTypeGroup.TypeEnum.Stone;
 		} },
 		{ SelectionModifiersEnum.Plants, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
 			return posTile.plant != null;
@@ -668,15 +668,15 @@ public class JobManager : BaseManager {
 			return posTile.GetAllObjectInstances().Count <= 0;
 		} },
 		{ SelectionModifiersEnum.OmitNonCoastWater, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
-			if (posTile.tileType.groupType == TileManager.TileTypeGroupEnum.Water) {
-				if (!(posTile.surroundingTiles.Find(t => t != null && t.tileType.groupType != TileManager.TileTypeGroupEnum.Water) != null)) {
+			if (posTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Water) {
+				if (!(posTile.surroundingTiles.Find(t => t != null && t.tileType.groupType != TileManager.TileTypeGroup.TypeEnum.Water) != null)) {
 					return false;
 				}
 			}
 			return true;
 		} },
 		{ SelectionModifiersEnum.OmitHoles, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
-			return posTile.tileType.groupType != TileManager.TileTypeGroupEnum.Hole;
+			return posTile.tileType.groupType != TileManager.TileTypeGroup.TypeEnum.Hole;
 		} },
 		{ SelectionModifiersEnum.OmitPreviousDig, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
 			return !posTile.dugPreviously;
@@ -707,7 +707,7 @@ public class JobManager : BaseManager {
 			return true;
 		} },
 		{ SelectionModifiersEnum.Fillable, delegate (TileManager.Tile tile, TileManager.Tile posTile, ResourceManager.ObjectPrefab prefab) {
-			return posTile.dugPreviously || (posTile.tileType.groupType == TileManager.TileTypeGroupEnum.Hole || (posTile.tileType.groupType == TileManager.TileTypeGroupEnum.Water && selectionModifierFunctions[SelectionModifiersEnum.OmitNonCoastWater](tile, posTile, prefab)));
+			return posTile.dugPreviously || (posTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Hole || (posTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Water && selectionModifierFunctions[SelectionModifiersEnum.OmitNonCoastWater](tile, posTile, prefab)));
 		} },
 	};
 

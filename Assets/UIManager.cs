@@ -2056,9 +2056,9 @@ public class UIManager : BaseManager {
 				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInfoElement-TileImage-Panel/TileInfoElement-TileImage").GetComponent<Image>().color = Color.white;
 
 				string tileTypeString = mouseOverTile.tileType.name;
-				if (mouseOverTile.tileType.classes[TileManager.TileTypeClassEnum.LiquidWater]) {
+				if (mouseOverTile.tileType.classes[TileManager.TileType.ClassEnum.LiquidWater]) {
 					tileTypeString = "Water";
-				} else if (mouseOverTile.tileType.groupType == TileManager.TileTypeGroupEnum.Water) {
+				} else if (mouseOverTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Water) {
 					tileTypeString = "Ice";
 				}
 				tileInformation.transform.Find("TileInformation-GeneralInfo-Panel/TileInformation-Type").GetComponent<Text>().text = tileTypeString;
@@ -3878,7 +3878,7 @@ public class UIManager : BaseManager {
 				caravan.location.wealth.ToString().ToLower(),
 				caravan.location.citySize.ToString().ToLower(),
 				caravan.location.resourceRichness.ToString().ToLower(),
-				GameManager.tileM.GetBiomeByEnum(caravan.location.biomeType).name.ToLower()
+				TileManager.Biome.GetBiomeByEnum(caravan.location.biomeType).name.ToLower()
 			);
 
 			RemakeTradeResourceElements(caravan);
