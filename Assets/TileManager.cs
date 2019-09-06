@@ -13,176 +13,32 @@ public class TileManager : BaseManager {
 		this.startCoroutineReference = startCoroutineReference;
 	}
 
-	public enum TileTypeGroupPropertyEnum {
-		TileTypeGroup,
-		Type,
-		DefaultTileType,
-		TileTypes
-	}
-
-	public enum TileTypePropertyEnum {
-		TileType,
-		Type,
-		Classes,
-		WalkSpeed,
-		Walkable,
-		Buildable,
-		Bitmasking,
-		BlocksLight,
-		ResourceRanges
-	}
-
-	public enum TileTypeGroupEnum {
-		Water,
-		Hole,
-		Ground,
-		Stone
-	}
-
-	public enum TileTypeClassEnum {
-		LiquidWater,
-		Dirt,
-		Plantable
-	};
-
-	public enum TileTypeEnum {
-		DirtWater, GrassWater, ColdGrassWater, DryGrassWater, SandWater, SnowIce, StoneIce, StoneWater, ClayWater,
-		DirtHole, SandHole, SnowHole, StoneHole,
-		Dirt, Mud, DirtGrass, DirtThinGrass, DirtDryGrass, Grass, ThickGrass, ColdGrass, DryGrass, Sand, Snow, SnowStone, StoneThinGrass, StoneSand, StoneSnow, Clay,
-		Andesite, Basalt, Diorite, Granite, Kimberlite, Obsidian, Rhyolite, Chalk, Claystone, Coal, Flint, Lignite, Limestone, Sandstone, Anthracite, Marble, Quartz, Slate,
-			IronOre, GoldOre, SilverOre, BronzeOre, CopperOre
-	};
-
-	public void CreateTileTypes() {
-		List<KeyValuePair<string, object>> tileTypeGroupProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/tileTypes").text.Split('\n').ToList());
-		foreach (KeyValuePair<string, object> tileTypeGroupProperty in tileTypeGroupProperties) {
-			switch ((TileTypeGroupPropertyEnum)Enum.Parse(typeof(TileTypeGroupPropertyEnum), tileTypeGroupProperty.Key)) {
-				case TileTypeGroupPropertyEnum.TileTypeGroup:
-
-					TileTypeGroupEnum? groupType = null;
-					TileTypeEnum? defaultTileType = null;
-					List<TileType> tileTypes = new List<TileType>();
-
-					foreach (KeyValuePair<string, object> tileTypeGroupSubProperty in (List<KeyValuePair<string, object>>)tileTypeGroupProperty.Value) {
-						switch ((TileTypeGroupPropertyEnum)Enum.Parse(typeof(TileTypeGroupPropertyEnum), tileTypeGroupSubProperty.Key)) {
-							case TileTypeGroupPropertyEnum.Type:
-								groupType = (TileTypeGroupEnum)Enum.Parse(typeof(TileTypeGroupEnum), (string)tileTypeGroupSubProperty.Value);
-								break;
-							case TileTypeGroupPropertyEnum.DefaultTileType:
-								defaultTileType = (TileTypeEnum)Enum.Parse(typeof(TileTypeEnum), (string)tileTypeGroupSubProperty.Value);
-								break;
-							case TileTypeGroupPropertyEnum.TileTypes:
-								foreach (KeyValuePair<string, object> tileTypeProperty in (List<KeyValuePair<string, object>>)tileTypeGroupSubProperty.Value) {
-									switch ((TileTypePropertyEnum)Enum.Parse(typeof(TileTypePropertyEnum), tileTypeProperty.Key)) {
-										case TileTypePropertyEnum.TileType:
-
-											TileTypeEnum? type = null;
-											Dictionary<TileTypeClassEnum, bool> classes = new Dictionary<TileTypeClassEnum, bool>();
-											float? walkSpeed = null;
-											bool? walkable = null;
-											bool? buildable = null;
-											bool? bitmasking = null;
-											bool? blocksLight = null;
-											List<ResourceManager.ResourceRange> resourceRanges = new List<ResourceManager.ResourceRange>();
-
-											foreach (TileTypeClassEnum tileTypeClassEnum in Enum.GetValues(typeof(TileTypeClassEnum))) {
-												classes.Add(tileTypeClassEnum, false);
-											}
-
-											foreach (KeyValuePair<string, object> tileTypeSubProperty in (List<KeyValuePair<string, object>>)tileTypeProperty.Value) {
-												switch ((TileTypePropertyEnum)Enum.Parse(typeof(TileTypePropertyEnum), tileTypeSubProperty.Key)) {
-													case TileTypePropertyEnum.Type:
-														type = (TileTypeEnum)Enum.Parse(typeof(TileTypeEnum), (string)tileTypeSubProperty.Value);
-														break;
-													case TileTypePropertyEnum.Classes:
-														foreach (string tileTypeClassString in ((string)tileTypeSubProperty.Value).Split(',')) {
-															classes[(TileTypeClassEnum)Enum.Parse(typeof(TileTypeClassEnum), tileTypeClassString)] = true;
-														}
-														break;
-													case TileTypePropertyEnum.WalkSpeed:
-														walkSpeed = float.Parse((string)tileTypeSubProperty.Value);
-														break;
-													case TileTypePropertyEnum.Walkable:
-														walkable = bool.Parse((string)tileTypeSubProperty.Value);
-														break;
-													case TileTypePropertyEnum.Buildable:
-														buildable = bool.Parse((string)tileTypeSubProperty.Value);
-														break;
-													case TileTypePropertyEnum.Bitmasking:
-														bitmasking = bool.Parse((string)tileTypeSubProperty.Value);
-														break;
-													case TileTypePropertyEnum.BlocksLight:
-														blocksLight = bool.Parse((string)tileTypeSubProperty.Value);
-														break;
-													case TileTypePropertyEnum.ResourceRanges:
-														foreach (string resourceRangeString in ((string)tileTypeSubProperty.Value).Split(',')) {
-															ResourceManager.Resource resource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), resourceRangeString.Split(':')[0]));
-															int min = int.Parse(resourceRangeString.Split(':')[1].Split('-')[0]);
-															int max = int.Parse(resourceRangeString.Split(':')[1].Split('-')[1]);
-															resourceRanges.Add(new ResourceManager.ResourceRange(resource, min, max));
-														}
-														break;
-													default:
-														Debug.LogError("Unknown tile type sub property: " + tileTypeSubProperty.Key + " " + tileTypeSubProperty.Value);
-														break;
-												}
-											}
-
-											TileType tileType = new TileType(
-												groupType.Value,
-												type.Value,
-												classes,
-												walkSpeed.Value,
-												walkable.Value,
-												buildable.Value,
-												bitmasking.Value,
-												blocksLight.Value,
-												resourceRanges
-											);
-											tileTypes.Add(tileType);
-											this.tileTypes.Add(type.Value, tileType);
-
-											break;
-										default:
-											Debug.LogError("Unknown tile type property: " + tileTypeProperty.Key + " " + tileTypeProperty.Value);
-											break;
-									}
-								}
-								break;
-							default:
-								Debug.LogError("Unknown tile type group sub property: " + tileTypeGroupSubProperty.Key + " " + tileTypeGroupSubProperty.Value);
-								break;
-						}
-						
-					}
-
-					TileTypeGroup tileTypeGroup = new TileTypeGroup(
-						groupType.Value, 
-						defaultTileType.Value, 
-						tileTypes
-					);
-					tileTypeGroups.Add(groupType.Value, tileTypeGroup);
-
-					break;
-				default:
-					Debug.LogError("Unknown tile type group property: " + tileTypeGroupProperty.Key + " " + tileTypeGroupProperty.Value);
-					break;
-
-			}
-		}
-	}
-
-	private readonly Dictionary<TileTypeGroupEnum, TileTypeGroup> tileTypeGroups = new Dictionary<TileTypeGroupEnum, TileTypeGroup>();
-
 	public class TileTypeGroup {
-		public readonly TileTypeGroupEnum type;
+
+		public enum TypeEnum {
+			Water,
+			Hole,
+			Ground,
+			Stone
+		}
+
+		public enum PropertyEnum {
+			TileTypeGroup,
+			Type,
+			DefaultTileType,
+			TileTypes
+		}
+
+		public static readonly List<TileTypeGroup> tileTypeGroups = new List<TileTypeGroup>();
+
+		public readonly TypeEnum type;
 		public readonly string name;
 
-		public readonly TileTypeEnum defaultTileType;
+		public readonly TileType.TypeEnum defaultTileType;
 
 		public readonly List<TileType> tileTypes;
 
-		public TileTypeGroup(TileTypeGroupEnum type, TileTypeEnum defaultTileType, List<TileType> tileTypes) {
+		public TileTypeGroup(TypeEnum type, TileType.TypeEnum defaultTileType, List<TileType> tileTypes) {
 			this.type = type;
 			name = UIManager.SplitByCapitals(type.ToString());
 
@@ -190,29 +46,52 @@ public class TileManager : BaseManager {
 
 			this.tileTypes = tileTypes;
 		}
-	}
 
-	public TileTypeGroup GetTileTypeGroupByString(string tileTypeGroupString) {
-		return GetTileTypeGroupByEnum((TileTypeGroupEnum)Enum.Parse(typeof(TileTypeGroupEnum), tileTypeGroupString));
-	}
+		public static TileTypeGroup GetTileTypeGroupByString(string tileTypeGroupString) {
+			return GetTileTypeGroupByEnum((TypeEnum)Enum.Parse(typeof(TypeEnum), tileTypeGroupString));
+		}
 
-	public TileTypeGroup GetTileTypeGroupByEnum(TileTypeGroupEnum tileTypeGroupEnum) {
-		return tileTypeGroups[tileTypeGroupEnum];
+		public static TileTypeGroup GetTileTypeGroupByEnum(TypeEnum tileTypeGroupEnum) {
+			return tileTypeGroups.Find(tileTypeGroup => tileTypeGroup.type == tileTypeGroupEnum);
+		}
 	}
-
-	public List<TileTypeGroup> GetTileTypeGroups() {
-		return tileTypeGroups.Values.ToList();
-	}
-
-	private readonly Dictionary<TileTypeEnum, TileType> tileTypes = new Dictionary<TileTypeEnum, TileType>();
 
 	public class TileType {
-		public readonly TileTypeGroupEnum groupType;
 
-		public readonly TileTypeEnum type;
+		public enum TypeEnum {
+			DirtWater, GrassWater, ColdGrassWater, DryGrassWater, SandWater, SnowIce, StoneIce, StoneWater, ClayWater,
+			DirtHole, SandHole, SnowHole, StoneHole,
+			Dirt, Mud, DirtGrass, DirtThinGrass, DirtDryGrass, Grass, ThickGrass, ColdGrass, DryGrass, Sand, Snow, SnowStone, StoneThinGrass, StoneSand, StoneSnow, Clay,
+			Andesite, Basalt, Diorite, Granite, Kimberlite, Obsidian, Rhyolite, Chalk, Claystone, Coal, Flint, Lignite, Limestone, Sandstone, Anthracite, Marble, Quartz, Slate,
+			IronOre, GoldOre, SilverOre, BronzeOre, CopperOre
+		};
+
+		public enum ClassEnum {
+			LiquidWater,
+			Dirt,
+			Plantable
+		};
+
+		public enum PropertyEnum {
+			TileType,
+			Type,
+			Classes,
+			WalkSpeed,
+			Walkable,
+			Buildable,
+			Bitmasking,
+			BlocksLight,
+			ResourceRanges
+		}
+
+		public static readonly List<TileType> tileTypes = new List<TileType>();
+
+		public readonly TileTypeGroup.TypeEnum groupType;
+
+		public readonly TypeEnum type;
 		public readonly string name;
 
-		public readonly Dictionary<TileTypeClassEnum, bool> classes;
+		public readonly Dictionary<ClassEnum, bool> classes;
 
 		public readonly float walkSpeed;
 
@@ -229,7 +108,7 @@ public class TileManager : BaseManager {
 		public readonly List<Sprite> bitmaskSprites = new List<Sprite>();
 		public readonly List<Sprite> riverSprites = new List<Sprite>();
 
-		public TileType(TileTypeGroupEnum groupType, TileTypeEnum type, Dictionary<TileTypeClassEnum, bool> classes, float walkSpeed, bool walkable, bool buildable, bool bitmasking, bool blocksLight, List<ResourceManager.ResourceRange> resourceRanges) {
+		public TileType(TileTypeGroup.TypeEnum groupType, TypeEnum type, Dictionary<ClassEnum, bool> classes, float walkSpeed, bool walkable, bool buildable, bool bitmasking, bool blocksLight, List<ResourceManager.ResourceRange> resourceRanges) {
 			this.groupType = groupType;
 
 			this.type = type;
@@ -251,109 +130,167 @@ public class TileManager : BaseManager {
 			baseSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Tiles/" + type + "/" + type + "-base").ToList();
 			bitmaskSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Tiles/" + type + "/" + type + "-bitmask").ToList();
 
-			if (classes[TileTypeClassEnum.LiquidWater]) {
+			if (classes[ClassEnum.LiquidWater]) {
 				riverSprites = Resources.LoadAll<Sprite>(@"Sprites/Map/Tiles/" + type + "/" + type + "-river").ToList();
 			}
 		}
-	}
 
-	public TileType GetTileTypeByString(string tileTypeString) {
-		return GetTileTypeByEnum((TileTypeEnum)Enum.Parse(typeof(TileTypeEnum), tileTypeString));
-	}
+		public static void InitializeTileTypes() {
+			List<KeyValuePair<string, object>> tileTypeGroupProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/tileTypes").text.Split('\n').ToList());
+			foreach (KeyValuePair<string, object> tileTypeGroupProperty in tileTypeGroupProperties) {
+				switch ((TileTypeGroup.PropertyEnum)Enum.Parse(typeof(TileTypeGroup.PropertyEnum), tileTypeGroupProperty.Key)) {
+					case TileTypeGroup.PropertyEnum.TileTypeGroup:
 
-	public TileType GetTileTypeByEnum(TileTypeEnum tileTypeEnum) {
-		return tileTypes[tileTypeEnum];
-	}
+						TileTypeGroup.TypeEnum? groupType = null;
+						TypeEnum? defaultTileType = null;
+						List<TileType> tileTypes = new List<TileType>();
 
-	public List<TileType> GetTileTypes() {
-		return tileTypes.Values.ToList();
-	}
+						foreach (KeyValuePair<string, object> tileTypeGroupSubProperty in (List<KeyValuePair<string, object>>)tileTypeGroupProperty.Value) {
+							switch ((TileTypeGroup.PropertyEnum)Enum.Parse(typeof(TileTypeGroup.PropertyEnum), tileTypeGroupSubProperty.Key)) {
+								case TileTypeGroup.PropertyEnum.Type:
+									groupType = (TileTypeGroup.TypeEnum)Enum.Parse(typeof(TileTypeGroup.TypeEnum), (string)tileTypeGroupSubProperty.Value);
+									break;
+								case TileTypeGroup.PropertyEnum.DefaultTileType:
+									defaultTileType = (TypeEnum)Enum.Parse(typeof(TypeEnum), (string)tileTypeGroupSubProperty.Value);
+									break;
+								case TileTypeGroup.PropertyEnum.TileTypes:
+									foreach (KeyValuePair<string, object> tileTypeProperty in (List<KeyValuePair<string, object>>)tileTypeGroupSubProperty.Value) {
+										switch ((PropertyEnum)Enum.Parse(typeof(PropertyEnum), tileTypeProperty.Key)) {
+											case PropertyEnum.TileType:
 
-	public List<TileType> GetTileTypesWithClass(TileTypeClassEnum tileTypeClassEnum) {
-		return GetTileTypes().Where(tileType => tileType.classes[tileTypeClassEnum]).ToList();
-	}
+												TypeEnum? type = null;
+												Dictionary<ClassEnum, bool> classes = new Dictionary<ClassEnum, bool>();
+												float? walkSpeed = null;
+												bool? walkable = null;
+												bool? buildable = null;
+												bool? bitmasking = null;
+												bool? blocksLight = null;
+												List<ResourceManager.ResourceRange> resourceRanges = new List<ResourceManager.ResourceRange>();
 
-	public enum BiomePropertyEnum {
-		Biome, Type, TileTypes, PlantChances, Colour
-	}
+												foreach (ClassEnum tileTypeClassEnum in Enum.GetValues(typeof(ClassEnum))) {
+													classes.Add(tileTypeClassEnum, false);
+												}
 
-	public enum BiomeTypeEnum {
-		PolarDesert, IceCap, Tundra, WetTundra, PolarWetlands, CoolDesert, TemperateDesert, Steppe, BorealForest, TemperateWoodlands, TemperateForest,
-		TemperateWetForest, TemperateWetlands, ExtremeDesert, Desert, SubtropicalScrub, TropicalScrub, SubtropicalWoodlands, TropicalWoodlands,
-		Mediterranean, SubtropicalDryForest, TropicalDryForest, SubtropicalForest, SubtropicalWetForest, SubtropicalWetlands, TropicalWetForest, TropicalWetlands
-	};
+												foreach (KeyValuePair<string, object> tileTypeSubProperty in (List<KeyValuePair<string, object>>)tileTypeProperty.Value) {
+													switch ((PropertyEnum)Enum.Parse(typeof(PropertyEnum), tileTypeSubProperty.Key)) {
+														case PropertyEnum.Type:
+															type = (TypeEnum)Enum.Parse(typeof(TypeEnum), (string)tileTypeSubProperty.Value);
+															break;
+														case PropertyEnum.Classes:
+															foreach (string tileTypeClassString in ((string)tileTypeSubProperty.Value).Split(',')) {
+																classes[(ClassEnum)Enum.Parse(typeof(ClassEnum), tileTypeClassString)] = true;
+															}
+															break;
+														case PropertyEnum.WalkSpeed:
+															walkSpeed = float.Parse((string)tileTypeSubProperty.Value);
+															break;
+														case PropertyEnum.Walkable:
+															walkable = bool.Parse((string)tileTypeSubProperty.Value);
+															break;
+														case PropertyEnum.Buildable:
+															buildable = bool.Parse((string)tileTypeSubProperty.Value);
+															break;
+														case PropertyEnum.Bitmasking:
+															bitmasking = bool.Parse((string)tileTypeSubProperty.Value);
+															break;
+														case PropertyEnum.BlocksLight:
+															blocksLight = bool.Parse((string)tileTypeSubProperty.Value);
+															break;
+														case PropertyEnum.ResourceRanges:
+															foreach (string resourceRangeString in ((string)tileTypeSubProperty.Value).Split(',')) {
+																ResourceManager.Resource resource = GameManager.resourceM.GetResourceByEnum((ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), resourceRangeString.Split(':')[0]));
+																int min = int.Parse(resourceRangeString.Split(':')[1].Split('-')[0]);
+																int max = int.Parse(resourceRangeString.Split(':')[1].Split('-')[1]);
+																resourceRanges.Add(new ResourceManager.ResourceRange(resource, min, max));
+															}
+															break;
+														default:
+															Debug.LogError("Unknown tile type sub property: " + tileTypeSubProperty.Key + " " + tileTypeSubProperty.Value);
+															break;
+													}
+												}
 
-	public void CreateBiomes() {
-		List<KeyValuePair<string, object>> biomeProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/biomes").text.Split('\n').ToList());
-		foreach (KeyValuePair<string, object> biomeProperty in biomeProperties) {
-			switch ((BiomePropertyEnum)Enum.Parse(typeof(BiomePropertyEnum), biomeProperty.Key)) {
-				case BiomePropertyEnum.Biome:
+												TileType tileType = new TileType(
+													groupType.Value,
+													type.Value,
+													classes,
+													walkSpeed.Value,
+													walkable.Value,
+													buildable.Value,
+													bitmasking.Value,
+													blocksLight.Value,
+													resourceRanges
+												);
+												tileTypes.Add(tileType);
+												TileType.tileTypes.Add(tileType);
 
-					BiomeTypeEnum? type = null;
-					Dictionary<TileTypeGroupEnum, TileType> tileTypes = new Dictionary<TileTypeGroupEnum, TileType>();
-					Dictionary<ResourceManager.PlantEnum, float> plantChances = new Dictionary<ResourceManager.PlantEnum, float>();
-					Color? colour = null;
+												break;
+											default:
+												Debug.LogError("Unknown tile type property: " + tileTypeProperty.Key + " " + tileTypeProperty.Value);
+												break;
+										}
+									}
+									break;
+								default:
+									Debug.LogError("Unknown tile type group sub property: " + tileTypeGroupSubProperty.Key + " " + tileTypeGroupSubProperty.Value);
+									break;
+							}
 
-					foreach (KeyValuePair<string, object> biomeSubProperty in (List<KeyValuePair<string, object>>)biomeProperty.Value) {
-						switch ((BiomePropertyEnum)Enum.Parse(typeof(BiomePropertyEnum), biomeSubProperty.Key)) {
-							case BiomePropertyEnum.Type:
-								type = (BiomeTypeEnum)Enum.Parse(typeof(BiomeTypeEnum), (string)biomeSubProperty.Value);
-								break;
-							case BiomePropertyEnum.TileTypes:
-								foreach (KeyValuePair<string, object> tileTypeProperty in (List<KeyValuePair<string, object>>)biomeSubProperty.Value) {
-									tileTypes.Add(
-										(TileTypeGroupEnum)Enum.Parse(typeof(TileTypeGroupEnum), tileTypeProperty.Key),
-										GameManager.tileM.GetTileTypeByString((string)tileTypeProperty.Value)
-									);
-								}
-								break;
-							case BiomePropertyEnum.PlantChances:
-								foreach (KeyValuePair<string, object> plantChanceProperty in (List<KeyValuePair<string, object>>)biomeSubProperty.Value) {
-									plantChances.Add(
-										(ResourceManager.PlantEnum)Enum.Parse(typeof(ResourceManager.PlantEnum), plantChanceProperty.Key),
-										float.Parse((string)plantChanceProperty.Value)
-									);
-								}
-								break;
-							case BiomePropertyEnum.Colour:
-								colour = UIManager.HexToColor((string)biomeSubProperty.Value);
-								break;
-							default:
-								Debug.LogError("Unknown biome sub property: " + biomeSubProperty.Key + " " + biomeSubProperty.Value);
-								break;
 						}
 
-					}
+						TileTypeGroup tileTypeGroup = new TileTypeGroup(
+							groupType.Value,
+							defaultTileType.Value,
+							tileTypes
+						);
+						TileTypeGroup.tileTypeGroups.Add(tileTypeGroup);
 
-					Biome biome = new Biome(
-						type.Value,
-						tileTypes,
-						plantChances,
-						colour.Value
-					);
-					biomes.Add(type.Value, biome);
+						break;
+					default:
+						Debug.LogError("Unknown tile type group property: " + tileTypeGroupProperty.Key + " " + tileTypeGroupProperty.Value);
+						break;
 
-					break;
-				default:
-					Debug.LogError("Unknown biome property: " + biomeProperty.Key + " " + biomeProperty.Value);
-					break;
+				}
 			}
+		}
+
+		public static TileType GetTileTypeByString(string tileTypeString) {
+			return GetTileTypeByEnum((TypeEnum)Enum.Parse(typeof(TypeEnum), tileTypeString));
+		}
+
+		public static TileType GetTileTypeByEnum(TypeEnum tileTypeEnum) {
+			return tileTypes.Find(tileType => tileType.type == tileTypeEnum);
+		}
+
+		public static List<TileType> GetTileTypesWithClass(ClassEnum tileTypeClassEnum) {
+			return tileTypes.Where(tileType => tileType.classes[tileTypeClassEnum]).ToList();
 		}
 	}
 
-	private Dictionary<BiomeTypeEnum, Biome> biomes = new Dictionary<BiomeTypeEnum, Biome>();
-
 	public class Biome {
-		public readonly BiomeTypeEnum type;
+
+		public enum PropertyEnum {
+			Biome, Type, TileTypes, PlantChances, Colour
+		}
+
+		public enum TypeEnum {
+			PolarDesert, IceCap, Tundra, WetTundra, PolarWetlands, CoolDesert, TemperateDesert, Steppe, BorealForest, TemperateWoodlands, TemperateForest,
+			TemperateWetForest, TemperateWetlands, ExtremeDesert, Desert, SubtropicalScrub, TropicalScrub, SubtropicalWoodlands, TropicalWoodlands,
+			Mediterranean, SubtropicalDryForest, TropicalDryForest, SubtropicalForest, SubtropicalWetForest, SubtropicalWetlands, TropicalWetForest, TropicalWetlands
+		};
+
+		public static readonly List<Biome> biomes = new List<Biome>();
+
+		public readonly TypeEnum type;
 		public readonly string name;
 
-		public readonly Dictionary<TileTypeGroupEnum, TileType> tileTypes;
+		public readonly Dictionary<TileTypeGroup.TypeEnum, TileType> tileTypes;
 
 		public readonly Dictionary<ResourceManager.PlantEnum, float> plantChances;
 
 		public readonly Color colour;
 
-		public Biome(BiomeTypeEnum type, Dictionary<TileTypeGroupEnum, TileType> tileTypes, Dictionary<ResourceManager.PlantEnum, float> plantChances, Color colour) {
+		public Biome(TypeEnum type, Dictionary<TileTypeGroup.TypeEnum, TileType> tileTypes, Dictionary<ResourceManager.PlantEnum, float> plantChances, Color colour) {
 			this.type = type;
 			name = UIManager.SplitByCapitals(type.ToString());
 
@@ -363,18 +300,72 @@ public class TileManager : BaseManager {
 
 			this.colour = colour;
 		}
-	}
 
-	public Biome GetBiomeByString(string biomeTypeString) {
-		return GetBiomeByEnum((BiomeTypeEnum)Enum.Parse(typeof(BiomeTypeEnum), biomeTypeString));
-	}
+		public static void InitializeBiomes() {
+			List<KeyValuePair<string, object>> biomeProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/biomes").text.Split('\n').ToList());
+			foreach (KeyValuePair<string, object> biomeProperty in biomeProperties) {
+				switch ((PropertyEnum)Enum.Parse(typeof(PropertyEnum), biomeProperty.Key)) {
+					case PropertyEnum.Biome:
 
-	public Biome GetBiomeByEnum(BiomeTypeEnum biomeTypeEnum) {
-		return biomes[biomeTypeEnum];
-	}
+						TypeEnum? type = null;
+						Dictionary<TileTypeGroup.TypeEnum, TileType> tileTypes = new Dictionary<TileTypeGroup.TypeEnum, TileType>();
+						Dictionary<ResourceManager.PlantEnum, float> plantChances = new Dictionary<ResourceManager.PlantEnum, float>();
+						Color? colour = null;
 
-	public List<Biome> GetBiomes() {
-		return biomes.Values.ToList();
+						foreach (KeyValuePair<string, object> biomeSubProperty in (List<KeyValuePair<string, object>>)biomeProperty.Value) {
+							switch ((PropertyEnum)Enum.Parse(typeof(PropertyEnum), biomeSubProperty.Key)) {
+								case PropertyEnum.Type:
+									type = (TypeEnum)Enum.Parse(typeof(TypeEnum), (string)biomeSubProperty.Value);
+									break;
+								case PropertyEnum.TileTypes:
+									foreach (KeyValuePair<string, object> tileTypeProperty in (List<KeyValuePair<string, object>>)biomeSubProperty.Value) {
+										tileTypes.Add(
+											(TileTypeGroup.TypeEnum)Enum.Parse(typeof(TileTypeGroup.TypeEnum), tileTypeProperty.Key),
+											TileType.GetTileTypeByString((string)tileTypeProperty.Value)
+										);
+									}
+									break;
+								case PropertyEnum.PlantChances:
+									foreach (KeyValuePair<string, object> plantChanceProperty in (List<KeyValuePair<string, object>>)biomeSubProperty.Value) {
+										plantChances.Add(
+											(ResourceManager.PlantEnum)Enum.Parse(typeof(ResourceManager.PlantEnum), plantChanceProperty.Key),
+											float.Parse((string)plantChanceProperty.Value)
+										);
+									}
+									break;
+								case PropertyEnum.Colour:
+									colour = UIManager.HexToColor((string)biomeSubProperty.Value);
+									break;
+								default:
+									Debug.LogError("Unknown biome sub property: " + biomeSubProperty.Key + " " + biomeSubProperty.Value);
+									break;
+							}
+
+						}
+
+						Biome biome = new Biome(
+							type.Value,
+							tileTypes,
+							plantChances,
+							colour.Value
+						);
+						biomes.Add(biome);
+
+						break;
+					default:
+						Debug.LogError("Unknown biome property: " + biomeProperty.Key + " " + biomeProperty.Value);
+						break;
+				}
+			}
+		}
+
+		public static Biome GetBiomeByString(string biomeTypeString) {
+			return GetBiomeByEnum((TypeEnum)Enum.Parse(typeof(TypeEnum), biomeTypeString));
+		}
+
+		public static Biome GetBiomeByEnum(TypeEnum biomeTypeEnum) {
+			return biomes.Find(biome => biome.type == biomeTypeEnum);
+		}
 	}
 
 	public class PrecipitationRange {
@@ -427,7 +418,7 @@ public class TileManager : BaseManager {
 					max = int.MaxValue;
 				}
 
-				biome = GameManager.tileM.GetBiomeByString(temperatureRangeData[1]);
+				biome = Biome.GetBiomeByString(temperatureRangeData[1]);
 			}
 		}
 	}
@@ -442,188 +433,199 @@ public class TileManager : BaseManager {
 	}
 
 	public class ResourceVein {
+
+		public enum GroupEnum {
+			Stone, Coast
+		}
+
+		public enum GroupPropertyEnum {
+			VeinGroup,
+			Type,
+			Veins
+		}
+
+		public enum PropertyEnum {
+			Vein,
+			ResourceType,
+			TileTypes,
+			NumVeinsByMapSize,
+			VeinDistance,
+			VeinSize,
+			VeinSizeRange
+		}
+
+		public static readonly List<ResourceVein> resourceVeins = new List<ResourceVein>();
+
 		public ResourceManager.ResourceEnum resourceType;
-		public Dictionary<TileTypeGroupEnum, TileTypeEnum> tileTypes;
+		public GroupEnum groupType;
+		public Dictionary<TileTypeGroup.TypeEnum, TileType.TypeEnum> tileTypes;
 		public int numVeinsByMapSize = 0;
 		public int veinDistance = 0;
 		public int veinSize = 0;
 		public int veinSizeRange = 0;
 
-		public ResourceVein(ResourceManager.ResourceEnum resourceType, Dictionary<TileTypeGroupEnum, TileTypeEnum> tileTypes, int numVeinsByMapSize, int veinDistance, int veinSize, int veinSizeRange) {
+		public ResourceVein(
+			ResourceManager.ResourceEnum resourceType,
+			GroupEnum groupType,
+			Dictionary<TileTypeGroup.TypeEnum, TileType.TypeEnum> tileTypes,
+			int numVeinsByMapSize,
+			int veinDistance,
+			int veinSize,
+			int veinSizeRange
+		) {
 			this.resourceType = resourceType;
+			this.groupType = groupType;
 			this.tileTypes = tileTypes;
 			this.numVeinsByMapSize = numVeinsByMapSize;
 			this.veinDistance = veinDistance;
 			this.veinSize = veinSize;
 			this.veinSizeRange = veinSizeRange;
 		}
-	}
 
-	public enum ResourceVeinGroupPropertyEnum {
-		VeinGroup,
-		Type,
-		Veins
-	}
-
-	public enum ResourceVeinPropertyEnum {
-		Vein,
-		ResourceType,
-		TileTypes,
-		NumVeinsByMapSize,
-		VeinDistance,
-		VeinSize,
-		VeinSizeRange
-	}
-
-	public enum ResourceVeinGroupEnum {
-		Stone, Coast
-	}
-
-	public void CreateResourceVeins() {
-		List<KeyValuePair<string, object>> resourceVeinGroupProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/resource-veins").text.Split('\n').ToList());
-		foreach (KeyValuePair<string, object> resourceVeinGroupProperty in resourceVeinGroupProperties) {
-			switch ((ResourceVeinGroupPropertyEnum)Enum.Parse(typeof(ResourceVeinGroupPropertyEnum), resourceVeinGroupProperty.Key)) {
-				case ResourceVeinGroupPropertyEnum.VeinGroup:
-
-					ResourceVeinGroupEnum? groupType = null;
-					List<ResourceVein> resourceVeins = new List<ResourceVein>();
-
-					foreach (KeyValuePair<string, object> resourceVeinGroupSubProperty in (List<KeyValuePair<string, object>>)resourceVeinGroupProperty.Value) {
-						switch ((ResourceVeinGroupPropertyEnum)Enum.Parse(typeof(ResourceVeinGroupPropertyEnum), resourceVeinGroupSubProperty.Key)) {
-							case ResourceVeinGroupPropertyEnum.Type:
-								groupType = (ResourceVeinGroupEnum)Enum.Parse(typeof(ResourceVeinGroupEnum), (string)resourceVeinGroupSubProperty.Value);
-								break;
-							case ResourceVeinGroupPropertyEnum.Veins:
-								foreach (KeyValuePair<string, object> resourceVeinProperty in (List<KeyValuePair<string, object>>)resourceVeinGroupSubProperty.Value) {
-									switch ((ResourceVeinPropertyEnum)Enum.Parse(typeof(ResourceVeinPropertyEnum), resourceVeinProperty.Key)) {
-										case ResourceVeinPropertyEnum.Vein:
-
-											ResourceManager.ResourceEnum? resourceType = null;
-											Dictionary<TileTypeGroupEnum, TileTypeEnum> tileTypes = new Dictionary<TileTypeGroupEnum, TileTypeEnum>();
-											int? numVeinsByMapSize = null;
-											int? veinDistance = null;
-											int? veinSize = null;
-											int? veinSizeRange = null;
-
-											foreach (KeyValuePair<string, object> resourceVeinSubProperty in (List<KeyValuePair<string, object>>)resourceVeinProperty.Value) {
-												switch ((ResourceVeinPropertyEnum)Enum.Parse(typeof(ResourceVeinPropertyEnum), resourceVeinSubProperty.Key)) {
-													case ResourceVeinPropertyEnum.ResourceType:
-														resourceType = (ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)resourceVeinSubProperty.Value);
-														break;
-													case ResourceVeinPropertyEnum.TileTypes:
-														foreach (string tileTypesString in ((string)resourceVeinSubProperty.Value).Split(',')) {
-															TileTypeGroupEnum tileTypeGroup = (TileTypeGroupEnum)Enum.Parse(typeof(TileTypeGroupEnum), tileTypesString.Split(':')[0]);
-															TileTypeEnum tileType = (TileTypeEnum)Enum.Parse(typeof(TileTypeEnum), tileTypesString.Split(':')[1]);
-															tileTypes.Add(tileTypeGroup, tileType);
-														}
-														break;
-													case ResourceVeinPropertyEnum.NumVeinsByMapSize:
-														numVeinsByMapSize = int.Parse((string)resourceVeinSubProperty.Value);
-														break;
-													case ResourceVeinPropertyEnum.VeinDistance:
-														veinDistance = int.Parse((string)resourceVeinSubProperty.Value);
-														break;
-													case ResourceVeinPropertyEnum.VeinSize:
-														veinSize = int.Parse((string)resourceVeinSubProperty.Value);
-														break;
-													case ResourceVeinPropertyEnum.VeinSizeRange:
-														veinSizeRange = int.Parse((string)resourceVeinSubProperty.Value);
-														break;
-													default:
-														Debug.LogError("Unknown resource vein sub property: " + resourceVeinSubProperty.Key + " " + resourceVeinSubProperty.Value);
-														break;
-												}
-											}
-
-											ResourceVein resourceVein = new ResourceVein(
-												resourceType.Value,
-												tileTypes,
-												numVeinsByMapSize.Value,
-												veinDistance.Value,
-												veinSize.Value,
-												veinSizeRange.Value
-											);
-											resourceVeins.Add(resourceVein);
-
-											break;
-										default:
-											Debug.LogError("Unknown resource vein property: " + resourceVeinProperty.Key + " " + resourceVeinProperty.Value);
-											break;
-									}
-								}
-								break;
-							default:
-								Debug.LogError("Unknown resource vein group sub property: " + resourceVeinGroupSubProperty.Key + " " + resourceVeinGroupSubProperty.Value);
-								break;
-						}
-
+		public static readonly Dictionary<ResourceManager.ResourceEnum, Func<Tile, bool>> resourceVeinValidTileFunctions = new Dictionary<ResourceManager.ResourceEnum, Func<Tile, bool>>() {
+			{ ResourceManager.ResourceEnum.Clay, delegate (Tile tile) {
+				if (((tile.tileType.groupType == TileTypeGroup.TypeEnum.Water && tile.horizontalSurroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) != null) || (tile.tileType.groupType != TileTypeGroup.TypeEnum.Water)) && (tile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
+					if (tile.temperature >= -30) {
+						return true;
 					}
+				}
+				return false;
+			} },
+			{ ResourceManager.ResourceEnum.GoldOre, delegate (Tile tile) {
+				if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
+					return true;
+				}
+				return false;
+			} },
+			{ ResourceManager.ResourceEnum.SilverOre, delegate (Tile tile) {
+				if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
+					return true;
+				}
+				return false;
+			} },
+			{ ResourceManager.ResourceEnum.BronzeOre, delegate (Tile tile) {
+				if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
+					return true;
+				}
+				return false;
+			} },
+			{ ResourceManager.ResourceEnum.IronOre, delegate (Tile tile) {
+				if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
+					return true;
+				}
+				return false;
+			} },
+			{ ResourceManager.ResourceEnum.CopperOre, delegate (Tile tile) {
+				if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
+					return true;
+				}
+				return false;
+			} },
+			{ ResourceManager.ResourceEnum.Chalk, delegate (Tile tile) {
+				if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
+					return true;
+				}
+				return false;
+			} }
+		};
 
-					this.resourceVeins.Add(groupType.Value, resourceVeins);
+		public static void InitializeResourceVeins() {
+			List<KeyValuePair<string, object>> resourceVeinGroupProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/resource-veins").text.Split('\n').ToList());
+			foreach (KeyValuePair<string, object> resourceVeinGroupProperty in resourceVeinGroupProperties) {
+				switch ((GroupPropertyEnum)Enum.Parse(typeof(GroupPropertyEnum), resourceVeinGroupProperty.Key)) {
+					case GroupPropertyEnum.VeinGroup:
 
-					break;
-				default:
-					Debug.LogError("Unknown resource vein group property: " + resourceVeinGroupProperty.Key + " " + resourceVeinGroupProperty.Value);
-					break;
+						GroupEnum? groupType = null;
 
+						foreach (KeyValuePair<string, object> resourceVeinGroupSubProperty in (List<KeyValuePair<string, object>>)resourceVeinGroupProperty.Value) {
+							switch ((GroupPropertyEnum)Enum.Parse(typeof(GroupPropertyEnum), resourceVeinGroupSubProperty.Key)) {
+								case GroupPropertyEnum.Type:
+									groupType = (GroupEnum)Enum.Parse(typeof(GroupEnum), (string)resourceVeinGroupSubProperty.Value);
+									break;
+								case GroupPropertyEnum.Veins:
+									foreach (KeyValuePair<string, object> resourceVeinProperty in (List<KeyValuePair<string, object>>)resourceVeinGroupSubProperty.Value) {
+										switch ((PropertyEnum)Enum.Parse(typeof(PropertyEnum), resourceVeinProperty.Key)) {
+											case PropertyEnum.Vein:
+
+												ResourceManager.ResourceEnum? resourceType = null;
+												Dictionary<TileTypeGroup.TypeEnum, TileType.TypeEnum> tileTypes = new Dictionary<TileTypeGroup.TypeEnum, TileType.TypeEnum>();
+												int? numVeinsByMapSize = null;
+												int? veinDistance = null;
+												int? veinSize = null;
+												int? veinSizeRange = null;
+
+												foreach (KeyValuePair<string, object> resourceVeinSubProperty in (List<KeyValuePair<string, object>>)resourceVeinProperty.Value) {
+													switch ((PropertyEnum)Enum.Parse(typeof(PropertyEnum), resourceVeinSubProperty.Key)) {
+														case PropertyEnum.ResourceType:
+															resourceType = (ResourceManager.ResourceEnum)Enum.Parse(typeof(ResourceManager.ResourceEnum), (string)resourceVeinSubProperty.Value);
+															break;
+														case PropertyEnum.TileTypes:
+															foreach (string tileTypesString in ((string)resourceVeinSubProperty.Value).Split(',')) {
+																TileTypeGroup.TypeEnum tileTypeGroup = (TileTypeGroup.TypeEnum)Enum.Parse(typeof(TileTypeGroup.TypeEnum), tileTypesString.Split(':')[0]);
+																TileType.TypeEnum tileType = (TileType.TypeEnum)Enum.Parse(typeof(TileType.TypeEnum), tileTypesString.Split(':')[1]);
+																tileTypes.Add(tileTypeGroup, tileType);
+															}
+															break;
+														case PropertyEnum.NumVeinsByMapSize:
+															numVeinsByMapSize = int.Parse((string)resourceVeinSubProperty.Value);
+															break;
+														case PropertyEnum.VeinDistance:
+															veinDistance = int.Parse((string)resourceVeinSubProperty.Value);
+															break;
+														case PropertyEnum.VeinSize:
+															veinSize = int.Parse((string)resourceVeinSubProperty.Value);
+															break;
+														case PropertyEnum.VeinSizeRange:
+															veinSizeRange = int.Parse((string)resourceVeinSubProperty.Value);
+															break;
+														default:
+															Debug.LogError("Unknown resource vein sub property: " + resourceVeinSubProperty.Key + " " + resourceVeinSubProperty.Value);
+															break;
+													}
+												}
+
+												ResourceVein resourceVein = new ResourceVein(
+													resourceType.Value,
+													groupType.Value,
+													tileTypes,
+													numVeinsByMapSize.Value,
+													veinDistance.Value,
+													veinSize.Value,
+													veinSizeRange.Value
+												);
+												resourceVeins.Add(resourceVein);
+
+												break;
+											default:
+												Debug.LogError("Unknown resource vein property: " + resourceVeinProperty.Key + " " + resourceVeinProperty.Value);
+												break;
+										}
+									}
+									break;
+								default:
+									Debug.LogError("Unknown resource vein group sub property: " + resourceVeinGroupSubProperty.Key + " " + resourceVeinGroupSubProperty.Value);
+									break;
+							}
+						}
+						break;
+					default:
+						Debug.LogError("Unknown resource vein group property: " + resourceVeinGroupProperty.Key + " " + resourceVeinGroupProperty.Value);
+						break;
+
+				}
 			}
+		}
+
+		public static List<ResourceVein> GetResourceVeinsByGroup(GroupEnum resourceVeinGroupEnum) {
+			return resourceVeins.Where(resourceVein => resourceVein.groupType == resourceVeinGroupEnum).ToList();
 		}
 	}
 
-	public Dictionary<ResourceVeinGroupEnum, List<ResourceVein>> resourceVeins = new Dictionary<ResourceVeinGroupEnum, List<ResourceVein>>();
-
-	public static readonly Dictionary<ResourceManager.ResourceEnum, Func<Tile, bool>> resourceVeinValidTileFunctions = new Dictionary<ResourceManager.ResourceEnum, Func<Tile, bool>>() {
-		{ ResourceManager.ResourceEnum.Clay, delegate (Tile tile) {
-			if (((tile.tileType.groupType == TileTypeGroupEnum.Water && tile.horizontalSurroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroupEnum.Water) != null) || (tile.tileType.groupType != TileTypeGroupEnum.Water)) && (tile.tileType.groupType != TileTypeGroupEnum.Stone)) {
-				if (tile.temperature >= -30) {
-					return true;
-				}
-			}
-			return false;
-		} },
-		{ ResourceManager.ResourceEnum.GoldOre, delegate (Tile tile) {
-			if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
-				return true;
-			}
-			return false;
-		} },
-		{ ResourceManager.ResourceEnum.SilverOre, delegate (Tile tile) {
-			if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
-				return true;
-			}
-			return false;
-		} },
-		{ ResourceManager.ResourceEnum.BronzeOre, delegate (Tile tile) {
-			if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
-				return true;
-			}
-			return false;
-		} },
-		{ ResourceManager.ResourceEnum.IronOre, delegate (Tile tile) {
-			if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
-				return true;
-			}
-			return false;
-		} },
-		{ ResourceManager.ResourceEnum.CopperOre, delegate (Tile tile) {
-			if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
-				return true;
-			}
-			return false;
-		} },
-		{ ResourceManager.ResourceEnum.Chalk, delegate (Tile tile) {
-			if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
-				return true;
-			}
-			return false;
-		} }
-	};
-
 	public static readonly Dictionary<int, List<List<int>>> nonWalkableSurroundingTilesComparatorMap = new Dictionary<int, List<List<int>>>() {
-		{0, new List<List<int>>() { new List<int>() { 4, 1, 5, 2 }, new List<int>() { 7, 3, 6, 2 } } },
-		{1, new List<List<int>>() { new List<int>() { 4, 0, 7, 3 }, new List<int>() { 5, 2, 6, 3 } } },
-		{2, new List<List<int>>() { new List<int>() { 5, 1, 4, 0 }, new List<int>() { 6, 3, 7, 0 } } },
-		{3, new List<List<int>>() { new List<int>() { 6, 2, 5, 1 }, new List<int>() { 7, 0, 4, 1 } } }
+		{ 0, new List<List<int>>() { new List<int>() { 4, 1, 5, 2 }, new List<int>() { 7, 3, 6, 2 } } },
+		{ 1, new List<List<int>>() { new List<int>() { 4, 0, 7, 3 }, new List<int>() { 5, 2, 6, 3 } } },
+		{ 2, new List<List<int>>() { new List<int>() { 5, 1, 4, 0 }, new List<int>() { 6, 3, 7, 0 } } },
+		{ 3, new List<List<int>>() { new List<int>() { 6, 2, 5, 1 }, new List<int>() { 7, 0, 4, 1 } } }
 	};
 
 	public class Tile {
@@ -716,7 +718,7 @@ public class TileManager : BaseManager {
 				map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList(), true, !redetermineRegion); // Lighting automatically recalculated in RedetermineRegion()
 			}
 
-			if (plant != null && !tileType.classes[TileTypeClassEnum.Plantable]) {
+			if (plant != null && !tileType.classes[TileType.ClassEnum.Plantable]) {
 				plant.Remove();
 				plant = null;
 			}
@@ -895,19 +897,19 @@ public class TileManager : BaseManager {
 		}
 
 		public void SetTileTypeByHeight() {
-			if (height < map.mapData.terrainTypeHeights[TileTypeGroupEnum.Water]) {
-				SetTileType(GameManager.tileM.GetTileTypeByEnum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Water).defaultTileType), false, false, false);
-			} else if (height > map.mapData.terrainTypeHeights[TileTypeGroupEnum.Stone]) {
-				SetTileType(GameManager.tileM.GetTileTypeByEnum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Stone).defaultTileType), false, false, false);
+			if (height < map.mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water]) {
+				SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).defaultTileType), false, false, false);
+			} else if (height > map.mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Stone]) {
+				SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).defaultTileType), false, false, false);
 			} else {
-				SetTileType(GameManager.tileM.GetTileTypeByEnum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Ground).defaultTileType), false, false, false);
+				SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Ground).defaultTileType), false, false, false);
 			}
 		}
 
 		public void SetBiome(Biome biome, bool setPlant) {
 			this.biome = biome;
 			SetTileType(biome.tileTypes[tileType.groupType], false, false, false);
-			if (setPlant && tileType.classes[TileTypeClassEnum.Plantable]) {
+			if (setPlant && tileType.classes[TileType.ClassEnum.Plantable]) {
 				SetPlant(false, null);
 			}
 		}
@@ -1184,7 +1186,7 @@ public class TileManager : BaseManager {
 		public bool randomOffsets;
 		public float averageTemperature;
 		public float averagePrecipitation;
-		public Dictionary<TileTypeGroupEnum, float> terrainTypeHeights;
+		public Dictionary<TileTypeGroup.TypeEnum, float> terrainTypeHeights;
 		public List<int> surroundingPlanetTileHeightDirections;
 		public bool isRiver;
 		public List<int> surroundingPlanetTileRivers;
@@ -1207,7 +1209,7 @@ public class TileManager : BaseManager {
 			bool randomOffsets,
 			float averageTemperature,
 			float averagePrecipitation,
-			Dictionary<TileTypeGroupEnum, float> terrainTypeHeights,
+			Dictionary<TileTypeGroup.TypeEnum, float> terrainTypeHeights,
 			List<int> surroundingPlanetTileHeightDirections,
 			bool isRiver,
 			List<int> surroundingPlanetTileRivers,
@@ -1712,8 +1714,8 @@ public class TileManager : BaseManager {
 			int regionIndex = 0;
 			for (int sectionY = 0; sectionY < mapData.mapSize; sectionY += size) {
 				for (int sectionX = 0; sectionX < mapData.mapSize; sectionX += size) {
-					RegionBlock regionBlock = new RegionBlock(GameManager.tileM.GetTileTypeByEnum(TileTypeEnum.Grass), regionIndex);
-					RegionBlock squareRegionBlock = new RegionBlock(GameManager.tileM.GetTileTypeByEnum(TileTypeEnum.Grass), regionIndex);
+					RegionBlock regionBlock = new RegionBlock(TileType.GetTileTypeByEnum(TileType.TypeEnum.Grass), regionIndex);
+					RegionBlock squareRegionBlock = new RegionBlock(TileType.GetTileTypeByEnum(TileType.TypeEnum.Grass), regionIndex);
 					for (int y = sectionY; (y < sectionY + size && y < mapData.mapSize); y++) {
 						for (int x = sectionX; (x < sectionX + size && x < mapData.mapSize); x++) {
 							regionBlock.tiles.Add(sortedTiles[y][x]);
@@ -1928,11 +1930,11 @@ public class TileManager : BaseManager {
 		}
 
 		public void ReduceNoise() {
-			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f), new List<TileTypeGroupEnum>() { TileTypeGroupEnum.Water, TileTypeGroupEnum.Stone, TileTypeGroupEnum.Ground });
-			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypeGroupEnum>() { TileTypeGroupEnum.Water });
+			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f), new List<TileTypeGroup.TypeEnum>() { TileTypeGroup.TypeEnum.Water, TileTypeGroup.TypeEnum.Stone, TileTypeGroup.TypeEnum.Ground });
+			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypeGroup.TypeEnum>() { TileTypeGroup.TypeEnum.Water });
 		}
 
-		private void ReduceNoise(int removeRegionsBelowSize, List<TileTypeGroupEnum> tileTypeGroupsToRemove) {
+		private void ReduceNoise(int removeRegionsBelowSize, List<TileTypeGroup.TypeEnum> tileTypeGroupsToRemove) {
 			foreach (Region region in regions) {
 				if (tileTypeGroupsToRemove.Contains(region.tileType.groupType)) {
 					if (region.tiles.Count < removeRegionsBelowSize) {
@@ -1970,7 +1972,7 @@ public class TileManager : BaseManager {
 
 			List<Tile> tilesByHeight = tiles.OrderBy(tile => tile.height).ToList();
 			foreach (Tile tile in tilesByHeight) {
-				if (tile.tileType.groupType != TileTypeGroupEnum.Stone && tile.drainageBasin == null) {
+				if (tile.tileType.groupType != TileTypeGroup.TypeEnum.Stone && tile.drainageBasin == null) {
 					Region drainageBasin = new Region(null, drainageBasinID);
 					drainageBasinID += 1;
 
@@ -1987,7 +1989,7 @@ public class TileManager : BaseManager {
 						currentTile.drainageBasin = drainageBasin;
 
 						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
-							if (nTile != null && !checkedTiles.Contains(nTile) && nTile.tileType.groupType != TileTypeGroupEnum.Stone && nTile.drainageBasin == null) {
+							if (nTile != null && !checkedTiles.Contains(nTile) && nTile.tileType.groupType != TileTypeGroup.TypeEnum.Stone && nTile.drainageBasin == null) {
 								if (nTile.height * 1.2f >= currentTile.height) {
 									frontier.Add(nTile);
 									checkedTiles.Add(nTile);
@@ -2059,9 +2061,9 @@ public class TileManager : BaseManager {
 			Dictionary<Tile, Tile> riverStartTiles = new Dictionary<Tile, Tile>();
 			foreach (KeyValuePair<Region, Tile> kvp in drainageBasins) {
 				Region drainageBasin = kvp.Key;
-				if (drainageBasin.tiles.Find(o => o.tileType.groupType == TileTypeGroupEnum.Water) != null && drainageBasin.tiles.Find(o => o.horizontalSurroundingTiles.Find(o2 => o2 != null && o2.tileType.groupType == TileTypeGroupEnum.Stone) != null) != null) {
+				if (drainageBasin.tiles.Find(o => o.tileType.groupType == TileTypeGroup.TypeEnum.Water) != null && drainageBasin.tiles.Find(o => o.horizontalSurroundingTiles.Find(o2 => o2 != null && o2.tileType.groupType == TileTypeGroup.TypeEnum.Stone) != null) != null) {
 					foreach (Tile tile in drainageBasin.tiles) {
-						if (tile.walkable && tile.tileType.groupType != TileTypeGroupEnum.Water && tile.horizontalSurroundingTiles.Find(o => o != null && o.tileType.groupType == TileTypeGroupEnum.Stone) != null) {
+						if (tile.walkable && tile.tileType.groupType != TileTypeGroup.TypeEnum.Water && tile.horizontalSurroundingTiles.Find(o => o != null && o.tileType.groupType == TileTypeGroup.TypeEnum.Stone) != null) {
 							riverStartTiles.Add(tile, kvp.Value);
 						}
 					}
@@ -2102,21 +2104,21 @@ public class TileManager : BaseManager {
 				currentTile = frontier[0];
 				frontier.RemoveAt(0);
 
-				if (currentTile.tile == riverEndTile || (expandRadius == 0 && (currentTile.tile.tileType.groupType == TileTypeGroupEnum.Water || (currentTile.tile.horizontalSurroundingTiles.Find(tile => tile != null && tile.tileType.groupType == TileTypeGroupEnum.Water && RiversContainTile(tile, true).Key == null) != null)))) {
+				if (currentTile.tile == riverEndTile || (expandRadius == 0 && (currentTile.tile.tileType.groupType == TileTypeGroup.TypeEnum.Water || (currentTile.tile.horizontalSurroundingTiles.Find(tile => tile != null && tile.tileType.groupType == TileTypeGroup.TypeEnum.Water && RiversContainTile(tile, true).Key == null) != null)))) {
 					while (currentTile != null) {
 						river.Add(currentTile.tile);
-						currentTile.tile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileTypeEnum.GrassWater), true, false, false);
+						currentTile.tile.SetTileType(TileType.GetTileTypeByEnum(TileType.TypeEnum.GrassWater), true, false, false);
 						currentTile = currentTile.cameFrom;
 					}
 					break;
 				}
 
 				foreach (Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
-					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (ignoreStone || nTile.tileType.groupType != TileTypeGroupEnum.Stone)) {
+					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (ignoreStone || nTile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
 						if (rivers.Find(otherRiver => otherRiver.tiles.Find(riverTile => nTile == riverTile) != null) != null) {
 							frontier.Clear();
 							frontier.Add(new PathManager.PathfindingTile(nTile, currentTile, 0));
-							nTile.SetTileType(GameManager.tileM.GetTileTypeByEnum(TileTypeEnum.GrassWater), true, false, false);
+							nTile.SetTileType(TileType.GetTileTypeByEnum(TileType.TypeEnum.GrassWater), true, false, false);
 							break;
 						}
 						float cost = Vector2.Distance(nTile.obj.transform.position, riverEndTile.obj.transform.position) + (nTile.height * (mapData.mapSize / 10f)) + UnityEngine.Random.Range(0, 10);
@@ -2156,7 +2158,7 @@ public class TileManager : BaseManager {
 							expandTile.SetTileHeight(newRiverBankHeight);
 						}
 						foreach (Tile nTile in expandTile.surroundingTiles) {
-							if (nTile != null && !checkedExpandTiles.Contains(nTile) && (ignoreStone || nTile.tileType.groupType != TileTypeGroupEnum.Stone)) {
+							if (nTile != null && !checkedExpandTiles.Contains(nTile) && (ignoreStone || nTile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
 								if (Vector2.Distance(nTile.obj.transform.position, riverTile.obj.transform.position) <= expandedExpandRadius) {
 									expandFrontier.Add(nTile);
 									checkedExpandTiles.Add(nTile);
@@ -2172,14 +2174,14 @@ public class TileManager : BaseManager {
 		}
 
 		private float CalculateLargeRiverTileHeight(int expandRadius, float distanceExpandTileRiverTile) {
-			float height = (mapData.terrainTypeHeights[TileTypeGroupEnum.Water] / expandRadius) * distanceExpandTileRiverTile;//(2 * mapData.terrainTypeHeights[TileTypes.GrassWater]) * (distanceExpandTileRiverTile / expandedExpandRadius);
+			float height = (mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water] / expandRadius) * distanceExpandTileRiverTile;//(2 * mapData.terrainTypeHeights[TileTypes.GrassWater]) * (distanceExpandTileRiverTile / expandedExpandRadius);
 			height -= 0.01f;
 			return Mathf.Clamp(height, 0f, 1f);
 		}
 
 		private float CalculateLargeRiverBankTileHeight(int expandRadius, float distanceExpandTileRiverTile) {
 			float height = CalculateLargeRiverTileHeight(expandRadius, distanceExpandTileRiverTile / 2f);
-			height += (mapData.terrainTypeHeights[TileTypeGroupEnum.Water] / 2f);
+			height += (mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water] / 2f);
 			return Mathf.Clamp(height, 0f, 1f);
 		}
 
@@ -2327,17 +2329,17 @@ public class TileManager : BaseManager {
 			if (planet) {
 				if (previousTile != null) {
 					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
-					if (tile.tileType.classes[TileTypeClassEnum.LiquidWater]) {
+					if (tile.tileType.classes[TileType.ClassEnum.LiquidWater]) {
 						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * (mapData.mapSize / 5f));
-					} else if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
+					} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.9f);
 					} else {
 						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.95f);
 					}
 				} else {
-					if (tile.tileType.classes[TileTypeClassEnum.LiquidWater]) {
+					if (tile.tileType.classes[TileType.ClassEnum.LiquidWater]) {
 						tile.SetPrecipitation(1f);
-					} else if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
+					} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						tile.SetPrecipitation(1f);
 					} else {
 						tile.SetPrecipitation(0.1f);
@@ -2346,21 +2348,21 @@ public class TileManager : BaseManager {
 			} else {
 				if (previousTile != null) {
 					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
-					if (tile.tileType.classes[TileTypeClassEnum.LiquidWater]) {
+					if (tile.tileType.classes[TileType.ClassEnum.LiquidWater]) {
 						float waterMultiplier = (mapData.mapSize / 5f);
 						if (RiversContainTile(tile, true).Value != null) {
 							waterMultiplier *= 5;
 						}
 						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * waterMultiplier);
-					} else if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
+					} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * UnityEngine.Random.Range(0.95f, 0.99f));
 					} else {
 						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * UnityEngine.Random.Range(0.98f, 1f));
 					}
 				} else {
-					if (tile.tileType.classes[TileTypeClassEnum.LiquidWater]) {
+					if (tile.tileType.classes[TileType.ClassEnum.LiquidWater]) {
 						tile.SetPrecipitation(1f);
-					} else if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
+					} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						tile.SetPrecipitation(1f);
 					} else {
 						tile.SetPrecipitation(mapData.averagePrecipitation);
@@ -2466,7 +2468,7 @@ public class TileManager : BaseManager {
 		public void SetRoofs() {
 			float roofHeightMultiplier = 1.25f;
 			foreach (Tile tile in tiles) {
-				if (tile.tileType.groupType == TileTypeGroupEnum.Stone && tile.height >= mapData.terrainTypeHeights[TileTypeGroupEnum.Stone] * roofHeightMultiplier) {
+				if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone && tile.height >= mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Stone] * roofHeightMultiplier) {
 					tile.roof = true;
 				} else {
 					tile.roof = false;
@@ -2478,28 +2480,28 @@ public class TileManager : BaseManager {
 
 			List<Tile> stoneTiles = new List<Tile>();
 			foreach (RegionBlock regionBlock in regionBlocks) {
-				if (regionBlock.tileType.groupType == TileTypeGroupEnum.Stone) {
+				if (regionBlock.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 					stoneTiles.AddRange(regionBlock.tiles);
 				}
 			}
 			if (stoneTiles.Count > 0) {
-				foreach (ResourceVein resourceVein in GameManager.tileM.resourceVeins[ResourceVeinGroupEnum.Stone]) {
+				foreach (ResourceVein resourceVein in ResourceVein.GetResourceVeinsByGroup(ResourceVein.GroupEnum.Stone)) {
 					PlaceResourceVeins(resourceVein, stoneTiles);
 				}
 			}
 
 			List<Tile> coastTiles = new List<Tile>();
 			foreach (RegionBlock regionBlock in regionBlocks) {
-				if (regionBlock.tileType.groupType == TileTypeGroupEnum.Water) {
+				if (regionBlock.tileType.groupType == TileTypeGroup.TypeEnum.Water) {
 					foreach (Tile tile in regionBlock.tiles) {
-						if (tile.surroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroupEnum.Water) != null) {
+						if (tile.surroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) != null) {
 							coastTiles.Add(tile);
 						}
 					}
 				}
 			}
 			if (coastTiles.Count > 0) {
-				foreach (ResourceVein resourceVein in GameManager.tileM.resourceVeins[ResourceVeinGroupEnum.Coast]) {
+				foreach (ResourceVein resourceVein in ResourceVein.GetResourceVeinsByGroup(ResourceVein.GroupEnum.Coast)) {
 					PlaceResourceVeins(resourceVein, coastTiles);
 				}
 			}
@@ -2508,7 +2510,7 @@ public class TileManager : BaseManager {
 		void PlaceResourceVeins(ResourceVein resourceVeinData, List<Tile> mediumTiles) {
 			List<Tile> previousVeinStartTiles = new List<Tile>();
 			for (int i = 0; i < Mathf.CeilToInt(mapData.mapSize / (float)resourceVeinData.numVeinsByMapSize); i++) {
-				List<Tile> validVeinStartTiles = mediumTiles.Where(tile => !resourceVeinData.tileTypes.ContainsValue(tile.tileType.type) && resourceVeinData.tileTypes.ContainsKey(tile.tileType.groupType) && resourceVeinValidTileFunctions[resourceVeinData.resourceType](tile)).ToList();
+				List<Tile> validVeinStartTiles = mediumTiles.Where(tile => !resourceVeinData.tileTypes.ContainsValue(tile.tileType.type) && resourceVeinData.tileTypes.ContainsKey(tile.tileType.groupType) && ResourceVein.resourceVeinValidTileFunctions[resourceVeinData.resourceType](tile)).ToList();
 				foreach (Tile previousVeinStartTile in previousVeinStartTiles) {
 					List<Tile> removeTiles = new List<Tile>();
 					foreach (Tile validVeinStartTile in validVeinStartTiles) {
@@ -2538,11 +2540,11 @@ public class TileManager : BaseManager {
 						frontier.RemoveAt(0);
 						checkedTiles.Add(currentTile);
 
-						currentTile.SetTileType(GameManager.tileM.GetTileTypeByEnum(resourceVeinData.tileTypes[currentTile.tileType.groupType]), false, true, false);
+						currentTile.SetTileType(TileType.GetTileTypeByEnum(resourceVeinData.tileTypes[currentTile.tileType.groupType]), false, true, false);
 
 						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
 							if (nTile != null && !checkedTiles.Contains(nTile) && !resourceVeinData.tileTypes.Values.Contains(nTile.tileType.type)) {
-								if (resourceVeinData.tileTypes.ContainsKey(nTile.tileType.groupType) && resourceVeinValidTileFunctions[resourceVeinData.resourceType](nTile)) {
+								if (resourceVeinData.tileTypes.ContainsKey(nTile.tileType.groupType) && ResourceVein.resourceVeinValidTileFunctions[resourceVeinData.resourceType](nTile)) {
 									frontier.Add(nTile);
 								}
 							}
@@ -2598,7 +2600,7 @@ public class TileManager : BaseManager {
 			{ 7, new List<int>() { 3, 0 } }
 		};
 
-		int BitSum(List<TileTypeEnum> compareTileTypes, List<Tile> tilesToSum, bool includeMapEdge) {
+		public int BitSum(List<TileType.TypeEnum> compareTileTypes, List<Tile> tilesToSum, bool includeMapEdge) {
 			int sum = 0;
 			for (int i = 0; i < tilesToSum.Count; i++) {
 				if (tilesToSum[i] != null) {
@@ -2633,29 +2635,33 @@ public class TileManager : BaseManager {
 			return sum;
 		}
 
-		void BitmaskTile(Tile tile, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, List<TileTypeEnum> customCompareTileTypes, bool includeMapEdge) {
+		void BitmaskTile(Tile tile, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, List<TileType.TypeEnum> customCompareTileTypes, bool includeMapEdge) {
 			int sum = 0;
-			List<Tile> surroundingTilesToUse = (includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles);
+			List<Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles;
 			if (customBitSumInputs) {
 				sum = BitSum(customCompareTileTypes, surroundingTilesToUse, includeMapEdge);
 			} else {
 				if (RiversContainTile(tile, false).Key != null) {
-					sum = BitSum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Water).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, false);
-				} else if (tile.tileType.groupType == TileTypeGroupEnum.Water) {
-					sum = BitSum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Water).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, includeMapEdge);
-				} else if (tile.tileType.groupType == TileTypeGroupEnum.Stone) {
-					sum = BitSum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Stone).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, includeMapEdge);
-				} else if (tile.tileType.groupType == TileTypeGroupEnum.Hole) {
-					sum = BitSum(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Hole).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, false);
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, false);
+				} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Water) {
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, includeMapEdge);
+				} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, includeMapEdge);
+					sum += GameManager.resourceM.BitSumTileObjects(
+						GameManager.resourceM.GetTileObjectPrefabSubGroupByEnum(ResourceManager.ObjectSubGroupEnum.Walls).prefabs.Select(prefab => prefab.type).ToList(), 
+						surroundingTilesToUse
+					);
+				} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Hole) {
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Hole).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, false);
 				} else {
-					sum = BitSum(new List<TileTypeEnum>() { tile.tileType.type }, surroundingTilesToUse, includeMapEdge);
+					sum = BitSum(new List<TileType.TypeEnum>() { tile.tileType.type }, surroundingTilesToUse, includeMapEdge);
 				}
 			}
 			if ((sum < 16) || (bitmaskMap[sum] != 46)) {
 				if (sum >= 16) {
 					sum = bitmaskMap[sum];
 				}
-				if (tile.tileType.classes[TileTypeClassEnum.LiquidWater] && RiversContainTile(tile, false).Key != null) {
+				if (tile.tileType.classes[TileType.ClassEnum.LiquidWater] && RiversContainTile(tile, false).Key != null) {
 					tile.sr.sprite = tile.tileType.riverSprites[sum];
 				} else {
 					try {
@@ -2668,7 +2674,7 @@ public class TileManager : BaseManager {
 				if (tile.tileType.baseSprites.Count > 0 && !tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
 					tile.sr.sprite = tile.tileType.baseSprites[UnityEngine.Random.Range(0, tile.tileType.baseSprites.Count)];
 				}
-				if (GameManager.tileM.resourceVeins[ResourceVeinGroupEnum.Stone].Find(rvd => rvd.tileTypes.ContainsValue(tile.tileType.type)) != null) {
+				if (ResourceVein.GetResourceVeinsByGroup(ResourceVein.GroupEnum.Stone).Find(rvd => rvd.tileTypes.ContainsValue(tile.tileType.type)) != null) {
 					TileType biomeTileType = tile.biome.tileTypes[tile.tileType.groupType];
 					tile.sr.sprite = biomeTileType.baseSprites[UnityEngine.Random.Range(0, biomeTileType.baseSprites.Count)];
 				}
@@ -2700,9 +2706,9 @@ public class TileManager : BaseManager {
 
 		void BitmaskRiverStartTiles() {
 			foreach (River river in rivers) {
-				List<TileTypeEnum> compareTileTypes = new List<TileTypeEnum>();
-				compareTileTypes.AddRange(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Water).tileTypes.Select(tt => tt.type).ToList());
-				compareTileTypes.AddRange(GameManager.tileM.GetTileTypeGroupByEnum(TileTypeGroupEnum.Stone).tileTypes.Select(tt => tt.type).ToList());
+				List<TileType.TypeEnum> compareTileTypes = new List<TileType.TypeEnum>();
+				compareTileTypes.AddRange(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList());
+				compareTileTypes.AddRange(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tt => tt.type).ToList());
 				BitmaskTile(river.startTile, false, true, compareTileTypes, false/*river.expandRadius > 0*/);
 			}
 		}

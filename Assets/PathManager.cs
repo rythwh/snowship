@@ -67,7 +67,7 @@ public static class PathManager {
 					float cost = 0;
 					cost += 1 * Vector2.Distance(nTile.obj.transform.position, endTile.obj.transform.position);
 					cost += 1 * RegionBlockDistance(nTile.regionBlock, endTile.regionBlock, true, true, true);
-					cost += 50 * (nTile.tileType.classes[TileManager.TileTypeClassEnum.LiquidWater] ? 1 : 0);
+					cost += 50 * (nTile.tileType.classes[TileManager.TileType.ClassEnum.LiquidWater] ? 1 : 0);
 					cost += 5 * currentTile.pathDistance;
 					cost -= nTile.map.mapData.mapSize * nTile.walkSpeed;
 

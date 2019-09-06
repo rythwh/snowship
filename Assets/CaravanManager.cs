@@ -52,7 +52,7 @@ public class CaravanManager : BaseManager {
 	public void SpawnCaravan(CaravanTypeEnum caravanType, int maxNumTraders) {
 		List<TileManager.Tile> validSpawnTiles = null;
 		if (caravanType == CaravanTypeEnum.Foot || caravanType == CaravanTypeEnum.Wagon) {
-			validSpawnTiles = GameManager.colonyM.colony.map.edgeTiles.Where(tile => tile.walkable && !tile.tileType.classes[TileManager.TileTypeClassEnum.LiquidWater]).ToList();
+			validSpawnTiles = GameManager.colonyM.colony.map.edgeTiles.Where(tile => tile.walkable && !tile.tileType.classes[TileManager.TileType.ClassEnum.LiquidWater]).ToList();
 		} else if (caravanType == CaravanTypeEnum.Boat) {
 			validSpawnTiles = new List<TileManager.Tile>(); // TODO Implement boat caravans
 		}
@@ -101,7 +101,7 @@ public class CaravanManager : BaseManager {
 					if (selectedTradingPost != null) {
 						targetTile = selectedTradingPost.zeroPointTile;
 					} else {
-						List<TileManager.Tile> validTargetTiles = targetSpawnTile.region.tiles.Where(tile => tile.walkable && !tile.tileType.classes[TileManager.TileTypeClassEnum.LiquidWater]).ToList();
+						List<TileManager.Tile> validTargetTiles = targetSpawnTile.region.tiles.Where(tile => tile.walkable && !tile.tileType.classes[TileManager.TileType.ClassEnum.LiquidWater]).ToList();
 						targetTile = validTargetTiles[UnityEngine.Random.Range(0, validTargetTiles.Count)];
 					}
 
@@ -462,8 +462,8 @@ public class CaravanManager : BaseManager {
 		List<Location.CitySize> citySizes = ((Location.CitySize[])Enum.GetValues(typeof(Location.CitySize))).ToList();
 		Location.CitySize citySize = citySizes[UnityEngine.Random.Range(0, citySizes.Count)];
 
-		List<TileManager.BiomeTypeEnum> biomeTypes = ((TileManager.BiomeTypeEnum[])Enum.GetValues(typeof(TileManager.BiomeTypeEnum))).ToList();
-		TileManager.BiomeTypeEnum biomeType = biomeTypes[UnityEngine.Random.Range(0, biomeTypes.Count)];
+		List<TileManager.Biome.TypeEnum> biomeTypes = ((TileManager.Biome.TypeEnum[])Enum.GetValues(typeof(TileManager.Biome.TypeEnum))).ToList();
+		TileManager.Biome.TypeEnum biomeType = biomeTypes[UnityEngine.Random.Range(0, biomeTypes.Count)];
 
 		return new Location(name, wealth, resourceRichness, citySize, biomeType);
 	}
@@ -494,14 +494,14 @@ public class CaravanManager : BaseManager {
 		public Wealth wealth;
 		public ResourceRichness resourceRichness;
 		public CitySize citySize;
-		public TileManager.BiomeTypeEnum biomeType;
+		public TileManager.Biome.TypeEnum biomeType;
 
 		public Location(
 			string name, 
 			Wealth wealth, 
 			ResourceRichness resourceRichness, 
 			CitySize citySize, 
-			TileManager.BiomeTypeEnum biomeType
+			TileManager.Biome.TypeEnum biomeType
 		) {
 			this.name = name;
 			this.wealth = wealth;

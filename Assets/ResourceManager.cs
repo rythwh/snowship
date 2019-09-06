@@ -1867,17 +1867,17 @@ public class ResourceManager : BaseManager {
 			// Sprites
 			if (variations.Count == 0) {
 				Dictionary<SpriteType, List<Sprite>> spriteGroups = new Dictionary<SpriteType, List<Sprite>> {
-					{ SpriteType.Base, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-base").ToList() },
-					{ SpriteType.Bitmask, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-bitmask").ToList() },
-					{ SpriteType.Active, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + name.Replace(' ', '-') + "-active").ToList() }
+					{ SpriteType.Base, Resources.LoadAll<Sprite>(@"Sprites/Objects/" + name + "/" + name.Replace(' ', '-') + "-base").ToList() },
+					{ SpriteType.Bitmask, Resources.LoadAll<Sprite>(@"Sprites/Objects/" + name + "/" + name.Replace(' ', '-') + "-bitmask").ToList() },
+					{ SpriteType.Active, Resources.LoadAll<Sprite>(@"Sprites/Objects/" + name + "/" + name.Replace(' ', '-') + "-active").ToList() }
 				};
 				sprites.Add(Variation.nullVariation, spriteGroups);
 			} else {
 				foreach (Variation variation in variations) {
 					Dictionary<SpriteType, List<Sprite>> spriteGroups = new Dictionary<SpriteType, List<Sprite>> {
-						{ SpriteType.Base, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + variation.name + "/" + (variation.name + " " + name).Replace(' ', '-') + "-base").ToList() },
-						{ SpriteType.Bitmask, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + variation.name + "/" + (variation.name + " " + name).Replace(' ', '-') + "-bitmask").ToList() },
-						{ SpriteType.Active, Resources.LoadAll<Sprite>(@"Sprites/TileObjects/" + name + "/" + variation.name + "/" + (variation.name + " " + name).Replace(' ', '-') + "-active").ToList() }
+						{ SpriteType.Base, Resources.LoadAll<Sprite>(@"Sprites/Objects/" + name + "/" + variation.name + "/" + (variation.name + " " + name).Replace(' ', '-') + "-base").ToList() },
+						{ SpriteType.Bitmask, Resources.LoadAll<Sprite>(@"Sprites/Objects/" + name + "/" + variation.name + "/" + (variation.name + " " + name).Replace(' ', '-') + "-bitmask").ToList() },
+						{ SpriteType.Active, Resources.LoadAll<Sprite>(@"Sprites/Objects/" + name + "/" + variation.name + "/" + (variation.name + " " + name).Replace(' ', '-') + "-active").ToList() }
 					};
 
 					sprites.Add(variation, spriteGroups);
@@ -1903,10 +1903,10 @@ public class ResourceManager : BaseManager {
 				if (bitmaskSpritesCount == -1 || bitmaskSpritesCount == spriteGroups[SpriteType.Bitmask].Count) {
 					bitmaskSpritesCount = spriteGroups[SpriteType.Bitmask].Count;
 				} else {
-					Debug.LogError("Differing number of bitmask sprites between different variations on object: " + name);
 					foreach (Variation variation in variations) {
 						Debug.Log(variation.name + " " + GetBitmaskSpritesForVariation(variation).Count);
 					}
+					Debug.LogError("Differing number of bitmask sprites between different variations on object: " + name);
 				}
 			}
 
@@ -2221,6 +2221,7 @@ public class ResourceManager : BaseManager {
 			}
 			bitmaskingTiles = bitmaskingTiles.Distinct().ToList();
 			GameManager.resourceM.Bitmask(bitmaskingTiles);
+			GameManager.colonyM.colony.map.Bitmasking(bitmaskingTiles, true, true);
 			foreach (TileManager.Tile tile in additionalTiles) {
 				SetColour(tile.sr.color);
 			}
@@ -2910,7 +2911,7 @@ public class ResourceManager : BaseManager {
 		return filteredLocationNames[UnityEngine.Random.Range(0, filteredLocationNames.Count)];
 	}
 
-	private int BitSumTileObjects(List<ObjectEnum> compareTileObjectTypes, List<TileManager.Tile> tileSurroundingTiles) {
+	public int BitSumTileObjects(List<ObjectEnum> compareTileObjectTypes, List<TileManager.Tile> tileSurroundingTiles) {
 		List<int> layers = new List<int>();
 		foreach (TileManager.Tile tile in tileSurroundingTiles) {
 			if (tile != null) {
@@ -2990,21 +2991,48 @@ public class ResourceManager : BaseManager {
 		return sum;
 	}
 
-	private void BitmaskTileObjects(ObjectInstance objectInstance, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, bool compareEquivalentTileObjects, List<ObjectEnum> customCompareTileObjectTypes) {
+	private void BitmaskTileObjects(
+		ObjectInstance objectInstance, 
+		bool includeDiagonalSurroundingTiles, 
+		bool customBitSumInputs, 
+		bool compareEquivalentTileObjects, 
+		List<ObjectEnum> customCompareTileObjectTypes
+	) {
+		List<TileManager.Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles;
+
 		int sum = 0;
 		if (customBitSumInputs) {
-			sum = BitSumTileObjects(customCompareTileObjectTypes, (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+			sum = BitSumTileObjects(
+				customCompareTileObjectTypes,
+				surroundingTilesToUse
+			);
 		} else {
 			if (compareEquivalentTileObjects) {
 				if (objectInstance.prefab.subGroupType == ObjectSubGroupEnum.Floors) {
-					sum = BitSumTileObjects(objectPrefabSubGroups[ObjectSubGroupEnum.Floors].prefabs.Select(prefab => prefab.type).ToList(), (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+					sum = BitSumTileObjects(
+						new List<ObjectEnum>() { objectInstance.prefab.type },
+						surroundingTilesToUse
+					);
 				} else if (objectInstance.prefab.subGroupType == ObjectSubGroupEnum.Walls) {
-					sum = BitSumTileObjects(objectPrefabSubGroups[ObjectSubGroupEnum.Walls].prefabs.Select(top => top.type).ToList(), (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+					sum = BitSumTileObjects(
+						new List<ObjectEnum>() { objectInstance.prefab.type },
+						surroundingTilesToUse
+					);
+					sum += GameManager.colonyM.colony.map.BitSum(
+						TileManager.TileTypeGroup.GetTileTypeGroupByEnum(TileManager.TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tileType => tileType.type).ToList(),
+						surroundingTilesToUse,
+						true);
 				} else {
-					sum = BitSumTileObjects(new List<ObjectEnum>() { objectInstance.prefab.type }, (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+					sum = BitSumTileObjects(
+						new List<ObjectEnum>() { objectInstance.prefab.type },
+						surroundingTilesToUse
+					);
 				}
 			} else {
-				sum = BitSumTileObjects(new List<ObjectEnum>() { objectInstance.prefab.type }, (includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles));
+				sum = BitSumTileObjects(
+					new List<ObjectEnum>() { objectInstance.prefab.type },
+					surroundingTilesToUse
+				);
 			}
 		}
 		SpriteRenderer oISR = objectInstance.obj.GetComponent<SpriteRenderer>();
@@ -3020,7 +3048,13 @@ public class ResourceManager : BaseManager {
 			if (tile != null && tile.GetAllObjectInstances().Count > 0) {
 				foreach (ObjectInstance objectInstance in tile.GetAllObjectInstances()) {
 					if (objectInstance.prefab.bitmasking) {
-						BitmaskTileObjects(objectInstance, true, false, false, null);
+						BitmaskTileObjects(
+							objectInstance,
+							true, // includeDiagonalSurroundingTiles -- default: true
+							false, // customBitSumInput -- default: false
+							true, // compareEquivalentTileObjects -- default: false
+							null // customCompareTileObjectTypes -- default: null
+						);
 					} else {
 						if (objectInstance.prefab.GetBitmaskSpritesForVariation(objectInstance.variation).Count > 0) {
 							if (objectInstance.prefab.jobType != JobManager.JobEnum.PlantFarm) {
