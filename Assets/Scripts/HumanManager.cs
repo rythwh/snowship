@@ -12,10 +12,10 @@ public class HumanManager : BaseManager {
 	public List<List<Sprite>> humanMoveSprites = new List<List<Sprite>>();
 
 	public void CreateNames() {
-		foreach (string name in Resources.Load<TextAsset>(@"Data/namesMale").text.Split(' ').ToList()) {
+		foreach (string name in Resources.Load<TextAsset>(@"Data/names-male").text.Split(' ').ToList()) {
 			maleNames.Add(name.ToLower());
 		}
-		foreach (string name in Resources.Load<TextAsset>(@"Data/namesFemale").text.Split(' ').ToList()) {
+		foreach (string name in Resources.Load<TextAsset>(@"Data/names-female").text.Split(' ').ToList()) {
 			femaleNames.Add(name.ToLower());
 		}
 	}
@@ -57,7 +57,7 @@ public class HumanManager : BaseManager {
 
 	public List<Human> humans = new List<Human>();
 
-	public class Human : LifeManager.Life {
+	public class Human : LifeManager.Life, ResourceManager.IInventory {
 
 		public string name;
 		public GameObject nameCanvas;
@@ -75,7 +75,7 @@ public class HumanManager : BaseManager {
 		// Carrying Item
 
 		// Inventory
-		public ResourceManager.Inventory inventory;
+		private readonly ResourceManager.Inventory inventory;
 
 		public enum Appearance { Skin, Hair, Hat, Top, Bottoms, Scarf, Backpack };
 
@@ -86,7 +86,7 @@ public class HumanManager : BaseManager {
 
 			moveSprites = GameManager.humanM.humanMoveSprites[bodyIndices[Appearance.Skin]];
 
-			inventory = new ResourceManager.Inventory(this, null, 50000, 50000);
+			inventory = new ResourceManager.Inventory(this, 50000, 50000);
 
 			SetName(GameManager.humanM.GetName(gender));
 
@@ -191,6 +191,10 @@ public class HumanManager : BaseManager {
 		public override void Remove() {
 			base.Remove();
 			GameManager.humanM.humans.Remove(this);
+		}
+
+		public ResourceManager.Inventory GetInventory() {
+			return inventory;
 		}
 	}
 

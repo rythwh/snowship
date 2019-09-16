@@ -147,7 +147,7 @@
 					<Walkable>true
 					<Buildable>true
 					<Flammability>1
-					<MaxInventoryVolume>100
+					<MaxInventoryVolume>10000
 					<MaxInventoryWeight>Max
 					<TimeToBuild>5
 					<CommonResources>Wood:1
@@ -162,7 +162,7 @@
 					<Walkable>true
 					<Buildable>true
 					<Flammability>1
-					<MaxInventoryVolume>250
+					<MaxInventoryVolume>25000
 					<MaxInventoryWeight>Max
 					<TimeToBuild>10
 					<CommonResources>Wood:3
@@ -177,7 +177,7 @@
 					<Walkable>true
 					<Buildable>true
 					<Flammability>1
-					<MaxInventoryVolume>100
+					<MaxInventoryVolume>10000
 					<MaxInventoryWeight>Max
 					<TimeToBuild>10
 					<CommonResources>Wood:4
@@ -276,7 +276,7 @@
 					<Walkable>true
 					<Buildable>true
 					<Flammability>1
-					<MaxInventoryVolume>500
+					<MaxInventoryVolume>100000
 					<MaxInventoryWeight>Max
 					<TimeToBuild>5
 					<CommonResources>Wood:4

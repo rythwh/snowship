@@ -843,7 +843,7 @@ public class ResourceManager : BaseManager {
 
 		private void UpdateCaravanAmount() {
 			caravanAmount = 0;
-			ResourceAmount caravanResourceAmount = caravan.inventory.resources.Find(ra => ra.resource == resource);
+			ResourceAmount caravanResourceAmount = caravan.GetInventory().resources.Find(ra => ra.resource == resource);
 			if (caravanResourceAmount != null) {
 				caravanAmount = caravanResourceAmount.amount;
 			}
@@ -887,22 +887,24 @@ public class ResourceManager : BaseManager {
 		}
 	}
 
+	public interface IInventory {
+		Inventory GetInventory();
+	}
+
 	public class Inventory {
 
 		public List<ResourceAmount> resources = new List<ResourceAmount>();
 		public List<ReservedResources> reservedResources = new List<ReservedResources>();
 
-		public HumanManager.Human human;
-		public Container container;
+		public IInventory parent;
 
 		//public int maxAmount;
 
 		public int maxWeight;
 		public int maxVolume;
 
-		public Inventory(HumanManager.Human human, Container container, /*int maxAmount*/int maxWeight, int maxVolume) {
-			this.human = human;
-			this.container = container;
+		public Inventory(IInventory parent, /*int maxAmount*/int maxWeight, int maxVolume) {
+			this.parent = parent;
 			//this.maxAmount = maxAmount;
 			this.maxWeight = maxWeight;
 			this.maxVolume = maxVolume;
@@ -912,11 +914,11 @@ public class ResourceManager : BaseManager {
 		//	return resources.Sum(resource => resource.amount) + reservedResources.Sum(reservedResource => reservedResource.resources.Sum(rr => rr.amount));
 		//}
 
-		public int TotalWeight() {
+		public int UsedWeight() {
 			return resources.Sum(ra => ra.amount * ra.resource.weight) + reservedResources.Sum(rr => rr.resources.Sum(ra => ra.amount * ra.resource.weight));
 		}
 
-		public int TotalVolume() {
+		public int UsedVolume() {
 			return resources.Sum(ra => ra.amount * ra.resource.volume) + reservedResources.Sum(rr => rr.resources.Sum(ra => ra.amount * ra.resource.volume));
 		}
 
@@ -930,7 +932,7 @@ public class ResourceManager : BaseManager {
 
 			if (limitToMaxAmount && amount > 0) {
 				//remainingAmount = maxAmount - (CountResources() + amount);
-				
+
 				//remainingWeight = maxWeight - (TotalWeight() + (amount * resource.weight));
 				//remainingVolume = maxVolume - (TotalVolume() + (amount * resource.volume));
 
@@ -941,8 +943,12 @@ public class ResourceManager : BaseManager {
 				//	remainingAmount = 0;
 				//}
 
-				int weightOverflowAmount = ((resource.weight * amount) - TotalWeight()) / resource.weight;
-				int volumeOverflowAmount = ((resource.volume * amount) - TotalVolume()) / resource.volume;
+				int totalWeight = UsedWeight();
+				//Debug.Log("totalWeight: " + totalWeight);
+				int totalVolume = UsedVolume();
+				//Debug.Log("totalVolume: " + totalVolume);
+				int weightOverflowAmount = ((resource.weight * amount) - maxWeight) / resource.weight;
+				int volumeOverflowAmount = ((resource.volume * amount) - maxVolume) / resource.volume;
 
 				highestOverflowAmount = Mathf.Max(weightOverflowAmount, volumeOverflowAmount);
 
@@ -1053,7 +1059,12 @@ public class ResourceManager : BaseManager {
 
 		public static void TransferResourcesBetweenInventories(Inventory fromInventory, Inventory toInventory, List<ResourceAmount> resourceAmounts, bool limitToMaxAmount) {
 			foreach (ResourceAmount resourceAmount in resourceAmounts.ToList()) {
-				TransferResourcesBetweenInventories(fromInventory, toInventory, resourceAmount, limitToMaxAmount);
+				TransferResourcesBetweenInventories(
+					fromInventory, 
+					toInventory, 
+					resourceAmount, 
+					limitToMaxAmount
+				);
 			}
 		}
 	}
@@ -1069,11 +1080,11 @@ public class ResourceManager : BaseManager {
 		}
 
 		foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
-			foreach (ResourceAmount resourceAmount in colonist.inventory.resources) {
+			foreach (ResourceAmount resourceAmount in colonist.GetInventory().resources) {
 				resourceAmount.resource.AddToWorldTotalAmount(resourceAmount.amount);
 				resourceAmount.resource.AddToColonistsTotalAmount(resourceAmount.amount);
 			}
-			foreach (ReservedResources reservedResources in colonist.inventory.reservedResources) {
+			foreach (ReservedResources reservedResources in colonist.GetInventory().reservedResources) {
 				foreach (ResourceAmount resourceAmount in reservedResources.resources) {
 					resourceAmount.resource.AddToWorldTotalAmount(resourceAmount.amount);
 					resourceAmount.resource.AddToColonistsTotalAmount(resourceAmount.amount);
@@ -1081,12 +1092,12 @@ public class ResourceManager : BaseManager {
 			}
 		}
 		foreach (Container container in containers) {
-			foreach (ResourceAmount resourceAmount in container.inventory.resources) {
+			foreach (ResourceAmount resourceAmount in container.GetInventory().resources) {
 				resourceAmount.resource.AddToWorldTotalAmount(resourceAmount.amount);
 				resourceAmount.resource.AddToContainerTotalAmount(resourceAmount.amount);
 				resourceAmount.resource.AddToUnreservedContainerTotalAmount(resourceAmount.amount);
 			}
-			foreach (ReservedResources reservedResources in container.inventory.reservedResources) {
+			foreach (ReservedResources reservedResources in container.GetInventory().reservedResources) {
 				foreach (ResourceAmount resourceAmount in reservedResources.resources) {
 					resourceAmount.resource.AddToWorldTotalAmount(resourceAmount.amount);
 					resourceAmount.resource.AddToContainerTotalAmount(resourceAmount.amount);
@@ -1094,7 +1105,7 @@ public class ResourceManager : BaseManager {
 			}
 		}
 		foreach (TradingPost tradingPost in tradingPosts) {
-			foreach (ResourceAmount resourceAmount in tradingPost.inventory.resources) {
+			foreach (ResourceAmount resourceAmount in tradingPost.GetInventory().resources) {
 				resourceAmount.resource.AddToUnreservedTradingPostTotalAmount(resourceAmount.amount);
 			}
 		}
@@ -1109,7 +1120,7 @@ public class ResourceManager : BaseManager {
 		if (colonistInventory || colonistReserved) {
 			foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
 				if (colonistInventory) {
-					foreach (ResourceAmount resourceAmount in colonist.inventory.resources) {
+					foreach (ResourceAmount resourceAmount in colonist.GetInventory().resources) {
 						ResourceAmount existingResourceAmount = returnResources.Find(ra => ra.resource == resourceAmount.resource);
 						if (existingResourceAmount == null) {
 							returnResources.Add(new ResourceAmount(resourceAmount.resource, resourceAmount.amount));
@@ -1119,7 +1130,7 @@ public class ResourceManager : BaseManager {
 					}
 				}
 				if (colonistReserved) {
-					foreach (ReservedResources reservedResources in colonist.inventory.reservedResources) {
+					foreach (ReservedResources reservedResources in colonist.GetInventory().reservedResources) {
 						foreach (ResourceAmount resourceAmount in reservedResources.resources) {
 							ResourceAmount existingResourceAmount = returnResources.Find(ra => ra.resource == resourceAmount.resource);
 							if (existingResourceAmount == null) {
@@ -1135,7 +1146,7 @@ public class ResourceManager : BaseManager {
 		if (containerInventory || containerReserved) {
 			foreach (Container container in containers) {
 				if (containerInventory) {
-					foreach (ResourceAmount resourceAmount in container.inventory.resources) {
+					foreach (ResourceAmount resourceAmount in container.GetInventory().resources) {
 						ResourceAmount existingResourceAmount = returnResources.Find(ra => ra.resource == resourceAmount.resource);
 						if (existingResourceAmount == null) {
 							returnResources.Add(new ResourceAmount(resourceAmount.resource, resourceAmount.amount));
@@ -1145,7 +1156,7 @@ public class ResourceManager : BaseManager {
 					}
 				}
 				if (containerReserved) {
-					foreach (ReservedResources reservedResources in container.inventory.reservedResources) {
+					foreach (ReservedResources reservedResources in container.GetInventory().reservedResources) {
 						foreach (ResourceAmount resourceAmount in reservedResources.resources) {
 							ResourceAmount existingResourceAmount = returnResources.Find(ra => ra.resource == resourceAmount.resource);
 							if (existingResourceAmount == null) {
@@ -2287,12 +2298,16 @@ public class ResourceManager : BaseManager {
 		return container;
 	}
 
-	public class Container : ObjectInstance {
+	public class Container : ObjectInstance, IInventory {
 
-		public Inventory inventory;
+		private readonly Inventory inventory;
 
 		public Container(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex) : base(prefab, variation, tile, rotationIndex) {
-			inventory = new Inventory(null, this, prefab.maxInventoryWeight, prefab.maxInventoryVolume);
+			inventory = new Inventory(this, prefab.maxInventoryWeight, prefab.maxInventoryVolume);
+		}
+
+		public Inventory GetInventory() {
+			return inventory;
 		}
 	}
 
@@ -2305,7 +2320,7 @@ public class ResourceManager : BaseManager {
 	public List<ResourceAmount> GetAvailableResourcesInTradingPostsInRegion(TileManager.Map.Region region) {
 		List<ResourceAmount> availableResources = new List<ResourceAmount>();
 		foreach (TradingPost tradingPost in GetTradingPostsInRegion(region)) {
-			foreach (ResourceAmount resourceAmount in tradingPost.inventory.resources) {
+			foreach (ResourceAmount resourceAmount in tradingPost.GetInventory().resources) {
 				ResourceAmount accessibleResource = availableResources.Find(ra => ra.resource == resourceAmount.resource);
 				if (accessibleResource != null) {
 					accessibleResource.amount += resourceAmount.amount;
@@ -2897,7 +2912,7 @@ public class ResourceManager : BaseManager {
 	public List<string> locationNames = new List<string>();
 
 	public void LoadLocationNames() {
-		locationNames = Resources.Load<TextAsset>(@"Data/locationNames").text.Split('\n').Select(s => UIManager.RemoveNonAlphanumericChars(s)).ToList();
+		locationNames = Resources.Load<TextAsset>(@"Data/names-locations").text.Split('\n').Select(s => UIManager.RemoveNonAlphanumericChars(s)).ToList();
 	}
 
 	public string GetRandomLocationName() {
@@ -2911,7 +2926,7 @@ public class ResourceManager : BaseManager {
 		return filteredLocationNames[UnityEngine.Random.Range(0, filteredLocationNames.Count)];
 	}
 
-	public int BitSumTileObjects(List<ObjectEnum> compareTileObjectTypes, List<TileManager.Tile> tileSurroundingTiles) {
+	public int BitSumObjects(List<ObjectEnum> compareTileObjectTypes, List<TileManager.Tile> tileSurroundingTiles) {
 		List<int> layers = new List<int>();
 		foreach (TileManager.Tile tile in tileSurroundingTiles) {
 			if (tile != null) {
@@ -2963,13 +2978,13 @@ public class ResourceManager : BaseManager {
 		List<bool> sumTiles = new List<bool>() { false, false, false, false, false, false, false, false };
 
 		foreach (KeyValuePair<int, List<int>> layerSumTiles in layersSumTiles) {
-			foreach (ObjectEnum topEnum in compareTileObjectTypes) {
-				ObjectPrefab top = GetObjectPrefabByEnum(topEnum);
-				if (top.layer == layerSumTiles.Key) {
+			foreach (ObjectEnum objectEnum in compareTileObjectTypes) {
+				ObjectPrefab objectPrefab = GetObjectPrefabByEnum(objectEnum);
+				if (objectPrefab.layer == layerSumTiles.Key) {
 					foreach (TileManager.Tile tile in tileSurroundingTiles) {
 						if (tile != null) {
-							ObjectInstance topInstance = tile.GetAllObjectInstances().Find(instances => instances.prefab == top);
-							if (topInstance != null) {
+							ObjectInstance objectInstance = tile.GetAllObjectInstances().Find(instances => instances.prefab == objectPrefab);
+							if (objectInstance != null) {
 								if (layerSumTiles.Value[tileSurroundingTiles.IndexOf(tile)] > 0) {
 									sumTiles[tileSurroundingTiles.IndexOf(tile)] = true;
 								}
@@ -2991,7 +3006,7 @@ public class ResourceManager : BaseManager {
 		return sum;
 	}
 
-	private void BitmaskTileObjects(
+	private void BitmaskObjects(
 		ObjectInstance objectInstance, 
 		bool includeDiagonalSurroundingTiles, 
 		bool customBitSumInputs, 
@@ -3002,34 +3017,32 @@ public class ResourceManager : BaseManager {
 
 		int sum = 0;
 		if (customBitSumInputs) {
-			sum = BitSumTileObjects(
+			sum = BitSumObjects(
 				customCompareTileObjectTypes,
 				surroundingTilesToUse
 			);
 		} else {
 			if (compareEquivalentTileObjects) {
-				if (objectInstance.prefab.subGroupType == ObjectSubGroupEnum.Floors) {
-					sum = BitSumTileObjects(
+				if (objectInstance.prefab.subGroupType == ObjectSubGroupEnum.Walls) {
+					sum = BitSumObjects(
 						new List<ObjectEnum>() { objectInstance.prefab.type },
 						surroundingTilesToUse
 					);
-				} else if (objectInstance.prefab.subGroupType == ObjectSubGroupEnum.Walls) {
-					sum = BitSumTileObjects(
-						new List<ObjectEnum>() { objectInstance.prefab.type },
-						surroundingTilesToUse
-					);
-					sum += GameManager.colonyM.colony.map.BitSum(
-						TileManager.TileTypeGroup.GetTileTypeGroupByEnum(TileManager.TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tileType => tileType.type).ToList(),
-						surroundingTilesToUse,
-						true);
+					// Not-fully-working implementation of walls and stone connecting
+					//sum += GameManager.colonyM.colony.map.BitSum(
+					//	TileManager.TileTypeGroup.GetTileTypeGroupByEnum(TileManager.TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tileType => tileType.type).ToList(),
+					//	new List<ObjectEnum>() { objectInstance.prefab.type },
+					//	surroundingTilesToUse,
+					//	true
+					//);
 				} else {
-					sum = BitSumTileObjects(
+					sum = BitSumObjects(
 						new List<ObjectEnum>() { objectInstance.prefab.type },
 						surroundingTilesToUse
 					);
 				}
 			} else {
-				sum = BitSumTileObjects(
+				sum = BitSumObjects(
 					new List<ObjectEnum>() { objectInstance.prefab.type },
 					surroundingTilesToUse
 				);
@@ -3048,7 +3061,7 @@ public class ResourceManager : BaseManager {
 			if (tile != null && tile.GetAllObjectInstances().Count > 0) {
 				foreach (ObjectInstance objectInstance in tile.GetAllObjectInstances()) {
 					if (objectInstance.prefab.bitmasking) {
-						BitmaskTileObjects(
+						BitmaskObjects(
 							objectInstance,
 							true, // includeDiagonalSurroundingTiles -- default: true
 							false, // customBitSumInput -- default: false

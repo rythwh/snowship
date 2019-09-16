@@ -51,7 +51,7 @@ public class ColonistManager : BaseManager {
 	public enum ProfessionPropertyEnum { Profession, Type, Jobs }
 
 	public void CreateColonistProfessions() {
-		List<KeyValuePair<string, object>> professionProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/colonistProfessions").text.Split('\n').ToList());
+		List<KeyValuePair<string, object>> professionProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/colonist-professions").text.Split('\n').ToList());
 		foreach (KeyValuePair<string, object> professionProperty in professionProperties) {
 			switch ((ProfessionPropertyEnum)Enum.Parse(typeof(ProfessionPropertyEnum), professionProperty.Key)) {
 				case ProfessionPropertyEnum.Profession:
@@ -202,7 +202,7 @@ public class ColonistManager : BaseManager {
 	public List<SkillPrefab> skillPrefabs = new List<SkillPrefab>();
 
 	public void CreateColonistSkills() {
-		List<string> stringSkills = Resources.Load<TextAsset>(@"Data/colonistSkills").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
+		List<string> stringSkills = Resources.Load<TextAsset>(@"Data/colonist-skills").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('`').ToList();
 		foreach (string stringSkill in stringSkills) {
 			List<string> stringSkillData = stringSkill.Split('/').ToList();
 			skillPrefabs.Add(new SkillPrefab(stringSkillData));
@@ -319,7 +319,7 @@ public class ColonistManager : BaseManager {
 		int totalNutrition = 0;
 		foreach (ResourceManager.Container container in GameManager.resourceM.GetContainersInRegion(colonist.overTile.region).OrderBy(c => PathManager.RegionBlockDistance(colonist.overTile.regionBlock, c.tile.regionBlock, true, true, false))) {
 			List<ResourceManager.ResourceAmount> resourcesToReserve = new List<ResourceManager.ResourceAmount>();
-			foreach (ResourceManager.ResourceAmount ra in container.inventory.resources.Where(ra => ra.resource.classes.Contains(ResourceManager.ResourceClassEnum.Food)).OrderBy(ra => ((ResourceManager.Food)ra.resource).nutrition).ToList()) {
+			foreach (ResourceManager.ResourceAmount ra in container.GetInventory().resources.Where(ra => ra.resource.classes.Contains(ResourceManager.ResourceClassEnum.Food)).OrderBy(ra => ((ResourceManager.Food)ra.resource).nutrition).ToList()) {
 				int numReserved = 0;
 				for (int i = 0; i < ra.amount; i++) {
 					numReserved += 1;
@@ -334,7 +334,7 @@ public class ColonistManager : BaseManager {
 				}
 			}
 			if (totalNutrition >= minimumNutritionRequired) {
-				resourcesPerInventory.Add(new KeyValuePair<KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>, int>(new KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>(container.inventory, resourcesToReserve), totalNutrition));
+				resourcesPerInventory.Add(new KeyValuePair<KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>, int>(new KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>>(container.GetInventory(), resourcesToReserve), totalNutrition));
 				break;
 			}
 		}
@@ -349,18 +349,18 @@ public class ColonistManager : BaseManager {
 	}
 
 	public bool GetFood(NeedInstance need, bool takeFromOtherColonists, bool eatAnything) {
-		if (need.colonist.inventory.resources.Find(ra => ra.resource.groupType == ResourceManager.ResourceGroupEnum.Foods) == null) {
+		if (need.colonist.GetInventory().resources.Find(ra => ra.resource.groupType == ResourceManager.ResourceGroupEnum.Foods) == null) {
 			KeyValuePair<ResourceManager.Inventory, List<ResourceManager.ResourceAmount>> closestFood = FindClosestFood(need.colonist, need.GetValue(), takeFromOtherColonists, eatAnything);
 
 			List<ResourceManager.ResourceAmount> resourcesToReserve = closestFood.Value;
 			if (closestFood.Key != null) {
-				if (closestFood.Key.container != null) {
-					ResourceManager.Container container = closestFood.Key.container;
-					container.inventory.ReserveResources(resourcesToReserve, need.colonist);
+				if (closestFood.Key.parent is ResourceManager.Container) {
+					ResourceManager.Container container = (ResourceManager.Container)closestFood.Key.parent;
+					container.GetInventory().ReserveResources(resourcesToReserve, need.colonist);
 					JobManager.Job job = new JobManager.Job(container.tile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.CollectFood), null, 0);
 					need.colonist.SetJob(new JobManager.ColonistJob(need.colonist, job, null, null));
 					return true;
-				} else if (closestFood.Key.human != null) {
+				} else if (closestFood.Key.parent is HumanManager.Human) {
 					// TODO
 					//Human human = closestFood.Key.human;
 					//print("Take from other human.");
@@ -386,7 +386,7 @@ public class ColonistManager : BaseManager {
 			int total = 0;
 
 			int amountOnThisColonist = 0;
-			foreach (ResourceManager.ResourceAmount resourceAmount in colonist.inventory.resources.Where(ra => ra.resource.groupType == resourceGroup)) {
+			foreach (ResourceManager.ResourceAmount resourceAmount in colonist.GetInventory().resources.Where(ra => ra.resource.groupType == resourceGroup)) {
 				amountOnThisColonist += resourceAmount.amount;
 			}
 			total += amountOnThisColonist;
@@ -402,7 +402,7 @@ public class ColonistManager : BaseManager {
 				foreach (Colonist otherColonist in colonists) {
 					if (colonist != otherColonist) {
 						int amountOnOtherColonist = 0;
-						foreach (ResourceManager.ResourceAmount resourceAmount in otherColonist.inventory.resources.Where(ra => ra.resource.groupType == resourceGroup)) {
+						foreach (ResourceManager.ResourceAmount resourceAmount in otherColonist.GetInventory().resources.Where(ra => ra.resource.groupType == resourceGroup)) {
 							amountOnOtherColonist += resourceAmount.amount;
 						}
 						total += amountOnOtherColonist;
@@ -696,7 +696,7 @@ public class ColonistManager : BaseManager {
 	}
 
 	public void CreateColonistNeeds() {
-		List<string> needDataStringList = Resources.Load<TextAsset>(@"Data/colonistNeeds").text.Replace("\t", string.Empty).Split(new string[] { "<Need>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+		List<string> needDataStringList = Resources.Load<TextAsset>(@"Data/colonist-needs").text.Replace("\t", string.Empty).Split(new string[] { "<Need>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
 		foreach (string singleNeedDataString in needDataStringList) {
 
 			NeedEnum type = NeedEnum.Rest;
@@ -824,7 +824,7 @@ public class ColonistManager : BaseManager {
 			}
 		} },
 		{ HappinessModifierGroupEnum.Inventory, delegate (Colonist colonist) {
-			if (colonist.inventory.TotalWeight() > colonist.inventory.maxWeight) {
+			if (colonist.GetInventory().UsedWeight() > colonist.GetInventory().maxWeight) {
 				colonist.AddHappinessModifier(HappinessModifierEnum.Overencumbered);
 			} else {
 				colonist.RemoveHappinessModifier(HappinessModifierEnum.Overencumbered);
@@ -833,7 +833,7 @@ public class ColonistManager : BaseManager {
 	};
 
 	public void CreateHappinessModifiers() {
-		List<string> stringHappinessModifierGroups = Resources.Load<TextAsset>(@"Data/happinessModifiers").text.Replace("\t", string.Empty).Split(new string[] { "<HappinessModifierGroup>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+		List<string> stringHappinessModifierGroups = Resources.Load<TextAsset>(@"Data/mood-modifiers").text.Replace("\t", string.Empty).Split(new string[] { "<HappinessModifierGroup>" }, StringSplitOptions.RemoveEmptyEntries).ToList();
 		foreach (string stringHappinessModifierGroup in stringHappinessModifierGroups) {
 			HappinessModifierGroup happinessModifierGroup = new HappinessModifierGroup(stringHappinessModifierGroup);
 			happinessModifierGroups.Add(happinessModifierGroup);
@@ -1024,7 +1024,7 @@ public class ColonistManager : BaseManager {
 		}
 
 		public override void Update() {
-			moveSpeedMultiplier = (-((inventory.TotalWeight() - inventory.maxWeight) / (float)inventory.maxWeight)) + 1;
+			moveSpeedMultiplier = (-((GetInventory().UsedWeight() - GetInventory().maxWeight) / (float)GetInventory().maxWeight)) + 1;
 			moveSpeedMultiplier = Mathf.Clamp(moveSpeedMultiplier, 0.1f, 1f);
 
 			if (playerMoved && path.Count <= 0) {
@@ -1056,9 +1056,9 @@ public class ColonistManager : BaseManager {
 			if (job == null) {
 				if (path.Count <= 0) {
 					List<ResourceManager.Container> validEmptyInventoryContainers = FindValidContainersToEmptyInventory();
-					int inventoryWeight = inventory.TotalWeight();
-					int inventoryVolume = inventory.TotalVolume();
-					if (validEmptyInventoryContainers.Count > 0 && (((inventoryWeight >= inventory.maxWeight) || (inventoryVolume >= inventory.maxVolume)) || ((inventoryWeight > 0 || inventoryVolume > 0) && GameManager.jobM.GetColonistJobsCountForColonist(this) <= 0))) {
+					int inventoryWeight = GetInventory().UsedWeight();
+					int inventoryVolume = GetInventory().UsedVolume();
+					if (validEmptyInventoryContainers.Count > 0 && (((inventoryWeight >= GetInventory().maxWeight) || (inventoryVolume >= GetInventory().maxVolume)) || ((inventoryWeight > 0 || inventoryVolume > 0) && GameManager.jobM.GetColonistJobsCountForColonist(this) <= 0))) {
 						EmptyInventory(validEmptyInventoryContainers);
 					} else {
 						Wander(null, 0);
@@ -1077,7 +1077,7 @@ public class ColonistManager : BaseManager {
 			GameManager.uiM.SetColonistElements();
 			GameManager.uiM.SetJobElements();
 			foreach (ResourceManager.Container container in GameManager.resourceM.containers) {
-				container.inventory.ReleaseReservedResources(this);
+				container.GetInventory().ReleaseReservedResources(this);
 			}
 			if (GameManager.humanM.selectedHuman == this) {
 				GameManager.humanM.SetSelectedHuman(null);
@@ -1086,11 +1086,11 @@ public class ColonistManager : BaseManager {
 		}
 
 		public List<ResourceManager.Container> FindValidContainersToEmptyInventory() {
-			return GameManager.resourceM.GetContainersInRegion(overTile.region).Where(container => container.inventory.TotalWeight() < container.inventory.maxWeight && container.inventory.TotalVolume() < container.inventory.maxVolume).ToList();
+			return GameManager.resourceM.GetContainersInRegion(overTile.region).Where(container => container.GetInventory().UsedWeight() < container.GetInventory().maxWeight && container.GetInventory().UsedVolume() < container.GetInventory().maxVolume).ToList();
 		}
 
 		public void EmptyInventory(List<ResourceManager.Container> validContainers) {
-			if (inventory.TotalWeight() > 0 && inventory.TotalVolume() > 0 && validContainers.Count > 0) {
+			if (GetInventory().UsedWeight() > 0 && GetInventory().UsedVolume() > 0 && validContainers.Count > 0) {
 				ReturnJob();
 				ResourceManager.Container closestContainer = validContainers.OrderBy(container => PathManager.RegionBlockDistance(container.tile.regionBlock, overTile.regionBlock, true, true, false)).ToList()[0];
 				SetJob(new JobManager.ColonistJob(this, new JobManager.Job(closestContainer.tile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.EmptyInventory), null, 0), null, null));
@@ -1175,13 +1175,13 @@ public class ColonistManager : BaseManager {
 			job.containerPickups = colonistJob.containerPickups;
 			if (reserveResourcesInContainerPickups && (job.containerPickups != null && job.containerPickups.Count > 0)) {
 				foreach (JobManager.ContainerPickup containerPickup in job.containerPickups) {
-					containerPickup.container.inventory.ReserveResources(containerPickup.resourcesToPickup, this);
+					containerPickup.container.GetInventory().ReserveResources(containerPickup.resourcesToPickup, this);
 				}
 			}
 			if (job.transferResources != null && job.transferResources.Count > 0) {
 				ResourceManager.Container collectContainer = (ResourceManager.Container)job.tile.GetAllObjectInstances().Find(oi => oi is ResourceManager.Container);
 				if (collectContainer != null) {
-					collectContainer.inventory.ReserveResources(job.transferResources, this);
+					collectContainer.GetInventory().ReserveResources(job.transferResources, this);
 				}
 			}
 			job.SetColonist(this);
@@ -1286,7 +1286,7 @@ public class ColonistManager : BaseManager {
 
 		public void ReturnJob() {
 			foreach (ResourceManager.Container container in GameManager.resourceM.containers) {
-				container.inventory.ReleaseReservedResources(this);
+				container.GetInventory().ReleaseReservedResources(this);
 			}
 			if (storedJob != null) {
 				if (GameManager.colonistM.jobToNeedMap.ContainsKey(storedJob.prefab.jobType) || JobManager.nonReturnableJobs.Contains(storedJob.prefab.jobType)) {
@@ -1417,9 +1417,9 @@ public class ColonistManager : BaseManager {
 		GameManager.cameraM.SetCameraPosition(averageColonistPosition);
 
 		// TEMPORARY COLONIST TESTING STUFF
-		colonists[UnityEngine.Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourceEnum.WheatSeed), UnityEngine.Random.Range(5, 11), false);
-		colonists[UnityEngine.Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourceEnum.Potato), UnityEngine.Random.Range(5, 11), false);
-		colonists[UnityEngine.Random.Range(0, colonists.Count)].inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourceEnum.CottonSeed), UnityEngine.Random.Range(5, 11), false);
+		colonists[UnityEngine.Random.Range(0, colonists.Count)].GetInventory().ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourceEnum.WheatSeed), UnityEngine.Random.Range(5, 11), false);
+		colonists[UnityEngine.Random.Range(0, colonists.Count)].GetInventory().ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourceEnum.Potato), UnityEngine.Random.Range(5, 11), false);
+		colonists[UnityEngine.Random.Range(0, colonists.Count)].GetInventory().ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourceEnum.CottonSeed), UnityEngine.Random.Range(5, 11), false);
 	}
 
 	public void SpawnColonists(int amount) {

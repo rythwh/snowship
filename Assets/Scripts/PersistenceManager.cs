@@ -1164,9 +1164,9 @@ public class PersistenceManager : BaseManager {
 						ResourceManager.Container container = (ResourceManager.Container)tileObjectInstance;
 						foreach (KeyValuePair<string, List<ResourceManager.ResourceAmount>> humanToReservedResourcesKVP in persistenceObject.persistenceInventory.reservedResources) {
 							foreach (ResourceManager.ResourceAmount resourceAmount in humanToReservedResourcesKVP.Value) {
-								container.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
+								container.GetInventory().ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 							}
-							container.inventory.ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
+							container.GetInventory().ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
 						}
 						break;
 					case ResourceManager.ObjectInstanceType.ManufacturingObject:
@@ -1206,9 +1206,9 @@ public class PersistenceManager : BaseManager {
 
 				foreach (KeyValuePair<string, List<ResourceManager.ResourceAmount>> humanToReservedResourcesKVP in persistenceCaravan.persistenceInventory.reservedResources) {
 					foreach (ResourceManager.ResourceAmount resourceAmount in humanToReservedResourcesKVP.Value) {
-						caravan.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
+						caravan.GetInventory().ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 					}
-					caravan.inventory.ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
+					caravan.GetInventory().ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
 				}
 
 				for (int t = 0; t < caravan.traders.Count; t++) {
@@ -1217,9 +1217,9 @@ public class PersistenceManager : BaseManager {
 
 					foreach (KeyValuePair<string, List<ResourceManager.ResourceAmount>> humanToReservedResourcesKVP in persistenceTrader.persistenceHuman.persistenceInventory.reservedResources) {
 						foreach (ResourceManager.ResourceAmount resourceAmount in humanToReservedResourcesKVP.Value) {
-							trader.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
+							trader.GetInventory().ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 						}
-						trader.inventory.ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
+						trader.GetInventory().ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
 					}
 				}
 			}
@@ -2032,7 +2032,7 @@ public class PersistenceManager : BaseManager {
 			}
 		}
 
-		WriteInventoryLines(file, human.inventory, startLevel + 1);
+		WriteInventoryLines(file, human.GetInventory(), startLevel + 1);
 	}
 
 	public class PersistenceHuman {
@@ -2150,7 +2150,7 @@ public class PersistenceManager : BaseManager {
 			file.WriteLine(CreateKeyValueString(CaravanProperty.LeaveTimer, caravan.leaveTimer, 1));
 			file.WriteLine(CreateKeyValueString(CaravanProperty.Leaving, caravan.leaving, 1));
 
-			WriteInventoryLines(file, caravan.inventory, 1);
+			WriteInventoryLines(file, caravan.GetInventory(), 1);
 
 			List<ResourceManager.TradeResourceAmount> tradeResourceAmounts = caravan.GenerateTradeResourceAmounts();
 			if (tradeResourceAmounts.Count > 0) {
@@ -2542,10 +2542,10 @@ public class PersistenceManager : BaseManager {
 				leaving = persistenceCaravan.leaving.Value
 			};
 
-			caravan.inventory.maxWeight = persistenceCaravan.persistenceInventory.maxWeight.Value;
-			caravan.inventory.maxVolume = persistenceCaravan.persistenceInventory.maxVolume.Value;
+			caravan.GetInventory().maxWeight = persistenceCaravan.persistenceInventory.maxWeight.Value;
+			caravan.GetInventory().maxVolume = persistenceCaravan.persistenceInventory.maxVolume.Value;
 			foreach (ResourceManager.ResourceAmount resourceAmount in persistenceCaravan.persistenceInventory.resources) {
-				caravan.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
+				caravan.GetInventory().ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 			}
 
 			foreach (PersistenceTradeResourceAmount persistenceTradeResourceAmount in persistenceCaravan.persistenceResourcesToTrade) {
@@ -2588,14 +2588,14 @@ public class PersistenceManager : BaseManager {
 				trader.moveSprites = GameManager.humanM.humanMoveSprites[trader.bodyIndices[HumanManager.Human.Appearance.Skin]];
 				trader.bodyIndices[HumanManager.Human.Appearance.Hair] = persistenceTrader.persistenceHuman.hairIndex.Value;
 
-				trader.inventory.maxWeight = persistenceTrader.persistenceHuman.persistenceInventory.maxWeight.Value;
-				trader.inventory.maxVolume = persistenceTrader.persistenceHuman.persistenceInventory.maxVolume.Value;
+				trader.GetInventory().maxWeight = persistenceTrader.persistenceHuman.persistenceInventory.maxWeight.Value;
+				trader.GetInventory().maxVolume = persistenceTrader.persistenceHuman.persistenceInventory.maxVolume.Value;
 				foreach (ResourceManager.ResourceAmount resourceAmount in persistenceTrader.persistenceHuman.persistenceInventory.resources) {
-					trader.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
+					trader.GetInventory().ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 				}
 
 				foreach (KeyValuePair<HumanManager.Human.Appearance, ResourceManager.Clothing> appearanceToClothingKVP in persistenceTrader.persistenceHuman.clothes) {
-					trader.inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(appearanceToClothingKVP.Value.type), 1, false);
+					trader.GetInventory().ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(appearanceToClothingKVP.Value.type), 1, false);
 					trader.ChangeClothing(appearanceToClothingKVP.Key, appearanceToClothingKVP.Value, appearanceToClothingKVP.Value.type);
 				}
 
@@ -3080,14 +3080,14 @@ public class PersistenceManager : BaseManager {
 			colonist.moveSprites = GameManager.humanM.humanMoveSprites[colonist.bodyIndices[HumanManager.Human.Appearance.Skin]];
 			colonist.bodyIndices[HumanManager.Human.Appearance.Hair] = persistenceColonist.persistenceHuman.hairIndex.Value;
 
-			colonist.inventory.maxWeight = persistenceColonist.persistenceHuman.persistenceInventory.maxWeight.Value;
-			colonist.inventory.maxVolume = persistenceColonist.persistenceHuman.persistenceInventory.maxVolume.Value;
+			colonist.GetInventory().maxWeight = persistenceColonist.persistenceHuman.persistenceInventory.maxWeight.Value;
+			colonist.GetInventory().maxVolume = persistenceColonist.persistenceHuman.persistenceInventory.maxVolume.Value;
 			foreach (ResourceManager.ResourceAmount resourceAmount in persistenceColonist.persistenceHuman.persistenceInventory.resources) {
-				colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
+				colonist.GetInventory().ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 			}
 
 			foreach (KeyValuePair<HumanManager.Human.Appearance, ResourceManager.Clothing> appearanceToClothingKVP in persistenceColonist.persistenceHuman.clothes) {
-				colonist.inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(appearanceToClothingKVP.Value.type), 1, false);
+				colonist.GetInventory().ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(appearanceToClothingKVP.Value.type), 1, false);
 				colonist.ChangeClothing(appearanceToClothingKVP.Key, appearanceToClothingKVP.Value, appearanceToClothingKVP.Value.type);
 			}
 
@@ -3142,9 +3142,9 @@ public class PersistenceManager : BaseManager {
 
 			foreach (KeyValuePair<string, List<ResourceManager.ResourceAmount>> humanToReservedResourcesKVP in persistenceColonist.persistenceHuman.persistenceInventory.reservedResources) {
 				foreach (ResourceManager.ResourceAmount resourceAmount in humanToReservedResourcesKVP.Value) {
-					colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
+					colonist.GetInventory().ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 				}
-				colonist.inventory.ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
+				colonist.GetInventory().ReserveResources(humanToReservedResourcesKVP.Value, GameManager.humanM.humans.Find(h => h.name == humanToReservedResourcesKVP.Key));
 			}
 		}
 
@@ -3537,7 +3537,7 @@ public class PersistenceManager : BaseManager {
 				if (instance is ResourceManager.Container) {
 					ResourceManager.Container container = (ResourceManager.Container)instance;
 					file.WriteLine(CreateKeyValueString(TileObjectProperty.Container, string.Empty, 1));
-					WriteInventoryLines(file, container.inventory, 2);
+					WriteInventoryLines(file, container.GetInventory(), 2);
 				} else if (instance is ResourceManager.ManufacturingObject) {
 					ResourceManager.ManufacturingObject manufacturingTileObject = (ResourceManager.ManufacturingObject)instance;
 					if (manufacturingTileObject.createResource != null || manufacturingTileObject.fuelResource != null) {
@@ -3767,10 +3767,10 @@ public class PersistenceManager : BaseManager {
 				case ResourceManager.ObjectInstanceType.Container:
 				case ResourceManager.ObjectInstanceType.TradingPost:
 					ResourceManager.Container container = (ResourceManager.Container)tileObjectInstance;
-					container.inventory.maxWeight = persistenceObject.persistenceInventory.maxWeight.Value;
-					container.inventory.maxVolume = persistenceObject.persistenceInventory.maxVolume.Value;
+					container.GetInventory().maxWeight = persistenceObject.persistenceInventory.maxWeight.Value;
+					container.GetInventory().maxVolume = persistenceObject.persistenceInventory.maxVolume.Value;
 					foreach (ResourceManager.ResourceAmount resourceAmount in persistenceObject.persistenceInventory.resources) {
-						container.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
+						container.GetInventory().ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 					}
 					// TODO (maybe already done?) Reserved resources must be set after colonists are loaded
 					break;
@@ -3806,11 +3806,10 @@ public class PersistenceManager : BaseManager {
 		file.WriteLine(CreateKeyValueString(InventoryProperty.Inventory, string.Empty, startLevel));
 		file.WriteLine(CreateKeyValueString(InventoryProperty.MaxWeight, inventory.maxWeight, startLevel + 1));
 		file.WriteLine(CreateKeyValueString(InventoryProperty.MaxVolume, inventory.maxVolume, startLevel + 1));
-		if (inventory.human != null) {
-			file.WriteLine(CreateKeyValueString(InventoryProperty.HumanName, inventory.human.name, startLevel + 1));
-		}
-		if (inventory.container != null) {
-			file.WriteLine(CreateKeyValueString(InventoryProperty.ContainerPosition, FormatVector2ToString(inventory.container.zeroPointTile.obj.transform.position), startLevel + 1));
+		if (inventory.parent is HumanManager.Human human) {
+			file.WriteLine(CreateKeyValueString(InventoryProperty.HumanName, human.name, startLevel + 1));
+		} else if (inventory.parent is ResourceManager.Container container) {
+			file.WriteLine(CreateKeyValueString(InventoryProperty.ContainerPosition, FormatVector2ToString(container.zeroPointTile.obj.transform.position), startLevel + 1));
 		}
 		if (inventory.resources.Count > 0) {
 			file.WriteLine(CreateKeyValueString(InventoryProperty.Resources, string.Empty, startLevel + 1));

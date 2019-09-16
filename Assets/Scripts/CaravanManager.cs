@@ -127,7 +127,7 @@ public class CaravanManager : BaseManager {
 		GameManager.uiM.SetTradeMenu();
 	}
 
-	public class Caravan {
+	public class Caravan : ResourceManager.IInventory {
 
 		public List<Trader> traders = new List<Trader>();
 		public int numTraders;
@@ -135,7 +135,7 @@ public class CaravanManager : BaseManager {
 
 		public Location location;
 
-		public ResourceManager.Inventory inventory;
+		private readonly ResourceManager.Inventory inventory;
 
 		public List<ResourceManager.TradeResourceAmount> resourcesToTrade = new List<ResourceManager.TradeResourceAmount>();
 
@@ -159,7 +159,7 @@ public class CaravanManager : BaseManager {
 		private List<Trader> removeTraders = new List<Trader>();
 
 		public Caravan() {
-			inventory = new ResourceManager.Inventory(null, null, int.MaxValue, int.MaxValue);
+			inventory = new ResourceManager.Inventory(this, int.MaxValue, int.MaxValue);
 		}
 
 		public Caravan(int numTraders, CaravanTypeEnum caravanType, List<TileManager.Tile> spawnTiles, TileManager.Tile targetTile) {
@@ -175,7 +175,7 @@ public class CaravanManager : BaseManager {
 				spawnTiles.Remove(spawnTile);
 			}
 
-			inventory = new ResourceManager.Inventory(null, null, int.MaxValue, int.MaxValue);
+			inventory = new ResourceManager.Inventory(this, int.MaxValue, int.MaxValue);
 
 			resourceGroup = GameManager.resourceM.GetRandomResourceGroup();
 			foreach (ResourceManager.Resource resource in resourceGroup.resources.OrderBy(r => UnityEngine.Random.Range(0f, 1f))) { // Randomize resource group list
@@ -300,7 +300,7 @@ public class CaravanManager : BaseManager {
 					List<ResourceManager.ResourceAmount> resourcesToReserveAtThisTradingPost = new List<ResourceManager.ResourceAmount>();
 					List<ResourceManager.ResourceAmount> resourcesToReserveToRemove = new List<ResourceManager.ResourceAmount>();
 					foreach (ResourceManager.ResourceAmount resourceToReserve in resourcesToReserve) {
-						ResourceManager.ResourceAmount resourceAmount = tradingPost.inventory.resources.Find(r => r.resource == resourceToReserve.resource);
+						ResourceManager.ResourceAmount resourceAmount = tradingPost.GetInventory().resources.Find(r => r.resource == resourceToReserve.resource);
 						if (resourceAmount != null) {
 							int amountToReserve = resourceToReserve.amount < resourceAmount.amount ? resourceToReserve.amount : resourceAmount.amount;
 							resourcesToReserveAtThisTradingPost.Add(new ResourceManager.ResourceAmount(resourceToReserve.resource, amountToReserve));
@@ -311,7 +311,7 @@ public class CaravanManager : BaseManager {
 						}
 					}
 					if (resourcesToReserveAtThisTradingPost.Count > 0) {
-						tradingPost.inventory.ReserveResources(resourcesToReserveAtThisTradingPost, primaryTrader);
+						tradingPost.GetInventory().ReserveResources(resourcesToReserveAtThisTradingPost, primaryTrader);
 						tradingPostsWithReservedResources.Add(tradingPost);
 					}
 					foreach (ResourceManager.ResourceAmount resourceToReserveToRemove in resourcesToReserveToRemove) {
@@ -369,6 +369,9 @@ public class CaravanManager : BaseManager {
 			}
 			return traders.Count > 0;
 		}
+		public ResourceManager.Inventory GetInventory() {
+			return inventory;
+		}
 	}
 
 	public class Trader : HumanManager.Human {
@@ -400,9 +403,9 @@ public class CaravanManager : BaseManager {
 					MoveToTile(tradingPost.zeroPointTile, false);
 				}
 				if (overTile == tradingPost.zeroPointTile) {
-					foreach (ResourceManager.ReservedResources rr in tradingPost.inventory.TakeReservedResources(this)) {
+					foreach (ResourceManager.ReservedResources rr in tradingPost.GetInventory().TakeReservedResources(this)) {
 						foreach (ResourceManager.ResourceAmount ra in rr.resources) {
-							caravan.inventory.ChangeResourceAmount(ra.resource, ra.amount, false);
+							caravan.GetInventory().ChangeResourceAmount(ra.resource, ra.amount, false);
 
 							ResourceManager.ConfirmedTradeResourceAmount confirmedTradeResourceAmount = caravan.confirmedResourcesToTrade.Find(crtt => crtt.resource == ra.resource);
 							if (confirmedTradeResourceAmount != null) {
@@ -423,7 +426,7 @@ public class CaravanManager : BaseManager {
 					};
 					foreach (ResourceManager.ConfirmedTradeResourceAmount confirmedTradeResourceAmount in caravan.confirmedResourcesToTrade) {
 						if (confirmedTradeResourceAmount.tradeAmount > 0) {
-							tradingPost.inventory.ChangeResourceAmount(confirmedTradeResourceAmount.resource, confirmedTradeResourceAmount.tradeAmount, false);
+							tradingPost.GetInventory().ChangeResourceAmount(confirmedTradeResourceAmount.resource, confirmedTradeResourceAmount.tradeAmount, false);
 							confirmedTradeResourceAmount.amountRemaining = 0;
 							job.transferResources.Add(new ResourceManager.ResourceAmount(confirmedTradeResourceAmount.resource, confirmedTradeResourceAmount.tradeAmount));
 						}
