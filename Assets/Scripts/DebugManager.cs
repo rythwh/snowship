@@ -406,7 +406,7 @@ public class DebugManager : BaseManager {
 						if (GameManager.humanM.selectedHuman != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								GameManager.humanM.selectedHuman.inventory.ChangeResourceAmount(resource, amount, false);
+								GameManager.humanM.selectedHuman.GetInventory().ChangeResourceAmount(resource, amount, false);
 								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to " + GameManager.humanM.selectedHuman + ".");
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
@@ -417,7 +417,7 @@ public class DebugManager : BaseManager {
 						if (GameManager.uiM.selectedContainer != null) {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
-								GameManager.uiM.selectedContainer.inventory.ChangeResourceAmount(resource, amount, false);
+								GameManager.uiM.selectedContainer.GetInventory().ChangeResourceAmount(resource, amount, false);
 								OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to container.");
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
@@ -429,10 +429,10 @@ public class DebugManager : BaseManager {
 						int amount = 0;
 						if (int.TryParse(parameters[1], out amount)) {
 							foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
-								colonist.inventory.ChangeResourceAmount(resource, amount, false);
+								colonist.GetInventory().ChangeResourceAmount(resource, amount, false);
 							}
 							foreach (ResourceManager.Container container in GameManager.resourceM.containers) {
-								container.inventory.ChangeResourceAmount(resource, amount, false);
+								container.GetInventory().ChangeResourceAmount(resource, amount, false);
 							}
 							OutputToConsole("SUCCESS: Added " + amount + " " + resource.name + " to all colonists and all containers.");
 						} else {
@@ -451,7 +451,7 @@ public class DebugManager : BaseManager {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
 								foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
-									colonist.inventory.ChangeResourceAmount(resource, amount, false);
+									colonist.GetInventory().ChangeResourceAmount(resource, amount, false);
 								}
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
@@ -472,7 +472,7 @@ public class DebugManager : BaseManager {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
 								foreach (ColonistManager.Colonist colonist in GameManager.colonistM.colonists) {
-									colonist.inventory.ChangeResourceAmount(resource, amount, false);
+									colonist.GetInventory().ChangeResourceAmount(resource, amount, false);
 								}
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");
@@ -492,7 +492,7 @@ public class DebugManager : BaseManager {
 							int amount = 0;
 							if (int.TryParse(parameters[1], out amount)) {
 								foreach (ResourceManager.Container container in GameManager.resourceM.containers) {
-									container.inventory.ChangeResourceAmount(resource, amount, false);
+									container.GetInventory().ChangeResourceAmount(resource, amount, false);
 								}
 							} else {
 								OutputToConsole("ERROR: Unable to parse resource amount as int.");

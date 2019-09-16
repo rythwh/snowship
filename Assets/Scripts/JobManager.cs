@@ -211,7 +211,7 @@ public class JobManager : BaseManager {
 	public static readonly Dictionary<JobEnum, Action<ColonistManager.Colonist, Job>> finishJobFunctions = new Dictionary<JobEnum, Action<ColonistManager.Colonist, Job>>() {
 		{ JobEnum.Build, delegate (ColonistManager.Colonist colonist, Job job) {
 			foreach (ResourceManager.ResourceAmount resourceAmount in job.resourcesToBuild) {
-				colonist.inventory.ChangeResourceAmount(resourceAmount.resource, -resourceAmount.amount, false);
+				colonist.GetInventory().ChangeResourceAmount(resourceAmount.resource, -resourceAmount.amount, false);
 			}
 		} },
 		{ JobEnum.Remove, delegate (ColonistManager.Colonist colonist, Job job) {
@@ -221,27 +221,27 @@ public class JobManager : BaseManager {
 				Debug.LogError("Instance being removed at layer " + job.prefab.layer + " is null.");
 			}
 			foreach (ResourceManager.ResourceAmount resourceAmount in instance.prefab.commonResources) {
-				colonist.inventory.ChangeResourceAmount(resourceAmount.resource, Mathf.RoundToInt(resourceAmount.amount / 2f), false);
+				colonist.GetInventory().ChangeResourceAmount(resourceAmount.resource, Mathf.RoundToInt(resourceAmount.amount / 2f), false);
 			}
 			if (instance is ResourceManager.Farm) {
 				ResourceManager.Farm farm = (ResourceManager.Farm)instance;
 				if (farm.growProgressSpriteIndex == 0) {
-					job.colonist.inventory.ChangeResourceAmount(farm.prefab.seedResource, 1, false);
+					job.colonist.GetInventory().ChangeResourceAmount(farm.prefab.seedResource, 1, false);
 				}
 			} else if (instance is ResourceManager.Container) {
 				ResourceManager.Container container = (ResourceManager.Container)instance;
 				List<ResourceManager.ResourceAmount> nonReservedResourcesToRemove = new List<ResourceManager.ResourceAmount>();
-				foreach (ResourceManager.ResourceAmount resourceAmount in container.inventory.resources) {
+				foreach (ResourceManager.ResourceAmount resourceAmount in container.GetInventory().resources) {
 					nonReservedResourcesToRemove.Add(new ResourceManager.ResourceAmount(resourceAmount.resource, resourceAmount.amount));
-					colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
+					colonist.GetInventory().ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 				}
 				foreach (ResourceManager.ResourceAmount resourceAmount in nonReservedResourcesToRemove) {
-					container.inventory.ChangeResourceAmount(resourceAmount.resource, -resourceAmount.amount, false);
+					container.GetInventory().ChangeResourceAmount(resourceAmount.resource, -resourceAmount.amount, false);
 				}
 				List<ResourceManager.ReservedResources> reservedResourcesToRemove = new List<ResourceManager.ReservedResources>();
-				foreach (ResourceManager.ReservedResources reservedResources in container.inventory.reservedResources) {
+				foreach (ResourceManager.ReservedResources reservedResources in container.GetInventory().reservedResources) {
 					foreach (ResourceManager.ResourceAmount resourceAmount in reservedResources.resources) {
-						colonist.inventory.ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
+						colonist.GetInventory().ChangeResourceAmount(resourceAmount.resource, resourceAmount.amount, false);
 					}
 					reservedResourcesToRemove.Add(reservedResources);
 					if (reservedResources.human is ColonistManager.Colonist) {
@@ -249,7 +249,7 @@ public class JobManager : BaseManager {
 					}
 				}
 				foreach (ResourceManager.ReservedResources reservedResourceToRemove in reservedResourcesToRemove) {
-					container.inventory.reservedResources.Remove(reservedResourceToRemove);
+					container.GetInventory().reservedResources.Remove(reservedResourceToRemove);
 				}
 				GameManager.uiM.SetSelectedColonistInformation(true);
 				GameManager.uiM.SetSelectedContainerInfo();
@@ -283,8 +283,8 @@ public class JobManager : BaseManager {
 		} },
 		{ JobEnum.HarvestFarm, delegate (ColonistManager.Colonist colonist, Job job) {
 			if (job.tile.farm != null) {
-				colonist.inventory.ChangeResourceAmount(job.tile.farm.prefab.seedResource, UnityEngine.Random.Range(1, 3), false);
-				colonist.inventory.ChangeResourceAmount(job.tile.farm.prefab.harvestResource, UnityEngine.Random.Range(1, 6), false);
+				colonist.GetInventory().ChangeResourceAmount(job.tile.farm.prefab.seedResource, UnityEngine.Random.Range(1, 3), false);
+				colonist.GetInventory().ChangeResourceAmount(job.tile.farm.prefab.harvestResource, UnityEngine.Random.Range(1, 6), false);
 
 				GameManager.jobM.CreateJob(new Job(job.tile, job.tile.farm.prefab, job.tile.farm.variation, 0));
 
@@ -295,17 +295,17 @@ public class JobManager : BaseManager {
 		} },
 		{ JobEnum.ChopPlant, delegate (ColonistManager.Colonist colonist, Job job) {
 			foreach (ResourceManager.ResourceRange resourceRange in job.tile.plant.prefab.returnResources) {
-				colonist.inventory.ChangeResourceAmount(resourceRange.resource, Mathf.CeilToInt(UnityEngine.Random.Range(resourceRange.min, resourceRange.max + 1) / (job.tile.plant.small ? 2f : 1f)), false);
+				colonist.GetInventory().ChangeResourceAmount(resourceRange.resource, Mathf.CeilToInt(UnityEngine.Random.Range(resourceRange.min, resourceRange.max + 1) / (job.tile.plant.small ? 2f : 1f)), false);
 			}
 			if (job.tile.plant.harvestResource != null) {
 				ResourceManager.ResourceRange harvestResourceRange = job.tile.plant.prefab.harvestResources.Find(rr => rr.resource == job.tile.plant.harvestResource);
-				colonist.inventory.ChangeResourceAmount(job.tile.plant.harvestResource, Mathf.CeilToInt(UnityEngine.Random.Range(harvestResourceRange.min, harvestResourceRange.max + 1) / (job.tile.plant.small ? 2f : 1f)), false);
+				colonist.GetInventory().ChangeResourceAmount(job.tile.plant.harvestResource, Mathf.CeilToInt(UnityEngine.Random.Range(harvestResourceRange.min, harvestResourceRange.max + 1) / (job.tile.plant.small ? 2f : 1f)), false);
 			}
 			job.tile.SetPlant(true, null);
 		} },
 		{ JobEnum.PlantPlant, delegate (ColonistManager.Colonist colonist, Job job) {
 			foreach (ResourceManager.ResourceAmount ra in job.resourcesToBuild) {
-				colonist.inventory.ChangeResourceAmount(ra.resource, -ra.amount, false);
+				colonist.GetInventory().ChangeResourceAmount(ra.resource, -ra.amount, false);
 			}
 			Dictionary<ResourceManager.PlantPrefab, int> plantChances = new Dictionary<ResourceManager.PlantPrefab, int>();
 			foreach (ResourceManager.PlantPrefab plantPrefab in job.prefab.plants.Keys) {
@@ -317,7 +317,7 @@ public class JobManager : BaseManager {
 		} },
 		{ JobEnum.Mine, delegate (ColonistManager.Colonist colonist, Job job) {
 			foreach (ResourceManager.ResourceRange resourceRange in job.tile.tileType.resourceRanges) {
-				colonist.inventory.ChangeResourceAmount(resourceRange.resource, UnityEngine.Random.Range(resourceRange.min, resourceRange.max + 1), false);
+				colonist.GetInventory().ChangeResourceAmount(resourceRange.resource, UnityEngine.Random.Range(resourceRange.min, resourceRange.max + 1), false);
 			}
 			if (job.tile.roof) {
 				job.tile.SetTileType(TileManager.TileType.GetTileTypeByEnum(TileManager.TileType.TypeEnum.Dirt), false, true, true);
@@ -336,7 +336,7 @@ public class JobManager : BaseManager {
 		{ JobEnum.Dig, delegate (ColonistManager.Colonist colonist, Job job) {
 			job.tile.dugPreviously = true;
 			foreach (ResourceManager.ResourceRange resourceRange in job.tile.tileType.resourceRanges) {
-				colonist.inventory.ChangeResourceAmount(resourceRange.resource, UnityEngine.Random.Range(resourceRange.min, resourceRange.max + 1), false);
+				colonist.GetInventory().ChangeResourceAmount(resourceRange.resource, UnityEngine.Random.Range(resourceRange.min, resourceRange.max + 1), false);
 			}
 			bool setToWater = job.tile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Water;
 			if (!setToWater) {
@@ -375,15 +375,15 @@ public class JobManager : BaseManager {
 			TileManager.TileType fillType = TileManager.TileType.GetTileTypeByEnum(TileManager.TileType.TypeEnum.Dirt);
 			job.tile.dugPreviously = false;
 			foreach (ResourceManager.ResourceRange resourceRange in fillType.resourceRanges) {
-				colonist.inventory.ChangeResourceAmount(resourceRange.resource, -(resourceRange.max + 1), true);
+				colonist.GetInventory().ChangeResourceAmount(resourceRange.resource, -(resourceRange.max + 1), true);
 			}
 			job.tile.SetTileType(fillType, false, true, true);
 		} },
 		{ JobEnum.CreateResource, delegate (ColonistManager.Colonist colonist, Job job) {
 			foreach (ResourceManager.ResourceAmount resourceAmount in job.resourcesToBuild) {
-				colonist.inventory.ChangeResourceAmount(resourceAmount.resource, -resourceAmount.amount, false);
+				colonist.GetInventory().ChangeResourceAmount(resourceAmount.resource, -resourceAmount.amount, false);
 			}
-			colonist.inventory.ChangeResourceAmount(job.createResource, job.createResource.amountCreated, false);
+			colonist.GetInventory().ChangeResourceAmount(job.createResource, job.createResource.amountCreated, false);
 			if (job.activeTileObject is ResourceManager.ManufacturingObject) {
 				((ResourceManager.ManufacturingObject)job.activeTileObject).jobBacklog.Remove(job);
 			}
@@ -393,9 +393,9 @@ public class JobManager : BaseManager {
 			if (container != null && colonist.storedJob != null) {
 				ContainerPickup containerPickup = colonist.storedJob.containerPickups.Find(pickup => pickup.container == container);
 				if (containerPickup != null) {
-					foreach (ResourceManager.ReservedResources rr in containerPickup.container.inventory.TakeReservedResources(colonist)) {
+					foreach (ResourceManager.ReservedResources rr in containerPickup.container.GetInventory().TakeReservedResources(colonist)) {
 						foreach (ResourceManager.ResourceAmount ra in rr.resources) {
-							colonist.inventory.ChangeResourceAmount(ra.resource, ra.amount, false);
+							colonist.GetInventory().ChangeResourceAmount(ra.resource, ra.amount, false);
 						}
 					}
 					colonist.storedJob.containerPickups.RemoveAt(0);
@@ -413,15 +413,15 @@ public class JobManager : BaseManager {
 		{ JobEnum.TransferResources, delegate (ColonistManager.Colonist colonist, Job job) {
 			ResourceManager.Container container = GameManager.resourceM.GetContainerOrChildOnTile(colonist.overTile);
 			if (container != null) {
-				ResourceManager.Inventory.TransferResourcesBetweenInventories(colonist.inventory, container.inventory, job.resourcesToBuild, true);
+				ResourceManager.Inventory.TransferResourcesBetweenInventories(colonist.GetInventory(), container.GetInventory(), job.resourcesToBuild, true);
 			}
 		} },
 		{ JobEnum.CollectResources, delegate (ColonistManager.Colonist colonist, Job job) {
 			ResourceManager.Container container = GameManager.resourceM.GetContainerOrChildOnTile(colonist.overTile);
 			if (container != null) {
-				foreach (ResourceManager.ReservedResources rr in container.inventory.TakeReservedResources(colonist)) {
+				foreach (ResourceManager.ReservedResources rr in container.GetInventory().TakeReservedResources(colonist)) {
 					foreach (ResourceManager.ResourceAmount ra in rr.resources) {
-						colonist.inventory.ChangeResourceAmount(ra.resource, ra.amount, false);
+						colonist.GetInventory().ChangeResourceAmount(ra.resource, ra.amount, false);
 					}
 				}
 			}
@@ -429,22 +429,27 @@ public class JobManager : BaseManager {
 		{ JobEnum.EmptyInventory, delegate (ColonistManager.Colonist colonist, Job job) {
 			ResourceManager.Container container = GameManager.resourceM.GetContainerOrChildOnTile(colonist.overTile);
 			if (container != null) {
-				ResourceManager.Inventory.TransferResourcesBetweenInventories(colonist.inventory, container.inventory, colonist.inventory.resources, true);
+				ResourceManager.Inventory.TransferResourcesBetweenInventories(
+					colonist.GetInventory(), // fromInventory
+					container.GetInventory(), // toInventory
+					colonist.GetInventory().resources, // resourceAmounts
+					true // limitToMaxAmount
+				);
 			}
 		} },
 		{ JobEnum.CollectFood, delegate (ColonistManager.Colonist colonist, Job job) {
 			ResourceManager.Container container = GameManager.resourceM.GetContainerOrChildOnTile(colonist.overTile);
 			if (container != null) {
-				foreach (ResourceManager.ReservedResources rr in container.inventory.TakeReservedResources(colonist)) {
+				foreach (ResourceManager.ReservedResources rr in container.GetInventory().TakeReservedResources(colonist)) {
 					foreach (ResourceManager.ResourceAmount ra in rr.resources) {
-						colonist.inventory.ChangeResourceAmount(ra.resource, ra.amount, false);
+						colonist.GetInventory().ChangeResourceAmount(ra.resource, ra.amount, false);
 					}
 				}
 			}
 			colonist.SetJob(new ColonistJob(colonist, new Job(colonist.overTile, GameManager.resourceM.GetObjectPrefabByEnum(ResourceManager.ObjectEnum.Eat), null, 0), null, null));
 		} },
 		{ JobEnum.Eat, delegate (ColonistManager.Colonist colonist, Job job) {
-			List<ResourceManager.ResourceAmount> resourcesToEat = colonist.inventory.resources.Where(r => r.resource.classes.Contains(ResourceManager.ResourceClassEnum.Food)).OrderBy(r => ((ResourceManager.Food)r.resource).nutrition).ToList();
+			List<ResourceManager.ResourceAmount> resourcesToEat = colonist.GetInventory().resources.Where(r => r.resource.classes.Contains(ResourceManager.ResourceClassEnum.Food)).OrderBy(r => ((ResourceManager.Food)r.resource).nutrition).ToList();
 			ColonistManager.NeedInstance foodNeed = colonist.needs.Find(need => need.prefab.type == ColonistManager.NeedEnum.Food);
 			float startingFoodNeedValue = foodNeed.GetValue();
 			foreach (ResourceManager.ResourceAmount ra in resourcesToEat) {
@@ -455,9 +460,9 @@ public class JobManager : BaseManager {
 						break;
 					}
 					foodNeed.ChangeValue(-((ResourceManager.Food)ra.resource).nutrition);
-					colonist.inventory.ChangeResourceAmount(ra.resource, -1, false);
+					colonist.GetInventory().ChangeResourceAmount(ra.resource, -1, false);
 					if (ra.resource.type == ResourceManager.ResourceEnum.Apple || ra.resource.type == ResourceManager.ResourceEnum.BakedApple) {
-						colonist.inventory.ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourceEnum.AppleSeed), UnityEngine.Random.Range(1, 5), false);
+						colonist.GetInventory().ChangeResourceAmount(GameManager.resourceM.GetResourceByEnum(ResourceManager.ResourceEnum.AppleSeed), UnityEngine.Random.Range(1, 5), false);
 					}
 				}
 				if (stopEating) {
@@ -846,7 +851,7 @@ public class JobManager : BaseManager {
 			if (colonist.storedJob != null) {
 				if (colonist.storedJob.containerPickups != null) {
 					foreach (ContainerPickup containerPickup in colonist.storedJob.containerPickups) {
-						containerPickup.container.inventory.ReleaseReservedResources(colonist);
+						containerPickup.container.GetInventory().ReleaseReservedResources(colonist);
 					}
 				}
 				if (colonist.storedJob.prefab.jobType == JobEnum.CreateResource) {
@@ -862,7 +867,7 @@ public class JobManager : BaseManager {
 			if (colonist.job != null) {
 				if (colonist.job.containerPickups != null) {
 					foreach (ContainerPickup containerPickup in colonist.job.containerPickups) {
-						containerPickup.container.inventory.ReleaseReservedResources(colonist);
+						containerPickup.container.GetInventory().ReleaseReservedResources(colonist);
 					}
 				}
 				if (colonist.job.prefab.jobType == JobEnum.CreateResource) {
@@ -962,7 +967,7 @@ public class JobManager : BaseManager {
 		if (sortedContainersByDistance.Count > 0) {
 			foreach (ResourceManager.Container container in sortedContainersByDistance) {
 				List<ResourceManager.ResourceAmount> resourcesToPickupAtContainer = new List<ResourceManager.ResourceAmount>();
-				foreach (ResourceManager.ResourceAmount resourceAmount in container.inventory.resources.Where(ra => resourcesToPickup.Find(pickupResource => pickupResource.resource == ra.resource) != null)) {
+				foreach (ResourceManager.ResourceAmount resourceAmount in container.GetInventory().resources.Where(ra => resourcesToPickup.Find(pickupResource => pickupResource.resource == ra.resource) != null)) {
 					ResourceManager.ResourceAmount pickupResource = resourcesToPickup.Find(pR => pR.resource == resourceAmount.resource);
 					if (resourceAmount.amount >= pickupResource.amount) {
 						resourcesToPickupAtContainer.Add(new ResourceManager.ResourceAmount(pickupResource.resource, pickupResource.amount));
@@ -999,7 +1004,7 @@ public class JobManager : BaseManager {
 		List<ResourceManager.ResourceAmount> resourcesColonistHas = new List<ResourceManager.ResourceAmount>();
 		List<ResourceManager.ResourceAmount> resourcesToPickup = new List<ResourceManager.ResourceAmount>();
 		foreach (ResourceManager.ResourceAmount resourceAmount in resourcesToFind) {
-			ResourceManager.ResourceAmount colonistResourceAmount = colonist.inventory.resources.Find(resource => resource.resource == resourceAmount.resource);
+			ResourceManager.ResourceAmount colonistResourceAmount = colonist.GetInventory().resources.Find(resource => resource.resource == resourceAmount.resource);
 			if (colonistResourceAmount != null) {
 				if (colonistResourceAmount.amount >= resourceAmount.amount) {
 					resourcesColonistHas.Add(new ResourceManager.ResourceAmount(resourceAmount.resource, resourceAmount.amount));

@@ -2695,10 +2695,10 @@ public class UIManager : BaseManager {
 			MonoBehaviour.Destroy(inventoryElement.obj);
 		}
 		selectedColonistInventoryElements.Clear();
-		foreach (ResourceManager.ReservedResources rr in GameManager.humanM.selectedHuman.inventory.reservedResources) {
+		foreach (ResourceManager.ReservedResources rr in GameManager.humanM.selectedHuman.GetInventory().reservedResources) {
 			selectedColonistReservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.human, rr, selectedColonistInventoryPanel.transform.Find("Inventory-ScrollPanel/InventoryList-Panel")));
 		}
-		foreach (ResourceManager.ResourceAmount ra in GameManager.humanM.selectedHuman.inventory.resources) {
+		foreach (ResourceManager.ResourceAmount ra in GameManager.humanM.selectedHuman.GetInventory().resources) {
 			selectedColonistInventoryElements.Add(new InventoryElement(ra, selectedColonistInventoryPanel.transform.Find("Inventory-ScrollPanel/InventoryList-Panel")));
 		}
 
@@ -2833,14 +2833,14 @@ public class UIManager : BaseManager {
 			//selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistHappiness-Panel/ColonistHappinessValue-Text").GetComponent<Text>().text = Mathf.RoundToInt(selectedColonist.effectiveHappiness) + "%";
 
 			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryWeight-Slider").GetComponent<Slider>().minValue = 0;
-			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryWeight-Slider").GetComponent<Slider>().maxValue = selectedColonist.inventory.maxWeight;
-			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryWeight-Slider").GetComponent<Slider>().value = selectedColonist.inventory.TotalWeight();
-			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryWeight-Slider/Handle Slide Area/Handle/Text").GetComponent<Text>().text = Mathf.RoundToInt((selectedColonist.inventory.TotalWeight() / (float)selectedColonist.inventory.maxWeight) * 100).ToString();
+			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryWeight-Slider").GetComponent<Slider>().maxValue = selectedColonist.GetInventory().maxWeight;
+			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryWeight-Slider").GetComponent<Slider>().value = selectedColonist.GetInventory().UsedWeight();
+			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryWeight-Slider/Handle Slide Area/Handle/Text").GetComponent<Text>().text = Mathf.RoundToInt((selectedColonist.GetInventory().UsedWeight() / (float)selectedColonist.GetInventory().maxWeight) * 100).ToString();
 
 			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryVolume-Slider").GetComponent<Slider>().minValue = 0;
-			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryVolume-Slider").GetComponent<Slider>().maxValue = selectedColonist.inventory.maxVolume;
-			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryVolume-Slider").GetComponent<Slider>().value = selectedColonist.inventory.TotalVolume();
-			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryVolume-Slider/Handle Slide Area/Handle/Text").GetComponent<Text>().text = Mathf.RoundToInt((selectedColonist.inventory.TotalVolume() / (float)selectedColonist.inventory.maxVolume) * 100).ToString();
+			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryVolume-Slider").GetComponent<Slider>().maxValue = selectedColonist.GetInventory().maxVolume;
+			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryVolume-Slider").GetComponent<Slider>().value = selectedColonist.GetInventory().UsedVolume();
+			selectedColonistInformationPanel.transform.Find("ColonistStatusBars-Panel/ColonistInventorySlider-Panel/SliderSplitter-Panel/ColonistInventoryVolume-Slider/Handle Slide Area/Handle/Text").GetComponent<Text>().text = Mathf.RoundToInt((selectedColonist.GetInventory().UsedVolume() / (float)selectedColonist.GetInventory().maxVolume) * 100).ToString();
 
 			selectedColonistInformationPanel.transform.Find("ColonistCurrentAction-Text").GetComponent<Text>().text = GameManager.jobM.GetJobDescription(selectedColonist.job);
 			if (selectedColonist.storedJob != null) {
@@ -3245,6 +3245,9 @@ public class UIManager : BaseManager {
 		}
 		containerInventoryElements.Clear();
 
+		GameObject weightSliderPanel = selectedContainerInventoryPanel.transform.Find("SliderSplitter-Panel/SelectedContainerInventoryWeightSlider-Panel").gameObject;
+		GameObject volumeSliderPanel = selectedContainerInventoryPanel.transform.Find("SliderSplitter-Panel/SelectedContainerInventoryVolumeSlider-Panel").gameObject;
+
 		if (selectedContainer != null) {
 			selectedContainerIndicator.SetActive(true);
 			selectedContainerIndicator.transform.position = selectedContainer.obj.transform.position;
@@ -3254,25 +3257,42 @@ public class UIManager : BaseManager {
 			selectedContainerInventoryPanel.transform.Find("SelectedContainerInventoryName-Text").GetComponent<Text>().text = selectedContainer.prefab.name;
 			selectedContainerInventoryPanel.transform.Find("SelectedContainerSprite-Image").GetComponent<Image>().sprite = selectedContainer.obj.GetComponent<SpriteRenderer>().sprite;
 
-			selectedContainerInventoryPanel.transform.Find("SliderSplitter-Panel/SelectedContainerInventoryWeightSlider-Panel/SelectedContainerInventoryWeight-Slider").GetComponent<Slider>().minValue = 0;
-			selectedContainerInventoryPanel.transform.Find("SliderSplitter-Panel/SelectedContainerInventoryWeightSlider-Panel/SelectedContainerInventoryWeight-Slider").GetComponent<Slider>().maxValue = selectedContainer.inventory.maxWeight;
-			selectedContainerInventoryPanel.transform.Find("SliderSplitter-Panel/SelectedContainerInventoryWeightSlider-Panel/SelectedContainerInventoryWeight-Slider").GetComponent<Slider>().value = selectedContainer.inventory.TotalWeight();
+			if (selectedContainer.GetInventory().maxWeight != int.MaxValue) {
+				weightSliderPanel.SetActive(true);
 
-			selectedContainerInventoryPanel.transform.Find("SliderSplitter-Panel/SelectedContainerInventoryVolumeSlider-Panel/SelectedContainerInventoryVolume-Slider").GetComponent<Slider>().minValue = 0;
-			selectedContainerInventoryPanel.transform.Find("SliderSplitter-Panel/SelectedContainerInventoryVolumeSlider-Panel/SelectedContainerInventoryVolume-Slider").GetComponent<Slider>().maxValue = selectedContainer.inventory.maxVolume;
-			selectedContainerInventoryPanel.transform.Find("SliderSplitter-Panel/SelectedContainerInventoryVolumeSlider-Panel/SelectedContainerInventoryVolume-Slider").GetComponent<Slider>().value = selectedContainer.inventory.TotalVolume();
+				Slider weightSlider = weightSliderPanel.transform.Find("SelectedContainerInventoryWeight-Slider").GetComponent<Slider>();
 
-			//selectedContainerInventoryPanel.transform.Find("SelectedContainerInventorySizeValue-Text").GetComponent<Text>().text = Mathf.RoundToInt((numResources / (float)selectedContainer.prefab.maxInventoryAmount) * 100) + "%";
+				weightSlider.minValue = 0;
+				weightSlider.maxValue = selectedContainer.GetInventory().maxWeight;
+				weightSlider.value = selectedContainer.GetInventory().UsedWeight();
+			} else {
+				weightSliderPanel.SetActive(false);
+			}
 
-			foreach (ResourceManager.ReservedResources rr in selectedContainer.inventory.reservedResources) {
+			if (selectedContainer.GetInventory().maxVolume != int.MaxValue) {
+				volumeSliderPanel.SetActive(true);
+
+				Slider volumeSlider = volumeSliderPanel.transform.Find("SelectedContainerInventoryVolume-Slider").GetComponent<Slider>();
+
+				volumeSlider.minValue = 0;
+				volumeSlider.maxValue = selectedContainer.GetInventory().maxVolume;
+				volumeSlider.value = selectedContainer.GetInventory().UsedVolume();
+			} else {
+				volumeSliderPanel.SetActive(false);
+			}
+
+			foreach (ResourceManager.ReservedResources rr in selectedContainer.GetInventory().reservedResources) {
 				containerReservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.human, rr, selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel")));
 			}
-			foreach (ResourceManager.ResourceAmount ra in selectedContainer.inventory.resources.OrderByDescending(ra => ra.amount)) {
+			foreach (ResourceManager.ResourceAmount ra in selectedContainer.GetInventory().resources.OrderByDescending(ra => ra.amount)) {
 				InventoryElement inventoryElement = new InventoryElement(ra, selectedContainerInventoryPanel.transform.Find("SelectedContainerInventory-ScrollPanel/InventoryList-Panel"));
 				inventoryElement.obj.GetComponent<Image>().color = GetColour(Colours.LightGrey200);
 				containerInventoryElements.Add(inventoryElement);
 			}
 		} else {
+			weightSliderPanel.SetActive(true);
+			volumeSliderPanel.SetActive(true);
+
 			selectedContainerInventoryPanel.SetActive(false);
 		}
 	}
@@ -3331,10 +3351,10 @@ public class UIManager : BaseManager {
 
 			// Available Resources
 			selectedTradingPostPanel.transform.Find("AvailableResources-Panel/SliderSplitter-Panel/PlannedSpaceWeight-Slider").GetComponent<Slider>().minValue = 0;
-			selectedTradingPostPanel.transform.Find("AvailableResources-Panel/SliderSplitter-Panel/PlannedSpaceWeight-Slider").GetComponent<Slider>().maxValue = selectedTradingPost.inventory.maxWeight;
+			selectedTradingPostPanel.transform.Find("AvailableResources-Panel/SliderSplitter-Panel/PlannedSpaceWeight-Slider").GetComponent<Slider>().maxValue = selectedTradingPost.GetInventory().maxWeight;
 
 			selectedTradingPostPanel.transform.Find("AvailableResources-Panel/SliderSplitter-Panel/PlannedSpaceVolume-Slider").GetComponent<Slider>().minValue = 0;
-			selectedTradingPostPanel.transform.Find("AvailableResources-Panel/SliderSplitter-Panel/PlannedSpaceVolume-Slider").GetComponent<Slider>().maxValue = selectedTradingPost.inventory.maxVolume;
+			selectedTradingPostPanel.transform.Find("AvailableResources-Panel/SliderSplitter-Panel/PlannedSpaceVolume-Slider").GetComponent<Slider>().maxValue = selectedTradingPost.GetInventory().maxVolume;
 
 			foreach (ResourceManager.Resource resource in GameManager.resourceM.GetResources()) {
 				if (resource.GetUnreservedContainerTotalAmount() > 0) {
@@ -3361,19 +3381,19 @@ public class UIManager : BaseManager {
 
 			// Inventory
 			selectedTradingPostPanel.transform.Find("Inventory-Panel/SliderSplitter-Panel/InventorySpaceWeight-Slider").GetComponent<Slider>().minValue = 0;
-			selectedTradingPostPanel.transform.Find("Inventory-Panel/SliderSplitter-Panel/InventorySpaceWeight-Slider").GetComponent<Slider>().maxValue = selectedTradingPost.inventory.maxWeight;
-			selectedTradingPostPanel.transform.Find("Inventory-Panel/SliderSplitter-Panel/InventorySpaceWeight-Slider").GetComponent<Slider>().value = selectedTradingPost.inventory.TotalWeight();
+			selectedTradingPostPanel.transform.Find("Inventory-Panel/SliderSplitter-Panel/InventorySpaceWeight-Slider").GetComponent<Slider>().maxValue = selectedTradingPost.GetInventory().maxWeight;
+			selectedTradingPostPanel.transform.Find("Inventory-Panel/SliderSplitter-Panel/InventorySpaceWeight-Slider").GetComponent<Slider>().value = selectedTradingPost.GetInventory().UsedWeight();
 
 			selectedTradingPostPanel.transform.Find("Inventory-Panel/SliderSplitter-Panel/InventorySpaceVolume-Slider").GetComponent<Slider>().minValue = 0;
-			selectedTradingPostPanel.transform.Find("Inventory-Panel/SliderSplitter-Panel/InventorySpaceVolume-Slider").GetComponent<Slider>().maxValue = selectedTradingPost.inventory.maxVolume;
-			selectedTradingPostPanel.transform.Find("Inventory-Panel/SliderSplitter-Panel/InventorySpaceVolume-Slider").GetComponent<Slider>().value = selectedTradingPost.inventory.TotalVolume();
+			selectedTradingPostPanel.transform.Find("Inventory-Panel/SliderSplitter-Panel/InventorySpaceVolume-Slider").GetComponent<Slider>().maxValue = selectedTradingPost.GetInventory().maxVolume;
+			selectedTradingPostPanel.transform.Find("Inventory-Panel/SliderSplitter-Panel/InventorySpaceVolume-Slider").GetComponent<Slider>().value = selectedTradingPost.GetInventory().UsedVolume();
 
 			//selectedTradingPostPanel.transform.Find("Inventory-Panel/InventorySpacePercentage-Text").GetComponent<Text>().text = Mathf.RoundToInt((inventorySpace / (float)selectedTradingPost.prefab.maxInventoryAmount) * 100) + "%";
 
-			foreach (ResourceManager.ReservedResources rr in selectedTradingPost.inventory.reservedResources) {
+			foreach (ResourceManager.ReservedResources rr in selectedTradingPost.GetInventory().reservedResources) {
 				tradingPostReservedResourcesColonistElements.Add(new ReservedResourcesColonistElement(rr.human, rr, selectedTradingPostPanel.transform.Find("Inventory-Panel/Inventory-ScrollPanel/InventoryResourcesList-Panel")));
 			}
-			foreach (ResourceManager.ResourceAmount ra in selectedTradingPost.inventory.resources) {
+			foreach (ResourceManager.ResourceAmount ra in selectedTradingPost.GetInventory().resources) {
 				ResourceTransferElement inventoryElement = new ResourceTransferElement(ra, selectedTradingPostPanel.transform.Find("Inventory-Panel/Inventory-ScrollPanel/InventoryResourcesList-Panel"));
 				tradingPostInventoryElements.Add(inventoryElement);
 			}
@@ -3409,10 +3429,10 @@ public class UIManager : BaseManager {
 			selectedTradingPostPanel.transform.Find("AvailableResources-Panel/TransferIn-Button").GetComponent<Button>().interactable = tradingPostResourceTransferElements.Sum(rte => rte.transferAmount) > 0;
 			selectedTradingPostPanel.transform.Find("Inventory-Panel/TransferOut-Button").GetComponent<Button>().interactable = tradingPostInventoryElements.Sum(rte => rte.transferAmount) > 0;
 
-			int plannedSpaceWeight = selectedTradingPost.inventory.TotalWeight() + tradingPostResourceTransferElements.Sum(rte => rte.transferAmount * rte.resourceAmount.resource.weight);
+			int plannedSpaceWeight = selectedTradingPost.GetInventory().UsedWeight() + tradingPostResourceTransferElements.Sum(rte => rte.transferAmount * rte.resourceAmount.resource.weight);
 			selectedTradingPostPanel.transform.Find("AvailableResources-Panel/SliderSplitter-Panel/PlannedSpaceWeight-Slider").GetComponent<Slider>().value = plannedSpaceWeight;
 
-			int plannedSpaceVolume = selectedTradingPost.inventory.TotalVolume() + tradingPostResourceTransferElements.Sum(rte => rte.transferAmount * rte.resourceAmount.resource.volume);
+			int plannedSpaceVolume = selectedTradingPost.GetInventory().UsedVolume() + tradingPostResourceTransferElements.Sum(rte => rte.transferAmount * rte.resourceAmount.resource.volume);
 			selectedTradingPostPanel.transform.Find("AvailableResources-Panel/SliderSplitter-Panel/PlannedSpaceVolume-Slider").GetComponent<Slider>().value = plannedSpaceVolume;
 
 			//selectedTradingPostPanel.transform.Find("AvailableResources-Panel/PlannedSpacePercentage-Text").GetComponent<Text>().text = Mathf.RoundToInt((plannedSpace / (float)selectedTradingPost.prefab.maxInventoryAmount) * 100) + "%";

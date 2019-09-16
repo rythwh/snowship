@@ -136,7 +136,7 @@ public class TileManager : BaseManager {
 		}
 
 		public static void InitializeTileTypes() {
-			List<KeyValuePair<string, object>> tileTypeGroupProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/tileTypes").text.Split('\n').ToList());
+			List<KeyValuePair<string, object>> tileTypeGroupProperties = PersistenceManager.GetKeyValuePairsFromLines(Resources.Load<TextAsset>(@"Data/tile-types").text.Split('\n').ToList());
 			foreach (KeyValuePair<string, object> tileTypeGroupProperty in tileTypeGroupProperties) {
 				switch ((TileTypeGroup.PropertyEnum)Enum.Parse(typeof(TileTypeGroup.PropertyEnum), tileTypeGroupProperty.Key)) {
 					case TileTypeGroup.PropertyEnum.TileTypeGroup:
@@ -426,7 +426,7 @@ public class TileManager : BaseManager {
 	public List<PrecipitationRange> biomeRanges = new List<PrecipitationRange>();
 
 	public void CreateBiomeRanges() {
-		List<string> biomeRangeStrings = Resources.Load<TextAsset>(@"Data/biomeRanges").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('~').ToList();
+		List<string> biomeRangeStrings = Resources.Load<TextAsset>(@"Data/biome-ranges").text.Replace("\n", string.Empty).Replace("\t", string.Empty).Split('~').ToList();
 		foreach (string biomeRangeString in biomeRangeStrings) {
 			biomeRanges.Add(new PrecipitationRange(biomeRangeString));
 		}
@@ -1044,7 +1044,7 @@ public class TileManager : BaseManager {
 			if (plant != null && walkSpeed > 0.6f) {
 				walkSpeed = 0.6f;
 			}
-			ResourceManager.ObjectInstance lowestWalkSpeedObject = objectInstances.Values.OrderBy(o => o.prefab.walkSpeed).FirstOrDefault();
+			ResourceManager.ObjectInstance lowestWalkSpeedObject = objectInstances.Values.Where(o => o != null).OrderBy(o => o.prefab.walkSpeed).FirstOrDefault();
 			if (lowestWalkSpeedObject != null) {
 				walkSpeed = lowestWalkSpeedObject.prefab.walkSpeed;
 			}
@@ -2600,15 +2600,30 @@ public class TileManager : BaseManager {
 			{ 7, new List<int>() { 3, 0 } }
 		};
 
-		public int BitSum(List<TileType.TypeEnum> compareTileTypes, List<Tile> tilesToSum, bool includeMapEdge) {
+		public int BitSum(
+			List<TileType.TypeEnum> compareTileTypes,
+			List<ResourceManager.ObjectEnum> compareObjectTypes,
+			List<Tile> tilesToSum,
+			bool includeMapEdge
+		) {
+			//if (compareObjectTypes == null) {
+			//	compareObjectTypes = new List<ResourceManager.ObjectEnum>();
+			//}
+
 			int sum = 0;
 			for (int i = 0; i < tilesToSum.Count; i++) {
 				if (tilesToSum[i] != null) {
-					if (compareTileTypes.Contains(tilesToSum[i].tileType.type)) {
+					if (compareTileTypes.Contains(tilesToSum[i].tileType.type)
+						//|| compareObjectTypes.Intersect(tilesToSum[i].objectInstances.Values.Select(obj => obj.prefab.type)).ToList().Count > 0
+					) {
 						bool ignoreTile = false;
-						if (compareTileTypes.Contains(tilesToSum[i].tileType.type) && diagonalCheckMap.ContainsKey(i)) {
+						if (diagonalCheckMap.ContainsKey(i)) {
 							List<Tile> surroundingHorizontalTiles = new List<Tile>() { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
-							List<Tile> similarTiles = surroundingHorizontalTiles.Where(tile => tile != null && compareTileTypes.Contains(tile.tileType.type)).ToList();
+							List<Tile> similarTiles = surroundingHorizontalTiles.Where(tile => 
+								tile != null 
+								&& (compareTileTypes.Contains(tile.tileType.type)
+									/*|| compareObjectTypes.Intersect(tile.objectInstances.Values.Select(obj => obj.prefab.type)).ToList().Count > 0*/)
+							).ToList();
 							if (similarTiles.Count < 2) {
 								ignoreTile = true;
 							}
@@ -2639,22 +2654,23 @@ public class TileManager : BaseManager {
 			int sum = 0;
 			List<Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles;
 			if (customBitSumInputs) {
-				sum = BitSum(customCompareTileTypes, surroundingTilesToUse, includeMapEdge);
+				sum = BitSum(customCompareTileTypes, null, surroundingTilesToUse, includeMapEdge);
 			} else {
 				if (RiversContainTile(tile, false).Key != null) {
-					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, false);
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList(), null, surroundingTilesToUse, false);
 				} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Water) {
-					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, includeMapEdge);
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList(), null, surroundingTilesToUse, includeMapEdge);
 				} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
-					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, includeMapEdge);
-					sum += GameManager.resourceM.BitSumTileObjects(
-						GameManager.resourceM.GetTileObjectPrefabSubGroupByEnum(ResourceManager.ObjectSubGroupEnum.Walls).prefabs.Select(prefab => prefab.type).ToList(), 
-						surroundingTilesToUse
-					);
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tt => tt.type).ToList(), null, surroundingTilesToUse, includeMapEdge);
+					// Not-fully-working implementation of walls and stone connecting
+					//sum += GameManager.resourceM.BitSumObjects(
+					//	GameManager.resourceM.GetTileObjectPrefabSubGroupByEnum(ResourceManager.ObjectSubGroupEnum.Walls).prefabs.Select(prefab => prefab.type).ToList(), 
+					//	surroundingTilesToUse
+					//);
 				} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Hole) {
-					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Hole).tileTypes.Select(tt => tt.type).ToList(), surroundingTilesToUse, false);
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Hole).tileTypes.Select(tt => tt.type).ToList(), null, surroundingTilesToUse, false);
 				} else {
-					sum = BitSum(new List<TileType.TypeEnum>() { tile.tileType.type }, surroundingTilesToUse, includeMapEdge);
+					sum = BitSum(new List<TileType.TypeEnum>() { tile.tileType.type }, null, surroundingTilesToUse, includeMapEdge);
 				}
 			}
 			if ((sum < 16) || (bitmaskMap[sum] != 46)) {
