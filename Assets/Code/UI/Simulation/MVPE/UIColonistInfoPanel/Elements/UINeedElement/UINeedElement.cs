@@ -21,6 +21,7 @@ namespace Snowship.NUI
 
 		protected override void OnClose() {
 			base.OnClose();
+
 			need.OnValueChanged -= OnNeedValueChanged;
 		}
 

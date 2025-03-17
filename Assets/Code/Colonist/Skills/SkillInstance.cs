@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using UnityEngine;
 
 namespace Snowship.NColonist {
 	public class SkillInstance {
@@ -29,15 +30,16 @@ namespace Snowship.NColonist {
 		}
 
 		public void AddExperience(float amount) {
+			Debug.Log($"Adding experience: {CurrentExperience} + {amount} -> {NextLevelExperience} {Level}");
 			CurrentExperience += amount;
 			while (CurrentExperience >= NextLevelExperience) {
 				Level += 1;
 				CurrentExperience -= NextLevelExperience;
 				NextLevelExperience = CalculateNextLevelExperience();
+				Debug.Log($"Added experience: {CurrentExperience} + {amount} -> {NextLevelExperience} {Level}");
 				OnLevelChanged?.Invoke(Level);
 			}
 			OnExperienceChanged?.Invoke(CurrentExperience, NextLevelExperience);
-			// ColonistJob.UpdateColonistJobCosts(colonist);
 		}
 
 		private int CalculateNextLevelExperience() {

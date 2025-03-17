@@ -27,7 +27,7 @@ namespace Snowship.NColonist {
 
 		public static float CalculateRestNeedSpecialValueIncrease(NeedInstance needInstance) {
 			float totalSpecialIncrease = 0;
-			MoodModifierInstance positiveRestMoodModifier = needInstance.colonist.Moods.FindMoodModifierByGroupEnum(MoodModifierGroupEnum.Rest, 1).FirstOrDefault();
+			MoodModifierInstance positiveRestMoodModifier = needInstance.colonist.MoodComponent.FindMoodModifierByGroupEnum(MoodModifierGroupEnum.Rest, 1).FirstOrDefault();
 			if (positiveRestMoodModifier != null) {
 				switch (positiveRestMoodModifier.Prefab.type) {
 					case MoodModifierEnum.WellRested:
@@ -46,7 +46,7 @@ namespace Snowship.NColonist {
 
 		public static float CalculateFoodNeedSpecialValueIncrease(NeedInstance needInstance) {
 			float totalSpecialIncrease = 0;
-			MoodModifierInstance moodModifier = needInstance.colonist.Moods.MoodModifiers.Find(findMoodModifier => findMoodModifier.Prefab.group.type == MoodModifierGroupEnum.Food);
+			MoodModifierInstance moodModifier = needInstance.colonist.MoodComponent.MoodModifiers.Find(findMoodModifier => findMoodModifier.Prefab.group.type == MoodModifierGroupEnum.Food);
 			if (moodModifier != null) {
 				if (moodModifier.Prefab.type == MoodModifierEnum.Stuffed) {
 					totalSpecialIncrease -= needInstance.prefab.baseIncreaseRate * 0.9f;
@@ -58,13 +58,13 @@ namespace Snowship.NColonist {
 		}
 
 		public static void CalculateNeedValue(NeedInstance need) {
-			if (need.colonist.Job != null && need.prefab.relatedJobs.Contains(need.colonist.Job.Name)) {
+			if (need.colonist.JobComponent.Job != null && need.prefab.relatedJobs.Contains(need.colonist.JobComponent.Job.Name)) {
 				return;
 			}
 			float needIncreaseAmount = need.prefab.baseIncreaseRate;
 			foreach (TraitInstance trait in need.colonist.traits) {
-				if (need.prefab.traitsAffectingThisNeed.ContainsKey(trait.prefab.type)) {
-					needIncreaseAmount *= need.prefab.traitsAffectingThisNeed[trait.prefab.type];
+				if (need.prefab.traitsAffectingThisNeed.TryGetValue(trait.prefab.type, out float needValue)) {
+					needIncreaseAmount *= needValue;
 				}
 			}
 			need.ChangeValue(needIncreaseAmount + (NeedToSpecialValueFunctionMap.TryGetValue(need.prefab.type, out Func<NeedInstance, float> specialValueFunction) ? specialValueFunction(need) : 0));
@@ -74,12 +74,12 @@ namespace Snowship.NColonist {
 
 			List<Container> containersWithResourceAmount = new();
 
-			foreach (Container container in Container.GetContainersInRegion(colonist.overTile.region)) {
+			foreach (Container container in Container.GetContainersInRegion(colonist.Tile.region)) {
 				if (container.Inventory.ContainsResourceAmount(resourceAmount)) {
 					containersWithResourceAmount.Add(container);
 				}
 			}
-			return containersWithResourceAmount.OrderBy(container => PathManager.RegionBlockDistance(colonist.overTile.regionBlock, container.tile.regionBlock, true, true, false)).FirstOrDefault();
+			return containersWithResourceAmount.OrderBy(container => PathManager.RegionBlockDistance(colonist.Tile.regionBlock, container.tile.regionBlock, true, true, false)).FirstOrDefault();
 		}
 
 		public static int FindAvailableResourceAmount(ResourceGroup.ResourceGroupEnum resourceGroup, Colonist colonist, bool worldTotal, bool includeOtherColonists) {
@@ -128,10 +128,10 @@ namespace Snowship.NColonist {
 			if (need.GetValue() < 50) {
 				return false;
 			}
-			if (need.colonist.Job is { Group: { Name: "Needs" }, SubGroup: { Name: "Food" } }) {
+			if (need.colonist.JobComponent.Job is { Group: { Name: "Needs" }, SubGroup: { Name: "Food" } }) {
 				return false;
 			}
-			need.colonist.SetJob(new CollectFoodJob(need.colonist.overTile, null, null, need.GetValue()));
+			need.colonist.JobComponent.SetJob(new CollectFoodJob(need.colonist.Tile, null, null, need.GetValue()));
 			return false;
 		}
 
@@ -139,10 +139,10 @@ namespace Snowship.NColonist {
 			if (need.GetValue() < 50) {
 				return false;
 			}
-			if (need.colonist.Job is { Group: { Name: "Needs" }, SubGroup: { Name: "Rest" } }) {
+			if (need.colonist.JobComponent.Job is { Group: { Name: "Needs" }, SubGroup: { Name: "Rest" } }) {
 				return false;
 			}
-			need.colonist.SetJob(new SleepJob(need.colonist.overTile));
+			need.colonist.JobComponent.SetJob(new SleepJob(need.colonist.Tile));
 			return false;
 		}
 

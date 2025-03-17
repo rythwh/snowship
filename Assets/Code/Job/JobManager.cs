@@ -27,23 +27,50 @@ namespace Snowship.NJob
 		}
 
 		private void AssignJobs() {
+
+			if (Colonist.colonists.Count(c => c.JobComponent.CanTakeNewJob()) <= 0) {
+				return;
+			}
+
+			foreach (IJob job in Jobs) {
+				if (!job.CanBeAssigned()) {
+					continue;
+				}
+				Colonist chosenColonist = Colonist.colonists
+					.Where(c => c.JobComponent.CanTakeNewJob())
+					.Where(c => c.Tile.region == job.Tile.region || (!job.Tile.walkable && job.Tile.horizontalSurroundingTiles.Any(t => c.Tile.region == t.region)))
+					.OrderBy(c => Vector2.Distance(c.Tile.position, job.Tile.position))
+					.ThenByDescending(c => c.GetSkillFromJobType(job.Name)?.CalculateTotalSkillLevel() * 5f ?? 0)
+					.FirstOrDefault();
+
+				chosenColonist?.JobComponent.SetJob(job);
+
+				if (Colonist.colonists.Count(c => c.JobComponent.CanTakeNewJob()) <= 0) {
+					break;
+				}
+			}
+
 			foreach (Colonist colonist in Colonist.colonists) {
 				if (colonist.dead) {
 					continue;
 				}
-				if (colonist.Job != null) {
+				if (colonist.JobComponent.Job != null) {
+					continue;
+				}
+				if (colonist.playerMoved) {
 					continue;
 				}
 
 				IJob selectedJob = Jobs
 					.Where(j => j.Worker == null)
-					.Where(j => j.Tile.region == colonist.overTile.region || (!j.Tile.walkable && j.Tile.surroundingTiles.Any(t => t.region == colonist.overTile.region)))
-					.OrderBy(j => PathManager.RegionBlockDistance(j.Tile.regionBlock, colonist.overTile.regionBlock, true, true, true))
+					.Where(j => j.Tile.region == colonist.Tile.region || (!j.Tile.walkable && j.Tile.surroundingTiles.Any(t => t.region == colonist.Tile.region)))
+					//.OrderBy(j => PathManager.RegionBlockDistance(j.Tile.regionBlock, colonist.Tile.regionBlock, true, true, true))
+					.OrderBy(j => Vector2.Distance(j.Tile.position, colonist.Tile.position))
 					.ThenByDescending(j => colonist.GetSkillFromJobType(j.Name)?.CalculateTotalSkillLevel() * 5f ?? 0)
 					.FirstOrDefault();
 
 				if (selectedJob != null) {
-					colonist.SetJob(selectedJob);
+					colonist.JobComponent.SetJob(selectedJob);
 				}
 			}
 		}
@@ -60,7 +87,7 @@ namespace Snowship.NJob
 			}
 
 			OnJobAdded?.Invoke(job);
-			Debug.Log($"Job added: {job.Name} at {job.Tile}");
+			Debug.Log($"Job added: {job.Name} at {job.Tile.obj.name}");
 		}
 
 		public void RemoveJob(IJob job) {

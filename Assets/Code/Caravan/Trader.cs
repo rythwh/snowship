@@ -36,7 +36,7 @@ namespace Snowship.NCaravan {
 					MoveToTile(tradingPost.zeroPointTile, false);
 				}
 
-				if (overTile == tradingPost.zeroPointTile) {
+				if (Tile == tradingPost.zeroPointTile) {
 					foreach (ReservedResources rr in tradingPost.Inventory.TakeReservedResourcesWithoutTransfer(this)) {
 						foreach (ResourceAmount ra in rr.resources) {
 							caravan.Inventory.ChangeResourceAmount(ra.Resource, ra.Amount, false);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Snowship.NColonist;
 using Snowship.NHuman;
 using Snowship.NResource;
 using Snowship.NTime;
@@ -13,7 +14,7 @@ namespace Snowship.NJob
 		where TJobDefinition : class, IJobDefinition
 	{
 		// Job Definition Properties
-		public TJobDefinition Definition { get; }
+		public IJobDefinition Definition { get; }
 		public int Layer { get; protected set; }
 		public string Name => Definition.Name;
 		public Sprite Icon => Definition.Icon;
@@ -23,7 +24,7 @@ namespace Snowship.NJob
 		// Job Instance Properties
 		public TileManager.Tile Tile { get; private set; }
 		public EJobState JobState { get; private set; } = EJobState.Ready;
-		public float Progress { get; private set; } = 0;
+		public float Progress { get; private set; }
 		public Human Worker { get; private set; }
 		public string TargetName { get; protected set; } = string.Empty;
 		public string Description { get; protected set; } = string.Empty;
@@ -32,6 +33,7 @@ namespace Snowship.NJob
 		public bool ShouldBeCancelled { get; protected set; } = false;
 		public GameObject JobPreviewObject { get; protected set; }
 		public int Priority { get; private set; } = 1;
+		public int Experience { get; protected set; }
 
 		// State Shortcuts
 		public bool Started => JobState >= EJobState.Started;
@@ -44,10 +46,11 @@ namespace Snowship.NJob
 		public event Action<Job<TJobDefinition>, int> OnPriorityChanged;
 
 		protected Job(TileManager.Tile tile) {
-			Definition = GameManager.Get<JobManager>().JobRegistry.GetJobDefinition(typeof(TJobDefinition)) as TJobDefinition
-				?? throw new InvalidOperationException();
+			Definition = GameManager.Get<JobManager>().JobRegistry.GetJobDefinition(typeof(TJobDefinition)) ?? throw new InvalidOperationException();
 			Tile = tile;
 			Layer = Definition.Layer;
+			Progress = Definition.TimeToWork;
+			Experience = Definition.TimeToWork;
 
 			RequiredResources.AddRange(Definition.BaseRequiredResources);
 
@@ -68,7 +71,7 @@ namespace Snowship.NJob
 		}
 
 		protected void SetTimeToWork(float timeToWork) {
-			Progress = Definition.TimeToWork;
+			Progress = timeToWork;
 		}
 
 		protected void ChangeTile(TileManager.Tile tile) {
@@ -96,6 +99,7 @@ namespace Snowship.NJob
 		}
 
 		protected virtual void OnJobStarted() {
+			ChangeJobState(EJobState.InProgress);
 		}
 
 		private void OnTimeChanged(SimulationDateTime time) {
@@ -103,13 +107,35 @@ namespace Snowship.NJob
 		}
 
 		protected virtual void OnJobInProgress() {
+			if (JobState != EJobState.InProgress) {
+				return;
+			}
+
 			Progress -= 1;
+			ProgressJobPreviewObjectAlpha();
+
+			if (Progress <= 0) {
+				ChangeJobState(EJobState.Finished);
+			}
+		}
+
+		private void ProgressJobPreviewObjectAlpha() {
+			if (!Definition.HasPreviewObject || JobPreviewObject == null) {
+				return;
+			}
+			JobPreviewObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, Progress / Definition.TimeToWork);
 		}
 
 		protected virtual void OnJobFinished() {
 			foreach (ResourceAmount resourceAmount in RequiredResources) {
 				Worker.Inventory.ChangeResourceAmount(resourceAmount.Resource, -resourceAmount.Amount, false);
 			}
+
+			SkillInstance skill = ((Colonist)Worker).GetSkillFromJobType(Definition.Name); // TODO Skill Not Found
+			Debug.Log(skill);
+			skill?.AddExperience(Experience);
+
+			Worker.MoveToClosestWalkableTile(true);
 		}
 
 		protected virtual void OnJobReturned() {
@@ -159,6 +185,7 @@ namespace Snowship.NJob
 						return JobState;
 					}
 					stateChangedMethod = OnJobFinished;
+					stateChangedMethod += Close;
 					break;
 				case EJobState.Returned:
 					stateChangedMethod = OnJobReturned;
@@ -173,8 +200,20 @@ namespace Snowship.NJob
 			return JobState;
 		}
 
+		public bool CanBeAssigned() {
+			if (JobState != EJobState.Ready) {
+				return false;
+			}
+			if (Worker != null) {
+				return false;
+			}
+			return true;
+		}
+
 		public void Close() {
 			Object.Destroy(JobPreviewObject.gameObject);
+			GameManager.Get<JobManager>().RemoveJob(this);
+			Worker.JobComponent.SetJob(null);
 		}
 	}
 }

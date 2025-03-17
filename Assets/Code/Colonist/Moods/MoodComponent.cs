@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Snowship.NColonist
 {
-	public class Moods
+	public class MoodComponent
 	{
 		private readonly Colonist colonist;
 
@@ -22,7 +22,7 @@ namespace Snowship.NColonist
 		public event Action<MoodModifierInstance> OnMoodRemoved;
 		public event Action<float, float> OnMoodChanged;
 
-		public Moods(Colonist colonist) {
+		public MoodComponent(Colonist colonist) {
 			this.colonist = colonist;
 
 			GameManager.Get<TimeManager>().OnTimeChanged += OnTimeChanged;
@@ -37,23 +37,19 @@ namespace Snowship.NColonist
 			foreach (MoodModifierGroup moodModifierGroup in MoodModifierGroup.moodModifierGroups) {
 				MoodModifierUtilities.moodModifierFunctions[moodModifierGroup.type](colonist);
 			}
-
-			// for (int i = 0; i < moodModifiers.Count; i++) {
-			// 	MoodModifierInstance moodModifier = moodModifiers[i];
-			// 	//moodModifier.Update();
-			// 	if (moodModifier.timer <= 0) {
-			// 		RemoveMoodModifier(moodModifier.prefab.type);
-			// 		i -= 1;
-			// 	}
-			// }
 		}
 
 		public void AddMoodModifier(MoodModifierEnum moodModifierEnum) {
-			MoodModifierInstance moodToAdd = new(MoodModifierGroup.GetMoodModifierPrefabFromEnum(moodModifierEnum));
-			MoodModifierInstance sameGroupMoodModifier = MoodModifiers.Find(findMoodModifier => moodToAdd.Prefab.group.type == findMoodModifier.Prefab.group.type);
+			MoodModifierPrefab prefab = MoodModifierGroup.GetMoodModifierPrefabFromEnum(moodModifierEnum);
+			MoodModifierInstance sameGroupMoodModifier = MoodModifiers.Find(mm => prefab.group.type == mm.Prefab.group.type);
 			if (sameGroupMoodModifier != null) {
+				if (sameGroupMoodModifier.Prefab.type == moodModifierEnum) {
+					sameGroupMoodModifier.Timer = prefab.effectLengthSeconds;
+					return;
+				}
 				RemoveMoodModifier(sameGroupMoodModifier.Prefab.type);
 			}
+			MoodModifierInstance moodToAdd = new(prefab);
 			MoodModifiers.Add(moodToAdd);
 			OnMoodAdded?.Invoke(moodToAdd);
 		}

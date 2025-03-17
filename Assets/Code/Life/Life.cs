@@ -15,9 +15,26 @@ namespace Snowship.NLife
 
 		public GameObject obj;
 
-		public bool overTileChanged = false;
-		public TileManager.Tile overTile;
+		// ReSharper disable once InconsistentNaming
+		private TileManager.Tile _tile;
+		public TileManager.Tile Tile {
+			get => _tile;
+			private set {
+				if (_tile == value) {
+					return;
+				}
+				_tile = value;
+				OnTileChanged?.Invoke(this, _tile);
+			}
+		}
+
 		public List<Sprite> moveSprites = new();
+		private static readonly int[] moveSpriteIndices = { 1, 2, 0, 3, 1, 0, 0, 1 };
+		private float moveTimer;
+		public List<TileManager.Tile> path = new();
+		public float moveSpeedMultiplier = 1f;
+		public Vector2 previousPosition;
+		private float moveSpeedRampingMultiplier;
 
 		public Gender gender;
 
@@ -27,65 +44,50 @@ namespace Snowship.NLife
 
 		public enum Gender { Male, Female };
 
+		public event Action<Life, TileManager.Tile> OnTileChanged;
 		public event Action<float> OnHealthChanged;
+		public event Action<Life> OnDied;
 
-		public Life(TileManager.Tile spawnTile, float startingHealth) {
+		protected Life(TileManager.Tile spawnTile, float startingHealth) {
+			_tile = spawnTile;
+			Health = startingHealth;
+
+			OnTileChanged += OnTileChangedInvoked;
+
 			gender = GetRandomGender();
 
-			overTile = spawnTile;
-			obj = MonoBehaviour.Instantiate(GameManager.Get<ResourceManager>().tilePrefab, overTile.obj.transform.position, Quaternion.identity);
+			obj = Object.Instantiate(GameManager.Get<ResourceManager>().tilePrefab, Tile.obj.transform.position, Quaternion.identity);
 			obj.GetComponent<SpriteRenderer>().sortingOrder = (int)SortingOrder.Life; // Life Sprite
 
 			previousPosition = obj.transform.position;
-
-			Health = startingHealth;
 
 			GameManager.Get<LifeManager>().life.Add(this);
 		}
 
 		protected Life() {
-
+			OnTileChanged += OnTileChangedInvoked;
 		}
 
-		public static Gender GetRandomGender() {
+		private void OnTileChangedInvoked(Life life, TileManager.Tile tile) {
+			SetColour(Tile.sr.color);
+			SetVisible(Tile.visible);
+		}
+
+		private static Gender GetRandomGender() {
 			return (Gender)UnityEngine.Random.Range(0, Enum.GetNames(typeof(Gender)).Length);
 		}
 
 		public virtual void Update() {
-			overTileChanged = false;
-			TileManager.Tile newOverTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(obj.transform.position);
-			if (overTile != newOverTile) {
-				overTileChanged = true;
-				overTile = newOverTile;
-				SetColour(overTile.sr.color);
-				SetVisible(overTile.visible);
-			}
 			MoveToTile(null, false);
 			SetMoveSprite();
 		}
 
-		private static readonly List<int> moveSpriteIndices = new() {
-			1,
-			2,
-			0,
-			3,
-			1,
-			0,
-			0,
-			1
-		};
-		private float moveTimer;
-		public int startPathLength = 0;
-		public List<TileManager.Tile> path = new();
-		public float moveSpeedMultiplier = 1f;
-		public Vector2 previousPosition;
-		private float moveSpeedRampingMultiplier;
-
 		public bool MoveToTile(TileManager.Tile tile, bool allowEndTileNonWalkable) {
+			if (Tile == tile) {
+				return false;
+			}
 			if (tile != null) {
-				startPathLength = 0;
-				path = PathManager.FindPathToTile(overTile, tile, allowEndTileNonWalkable);
-				startPathLength = path.Count;
+				path = PathManager.FindPathToTile(Tile, tile, allowEndTileNonWalkable);
 				moveTimer = 0;
 				previousPosition = obj.transform.position;
 			}
@@ -95,17 +97,18 @@ namespace Snowship.NLife
 
 				if (moveTimer >= 1f) {
 					previousPosition = obj.transform.position;
-					obj.transform.position = path[0].obj.transform.position;
+					Tile = path[0];
+					obj.transform.position = Tile.obj.transform.position;
 					moveTimer = 0;
 					path.RemoveAt(0);
 				} else {
 					moveSpeedRampingMultiplier = Mathf.Clamp01(moveSpeedRampingMultiplier + GameManager.Get<TimeManager>().Time.DeltaTime);
-					moveTimer += 2 * GameManager.Get<TimeManager>().Time.DeltaTime * overTile.walkSpeed * moveSpeedMultiplier * moveSpeedRampingMultiplier;
+					moveTimer += 2 * GameManager.Get<TimeManager>().Time.DeltaTime * Tile.walkSpeed * moveSpeedMultiplier * moveSpeedRampingMultiplier;
 				}
 			} else {
 				path.Clear();
-				if (!Mathf.Approximately(Vector2.Distance(obj.transform.position, overTile.obj.transform.position), 0f)) {
-					path.Add(overTile);
+				if (!Mathf.Approximately(Vector2.Distance(obj.transform.position, Tile.obj.transform.position), 0f)) {
+					path.Add(Tile);
 					moveTimer = 0;
 				}
 				moveSpeedRampingMultiplier = 0;
@@ -151,6 +154,7 @@ namespace Snowship.NLife
 
 		public virtual void Die() {
 			// TODO Implement death (instance still exists but will be in a death-state)
+			OnDied?.Invoke(this);
 		}
 
 		public virtual void Remove() {

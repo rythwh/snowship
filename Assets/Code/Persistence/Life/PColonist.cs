@@ -130,11 +130,11 @@ namespace Snowship.NPersistence {
 					file.WriteLine(PU.CreateKeyValueString(NeedProperty.Value, need.GetValue(), 3));
 				}
 
-				file.WriteLine(PU.CreateKeyValueString(ColonistProperty.EffectiveMood, colonist.Moods.EffectiveMood, 1));
+				file.WriteLine(PU.CreateKeyValueString(ColonistProperty.EffectiveMood, colonist.MoodComponent.EffectiveMood, 1));
 
-				if (colonist.Moods.MoodModifiers.Count > 0) {
+				if (colonist.MoodComponent.MoodModifiers.Count > 0) {
 					file.WriteLine(PU.CreateKeyValueString(ColonistProperty.MoodModifiers, string.Empty, 1));
-					foreach (MoodModifierInstance moodModifier in colonist.Moods.MoodModifiers) {
+					foreach (MoodModifierInstance moodModifier in colonist.MoodComponent.MoodModifiers) {
 						file.WriteLine(PU.CreateKeyValueString(MoodModifierProperty.MoodModifier, string.Empty, 2));
 
 						file.WriteLine(PU.CreateKeyValueString(MoodModifierProperty.Type, moodModifier.Prefab.type, 3));
@@ -585,11 +585,11 @@ namespace Snowship.NPersistence {
 				}
 
 				foreach (PersistenceMoodModifier persistenceMoodModifier in persistenceColonist.persistenceMoodModifiers) {
-					colonist.Moods.AddMoodModifier(persistenceMoodModifier.type.Value);
-					colonist.Moods.MoodModifiers.Find(hm => hm.Prefab.type == persistenceMoodModifier.type.Value).Timer = persistenceMoodModifier.timeRemaining.Value;
+					colonist.MoodComponent.AddMoodModifier(persistenceMoodModifier.type.Value);
+					colonist.MoodComponent.MoodModifiers.Find(hm => hm.Prefab.type == persistenceMoodModifier.type.Value).Timer = persistenceMoodModifier.timeRemaining.Value;
 				}
 
-				colonist.Moods = new Moods(colonist) {
+				colonist.MoodComponent = new MoodComponent(colonist) {
 					EffectiveMood = persistenceColonist.effectiveMood.Value
 				};
 			}

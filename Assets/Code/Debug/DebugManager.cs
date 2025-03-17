@@ -411,7 +411,7 @@ public class DebugManager : IManager
 						if (GameManager.Get<HumanManager>().selectedHuman != null) {
 							if (GameManager.Get<HumanManager>().selectedHuman is Colonist) {
 								Colonist selectedColonist = (Colonist)GameManager.Get<HumanManager>().selectedHuman;
-								selectedColonist.Moods.AddMoodModifier(moodPrefab.type);
+								selectedColonist.MoodComponent.AddMoodModifier(moodPrefab.type);
 								Output($"SUCCESS: Added {moodPrefab.name} to {GameManager.Get<HumanManager>().selectedHuman}.");
 							} else {
 								Output("ERROR: Selected human is not a colonist.");

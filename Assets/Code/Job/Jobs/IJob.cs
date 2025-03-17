@@ -6,7 +6,9 @@ namespace Snowship.NJob
 {
 	public interface IJob
 	{
+		IJobDefinition Definition { get; }
 		TileManager.Tile Tile { get; }
+		EJobState JobState { get; }
 		int Layer { get; }
 		string Name { get; }
 		Sprite Icon { get; }
@@ -16,6 +18,7 @@ namespace Snowship.NJob
 		Human Worker { get; }
 		void AssignWorker(Human human);
 		EJobState ChangeJobState(EJobState newState);
+		bool CanBeAssigned();
 		void Close();
 	}
 }

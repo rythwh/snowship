@@ -14,7 +14,7 @@ namespace Snowship.NJob
 		// Job Definition Properties
 		Func<TileManager.Tile, int, bool>[] SelectionConditions { get; }
 		List<ResourceAmount> BaseRequiredResources { get; }
-		float TimeToWork { get; }
+		int TimeToWork { get; }
 		bool Returnable { get; }
 		int Layer { get; }
 		SelectionType SelectionType { get; }

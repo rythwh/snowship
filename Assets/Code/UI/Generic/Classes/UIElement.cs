@@ -7,6 +7,7 @@ using Object = UnityEngine.Object;
 namespace Snowship.NUI {
 	public abstract class UIElement<TComponent> where TComponent : UIElementComponent {
 		protected TComponent Component { get; private set; }
+		private bool componentCreated = false;
 
 		public async UniTask Open(Transform parent) {
 			await CreateComponent(parent);
@@ -24,6 +25,7 @@ namespace Snowship.NUI {
 
 			Component = Object.Instantiate(componentPrefab, parent, false).GetComponent<TComponent>();
 			Component.OnCreate();
+			componentCreated = true;
 		}
 
 		protected virtual void OnCreate() {
@@ -31,6 +33,9 @@ namespace Snowship.NUI {
 		}
 
 		protected virtual void OnClose() {
+			if (!componentCreated) {
+				return;
+			}
 			Component.Close();
 			Object.Destroy(Component.gameObject);
 		}

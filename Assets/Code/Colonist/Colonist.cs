@@ -28,13 +28,10 @@ namespace Snowship.NColonist {
 		// Needs
 		public readonly List<NeedInstance> needs = new List<NeedInstance>();
 
-		// Mood
-		public Moods Moods;
-
 		public Colonist(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
 			obj.transform.SetParent(GameManager.SharedReferences.LifeParent, false);
 
-			Moods = new Moods(this);
+			MoodComponent = new MoodComponent(this);
 
 			foreach (ProfessionPrefab professionPrefab in ProfessionPrefab.professionPrefabs) {
 				professions.Add(
@@ -94,20 +91,7 @@ namespace Snowship.NColonist {
 				return;
 			}
 
-			// TODO Create event for OnTileChanged or something
-			// if (overTileChanged) {
-			// 	ColonistJob.UpdateColonistJobCosts(this);
-			// }
-
-			// if (Job != null) {
-			// 	if (!Job.Started && overTile == Job.Tile) {
-			// 		StartJob();
-			// 	}
-			// 	if (Job.Started && overTile == Job.Tile && !Mathf.Approximately(Job.Progress, 0)) {
-			// 		WorkJob();
-			// 	}
-			// }
-			if (Job == null) {
+			if (JobComponent.Job == null) {
 				if (path.Count <= 0) {
 					Wander(null, 0);
 				} else {
@@ -119,26 +103,17 @@ namespace Snowship.NColonist {
 		public override void Die() {
 			base.Die();
 
-			Job?.ChangeJobState(EJobState.Returned);
 			colonists.Remove(this);
-			foreach (Container container in Container.containers) {
-				container.Inventory.ReleaseReservedResources(this);
-			}
-			if (GameManager.Get<HumanManager>().selectedHuman == this) {
-				GameManager.Get<HumanManager>().SetSelectedHuman(null);
-			}
-			// ColonistJob.UpdateAllColonistJobCosts();
 		}
 
 		public List<Container> FindValidContainersToEmptyInventory() {
-			return Container.GetContainersInRegion(overTile.region).Where(container => container.Inventory.UsedWeight() < container.Inventory.maxWeight && container.Inventory.UsedVolume() < container.Inventory.maxVolume).ToList();
+			return Container.GetContainersInRegion(Tile.region).Where(container => container.Inventory.UsedWeight() < container.Inventory.maxWeight && container.Inventory.UsedVolume() < container.Inventory.maxVolume).ToList();
 		}
 
 		public void EmptyInventory(List<Container> validContainers) {
 			if (Inventory.UsedWeight() > 0 && Inventory.UsedVolume() > 0 && validContainers.Count > 0) {
-				Job?.ChangeJobState(EJobState.Returned);
-				Container closestContainer = validContainers.OrderBy(container => PathManager.RegionBlockDistance(container.tile.regionBlock, overTile.regionBlock, true, true, false)).ToList()[0];
-				SetJob(new EmptyInventoryJob(closestContainer));
+				Container closestContainer = validContainers.OrderBy(container => PathManager.RegionBlockDistance(container.tile.regionBlock, Tile.regionBlock, true, true, false)).ToList()[0];
+				JobComponent.SetJob(new EmptyInventoryJob(closestContainer));
 			}
 		}
 
@@ -146,12 +121,12 @@ namespace Snowship.NColonist {
 			foreach (NeedInstance need in needs) {
 				NeedUtilities.CalculateNeedValue(need);
 				bool checkNeed = false;
-				if (need.colonist.Job == null) {
+				if (need.colonist.JobComponent.Job == null) {
 					checkNeed = true;
 				} else {
-					if (need.colonist.Job.Group.Name == "Needs") {
-						if (NeedUtilities.jobToNeedMap.ContainsKey(need.colonist.Job.Name)) {
-							if (need.prefab.priority < NeedPrefab.GetNeedPrefabFromEnum(NeedUtilities.jobToNeedMap[need.colonist.Job.Name]).priority) {
+					if (need.colonist.JobComponent.Job.Group.Name == "Needs") {
+						if (NeedUtilities.jobToNeedMap.TryGetValue(need.colonist.JobComponent.Job.Name, out ENeed needType)) {
+							if (need.prefab.priority < NeedPrefab.GetNeedPrefabFromEnum(needType).priority) {
 								checkNeed = true;
 							}
 						} else {
@@ -361,12 +336,8 @@ namespace Snowship.NColonist {
 
 		public void PlayerMoveToTile(TileManager.Tile tile) {
 			playerMoved = true;
-			Job?.ChangeJobState(EJobState.Returned);
-			if (Job != null) {
-				MoveToTile(tile, false);
-			} else {
-				MoveToTile(tile, false);
-			}
+			JobComponent.ReturnJob();
+			MoveToTile(tile, false);
 		}
 
 		public Profession GetProfessionFromType(string type) {
@@ -405,7 +376,7 @@ namespace Snowship.NColonist {
 
 				ResourceAmount clothingToPickup = new(clothing, 1);
 				container.Inventory.ReserveResources(new List<ResourceAmount> { clothingToPickup }, this);
-				SetJob(new WearClothesJob(container.tile, container, clothing));
+				JobComponent.SetJob(new WearClothesJob(container.tile, container, clothing));
 			}
 		}
 	}

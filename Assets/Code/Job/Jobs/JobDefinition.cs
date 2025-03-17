@@ -25,7 +25,7 @@ namespace Snowship.NJob
 		// Job Definition Properties
 		public virtual Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; }
 		public virtual List<ResourceAmount> BaseRequiredResources { get; } = new();
-		public float TimeToWork { get; protected set; } = 3;
+		public int TimeToWork { get; protected set; } = 10;
 		public bool Returnable { get; protected set; } = true;
 		public virtual int Layer { get; protected set; } = 0;
 		public SelectionType SelectionType { get; protected set; } = SelectionType.Full;

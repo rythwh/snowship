@@ -1183,12 +1183,12 @@ public class TileManager : IManager {
 		public bool IsVisibleToAColonist() {
 			if (walkable) {
 				foreach (Colonist colonist in Colonist.colonists) {
-					if (colonist.overTile.walkable) {
-						if (colonist.overTile.region == region) {
+					if (colonist.Tile.walkable) {
+						if (colonist.Tile.region == region) {
 							return true;
 						}
 					} else {
-						foreach (Tile tile in colonist.overTile.horizontalSurroundingTiles) {
+						foreach (Tile tile in colonist.Tile.horizontalSurroundingTiles) {
 							if (tile != null && tile.visible) {
 								if (tile.region == region) {
 									return true;
@@ -1215,7 +1215,7 @@ public class TileManager : IManager {
 						}
 					}
 					foreach (Colonist colonist in Colonist.colonists) {
-						if (colonist.overTile.region == surroundingTile.region) {
+						if (colonist.Tile.region == surroundingTile.region) {
 							return true;
 						}
 					}
@@ -1720,7 +1720,7 @@ public class TileManager : IManager {
 			public bool IsVisibleToAColonist() {
 				if (tileType.walkable) {
 					foreach (Colonist colonist in Colonist.colonists) {
-						if (colonist.overTile.region == this) {
+						if (colonist.Tile.region == this) {
 							return true;
 						}
 					}
@@ -2937,7 +2937,7 @@ public class TileManager : IManager {
 				}
 			}
 			foreach (Life life in GameManager.Get<LifeManager>().life) {
-				life.SetColour(life.overTile.sr.color);
+				life.SetColour(life.Tile.sr.color);
 			}
 			GameManager.Get<CameraManager>().camera.backgroundColor = newColour * 0.5f;
 		}

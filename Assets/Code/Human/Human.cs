@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Snowship.NCamera;
+using Snowship.NColonist;
 using Snowship.NColony;
-using Snowship.NJob;
 using Snowship.NLife;
 using Snowship.NResource;
 using Snowship.NTime;
@@ -25,8 +25,10 @@ namespace Snowship.NHuman
 		public Inventory Inventory { get; }
 
 		// Job
-		public IJob Job { get; private set; }
-		public readonly Queue<IJob> Backlog = new();
+		public JobComponent JobComponent { get; }
+
+		// Mood
+		public MoodComponent MoodComponent;
 
 		// Wandering
 		protected const int WanderTimerMin = 10;
@@ -47,14 +49,14 @@ namespace Snowship.NHuman
 
 		// Events
 		public event Action<BodySection, Clothing> OnClothingChanged;
-		public event Action<IJob> OnJobChanged;
-		public event Action<IJob> OnStoredJobChanged;
 
 		public Human(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
 
 			SetName(GameManager.Get<HumanManager>().GetName(gender));
 
 			Inventory = new Inventory(this, 50000, 50000);
+
+			JobComponent = new JobComponent(this);
 
 			bodyIndices = GetBodyIndices(gender);
 			moveSprites = GameManager.Get<HumanManager>().humanMoveSprites[bodyIndices[BodySection.Skin]];
@@ -78,7 +80,8 @@ namespace Snowship.NHuman
 			obj.name = "Human: " + name;
 
 			if (nameCanvas) {
-				Object.Destroy(nameCanvas);
+				nameCanvas.transform.Find("NameBackground-Image/Name-Text").GetComponent<Text>().text = name;
+				return;
 			}
 			nameCanvas = Object.Instantiate(Resources.Load<GameObject>(@"UI/UIElements/Human-Canvas"), obj.transform, false);
 			nameCanvas.transform.Find("NameBackground-Image/Name-Text").GetComponent<Text>().text = name;
@@ -113,16 +116,6 @@ namespace Snowship.NHuman
 			SetMoveSprite();
 		}
 
-		public void SetJob(IJob job) {
-			Job?.Close(); // Close existing Job
-
-			Job = job;
-
-			Job.AssignWorker(this);
-			MoveToTile(Job.Tile, !Job.Tile.walkable);
-			OnJobChanged?.Invoke(Job);
-		}
-
 		public virtual void ChangeClothing(BodySection bodySection, Clothing clothing) {
 			if (clothes[bodySection] != clothing) {
 
@@ -138,7 +131,7 @@ namespace Snowship.NHuman
 
 				clothes[bodySection] = clothing;
 
-				SetColour(overTile.sr.color);
+				SetColour(Tile.sr.color);
 
 				OnClothingChanged?.Invoke(bodySection, clothing);
 			}
@@ -163,8 +156,8 @@ namespace Snowship.NHuman
 
 		protected void Wander(TileManager.Tile stayNearTile, int stayNearTileDistance) {
 			if (WanderTimer <= 0) {
-				List<TileManager.Tile> validWanderTiles = overTile.surroundingTiles
-					.Where(tile => tile != null && tile.walkable && tile.buildable && GameManager.Get<HumanManager>().humans.Find(human => human.overTile == tile) == null)
+				List<TileManager.Tile> validWanderTiles = Tile.surroundingTiles
+					.Where(tile => tile != null && tile.walkable && tile.buildable && GameManager.Get<HumanManager>().humans.Find(human => human.Tile == tile) == null)
 					.Where(tile => tile.GetObjectInstanceAtLayer(2) == null)
 					.ToList();
 				if (stayNearTile != null) {
@@ -184,29 +177,40 @@ namespace Snowship.NHuman
 		}
 
 		public void MoveToClosestWalkableTile(bool careIfOvertileIsWalkable) {
-			if (!careIfOvertileIsWalkable || !overTile.walkable) {
-				List<TileManager.Tile> walkableSurroundingTiles = overTile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
+			if (!careIfOvertileIsWalkable || !Tile.walkable) {
+				List<TileManager.Tile> walkableSurroundingTiles = Tile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
 				if (walkableSurroundingTiles.Count > 0) {
 					MoveToTile(walkableSurroundingTiles[UnityEngine.Random.Range(0, walkableSurroundingTiles.Count)], false);
 				} else {
 					walkableSurroundingTiles.Clear();
 					List<TileManager.Tile> potentialWalkableSurroundingTiles = new();
-					foreach (TileManager.Map.RegionBlock regionBlock in overTile.regionBlock.horizontalSurroundingRegionBlocks) {
+					foreach (TileManager.Map.RegionBlock regionBlock in Tile.regionBlock.horizontalSurroundingRegionBlocks) {
 						if (regionBlock.tileType.walkable) {
 							potentialWalkableSurroundingTiles.AddRange(regionBlock.tiles);
 						}
 					}
-					walkableSurroundingTiles = potentialWalkableSurroundingTiles.Where(tile => tile.surroundingTiles.Find(nTile => !nTile.walkable && nTile.regionBlock == overTile.regionBlock) != null).ToList();
+					walkableSurroundingTiles = potentialWalkableSurroundingTiles.Where(tile => tile.surroundingTiles.Find(nTile => !nTile.walkable && nTile.regionBlock == Tile.regionBlock) != null).ToList();
 					if (walkableSurroundingTiles.Count > 0) {
-						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position, overTile.obj.transform.position)).ToList();
+						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
 						MoveToTile(walkableSurroundingTiles[0], false);
 					} else {
-						List<TileManager.Tile> validTiles = GameManager.Get<ColonyManager>().colony.map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position, overTile.obj.transform.position)).ToList();
+						List<TileManager.Tile> validTiles = GameManager.Get<ColonyManager>().colony.map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
 						if (validTiles.Count > 0) {
 							MoveToTile(validTiles[0], false);
 						}
 					}
 				}
+			}
+		}
+
+		public override void Die() {
+			base.Die();
+
+			foreach (Container container in Container.containers) {
+				container.Inventory.ReleaseReservedResources(this);
+			}
+			if (GameManager.Get<HumanManager>().selectedHuman == this) {
+				GameManager.Get<HumanManager>().SetSelectedHuman(null);
 			}
 		}
 

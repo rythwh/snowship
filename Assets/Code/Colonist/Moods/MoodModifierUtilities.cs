@@ -13,12 +13,12 @@ namespace Snowship.NColonist {
 				MoodModifierGroupEnum.Rest, delegate(Colonist colonist) {
 					NeedInstance restNeed = colonist.needs.Find(ni => ni.prefab.type == ENeed.Rest);
 					if (restNeed.GetValue() >= restNeed.prefab.critValue) {
-						colonist.Moods.AddMoodModifier(MoodModifierEnum.Exhausted);
+						colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.Exhausted);
 					} else if (restNeed.GetValue() >= restNeed.prefab.maxValue) {
-						colonist.Moods.AddMoodModifier(MoodModifierEnum.Tired);
+						colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.Tired);
 					} else {
-						colonist.Moods.RemoveMoodModifier(MoodModifierEnum.Exhausted);
-						colonist.Moods.RemoveMoodModifier(MoodModifierEnum.Tired);
+						colonist.MoodComponent.RemoveMoodModifier(MoodModifierEnum.Exhausted);
+						colonist.MoodComponent.RemoveMoodModifier(MoodModifierEnum.Tired);
 					}
 				}
 			}, /* {
@@ -37,20 +37,20 @@ namespace Snowship.NColonist {
 				MoodModifierGroupEnum.Food, delegate(Colonist colonist) {
 					NeedInstance foodNeed = colonist.needs.Find(ni => ni.prefab.type == ENeed.Food);
 					if (foodNeed.GetValue() >= foodNeed.prefab.critValue) {
-						colonist.Moods.AddMoodModifier(MoodModifierEnum.Starving);
+						colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.Starving);
 					} else if (foodNeed.GetValue() >= foodNeed.prefab.maxValue) {
-						colonist.Moods.AddMoodModifier(MoodModifierEnum.Hungry);
+						colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.Hungry);
 					} else {
-						colonist.Moods.RemoveMoodModifier(MoodModifierEnum.Starving);
-						colonist.Moods.RemoveMoodModifier(MoodModifierEnum.Hungry);
+						colonist.MoodComponent.RemoveMoodModifier(MoodModifierEnum.Starving);
+						colonist.MoodComponent.RemoveMoodModifier(MoodModifierEnum.Hungry);
 					}
 				}
 			}, {
 				MoodModifierGroupEnum.Inventory, delegate(Colonist colonist) {
 					if (colonist.Inventory.UsedWeight() > colonist.Inventory.maxWeight) {
-						colonist.Moods.AddMoodModifier(MoodModifierEnum.Overencumbered);
+						colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.Overencumbered);
 					} else {
-						colonist.Moods.RemoveMoodModifier(MoodModifierEnum.Overencumbered);
+						colonist.MoodComponent.RemoveMoodModifier(MoodModifierEnum.Overencumbered);
 					}
 				}
 			}

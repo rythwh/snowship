@@ -44,8 +44,8 @@ namespace Snowship.NJob
 			}
 
 			ObjectInstance chair = chairs
-				.Where(chair => chair.tile.region == colonist.overTile.region)
-				.OrderBy(chair => PathManager.RegionBlockDistance(colonist.overTile.regionBlock, chair.tile.regionBlock, true, true, false))
+				.Where(chair => chair.tile.region == colonist.Tile.region)
+				.OrderBy(chair => PathManager.RegionBlockDistance(colonist.Tile.regionBlock, chair.tile.regionBlock, true, true, false))
 				.ThenByDescending(
 					chair => chair.tile.surroundingTiles.Find(
 						surroundingTile => {
@@ -92,16 +92,16 @@ namespace Snowship.NJob
 
 			float amountEaten = startingFoodNeedValue - foodNeed.GetValue();
 			if (amountEaten >= 15 && foodNeed.GetValue() <= -10) {
-				colonist.Moods.AddMoodModifier(MoodModifierEnum.Stuffed);
+				colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.Stuffed);
 			} else if (amountEaten >= 15) {
-				colonist.Moods.AddMoodModifier(MoodModifierEnum.Full);
+				colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.Full);
 			}
 
 			if (foodNeed.GetValue() < 0) {
 				foodNeed.SetValue(0);
 			}
 
-			ObjectInstance objectOnTile = colonist.overTile.GetObjectInstanceAtLayer(2);
+			ObjectInstance objectOnTile = colonist.Tile.GetObjectInstanceAtLayer(2);
 			if (objectOnTile != null && objectOnTile.prefab.subGroupType == ObjectPrefabSubGroup.ObjectSubGroupEnum.Chairs) {
 				if (objectOnTile.tile.surroundingTiles.Find(
 					tile => {
@@ -112,10 +112,10 @@ namespace Snowship.NJob
 						return false;
 					}
 				) == null) {
-					colonist.Moods.AddMoodModifier(MoodModifierEnum.AteWithoutATable);
+					colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.AteWithoutATable);
 				}
 			} else {
-				colonist.Moods.AddMoodModifier(MoodModifierEnum.AteOnTheFloor);
+				colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.AteOnTheFloor);
 			}
 		}
 	}

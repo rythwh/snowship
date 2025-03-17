@@ -30,9 +30,9 @@ namespace Snowship.NJob
 			base.OnJobTaken();
 
 			bed = Bed.Beds
-				.Where(b => b.Occupant == null && b.tile.region == Worker.overTile.region)
+				.Where(b => b.Occupant == null && b.tile.region == Worker.Tile.region)
 				.OrderByDescending(b => b.prefab.restComfortAmount)
-				.ThenByDescending(b => PathManager.RegionBlockDistance(Worker.overTile.regionBlock, b.tile.regionBlock, true, true, false))
+				.ThenByDescending(b => PathManager.RegionBlockDistance(Worker.Tile.regionBlock, b.tile.regionBlock, true, true, false))
 				.FirstOrDefault();
 
 			if (bed != null) {
@@ -40,7 +40,7 @@ namespace Snowship.NJob
 			}
 
 			colonist = (Colonist)Worker; // TODO Remove cast when Humans have Job ability
-			sleepNeed = colonist.needs.Find(n => n.prefab.name == "Sleep");
+			sleepNeed = colonist.needs.Find(n => n.prefab.name == "Rest");
 			startSleepNeedValue = sleepNeed.GetValue();
 			sleepTime = SimulationDateTime.DayLengthSeconds * (8 / 24f) - (bed?.prefab.restComfortAmount).GetValueOrDefault(0);
 		}
@@ -68,9 +68,9 @@ namespace Snowship.NJob
 
 			if (bed != null) {
 				bed.StopSleeping();
-				colonist.Moods.AddMoodModifier(bed.prefab.restComfortAmount >= 10 ? MoodModifierEnum.WellRested : MoodModifierEnum.Rested);
+				colonist.MoodComponent.AddMoodModifier(bed.prefab.restComfortAmount >= 10 ? MoodModifierEnum.WellRested : MoodModifierEnum.Rested);
 			} else {
-				colonist.Moods.AddMoodModifier(MoodModifierEnum.SleptOnTheGround);
+				colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.SleptOnTheGround);
 			}
 		}
 	}

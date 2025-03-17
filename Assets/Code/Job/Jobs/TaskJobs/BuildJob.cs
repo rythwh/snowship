@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Snowship.NColonist;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
@@ -58,6 +57,7 @@ namespace Snowship.NJob
 			ObjectPrefab = args.ObjectPrefab;
 			Rotation = args.Rotation;
 			Layer = args.Layer;
+			Experience = Variation?.timeToBuild ?? ObjectPrefab?.timeToBuild ?? Experience;
 
 			Description = $"Building a {ObjectPrefab.Name}.";
 			RequiredResources.AddRange(ObjectPrefab.commonResources);
@@ -66,7 +66,14 @@ namespace Snowship.NJob
 			}
 			SetTimeToWork(ObjectPrefab.timeToBuild);
 
-			JobPreviewObject.GetComponent<SpriteRenderer>().sprite = ObjectPrefab.GetBitmaskSpritesForVariation(Variation)[Rotation];
+			Sprite baseSprite = ObjectPrefab.GetBaseSpriteForVariation(Variation);
+			if (baseSprite != null) {
+				JobPreviewObject.GetComponent<SpriteRenderer>().sprite = baseSprite;
+			}
+			List<Sprite> bitmaskSprites = ObjectPrefab.GetBitmaskSpritesForVariation(Variation);
+			if (!ObjectPrefab.bitmasking && bitmaskSprites.Count > 0) { // TODO Separate BitmaskSprites and RotationSprites
+				JobPreviewObject.GetComponent<SpriteRenderer>().sprite = bitmaskSprites[Rotation];
+			}
 			JobPreviewObject.GetComponent<SpriteRenderer>().sortingOrder = (int)SortingOrder.Job + Layer;
 		}
 
@@ -85,12 +92,6 @@ namespace Snowship.NJob
 			if (ObjectPrefab.canRotate) {
 				objectInstance.sr.sprite = ObjectPrefab.GetBitmaskSpritesForVariation(Variation)[Rotation];
 			}
-
-			// TODO Move this to Job parent class
-			SkillInstance skill = ((Colonist)Worker).GetSkillFromJobType(Definition.Name);
-			skill?.AddExperience(ObjectPrefab.timeToBuild);
-
-			Worker.MoveToClosestWalkableTile(true);
 		}
 	}
 }
