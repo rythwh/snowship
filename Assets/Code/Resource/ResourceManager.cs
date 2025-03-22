@@ -910,7 +910,7 @@ public class ResourceManager : IManager, IDisposable
 			addToTileWhenBuilt.Value
 		);
 		foreach (Variation variation in objectPrefab.variations) {
-			variation.prefab = objectPrefab;
+			variation.SetPrefab(objectPrefab);
 		}
 		return objectPrefab;
 	}

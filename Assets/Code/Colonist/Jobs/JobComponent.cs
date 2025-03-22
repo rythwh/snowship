@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Snowship.NHuman;
 using Snowship.NJob;
 using Snowship.NLife;
+using UnityEngine;
 
 namespace Snowship.NColonist
 {
@@ -46,7 +47,11 @@ namespace Snowship.NColonist
 				if (Job.Worker.Tile == Job.Tile) {
 					Job.ChangeJobState(EJobState.Started);
 				} else {
-					Job.Worker.MoveToTile(Job.Tile, !Job.Tile.walkable);
+					bool pathValid = Job.Worker.MoveToTile(Job.Tile, !Job.Tile.walkable);
+					if (!pathValid) {
+						Debug.LogWarning($"Path invalid when trying to move {Job.Worker.Name} {Job.Worker.Tile.position} to Job {Job.Definition.Name} at {Job.Tile.position}");
+						ReturnJob();
+					}
 				}
 			}
 

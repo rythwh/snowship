@@ -84,10 +84,13 @@ namespace Snowship.NLife
 
 		public bool MoveToTile(TileManager.Tile tile, bool allowEndTileNonWalkable) {
 			if (Tile == tile) {
-				return false;
+				return true;
 			}
 			if (tile != null) {
 				path = PathManager.FindPathToTile(Tile, tile, allowEndTileNonWalkable);
+				if (path.Count == 0) {
+					return false;
+				}
 				moveTimer = 0;
 				previousPosition = obj.transform.position;
 			}
@@ -112,9 +115,8 @@ namespace Snowship.NLife
 					moveTimer = 0;
 				}
 				moveSpeedRampingMultiplier = 0;
-				return true;
 			}
-			return false;
+			return true;
 		}
 
 		public int CalculateMoveSpriteIndex() {

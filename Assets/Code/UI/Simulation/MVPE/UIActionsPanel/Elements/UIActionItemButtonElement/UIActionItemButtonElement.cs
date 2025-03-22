@@ -1,6 +1,7 @@
 ﻿using System;
 using Snowship.NResource;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Snowship.NUI
 {
@@ -32,9 +33,11 @@ namespace Snowship.NUI
 			SetChildElementsActive(ChildElementsActiveState);
 		}
 
-		private void OnComponentButtonClicked() {
-			OnButtonClicked?.Invoke();
-			SetChildElementsActive(!ChildElementsActiveState && hasVariations);
+		private void OnComponentButtonClicked(PointerEventData eventData) {
+			if (eventData.button == PointerEventData.InputButton.Left) {
+				OnButtonClicked?.Invoke();
+			}
+			SetChildElementsActive(!ChildElementsActiveState && hasVariations && eventData.button == PointerEventData.InputButton.Right);
 		}
 
 		public void SetChildSiblingChildElementsActive(ITreeButton childButtonToBeActive) {

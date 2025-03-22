@@ -8,5 +8,6 @@ namespace Snowship.NJob
 	{
 		virtual List<Func<TileManager.Tile, int, bool>> SelectionConditions => null;
 		Sprite JobPreviewSprite { get; }
+		int SetRotation(int rotation);
 	}
 }

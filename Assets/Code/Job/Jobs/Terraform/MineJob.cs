@@ -16,6 +16,7 @@ namespace Snowship.NJob
 		};
 
 		public MineJobDefinition(IGroupItem group, IGroupItem subGroup, string name) : base(group, subGroup, name) {
+			TimeToWork = 30;
 		}
 	}
 

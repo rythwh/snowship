@@ -22,6 +22,7 @@ namespace Snowship.Selectable
 		private IJobParams selectedJobParams;
 		private bool selecting = false;
 		private SpriteRenderer selectedJobPreviewObject;
+		private int rotation = 0;
 
 		private TileManager.Tile firstTile;
 		private TileManager.Tile secondTile;
@@ -34,10 +35,15 @@ namespace Snowship.Selectable
 		private Camera camera;
 
 		public void OnCreate() {
-			GameManager.Get<InputManager>().InputSystemActions.Simulation.Select.performed += OnSelectPerformed;
-			GameManager.Get<InputManager>().InputSystemActions.Simulation.Select.canceled += OnSelectCanceled;
 
-			GameManager.Get<InputManager>().InputSystemActions.Simulation.Deselect.canceled += OnDeselectCanceled;
+			InputManager inputManager = GameManager.Get<InputManager>();
+
+			inputManager.InputSystemActions.Simulation.Select.performed += OnSelectPerformed;
+			inputManager.InputSystemActions.Simulation.Select.canceled += OnSelectCanceled;
+
+			inputManager.InputSystemActions.Simulation.Deselect.canceled += OnDeselectCanceled;
+
+			inputManager.InputSystemActions.Simulation.Rotate.performed += OnRotatePerformed;
 
 			GameManager.Get<StateManager>().OnStateChanged += OnStateChanged;
 
@@ -82,6 +88,8 @@ namespace Snowship.Selectable
 			where TJob : class, IJob
 			where TJobDefinition : class, IJobDefinition {
 
+			ClearSelectedJob();
+
 			selectedJobType = typeof(TJob);
 			selectedJobDefinition = GameManager.Get<JobManager>().JobRegistry.GetJobDefinition(typeof(TJobDefinition)) as TJobDefinition;
 			selectedJobParams = null;
@@ -96,6 +104,9 @@ namespace Snowship.Selectable
 		}
 
 		public void SetSelectedJob<TJobDefinition>(TJobDefinition jobDefinition) where TJobDefinition : class, IJobDefinition {
+
+			ClearSelectedJob();
+
 			selectedJobType = jobDefinition.JobType;
 			selectedJobDefinition = jobDefinition;
 			selectedJobParams = null;
@@ -109,6 +120,7 @@ namespace Snowship.Selectable
 		public void ClearSelectedJob() {
 			selectedJobType = null;
 			selectedJobDefinition = null;
+			rotation = selectedJobParams?.SetRotation(0) ?? 0;
 			selectedJobParams = null;
 		}
 
@@ -140,6 +152,15 @@ namespace Snowship.Selectable
 			firstTile = null;
 			secondTile = null;
 			previousSecondTile = null;
+		}
+
+		private void OnRotatePerformed(InputAction.CallbackContext context) {
+			if (selectedJobParams == null) {
+				return;
+			}
+
+			rotation = selectedJobParams.SetRotation(rotation + 1);
+			UpdateSelectedJobPreview();
 		}
 
 		public void OnUpdate() {

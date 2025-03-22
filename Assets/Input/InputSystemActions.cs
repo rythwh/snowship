@@ -107,6 +107,15 @@ public partial class @InputSystemActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Rotate"",
+                    ""type"": ""Button"",
+                    ""id"": ""435948d4-b808-4d93-a239-a5e9dcf5ad92"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -272,6 +281,17 @@ public partial class @InputSystemActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Deselect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""81da6345-f06a-4391-8be4-6b226914d718"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";PC"",
+                    ""action"": ""Rotate"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -824,6 +844,7 @@ public partial class @InputSystemActions: IInputActionCollection2, IDisposable
         m_Simulation_TimeSlowDown = m_Simulation.FindAction("Time/SlowDown", throwIfNotFound: true);
         m_Simulation_Select = m_Simulation.FindAction("Select", throwIfNotFound: true);
         m_Simulation_Deselect = m_Simulation.FindAction("Deselect", throwIfNotFound: true);
+        m_Simulation_Rotate = m_Simulation.FindAction("Rotate", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -912,6 +933,7 @@ public partial class @InputSystemActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Simulation_TimeSlowDown;
     private readonly InputAction m_Simulation_Select;
     private readonly InputAction m_Simulation_Deselect;
+    private readonly InputAction m_Simulation_Rotate;
     public struct SimulationActions
     {
         private @InputSystemActions m_Wrapper;
@@ -925,6 +947,7 @@ public partial class @InputSystemActions: IInputActionCollection2, IDisposable
         public InputAction @TimeSlowDown => m_Wrapper.m_Simulation_TimeSlowDown;
         public InputAction @Select => m_Wrapper.m_Simulation_Select;
         public InputAction @Deselect => m_Wrapper.m_Simulation_Deselect;
+        public InputAction @Rotate => m_Wrapper.m_Simulation_Rotate;
         public InputActionMap Get() { return m_Wrapper.m_Simulation; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -961,6 +984,9 @@ public partial class @InputSystemActions: IInputActionCollection2, IDisposable
             @Deselect.started += instance.OnDeselect;
             @Deselect.performed += instance.OnDeselect;
             @Deselect.canceled += instance.OnDeselect;
+            @Rotate.started += instance.OnRotate;
+            @Rotate.performed += instance.OnRotate;
+            @Rotate.canceled += instance.OnRotate;
         }
 
         private void UnregisterCallbacks(ISimulationActions instance)
@@ -992,6 +1018,9 @@ public partial class @InputSystemActions: IInputActionCollection2, IDisposable
             @Deselect.started -= instance.OnDeselect;
             @Deselect.performed -= instance.OnDeselect;
             @Deselect.canceled -= instance.OnDeselect;
+            @Rotate.started -= instance.OnRotate;
+            @Rotate.performed -= instance.OnRotate;
+            @Rotate.canceled -= instance.OnRotate;
         }
 
         public void RemoveCallbacks(ISimulationActions instance)
@@ -1147,6 +1176,7 @@ public partial class @InputSystemActions: IInputActionCollection2, IDisposable
         void OnTimeSlowDown(InputAction.CallbackContext context);
         void OnSelect(InputAction.CallbackContext context);
         void OnDeselect(InputAction.CallbackContext context);
+        void OnRotate(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

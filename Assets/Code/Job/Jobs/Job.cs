@@ -156,7 +156,7 @@ namespace Snowship.NJob
 					break;
 				case EJobState.Taken:
 					if (JobState != EJobState.Ready) {
-						Debug.LogError("Must progress from Ready -> Taken.");
+						Debug.LogError($"Must progress from Ready -> Taken (Currently {JobState}).");
 						return JobState;
 					}
 					if (Worker == null) {
@@ -167,21 +167,21 @@ namespace Snowship.NJob
 					break;
 				case EJobState.Started:
 					if (JobState != EJobState.Taken) {
-						Debug.LogError("Must progress from Taken -> Started.");
+						Debug.LogError($"Must progress from Taken -> Started (Currently {JobState}).");
 						return JobState;
 					}
 					stateChangedMethod = OnJobStarted;
 					break;
 				case EJobState.InProgress:
 					if (JobState != EJobState.Started) {
-						Debug.LogError("Must progress from Started -> InProgress.");
+						Debug.LogError($"Must progress from Started -> InProgress (Currently {JobState}).");
 						return JobState;
 					}
 					stateChangedMethod = OnJobInProgress;
 					break;
 				case EJobState.Finished:
 					if (JobState != EJobState.InProgress) {
-						Debug.LogError("Must progress from InProgress -> Finished.");
+						Debug.LogError($"Must progress from InProgress -> Finished (Currently {JobState}).");
 						return JobState;
 					}
 					stateChangedMethod = OnJobFinished;

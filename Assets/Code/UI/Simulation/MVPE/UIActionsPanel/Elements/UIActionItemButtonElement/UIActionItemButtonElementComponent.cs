@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using Snowship.NResource;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Snowship.NUI
@@ -13,7 +14,7 @@ namespace Snowship.NUI
 		[SerializeField] private Image itemIconImage;
 		[SerializeField] private LayoutElement itemIconLayoutElement;
 
-		[SerializeField] private Button button;
+		[SerializeField] private UIMultiClickButton button;
 		[SerializeField] private GameObject selectedIndicator;
 
 		[SerializeField] private LayoutGroup requiredResourcesLayoutGroup;
@@ -23,17 +24,21 @@ namespace Snowship.NUI
 		[SerializeField] private LayoutGroup variationsLayoutGroup;
 		[SerializeField] private LayoutGroup buttonLayoutGroup;
 
-		public event Action OnButtonClicked;
+		public event Action<PointerEventData> OnButtonClicked;
 
 		public override void OnCreate() {
 			variationIndicatorImage.gameObject.SetActive(false);
 			buttonLayoutGroup.padding.right = 2;
 
-			button.onClick.AddListener(() => OnButtonClicked?.Invoke());
+			button.OnClick += OnClick;
 		}
 
 		protected override void OnClose() {
 
+		}
+
+		public void OnClick(PointerEventData eventData) {
+			OnButtonClicked?.Invoke(eventData);
 		}
 
 		public void SetItemName(string itemName) {

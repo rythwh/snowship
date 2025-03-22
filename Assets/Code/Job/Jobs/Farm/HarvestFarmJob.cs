@@ -40,7 +40,7 @@ namespace Snowship.NJob
 					Worker.Inventory.ChangeResourceAmount(harvestResourceRange.resource, Random.Range(harvestResourceRange.min, harvestResourceRange.max), false);
 				}
 
-				GameManager.Get<JobManager>().AddJob(new PlantFarmJob(Tile, new BuildJobParams(Farm.prefab, Farm.variation, 0)));
+				GameManager.Get<JobManager>().AddJob(new PlantFarmJob(Tile, new BuildJobParams(Farm.prefab))); // TODO Removed Farm.variation, maybe need to add it back
 
 				// TODO ObjectInstance.RemoveObjectInstance should probably be called inside of Tile.RemoveObjectAtLayer?
 				ObjectInstance.RemoveObjectInstance(Farm);

@@ -12,6 +12,7 @@ namespace Snowship.NResource
 		public static Dictionary<ObjectEnum, ObjectPrefab> objectPrefabs = new();
 
 		public readonly ObjectEnum type;
+
 		public string Name { get; }
 		public Sprite Icon {
 			get => GetBaseSpriteForVariation(lastSelectedVariation);
@@ -264,6 +265,12 @@ namespace Snowship.NResource
 				+ variation.name
 				+ (string.IsNullOrEmpty(variation.name) || variation.prefab.variationNameOrder == Variation.VariationNameOrderEnum.ObjectVariation ? string.Empty : " ")
 				+ (variation.prefab.variationNameOrder == Variation.VariationNameOrderEnum.VariationObject ? Name : string.Empty);
+		}
+
+		public Sprite GetSpriteFromVariationAndRotation(Variation variation, int rotation) {
+			return canRotate
+				? GetBitmaskSpritesForVariation(variation)[rotation]
+				: GetBaseSpriteForVariation(variation);
 		}
 
 		public Sprite GetBaseSpriteForVariation(Variation variation) {

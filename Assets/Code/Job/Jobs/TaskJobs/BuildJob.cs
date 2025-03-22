@@ -26,23 +26,35 @@ namespace Snowship.NJob
 	public class BuildJobParams : IJobParams
 	{
 		public List<Func<TileManager.Tile, int, bool>> SelectionConditions { get; }
-		public Sprite JobPreviewSprite { get; }
+		public Sprite JobPreviewSprite { get; private set; }
 
 		public readonly ObjectPrefab ObjectPrefab;
 		public readonly Variation Variation;
 		public readonly int Layer;
-		public readonly int Rotation;
+		public int Rotation;
 
-		public BuildJobParams(ObjectPrefab objectPrefab, Variation variation, int rotation) {
+		public BuildJobParams(ObjectPrefab objectPrefab) {
 			ObjectPrefab = objectPrefab;
-			Variation = variation;
+			Variation = objectPrefab.lastSelectedVariation;
 			Layer += ObjectPrefab.layer;
-			Rotation = rotation;
+			SetRotation(0);
 
 			// SelectionConditions.AddRange(ObjectPrefab.SelectionConditions); // TODO
-			JobPreviewSprite = ObjectPrefab.canRotate
-				? ObjectPrefab.GetBitmaskSpritesForVariation(Variation)[Rotation]
-				: ObjectPrefab.GetBaseSpriteForVariation(Variation);
+		}
+
+		public int SetRotation(int rotation) {
+			if (!ObjectPrefab.canRotate) {
+				ObjectPrefab.GetBaseSpriteForVariation(Variation);
+				return 0;
+			}
+
+			List<Sprite> bitmaskSprites = ObjectPrefab.GetBitmaskSpritesForVariation(Variation);
+
+			Rotation = rotation > bitmaskSprites.Count - 1 ? 0 : rotation;
+
+			JobPreviewSprite = bitmaskSprites[Rotation];
+
+			return Rotation;
 		}
 	}
 
@@ -66,15 +78,7 @@ namespace Snowship.NJob
 			}
 			SetTimeToWork(ObjectPrefab.timeToBuild);
 
-			Sprite baseSprite = ObjectPrefab.GetBaseSpriteForVariation(Variation);
-			if (baseSprite != null) {
-				JobPreviewObject.GetComponent<SpriteRenderer>().sprite = baseSprite;
-			}
-			List<Sprite> bitmaskSprites = ObjectPrefab.GetBitmaskSpritesForVariation(Variation);
-			if (!ObjectPrefab.bitmasking && bitmaskSprites.Count > 0) { // TODO Separate BitmaskSprites and RotationSprites
-				JobPreviewObject.GetComponent<SpriteRenderer>().sprite = bitmaskSprites[Rotation];
-			}
-			JobPreviewObject.GetComponent<SpriteRenderer>().sortingOrder = (int)SortingOrder.Job + Layer;
+			SetJobPreviewObject();
 		}
 
 		protected override void OnJobFinished() {
@@ -92,6 +96,11 @@ namespace Snowship.NJob
 			if (ObjectPrefab.canRotate) {
 				objectInstance.sr.sprite = ObjectPrefab.GetBitmaskSpritesForVariation(Variation)[Rotation];
 			}
+		}
+
+		private void SetJobPreviewObject() {
+			JobPreviewObject.GetComponent<SpriteRenderer>().sprite = ObjectPrefab.GetSpriteFromVariationAndRotation(Variation, Rotation);
+			JobPreviewObject.GetComponent<SpriteRenderer>().sortingOrder = (int)SortingOrder.Job + Layer;
 		}
 	}
 }

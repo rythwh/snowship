@@ -40,7 +40,7 @@ namespace Snowship.NUI
 						CreateTerraformButtons(button);
 						break;
 					case "Farm":
-						CreateFarmButtons(button);
+						//CreateFarmButtons(button);
 						break;
 					case "Remove":
 						CreateRemoveButtons(button);
@@ -117,7 +117,7 @@ namespace Snowship.NUI
 				variationButton.OnButtonClicked += () => prefabButton.SetVariation(prefab, variation, variationButton);
 			}
 
-			BuildJobParams buildJobParams = new(prefab, prefab.lastSelectedVariation, 0);
+			BuildJobParams buildJobParams = new(prefab);
 			prefabButton.OnButtonClicked += () => GameManager.Get<SelectionManager>().SetSelectedJob<BuildJob, BuildJobDefinition>(buildJobParams);
 		}
 

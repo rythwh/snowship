@@ -13,7 +13,7 @@ namespace Snowship.NResource
 		public readonly float flammability;
 		public readonly int timeToBuild;
 
-		public readonly string instanceName;
+		public string instanceName;
 
 		// Plants
 		public readonly Dictionary<PlantPrefab, Resource> plants;
@@ -36,6 +36,11 @@ namespace Snowship.NResource
 			this.flammability = flammability;
 			this.timeToBuild = timeToBuild;
 			this.plants = plants;
+		}
+
+		public void SetPrefab(ObjectPrefab prefab) {
+			this.prefab = prefab;
+			instanceName = prefab?.GetInstanceNameFromVariation(this);
 		}
 
 		public static bool Equals(Variation v1, Variation v2) {

@@ -14,6 +14,8 @@ namespace Snowship.NJob
 		private readonly Dictionary<Type, HashSet<IJob>> jobsByType = new();
 		private readonly Dictionary<TileManager.Tile, HashSet<IJob>> jobsByTile = new();
 
+		private readonly Dictionary<Colonist, SortedSet<JobCostEntry>> colonistJobs = new();
+
 		public event Action<IJob> OnJobAdded;
 		public event Action<IJob> OnJobRemoved;
 
@@ -28,49 +30,96 @@ namespace Snowship.NJob
 
 		private void AssignJobs() {
 
-			if (Colonist.colonists.Count(c => c.JobComponent.CanTakeNewJob()) <= 0) {
+			if (Jobs.Count(j => j.CanBeAssigned()) == 0) {
+				return;
+			}
+			if (Colonist.colonists.Count(c => c.JobComponent.CanTakeNewJob()) == 0) {
 				return;
 			}
 
-			foreach (IJob job in Jobs) {
-				if (!job.CanBeAssigned()) {
+			foreach (Colonist colonist in Colonist.colonists) {
+				if (!colonist.JobComponent.CanTakeNewJob()) {
+					colonistJobs.Remove(colonist);
 					continue;
 				}
-				Colonist chosenColonist = Colonist.colonists
-					.Where(c => c.JobComponent.CanTakeNewJob())
-					.Where(c => c.Tile.region == job.Tile.region || (!job.Tile.walkable && job.Tile.horizontalSurroundingTiles.Any(t => c.Tile.region == t.region)))
-					.OrderBy(c => Vector2.Distance(c.Tile.position, job.Tile.position))
-					.ThenByDescending(c => c.GetSkillFromJobType(job.Name)?.CalculateTotalSkillLevel() * 5f ?? 0)
-					.FirstOrDefault();
 
-				chosenColonist?.JobComponent.SetJob(job);
+				if (colonistJobs.TryGetValue(colonist, out SortedSet<JobCostEntry> jobs)) {
+					jobs.Clear();
+				} else {
+					colonistJobs.Add(colonist, new SortedSet<JobCostEntry>());
+				}
 
-				if (Colonist.colonists.Count(c => c.JobComponent.CanTakeNewJob()) <= 0) {
-					break;
+				HashSet<TileManager.Map.RegionBlock> checkedRegionBlocks = new();
+				HashSet<IJobDefinition> checkedJobTypes = new();
+
+				foreach (IJob job in Jobs.OrderBy(j => Vector2.Distance(j.Tile.position, colonist.Tile.position))) {
+
+					// Check that the job is able to be assigned to a colonist
+					if (!job.CanBeAssigned()) {
+						continue;
+					}
+
+					// Check that the job is in the same region as the colonist
+					// AND Check that if the job's tile is NOT walkable, then it has at least 1 surrounding tile that IS walkable (for e.g. Mine jobs)
+					if (job.Tile.region != colonist.Tile.region && !job.Tile.walkable && job.Tile.horizontalSurroundingTiles.All(t => t.region != colonist.Tile.region)) {
+						continue;
+					}
+
+					// TODO Check that the colonist will actually do the job according to the assigned Professions
+
+					// Check if a similar job has already been checked in that area (mostly redundant)
+					if (checkedRegionBlocks.Contains(job.Tile.regionBlock) && checkedJobTypes.Contains(job.Definition)) {
+						continue;
+					}
+
+					checkedRegionBlocks.Add(job.Tile.regionBlock);
+					checkedJobTypes.Add(job.Definition);
+
+					float cost = 0;
+					//cost += PathManager.RegionBlockDistance(colonist.Tile.regionBlock, job.Tile.regionBlock, true, true, !job.Tile.walkable);
+					cost += Vector2.Distance(colonist.Tile.position, job.Tile.position);
+					cost -= colonist.GetSkillFromJobType(job.Name)?.CalculateTotalSkillLevel() * 5f ?? 0;
+					// TODO Check the job type's priority according to the colonist's assigned priorities
+
+					colonistJobs[colonist].Add(new JobCostEntry(job, cost));
 				}
 			}
 
-			foreach (Colonist colonist in Colonist.colonists) {
-				if (colonist.dead) {
-					continue;
-				}
-				if (colonist.JobComponent.Job != null) {
-					continue;
-				}
-				if (colonist.playerMoved) {
-					continue;
-				}
+			foreach (Colonist colonist in colonistJobs.Keys) {
+				foreach (JobCostEntry jobCostEntry in colonistJobs[colonist]) {
 
-				IJob selectedJob = Jobs
-					.Where(j => j.Worker == null)
-					.Where(j => j.Tile.region == colonist.Tile.region || (!j.Tile.walkable && j.Tile.surroundingTiles.Any(t => t.region == colonist.Tile.region)))
-					//.OrderBy(j => PathManager.RegionBlockDistance(j.Tile.regionBlock, colonist.Tile.regionBlock, true, true, true))
-					.OrderBy(j => Vector2.Distance(j.Tile.position, colonist.Tile.position))
-					.ThenByDescending(j => colonist.GetSkillFromJobType(j.Name)?.CalculateTotalSkillLevel() * 5f ?? 0)
-					.FirstOrDefault();
+					if (!jobCostEntry.Job.CanBeAssigned()) {
+						continue;
+					}
 
-				if (selectedJob != null) {
-					colonist.JobComponent.SetJob(selectedJob);
+					bool colonistIsBestChoiceForJob = true;
+					foreach (Colonist otherColonist in colonistJobs.Keys) {
+						if (colonist == otherColonist) {
+							continue;
+						}
+
+						if (!colonistJobs[otherColonist].TryGetValue(jobCostEntry, out JobCostEntry otherJobCostEntry)) {
+							continue;
+						}
+
+						if (!jobCostEntry.Job.CanBeAssigned()) {
+							continue;
+						}
+
+						if (otherJobCostEntry.Cost >= jobCostEntry.Cost) {
+							continue;
+						}
+
+						colonistIsBestChoiceForJob = false;
+						break;
+					}
+
+					if (!colonistIsBestChoiceForJob) {
+						continue;
+					}
+
+					colonist.JobComponent.SetJob(jobCostEntry.Job);
+					break;
 				}
 			}
 		}
@@ -103,6 +152,10 @@ namespace Snowship.NJob
 				jobsByTile.Remove(job.Tile);
 			}
 
+			foreach ((Colonist _, SortedSet<JobCostEntry> jobs) in colonistJobs) {
+				jobs.RemoveWhere(j => j.Job == job);
+			}
+
 			OnJobRemoved?.Invoke(job);
 		}
 
@@ -124,6 +177,45 @@ namespace Snowship.NJob
 
 		public Sprite GetJobSprite(IJobDefinition jobDefinition, IJobParams args) {
 			return args?.JobPreviewSprite ?? jobDefinition?.Icon ?? GameManager.Get<ResourceManager>().selectionCornersSprite;
+		}
+	}
+
+	public readonly struct JobCostEntry : IComparable<JobCostEntry>, IComparer<JobCostEntry>, IEquatable<JobCostEntry>
+	{
+		public IJob Job { get; }
+		public float Cost { get; }
+
+		public JobCostEntry(IJob job, float cost) {
+			Job = job;
+			Cost = cost;
+		}
+
+		public int CompareTo(JobCostEntry other) {
+			return Cost.CompareTo(other.Cost);
+		}
+
+		public int Compare(JobCostEntry x, JobCostEntry y) {
+			return x.CompareTo(y);
+		}
+
+		public bool Equals(JobCostEntry other) {
+			return Equals(Job, other.Job);
+		}
+
+		public override bool Equals(object obj) {
+			return obj is JobCostEntry other && Equals(other);
+		}
+
+		public override int GetHashCode() {
+			return Job != null ? Job.GetHashCode() : 0;
+		}
+
+		public static bool operator ==(JobCostEntry left, JobCostEntry right) {
+			return left.Equals(right);
+		}
+
+		public static bool operator !=(JobCostEntry left, JobCostEntry right) {
+			return !left.Equals(right);
 		}
 	}
 }
