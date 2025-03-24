@@ -11,7 +11,7 @@ namespace Snowship.NJob
 		public List<IGroupItem> Children { get; } = new();
 
 		public JobGroup(string name, Sprite icon) {
-			Name = name;
+			Name = StringUtilities.SplitByCapitals(name);
 			Icon = icon;
 		}
 	}

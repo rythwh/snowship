@@ -112,9 +112,12 @@ namespace Snowship.NUI
 				return;
 			}
 
-			foreach (Variation variation in prefab.variations) {
-				UIActionItemButtonElement variationButton = prefabButton.AddVariation(prefab, variation);
-				variationButton.OnButtonClicked += () => prefabButton.SetVariation(prefab, variation, variationButton);
+			if (prefab.variations.Count > 0) {
+				foreach (Variation variation in prefab.variations) {
+					UIActionItemButtonElement variationButton = prefabButton.AddVariation(prefab, variation);
+					variationButton.OnButtonClicked += () => prefabButton.SetVariation(prefab, variation, variationButton);
+				}
+				prefabButton.SetVariation(prefab, prefab.variations.First(), null);
 			}
 
 			BuildJobParams buildJobParams = new(prefab);

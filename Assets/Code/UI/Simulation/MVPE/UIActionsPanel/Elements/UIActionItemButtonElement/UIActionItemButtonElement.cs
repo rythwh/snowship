@@ -19,7 +19,6 @@ namespace Snowship.NUI
 		public UIActionItemButtonElement(string itemName, Sprite itemIcon) {
 			this.itemName = itemName;
 			this.itemIcon = itemIcon;
-
 		}
 
 		protected override void OnCreate() {
@@ -57,7 +56,7 @@ namespace Snowship.NUI
 		public void SetVariation(ObjectPrefab prefab, Variation variation, UIActionItemButtonElement variationButton) {
 			prefab.SetVariation(variation);
 
-			itemName = prefab.lastSelectedVariation.instanceName;
+			itemName = prefab.selectedVariation.instanceName;
 			itemIcon = prefab.GetBaseSpriteForVariation(variation);
 
 			Component.SetItemName(itemName);
@@ -66,7 +65,7 @@ namespace Snowship.NUI
 			// TODO Refresh Required Resources
 
 			SetChildElementsActive(false);
-			variationButton.SetChildElementsActive(false);
+			variationButton?.SetChildElementsActive(false);
 		}
 	}
 }

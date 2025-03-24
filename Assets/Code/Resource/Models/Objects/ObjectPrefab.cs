@@ -15,7 +15,7 @@ namespace Snowship.NResource
 
 		public string Name { get; }
 		public Sprite Icon {
-			get => GetBaseSpriteForVariation(lastSelectedVariation);
+			get => GetBaseSpriteForVariation(selectedVariation);
 			set => throw new NotImplementedException();
 		}
 		public List<IGroupItem> Children => null;
@@ -85,7 +85,7 @@ namespace Snowship.NResource
 		public readonly Dictionary<Variation, Dictionary<SpriteType, List<Sprite>>> sprites = new();
 
 		// UI State
-		public Variation lastSelectedVariation; // Used to show the most recently selected variation on the UI
+		public Variation selectedVariation; // Used to show the most recently selected variation on the UI
 
 		public ObjectPrefab(
 			ObjectEnum type,
@@ -244,11 +244,11 @@ namespace Snowship.NResource
 				}
 			}
 
-			lastSelectedVariation = variations.Count > 0 ? variations[0] : null;
+			selectedVariation = variations.Count > 0 ? variations[0] : null;
 		}
 
 		public void SetVariation(Variation variation) {
-			lastSelectedVariation = variation;
+			selectedVariation = variation;
 		}
 
 		public Variation GetVariationFromString(string variationName) {

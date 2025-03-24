@@ -176,6 +176,7 @@ namespace Snowship.NJob
 		}
 
 		public Sprite GetJobSprite(IJobDefinition jobDefinition, IJobParams args) {
+			args?.UpdateJobPreviewSprite();
 			return args?.JobPreviewSprite ?? jobDefinition?.Icon ?? GameManager.Get<ResourceManager>().selectionCornersSprite;
 		}
 	}

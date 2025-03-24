@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
@@ -28,14 +29,12 @@ namespace Snowship.NJob
 		public List<Func<TileManager.Tile, int, bool>> SelectionConditions { get; }
 		public Sprite JobPreviewSprite { get; private set; }
 
-		public readonly ObjectPrefab ObjectPrefab;
-		public readonly Variation Variation;
+		[NotNull] public readonly ObjectPrefab ObjectPrefab;
 		public readonly int Layer;
 		public int Rotation;
 
 		public BuildJobParams(ObjectPrefab objectPrefab) {
 			ObjectPrefab = objectPrefab;
-			Variation = objectPrefab.lastSelectedVariation;
 			Layer += ObjectPrefab.layer;
 			SetRotation(0);
 
@@ -44,29 +43,37 @@ namespace Snowship.NJob
 
 		public int SetRotation(int rotation) {
 			if (!ObjectPrefab.canRotate) {
-				ObjectPrefab.GetBaseSpriteForVariation(Variation);
+				UpdateJobPreviewSprite(ObjectPrefab.GetBaseSpriteForVariation(ObjectPrefab.selectedVariation));
 				return 0;
 			}
 
-			List<Sprite> bitmaskSprites = ObjectPrefab.GetBitmaskSpritesForVariation(Variation);
+			List<Sprite> bitmaskSprites = ObjectPrefab.GetBitmaskSpritesForVariation(ObjectPrefab.selectedVariation);
 
 			Rotation = rotation > bitmaskSprites.Count - 1 ? 0 : rotation;
 
-			JobPreviewSprite = bitmaskSprites[Rotation];
+			UpdateJobPreviewSprite(bitmaskSprites[Rotation]);
 
 			return Rotation;
+		}
+
+		public void UpdateJobPreviewSprite() {
+			UpdateJobPreviewSprite(ObjectPrefab.GetSpriteFromVariationAndRotation(ObjectPrefab.selectedVariation, Rotation));
+		}
+
+		private void UpdateJobPreviewSprite(Sprite sprite) {
+			JobPreviewSprite = sprite;
 		}
 	}
 
 	public class BuildJob : Job<BuildJobDefinition>
 	{
-		public ObjectPrefab ObjectPrefab { get; }
+		[NotNull] public ObjectPrefab ObjectPrefab { get; }
 		public Variation Variation { get; }
 		public int Rotation { get; }
 
 		public BuildJob(TileManager.Tile tile, BuildJobParams args) : base(tile) {
-			Variation = args.Variation;
 			ObjectPrefab = args.ObjectPrefab;
+			Variation = ObjectPrefab.selectedVariation;
 			Rotation = args.Rotation;
 			Layer = args.Layer;
 			Experience = Variation?.timeToBuild ?? ObjectPrefab?.timeToBuild ?? Experience;
@@ -92,10 +99,10 @@ namespace Snowship.NJob
 			ObjectInstance objectInstance = ObjectInstance.CreateObjectInstance(ObjectPrefab, Variation, Tile, Rotation, true);
 			Tile.SetObject(objectInstance);
 			objectInstance.sr.color = Color.white; // TODO This should be in FinishCreation or SetObject probably?
-			objectInstance.FinishCreation();
 			if (ObjectPrefab.canRotate) {
 				objectInstance.sr.sprite = ObjectPrefab.GetBitmaskSpritesForVariation(Variation)[Rotation];
 			}
+			objectInstance.FinishCreation();
 		}
 
 		private void SetJobPreviewObject() {

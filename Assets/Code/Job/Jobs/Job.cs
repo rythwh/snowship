@@ -16,7 +16,7 @@ namespace Snowship.NJob
 		// Job Definition Properties
 		public IJobDefinition Definition { get; }
 		public int Layer { get; protected set; }
-		public string Name => Definition.Name;
+		public string Name => StringUtilities.SplitByCapitals(Definition.Name);
 		public Sprite Icon => Definition.Icon;
 		public IGroupItem Group => Definition.Group;
 		public IGroupItem SubGroup => Definition.SubGroup;

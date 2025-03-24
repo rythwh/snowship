@@ -16,7 +16,7 @@ namespace Snowship.NPersistence {
 		public enum ObjectPrefabProperty {
 			ObjectPrefab,
 			Type,
-			LastSelectedVariation
+			SelectedVariation
 		}
 
 		public void SaveUI(string saveDirectoryPath) {
@@ -28,7 +28,7 @@ namespace Snowship.NPersistence {
 				file.WriteLine(PU.CreateKeyValueString(ObjectPrefabProperty.ObjectPrefab, string.Empty, 1));
 
 				file.WriteLine(PU.CreateKeyValueString(ObjectPrefabProperty.Type, objectPrefab.type, 2));
-				file.WriteLine(PU.CreateKeyValueString(ObjectPrefabProperty.LastSelectedVariation, objectPrefab.lastSelectedVariation == null ? "null" : objectPrefab.lastSelectedVariation.name, 2));
+				file.WriteLine(PU.CreateKeyValueString(ObjectPrefabProperty.SelectedVariation, objectPrefab.selectedVariation == null ? "null" : objectPrefab.selectedVariation.name, 2));
 			}
 
 			file.Close();
@@ -39,22 +39,22 @@ namespace Snowship.NPersistence {
 				switch ((UIProperty)Enum.Parse(typeof(UIProperty), property.Key)) {
 					case UIProperty.ObjectPrefabs:
 
-						Dictionary<ObjectPrefab, Variation> lastSelectedVariations = new();
+						Dictionary<ObjectPrefab, Variation> selectedVariations = new();
 
 						foreach (KeyValuePair<string, object> objectPrefabProperty in (List<KeyValuePair<string, object>>)property.Value) {
 							switch ((ObjectPrefabProperty)Enum.Parse(typeof(ObjectPrefabProperty), objectPrefabProperty.Key)) {
 								case ObjectPrefabProperty.ObjectPrefab:
 
 									ObjectPrefab objectPrefab = null;
-									Variation lastSelectedVariation = null;
+									Variation selectedVariation = null;
 
 									foreach (KeyValuePair<string, object> objectPrefabSubProperty in (List<KeyValuePair<string, object>>)objectPrefabProperty.Value) {
 										switch ((ObjectPrefabProperty)Enum.Parse(typeof(ObjectPrefabProperty), objectPrefabSubProperty.Key)) {
 											case ObjectPrefabProperty.Type:
 												objectPrefab = ObjectPrefab.GetObjectPrefabByString((string)objectPrefabSubProperty.Value);
 												break;
-											case ObjectPrefabProperty.LastSelectedVariation:
-												lastSelectedVariation = objectPrefab.GetVariationFromString((string)objectPrefabSubProperty.Value);
+											case ObjectPrefabProperty.SelectedVariation:
+												selectedVariation = objectPrefab.GetVariationFromString((string)objectPrefabSubProperty.Value);
 												break;
 											default:
 												Debug.LogError("Unknown object prefab sub property: " + objectPrefabSubProperty.Key + " " + objectPrefabSubProperty.Value);
@@ -62,7 +62,7 @@ namespace Snowship.NPersistence {
 										}
 									}
 
-									lastSelectedVariations.Add(objectPrefab, lastSelectedVariation);
+									selectedVariations.Add(objectPrefab, selectedVariation);
 
 									break;
 								default:
@@ -72,7 +72,7 @@ namespace Snowship.NPersistence {
 						}
 
 						foreach (ObjectPrefab objectPrefab in ObjectPrefab.GetObjectPrefabs()) {
-							objectPrefab.lastSelectedVariation = lastSelectedVariations[objectPrefab];
+							objectPrefab.selectedVariation = selectedVariations[objectPrefab];
 						}
 
 						break;

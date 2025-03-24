@@ -42,7 +42,7 @@ namespace Snowship.NJob
 		protected JobDefinition(IGroupItem group, IGroupItem subGroup, string name) {
 			Group = group;
 			SubGroup = subGroup;
-			Name = name;
+			Name = StringUtilities.SplitByCapitals(name);
 		}
 	}
 }
