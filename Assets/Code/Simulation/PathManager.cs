@@ -24,10 +24,7 @@ public static class PathManager {
 
 	public static List<TileManager.Tile> FindPathToTile(TileManager.Tile startTile, TileManager.Tile endTile, bool allowEndTileNonWalkable) {
 
-		bool stop = false;
-		if (!allowEndTileNonWalkable && (!endTile.walkable || startTile.region != endTile.region)) {
-			stop = true;
-		}
+		bool stop = !allowEndTileNonWalkable && (!endTile.walkable || startTile.region != endTile.region);
 		if (!startTile.walkable && endTile.walkable) {
 			stop = false;
 		}

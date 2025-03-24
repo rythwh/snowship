@@ -97,10 +97,10 @@ namespace Snowship.NLife
 			if (path.Count > 0) {
 
 				obj.transform.position = Vector2.Lerp(previousPosition, path[0].obj.transform.position, moveTimer);
+				Tile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(obj.transform.position);
 
 				if (moveTimer >= 1f) {
 					previousPosition = obj.transform.position;
-					Tile = path[0];
 					obj.transform.position = Tile.obj.transform.position;
 					moveTimer = 0;
 					path.RemoveAt(0);
