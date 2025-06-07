@@ -92,7 +92,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3327767073650685285
 RectTransform:
   m_ObjectHideFlags: 0
@@ -280,7 +280,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Lumi Games (Snowship ####.##.##)
+  m_text: Ryan White (Snowship ####.##.##)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4399b11746a357045a9ce297683c8688, type: 2}
   m_sharedMaterial: {fileID: -4455928732027422229, guid: 4399b11746a357045a9ce297683c8688,
@@ -1789,7 +1789,6 @@ MonoBehaviour:
   exitButton: {fileID: 3742612795135362031}
   mainMenuBackgroundImage: {fileID: 4886996923948733853}
   mainMenuBackgroundRectTransform: {fileID: 2415886212794408847}
-  movementMultiplier: 25
   snowshipLogo: {fileID: 7860263074461114622}
   snowshipLogoRectTransform: {fileID: 5920637107769211697}
   darkBackground: {fileID: 609338270030599181}

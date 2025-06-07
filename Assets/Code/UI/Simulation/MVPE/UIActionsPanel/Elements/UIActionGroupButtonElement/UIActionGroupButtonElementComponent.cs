@@ -17,6 +17,8 @@ namespace Snowship.NUI
 		[SerializeField] private LayoutGroup subGroupsLayoutGroup;
 		public LayoutGroup SubGroupsLayoutGroup => subGroupsLayoutGroup;
 
+		[SerializeField] private int heightWithIcon = 40;
+
 		public event Action OnButtonClicked;
 
 		public override void OnCreate() {
@@ -28,8 +30,14 @@ namespace Snowship.NUI
 		}
 
 		public void SetGroupIcon(Sprite groupIcon) {
+			bool hasGroupIcon = groupIcon;
 			groupIconImage.sprite = groupIcon;
 			groupIconLayoutElement.preferredWidth = groupIconLayoutElement.preferredHeight * (groupIcon?.rect.width / groupIcon?.rect.height) ?? 0;
+			if (hasGroupIcon) {
+				Vector2 sizeDelta = RectTransform.sizeDelta;
+				sizeDelta.y = heightWithIcon;
+				RectTransform.sizeDelta = sizeDelta;
+			}
 		}
 
 		public void SetGroupName(string groupName) {
