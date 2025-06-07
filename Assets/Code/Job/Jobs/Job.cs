@@ -213,7 +213,7 @@ namespace Snowship.NJob
 		public void Close() {
 			Object.Destroy(JobPreviewObject.gameObject);
 			GameManager.Get<JobManager>().RemoveJob(this);
-			Worker.JobComponent.SetJob(null);
+			Worker.Jobs.SetJob(null);
 		}
 	}
 }

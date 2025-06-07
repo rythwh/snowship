@@ -16,50 +16,12 @@ namespace Snowship.NColonist {
 
 		public bool playerMoved;
 
-		// Professions
-		public readonly List<Profession> professions = new List<Profession>();
-
-		// Skills
-		public readonly List<SkillInstance> skills = new List<SkillInstance>();
-
-		// Traits
-		public readonly List<TraitInstance> traits = new List<TraitInstance>();
-
-		// Needs
-		public readonly List<NeedInstance> needs = new List<NeedInstance>();
-
 		public Colonist(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
 			obj.transform.SetParent(GameManager.SharedReferences.LifeParent, false);
 
-			MoodComponent = new MoodComponent(this);
 
-			foreach (ProfessionPrefab professionPrefab in ProfessionPrefab.professionPrefabs) {
-				professions.Add(
-					new Profession(
-						professionPrefab,
-						this,
-						Mathf.RoundToInt(ProfessionPrefab.professionPrefabs.Count / 2f)
-					));
-			}
 
-			foreach (SkillPrefab skillPrefab in SkillPrefab.skillPrefabs) {
-				skills.Add(
-					new SkillInstance(
-						this,
-						skillPrefab,
-						true,
-						0
-					));
-			}
 
-			foreach (NeedPrefab needPrefab in NeedPrefab.needPrefabs) {
-				needs.Add(
-					new NeedInstance(
-						this,
-						needPrefab
-					));
-			}
-			needs = needs.OrderBy(need => need.prefab.priority).ToList();
 
 			colonists.Add(this);
 
@@ -74,9 +36,7 @@ namespace Snowship.NColonist {
 			UpdateNeeds();
 		}
 
-		public float CalculateNeedSumWeightedByPriority() {
-			return needs.Sum(need => need.GetValue() / (need.prefab.priority + 1));
-		}
+
 
 		public override void Update() {
 
@@ -91,7 +51,7 @@ namespace Snowship.NColonist {
 				return;
 			}
 
-			if (JobComponent.Job == null) {
+			if (Jobs.ActiveJob == null) {
 				if (path.Count <= 0) {
 					Wander(null, 0);
 				} else {
@@ -113,36 +73,11 @@ namespace Snowship.NColonist {
 		public void EmptyInventory(List<Container> validContainers) {
 			if (Inventory.UsedWeight() > 0 && Inventory.UsedVolume() > 0 && validContainers.Count > 0) {
 				Container closestContainer = validContainers.OrderBy(container => PathManager.RegionBlockDistance(container.tile.regionBlock, Tile.regionBlock, true, true, false)).ToList()[0];
-				JobComponent.SetJob(new EmptyInventoryJob(closestContainer));
+				Jobs.SetJob(new EmptyInventoryJob(closestContainer));
 			}
 		}
 
-		private void UpdateNeeds() {
-			foreach (NeedInstance need in needs) {
-				NeedUtilities.CalculateNeedValue(need);
-				bool checkNeed = false;
-				if (need.colonist.JobComponent.Job == null) {
-					checkNeed = true;
-				} else {
-					if (need.colonist.JobComponent.Job.Group.Name == "Needs") {
-						if (NeedUtilities.jobToNeedMap.TryGetValue(need.colonist.JobComponent.Job.Name, out ENeed needType)) {
-							if (need.prefab.priority < NeedPrefab.GetNeedPrefabFromEnum(needType).priority) {
-								checkNeed = true;
-							}
-						} else {
-							checkNeed = true;
-						}
-					} else {
-						checkNeed = true;
-					}
-				}
-				if (checkNeed) {
-					if (NeedUtilities.NeedToReactionFunctionMap[need.prefab.type](need)) {
-						break;
-					}
-				}
-			}
-		}
+
 
 		/*public void SetJob(ColonistJob colonistJob, bool reserveResourcesInContainerPickups = true) {
 			Job = colonistJob;
@@ -336,13 +271,11 @@ namespace Snowship.NColonist {
 
 		public void PlayerMoveToTile(TileManager.Tile tile) {
 			playerMoved = true;
-			JobComponent.ReturnJob();
+			Jobs.ReturnJob();
 			MoveToTile(tile, false);
 		}
 
-		public Profession GetProfessionFromType(string type) {
-			return professions.Find(p => p.prefab.type == type);
-		}
+
 
 		public SkillInstance GetSkillFromEnum(ESkill type) {
 			return skills.Find(s => s.prefab.type == type);
@@ -376,7 +309,7 @@ namespace Snowship.NColonist {
 
 				ResourceAmount clothingToPickup = new(clothing, 1);
 				container.Inventory.ReserveResources(new List<ResourceAmount> { clothingToPickup }, this);
-				JobComponent.SetJob(new WearClothesJob(container.tile, container, clothing));
+				Jobs.SetJob(new WearClothesJob(container.tile, container, clothing));
 			}
 		}
 	}

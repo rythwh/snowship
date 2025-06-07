@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
+using Snowship.NHuman;
 using UnityEngine;
 
 namespace Snowship.NColonist {
 	public class SkillInstance {
-		public readonly Colonist colonist;
+		public readonly Human human;
 		public readonly SkillPrefab prefab;
 
 		public int Level { get; set; }
@@ -14,8 +15,8 @@ namespace Snowship.NColonist {
 		public event Action<int> OnLevelChanged;
 		public event Action<float, float> OnExperienceChanged;
 
-		public SkillInstance(Colonist colonist, SkillPrefab prefab, bool randomStartingLevel, int startingLevel) {
-			this.colonist = colonist;
+		public SkillInstance(Human human, SkillPrefab prefab, bool randomStartingLevel, int startingLevel) {
+			this.human = human;
 			this.prefab = prefab;
 
 			if (randomStartingLevel) {

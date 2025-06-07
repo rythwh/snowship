@@ -2,19 +2,17 @@
 
 namespace Snowship.NProfession {
 
-	public class Profession {
+	public class ProfessionInstance {
+
 		public readonly ProfessionPrefab prefab;
-		public readonly Colonist colonist;
 
 		private int priority;
 
-		public Profession(
+		public ProfessionInstance(
 			ProfessionPrefab prefab,
-			Colonist colonist,
 			int priority
 		) {
 			this.prefab = prefab;
-			this.colonist = colonist;
 			this.priority = priority;
 		}
 
@@ -22,18 +20,16 @@ namespace Snowship.NProfession {
 			return priority;
 		}
 
-		public void SetPriority(int priority) {
-			if (priority > ProfessionPrefab.maxPriority) {
-				priority = 0;
+		public void SetPriority(int newPriority) {
+			if (newPriority > ProfessionPrefab.maxPriority) {
+				newPriority = 0;
 			}
 
-			if (priority < 0) {
-				priority = ProfessionPrefab.maxPriority;
+			if (newPriority < 0) {
+				newPriority = ProfessionPrefab.maxPriority;
 			}
 
-			this.priority = priority;
-
-			// ColonistJob.UpdateSingleColonistJobs(colonist);
+			priority = newPriority;
 		}
 
 		public void IncreasePriority() {

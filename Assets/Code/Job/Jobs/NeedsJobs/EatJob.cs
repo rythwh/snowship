@@ -92,9 +92,9 @@ namespace Snowship.NJob
 
 			float amountEaten = startingFoodNeedValue - foodNeed.GetValue();
 			if (amountEaten >= 15 && foodNeed.GetValue() <= -10) {
-				colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.Stuffed);
+				colonist.Moods.AddMoodModifier(MoodModifierEnum.Stuffed);
 			} else if (amountEaten >= 15) {
-				colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.Full);
+				colonist.Moods.AddMoodModifier(MoodModifierEnum.Full);
 			}
 
 			if (foodNeed.GetValue() < 0) {
@@ -112,10 +112,10 @@ namespace Snowship.NJob
 						return false;
 					}
 				) == null) {
-					colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.AteWithoutATable);
+					colonist.Moods.AddMoodModifier(MoodModifierEnum.AteWithoutATable);
 				}
 			} else {
-				colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.AteOnTheFloor);
+				colonist.Moods.AddMoodModifier(MoodModifierEnum.AteOnTheFloor);
 			}
 		}
 	}

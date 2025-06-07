@@ -1,18 +1,19 @@
 ﻿using System;
+using Snowship.NHuman;
 using UnityEngine;
 
 namespace Snowship.NColonist {
 	public class NeedInstance {
 
-		public Colonist colonist;
+		public Human human;
 		public NeedPrefab prefab;
 		private float value = 0;
 		private int roundedValue = 0;
 
 		public event Action<float, int> OnValueChanged;
 
-		public NeedInstance(Colonist colonist, NeedPrefab prefab) {
-			this.colonist = colonist;
+		public NeedInstance(Human human, NeedPrefab prefab) {
+			this.human = human;
 			this.prefab = prefab;
 		}
 

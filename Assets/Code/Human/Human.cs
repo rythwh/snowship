@@ -5,6 +5,7 @@ using Snowship.NCamera;
 using Snowship.NColonist;
 using Snowship.NColony;
 using Snowship.NLife;
+using Snowship.NProfession;
 using Snowship.NResource;
 using Snowship.NTime;
 using Snowship.NUtilities;
@@ -24,11 +25,11 @@ namespace Snowship.NHuman
 		// Inventory
 		public Inventory Inventory { get; }
 
-		// Job
-		public JobComponent JobComponent { get; }
-
-		// Mood
-		public MoodComponent MoodComponent;
+		public JobComponent Jobs { get; }
+		public ProfessionsComponent Professions { get; }
+		public NeedsComponent Needs { get; }
+		public MoodsComponent Moods { get; }
+		public SkillsComponent Skills { get; }
 
 		// Wandering
 		protected const int WanderTimerMin = 10;
@@ -56,12 +57,16 @@ namespace Snowship.NHuman
 
 			Inventory = new Inventory(this, 50000, 50000);
 
-			JobComponent = new JobComponent(this);
+			Jobs = new JobComponent(this);
+			Professions = new ProfessionsComponent();
+			Needs = new NeedsComponent(this);
+			Moods = new MoodsComponent(this);
+			Skills = new SkillsComponent(this);
 
 			bodyIndices = GetBodyIndices(gender);
 			moveSprites = GameManager.Get<HumanManager>().humanMoveSprites[bodyIndices[BodySection.Skin]];
 
-			humanObj = MonoBehaviour.Instantiate(GameManager.Get<ResourceManager>().humanPrefab, obj.transform, false);
+			humanObj = Object.Instantiate(GameManager.Get<ResourceManager>().humanPrefab, obj.transform, false);
 			int appearanceIndex = 1;
 			foreach (BodySection appearance in clothes.Keys) {
 				humanObj.transform.Find(appearance.ToString()).GetComponent<SpriteRenderer>().sortingOrder = obj.GetComponent<SpriteRenderer>().sortingOrder + appearanceIndex;

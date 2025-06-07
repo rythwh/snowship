@@ -68,9 +68,9 @@ namespace Snowship.NJob
 
 			if (bed != null) {
 				bed.StopSleeping();
-				colonist.MoodComponent.AddMoodModifier(bed.prefab.restComfortAmount >= 10 ? MoodModifierEnum.WellRested : MoodModifierEnum.Rested);
+				colonist.Moods.AddMoodModifier(bed.prefab.restComfortAmount >= 10 ? MoodModifierEnum.WellRested : MoodModifierEnum.Rested);
 			} else {
-				colonist.MoodComponent.AddMoodModifier(MoodModifierEnum.SleptOnTheGround);
+				colonist.Moods.AddMoodModifier(MoodModifierEnum.SleptOnTheGround);
 			}
 		}
 	}

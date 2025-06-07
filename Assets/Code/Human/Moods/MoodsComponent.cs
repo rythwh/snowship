@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NHuman;
 using Snowship.NTime;
 using UnityEngine;
 
 namespace Snowship.NColonist
 {
-	public class MoodComponent
+	public class MoodsComponent
 	{
-		private readonly Colonist colonist;
+		private readonly Human human;
 
 		private static readonly (int Min, int Max) MoodRange = (0, 100);
 
@@ -22,8 +23,8 @@ namespace Snowship.NColonist
 		public event Action<MoodModifierInstance> OnMoodRemoved;
 		public event Action<float, float> OnMoodChanged;
 
-		public MoodComponent(Colonist colonist) {
-			this.colonist = colonist;
+		public MoodsComponent(Human human) {
+			this.human = human;
 
 			GameManager.Get<TimeManager>().OnTimeChanged += OnTimeChanged;
 		}
@@ -35,7 +36,7 @@ namespace Snowship.NColonist
 
 		public void UpdateMoodModifiers() {
 			foreach (MoodModifierGroup moodModifierGroup in MoodModifierGroup.moodModifierGroups) {
-				MoodModifierUtilities.moodModifierFunctions[moodModifierGroup.type](colonist);
+				MoodModifierUtilities.moodModifierFunctions[moodModifierGroup.type](human);
 			}
 		}
 
@@ -67,7 +68,7 @@ namespace Snowship.NColonist
 
 			float previousMood = EffectiveMood;
 
-			BaseMood = Mathf.Clamp(Mathf.RoundToInt(MoodRange.Max - colonist.CalculateNeedSumWeightedByPriority()), 0, 100);
+			BaseMood = Mathf.Clamp(Mathf.RoundToInt(MoodRange.Max - human.Needs.CalculateNeedSumWeightedByPriority()), 0, 100);
 
 			MoodModifiersSum = MoodModifiers.Sum(hM => hM.Prefab.effectAmount);
 

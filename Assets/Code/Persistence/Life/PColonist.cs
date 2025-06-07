@@ -96,7 +96,7 @@ namespace Snowship.NPersistence {
 				// }
 
 				file.WriteLine(PU.CreateKeyValueString(ColonistProperty.Professions, string.Empty, 1));
-				foreach (Profession profession in colonist.professions) {
+				foreach (ProfessionInstance profession in colonist.professions) {
 					file.WriteLine(PU.CreateKeyValueString(ProfessionProperty.Profession, string.Empty, 2));
 
 					file.WriteLine(PU.CreateKeyValueString(ProfessionProperty.Name, profession.prefab.type, 3));
@@ -130,11 +130,11 @@ namespace Snowship.NPersistence {
 					file.WriteLine(PU.CreateKeyValueString(NeedProperty.Value, need.GetValue(), 3));
 				}
 
-				file.WriteLine(PU.CreateKeyValueString(ColonistProperty.EffectiveMood, colonist.MoodComponent.EffectiveMood, 1));
+				file.WriteLine(PU.CreateKeyValueString(ColonistProperty.EffectiveMood, colonist.Moods.EffectiveMood, 1));
 
-				if (colonist.MoodComponent.MoodModifiers.Count > 0) {
+				if (colonist.Moods.MoodModifiers.Count > 0) {
 					file.WriteLine(PU.CreateKeyValueString(ColonistProperty.MoodModifiers, string.Empty, 1));
-					foreach (MoodModifierInstance moodModifier in colonist.MoodComponent.MoodModifiers) {
+					foreach (MoodModifierInstance moodModifier in colonist.Moods.MoodModifiers) {
 						file.WriteLine(PU.CreateKeyValueString(MoodModifierProperty.MoodModifier, string.Empty, 2));
 
 						file.WriteLine(PU.CreateKeyValueString(MoodModifierProperty.Type, moodModifier.Prefab.type, 3));
@@ -563,8 +563,8 @@ namespace Snowship.NPersistence {
 				}
 
 				foreach (PersistenceProfession persistenceProfession in persistenceColonist.persistenceProfessions) {
-					Profession profession = colonist.GetProfessionFromType(persistenceProfession.type);
-					profession.SetPriority(persistenceProfession.priority.Value);
+					ProfessionInstance professionInstance = colonist.GetProfessionFromType(persistenceProfession.type);
+					professionInstance.SetPriority(persistenceProfession.priority.Value);
 				}
 
 				foreach (PersistenceSkill persistenceSkill in persistenceColonist.persistenceSkills) {
@@ -585,11 +585,11 @@ namespace Snowship.NPersistence {
 				}
 
 				foreach (PersistenceMoodModifier persistenceMoodModifier in persistenceColonist.persistenceMoodModifiers) {
-					colonist.MoodComponent.AddMoodModifier(persistenceMoodModifier.type.Value);
-					colonist.MoodComponent.MoodModifiers.Find(hm => hm.Prefab.type == persistenceMoodModifier.type.Value).Timer = persistenceMoodModifier.timeRemaining.Value;
+					colonist.Moods.AddMoodModifier(persistenceMoodModifier.type.Value);
+					colonist.Moods.MoodModifiers.Find(hm => hm.Prefab.type == persistenceMoodModifier.type.Value).Timer = persistenceMoodModifier.timeRemaining.Value;
 				}
 
-				colonist.MoodComponent = new MoodComponent(colonist) {
+				colonist.Moods = new MoodsComponent(colonist) {
 					EffectiveMood = persistenceColonist.effectiveMood.Value
 				};
 			}

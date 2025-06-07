@@ -11,7 +11,7 @@ namespace Snowship.NColonist
 	{
 		private readonly Human human;
 
-		public IJob Job { get; private set; }
+		public IJob ActiveJob { get; private set; }
 		public readonly Queue<IJob> Backlog = new();
 
 		public event Action<IJob> OnJobChanged;
@@ -23,10 +23,10 @@ namespace Snowship.NColonist
 		}
 
 		private void OnHumanTileChanged(Life life, TileManager.Tile tile) {
-			if (Job == null) {
+			if (ActiveJob == null) {
 				return;
 			}
-			if (tile != Job.Tile) {
+			if (tile != ActiveJob.Tile) {
 				return;
 			}
 
@@ -34,48 +34,48 @@ namespace Snowship.NColonist
 		}
 
 		private void HumanArrivedAtJob() {
-			Job.ChangeJobState(EJobState.Started);
+			ActiveJob.ChangeJobState(EJobState.Started);
 		}
 
 		public void SetJob(IJob job) {
 			ReturnJob();
 
-			Job = job;
+			ActiveJob = job;
 
-			if (Job != null) {
-				Job.AssignWorker(human);
-				if (Job.Worker.Tile == Job.Tile) {
-					Job.ChangeJobState(EJobState.Started);
+			if (ActiveJob != null) {
+				ActiveJob.AssignWorker(human);
+				if (ActiveJob.Worker.Tile == ActiveJob.Tile) {
+					ActiveJob.ChangeJobState(EJobState.Started);
 				} else {
-					bool pathValid = Job.Worker.MoveToTile(Job.Tile, !Job.Tile.walkable);
+					bool pathValid = ActiveJob.Worker.MoveToTile(ActiveJob.Tile, !ActiveJob.Tile.walkable);
 					if (!pathValid) {
-						Debug.LogWarning($"Path invalid when trying to move {Job.Worker.Name} {Job.Worker.Tile.position} to Job {Job.Definition.Name} at {Job.Tile.position}");
+						Debug.LogWarning($"Path invalid when trying to move {ActiveJob.Worker.Name} {ActiveJob.Worker.Tile.position} to Job {ActiveJob.Definition.Name} at {ActiveJob.Tile.position}");
 						ReturnJob();
 					}
 				}
 			}
 
-			OnJobChanged?.Invoke(Job);
+			OnJobChanged?.Invoke(ActiveJob);
 		}
 
 		public void ReturnJob() {
-			if (Job == null) {
+			if (ActiveJob == null) {
 				return;
 			}
-			if (!Job.Definition.Returnable) {
-				Job.Close();
+			if (!ActiveJob.Definition.Returnable) {
+				ActiveJob.Close();
 				return;
 			}
 
-			Job.AssignWorker(null);
-			Job = null;
+			ActiveJob.AssignWorker(null);
+			ActiveJob = null;
 		}
 
 		public bool CanTakeNewJob() {
 			if (human.dead) {
 				return false;
 			}
-			if (Job != null) {
+			if (ActiveJob != null) {
 				return false;
 			}
 			if (human is Colonist { playerMoved: true }) {

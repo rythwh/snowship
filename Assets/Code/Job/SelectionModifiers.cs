@@ -35,11 +35,11 @@ namespace Snowship.NJob
 						}
 					}
 					foreach (Colonist colonist in Colonist.colonists) {
-						if (colonist.JobComponent.Job != null && colonist.JobComponent.Job.Layer == prefab.layer) {
-							if (colonist.JobComponent.Job.Tile == posTile) {
+						if (colonist.Jobs.ActiveJob != null && colonist.Jobs.ActiveJob.Layer == prefab.layer) {
+							if (colonist.Jobs.ActiveJob.Tile == posTile) {
 								return false;
 							}
-							if (colonist.JobComponent.Job is BuildJob buildJob) {
+							if (colonist.Jobs.ActiveJob is BuildJob buildJob) {
 								foreach (Vector2 multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
 									if (GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
 										return false;

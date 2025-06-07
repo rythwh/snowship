@@ -33,12 +33,12 @@ namespace Snowship.NJob
 			if (Jobs.Count(j => j.CanBeAssigned()) == 0) {
 				return;
 			}
-			if (Colonist.colonists.Count(c => c.JobComponent.CanTakeNewJob()) == 0) {
+			if (Colonist.colonists.Count(c => c.Jobs.CanTakeNewJob()) == 0) {
 				return;
 			}
 
 			foreach (Colonist colonist in Colonist.colonists) {
-				if (!colonist.JobComponent.CanTakeNewJob()) {
+				if (!colonist.Jobs.CanTakeNewJob()) {
 					colonistJobs.Remove(colonist);
 					continue;
 				}
@@ -118,7 +118,7 @@ namespace Snowship.NJob
 						continue;
 					}
 
-					colonist.JobComponent.SetJob(jobCostEntry.Job);
+					colonist.Jobs.SetJob(jobCostEntry.Job);
 					break;
 				}
 			}

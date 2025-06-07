@@ -27,7 +27,7 @@ namespace Snowship.NProfession {
 			List<IJobDefinition> jobs
 		) {
 			this.type = type;
-			name = StringUtilities.SplitByCapitals(type.ToString());
+			name = StringUtilities.SplitByCapitals(type);
 
 			this.jobs = jobs;
 
