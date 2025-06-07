@@ -101,7 +101,7 @@ namespace Snowship.NUI
 		// 	}
 		// }
 
-		public void ConfirmTrade() {
+		private void ConfirmTrade() {
 			Caravan caravan = GameManager.Get<CaravanManager>().selectedCaravan;
 
 			if (caravan == null) {

@@ -4,6 +4,7 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using Snowship.NCaravan;
 using Snowship.NResource;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,22 +17,22 @@ namespace Snowship.NUI
 		[SerializeField] private Button closeButton;
 
 		[Header("Title Texts")]
-		[SerializeField] private Text tradeCaravanAffiliationText;
-		[SerializeField] private Text tradeCaravanDescriptionText;
-		[SerializeField] private Text sellingResourceGroupText;
+		[SerializeField] private TMP_Text tradeCaravanAffiliationText;
+		[SerializeField] private TMP_Text tradeCaravanDescriptionText;
+		[SerializeField] private TMP_Text sellingResourceGroupText;
 
 		[Header("Resource Lists")]
 		[SerializeField] private VerticalLayoutGroup tradeResourcesLayoutGroup;
 		[SerializeField] private VerticalLayoutGroup confirmedTradeResourcesLayoutGroup;
 
 		[Header("Value Texts")]
-		[SerializeField] private Text tradeResourcesCaravanText;
-		[SerializeField] private Text tradeValueCaravanText;
-		[SerializeField] private Text tradeResourcesColonyText;
-		[SerializeField] private Text tradeValueColonyText;
+		[SerializeField] private TMP_Text tradeResourcesCaravanText;
+		[SerializeField] private TMP_Text tradeValueCaravanText;
+		[SerializeField] private TMP_Text tradeResourcesColonyText;
+		[SerializeField] private TMP_Text tradeValueColonyText;
 
-		[SerializeField] private Text tradeValueDifferenceText;
-		[SerializeField] private Text tradeFairnessText;
+		[SerializeField] private TMP_Text tradeValueDifferenceText;
+		[SerializeField] private TMP_Text tradeFairnessText;
 
 		private readonly List<UITradeResourceElement> tradeResourceElements = new();
 		private readonly List<UIConfirmedTradeResourceElement> confirmedTradeResourceElements = new();
@@ -55,9 +56,15 @@ namespace Snowship.NUI
 				return;
 			}
 
-			tradeCaravanAffiliationText.text = $"Trade Caravan of {caravan.location.name}";
-			tradeCaravanDescriptionText.text = string.Format($"{caravan.location.name} is a {caravan.location.wealth.ToLower()} {caravan.location.citySize.ToLower()} with {caravan.location.resourceRichness.ToLower()} resources in a {TileManager.Biome.GetBiomeByEnum(caravan.location.biomeType).name.ToLower()} climate."); // TODO This needs to be done in a better way
-			sellingResourceGroupText.text = $"Selling {caravan.resourceGroup.name}";
+			string locationName = caravan.location.name;
+			string wealth = caravan.location.wealth.ToLower();
+			string citySize = caravan.location.citySize.ToLower();
+			string resourceRichness = caravan.location.resourceRichness.ToLower();
+			string biome = TileManager.Biome.GetBiomeByEnum(caravan.location.biomeType).name.ToLower();
+
+			tradeCaravanAffiliationText.SetText($"Trade Caravan of {locationName}");
+			tradeCaravanDescriptionText.SetText($"{locationName} is a {wealth} {citySize} with {resourceRichness} resources in a {biome} climate.");
+			sellingResourceGroupText.SetText($"Selling {caravan.resourceGroup.name}");
 		}
 
 		public void CreateTradeResourceElements(List<TradeResourceAmount> tradeResourceAmounts) {
