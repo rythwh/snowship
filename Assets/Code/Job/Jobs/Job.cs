@@ -131,7 +131,7 @@ namespace Snowship.NJob
 				Worker.Inventory.ChangeResourceAmount(resourceAmount.Resource, -resourceAmount.Amount, false);
 			}
 
-			SkillInstance skill = ((Colonist)Worker).GetSkillFromJobType(Definition.Name); // TODO Skill Not Found
+			SkillInstance skill = Worker.Skills.GetSkillFromJobType(Definition.Name); // TODO Skill Not Found
 			Debug.Log(skill);
 			skill?.AddExperience(Experience);
 

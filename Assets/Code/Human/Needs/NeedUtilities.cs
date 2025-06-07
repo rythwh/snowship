@@ -62,7 +62,7 @@ namespace Snowship.NColonist {
 				return;
 			}
 			float needIncreaseAmount = need.prefab.baseIncreaseRate;
-			foreach (TraitInstance trait in need.human.traits) {
+			foreach (TraitInstance trait in need.human.Traits.AsList()) {
 				if (need.prefab.traitsAffectingThisNeed.TryGetValue(trait.prefab.type, out float needValue)) {
 					needIncreaseAmount *= needValue;
 				}

@@ -39,8 +39,7 @@ namespace Snowship.NJob
 				ChangeTile(bed.tile);
 			}
 
-			colonist = (Colonist)Worker; // TODO Remove cast when Humans have Job ability
-			sleepNeed = colonist.needs.Find(n => n.prefab.name == "Rest");
+			sleepNeed = Worker.Needs.Get(ENeed.Rest);
 			startSleepNeedValue = sleepNeed.GetValue();
 			sleepTime = SimulationDateTime.DayLengthSeconds * (8 / 24f) - (bed?.prefab.restComfortAmount).GetValueOrDefault(0);
 		}

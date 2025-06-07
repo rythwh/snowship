@@ -78,7 +78,7 @@ namespace Snowship.NJob
 					float cost = 0;
 					//cost += PathManager.RegionBlockDistance(colonist.Tile.regionBlock, job.Tile.regionBlock, true, true, !job.Tile.walkable);
 					cost += Vector2.Distance(colonist.Tile.position, job.Tile.position);
-					cost -= colonist.GetSkillFromJobType(job.Name)?.CalculateTotalSkillLevel() * 5f ?? 0;
+					cost -= colonist.Skills.GetSkillFromJobType(job.Name)?.CalculateTotalSkillLevel() * 5f ?? 0;
 					// TODO Check the job type's priority according to the colonist's assigned priorities
 
 					colonistJobs[colonist].Add(new JobCostEntry(job, cost));

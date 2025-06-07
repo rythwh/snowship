@@ -30,6 +30,7 @@ namespace Snowship.NHuman
 		public NeedsComponent Needs { get; }
 		public MoodsComponent Moods { get; }
 		public SkillsComponent Skills { get; }
+		public TraitsComponent Traits { get; }
 
 		// Wandering
 		protected const int WanderTimerMin = 10;
@@ -62,6 +63,7 @@ namespace Snowship.NHuman
 			Needs = new NeedsComponent(this);
 			Moods = new MoodsComponent(this);
 			Skills = new SkillsComponent(this);
+			Traits = new TraitsComponent();
 
 			bodyIndices = GetBodyIndices(gender);
 			moveSprites = GameManager.Get<HumanManager>().humanMoveSprites[bodyIndices[BodySection.Skin]];

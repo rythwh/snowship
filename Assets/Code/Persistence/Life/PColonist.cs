@@ -95,52 +95,52 @@ namespace Snowship.NPersistence {
 				// 	}
 				// }
 
-				file.WriteLine(PU.CreateKeyValueString(ColonistProperty.Professions, string.Empty, 1));
-				foreach (ProfessionInstance profession in colonist.professions) {
-					file.WriteLine(PU.CreateKeyValueString(ProfessionProperty.Profession, string.Empty, 2));
-
-					file.WriteLine(PU.CreateKeyValueString(ProfessionProperty.Name, profession.prefab.type, 3));
-					file.WriteLine(PU.CreateKeyValueString(ProfessionProperty.Priority, profession.GetPriority(), 3));
-				}
-
-				file.WriteLine(PU.CreateKeyValueString(ColonistProperty.Skills, string.Empty, 1));
-				foreach (SkillInstance skill in colonist.skills) {
-					file.WriteLine(PU.CreateKeyValueString(SkillProperty.Skill, string.Empty, 2));
-
-					file.WriteLine(PU.CreateKeyValueString(SkillProperty.Type, skill.prefab.type, 3));
-					file.WriteLine(PU.CreateKeyValueString(SkillProperty.Level, skill.Level, 3));
-					file.WriteLine(PU.CreateKeyValueString(SkillProperty.NextLevelExperience, skill.NextLevelExperience, 3));
-					file.WriteLine(PU.CreateKeyValueString(SkillProperty.CurrentExperience, skill.CurrentExperience, 3));
-				}
-
-				if (colonist.traits.Count > 0) {
-					file.WriteLine(PU.CreateKeyValueString(ColonistProperty.Traits, string.Empty, 1));
-					foreach (TraitInstance trait in colonist.traits) {
-						file.WriteLine(PU.CreateKeyValueString(TraitProperty.Trait, string.Empty, 2));
-
-						file.WriteLine(PU.CreateKeyValueString(TraitProperty.Type, trait.prefab.type, 3));
-					}
-				}
-
-				file.WriteLine(PU.CreateKeyValueString(ColonistProperty.Needs, string.Empty, 1));
-				foreach (NeedInstance need in colonist.needs) {
-					file.WriteLine(PU.CreateKeyValueString(NeedProperty.Need, string.Empty, 2));
-
-					file.WriteLine(PU.CreateKeyValueString(NeedProperty.Type, need.prefab.type, 3));
-					file.WriteLine(PU.CreateKeyValueString(NeedProperty.Value, need.GetValue(), 3));
-				}
-
-				file.WriteLine(PU.CreateKeyValueString(ColonistProperty.EffectiveMood, colonist.Moods.EffectiveMood, 1));
-
-				if (colonist.Moods.MoodModifiers.Count > 0) {
-					file.WriteLine(PU.CreateKeyValueString(ColonistProperty.MoodModifiers, string.Empty, 1));
-					foreach (MoodModifierInstance moodModifier in colonist.Moods.MoodModifiers) {
-						file.WriteLine(PU.CreateKeyValueString(MoodModifierProperty.MoodModifier, string.Empty, 2));
-
-						file.WriteLine(PU.CreateKeyValueString(MoodModifierProperty.Type, moodModifier.Prefab.type, 3));
-						file.WriteLine(PU.CreateKeyValueString(MoodModifierProperty.TimeRemaining, moodModifier.Timer, 3));
-					}
-				}
+				// file.WriteLine(PU.CreateKeyValueString(ColonistProperty.Professions, string.Empty, 1));
+				// foreach (ProfessionInstance profession in colonist.professions) {
+				// 	file.WriteLine(PU.CreateKeyValueString(ProfessionProperty.Profession, string.Empty, 2));
+				//
+				// 	file.WriteLine(PU.CreateKeyValueString(ProfessionProperty.Name, profession.prefab.type, 3));
+				// 	file.WriteLine(PU.CreateKeyValueString(ProfessionProperty.Priority, profession.GetPriority(), 3));
+				// }
+				//
+				// file.WriteLine(PU.CreateKeyValueString(ColonistProperty.Skills, string.Empty, 1));
+				// foreach (SkillInstance skill in colonist.skills) {
+				// 	file.WriteLine(PU.CreateKeyValueString(SkillProperty.Skill, string.Empty, 2));
+				//
+				// 	file.WriteLine(PU.CreateKeyValueString(SkillProperty.Type, skill.prefab.type, 3));
+				// 	file.WriteLine(PU.CreateKeyValueString(SkillProperty.Level, skill.Level, 3));
+				// 	file.WriteLine(PU.CreateKeyValueString(SkillProperty.NextLevelExperience, skill.NextLevelExperience, 3));
+				// 	file.WriteLine(PU.CreateKeyValueString(SkillProperty.CurrentExperience, skill.CurrentExperience, 3));
+				// }
+				//
+				// if (colonist.traits.Count > 0) {
+				// 	file.WriteLine(PU.CreateKeyValueString(ColonistProperty.Traits, string.Empty, 1));
+				// 	foreach (TraitInstance trait in colonist.traits) {
+				// 		file.WriteLine(PU.CreateKeyValueString(TraitProperty.Trait, string.Empty, 2));
+				//
+				// 		file.WriteLine(PU.CreateKeyValueString(TraitProperty.Type, trait.prefab.type, 3));
+				// 	}
+				// }
+				//
+				// file.WriteLine(PU.CreateKeyValueString(ColonistProperty.Needs, string.Empty, 1));
+				// foreach (NeedInstance need in colonist.needs) {
+				// 	file.WriteLine(PU.CreateKeyValueString(NeedProperty.Need, string.Empty, 2));
+				//
+				// 	file.WriteLine(PU.CreateKeyValueString(NeedProperty.Type, need.prefab.type, 3));
+				// 	file.WriteLine(PU.CreateKeyValueString(NeedProperty.Value, need.GetValue(), 3));
+				// }
+				//
+				// file.WriteLine(PU.CreateKeyValueString(ColonistProperty.EffectiveMood, colonist.Moods.EffectiveMood, 1));
+				//
+				// if (colonist.Moods.MoodModifiers.Count > 0) {
+				// 	file.WriteLine(PU.CreateKeyValueString(ColonistProperty.MoodModifiers, string.Empty, 1));
+				// 	foreach (MoodModifierInstance moodModifier in colonist.Moods.MoodModifiers) {
+				// 		file.WriteLine(PU.CreateKeyValueString(MoodModifierProperty.MoodModifier, string.Empty, 2));
+				//
+				// 		file.WriteLine(PU.CreateKeyValueString(MoodModifierProperty.Type, moodModifier.Prefab.type, 3));
+				// 		file.WriteLine(PU.CreateKeyValueString(MoodModifierProperty.TimeRemaining, moodModifier.Timer, 3));
+				// 	}
+				// }
 			}
 
 			file.Close();
@@ -562,36 +562,36 @@ namespace Snowship.NPersistence {
 					colonist.MoveToTile(GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceColonist.persistenceLife.pathEndPosition.Value), true);
 				}
 
-				foreach (PersistenceProfession persistenceProfession in persistenceColonist.persistenceProfessions) {
-					ProfessionInstance professionInstance = colonist.GetProfessionFromType(persistenceProfession.type);
-					professionInstance.SetPriority(persistenceProfession.priority.Value);
-				}
-
-				foreach (PersistenceSkill persistenceSkill in persistenceColonist.persistenceSkills) {
-					SkillInstance skill = colonist.skills.Find(s => s.prefab.type == persistenceSkill.type);
-					skill.Level = persistenceSkill.level.Value;
-					skill.NextLevelExperience = persistenceSkill.nextLevelExperience.Value;
-					skill.CurrentExperience = persistenceSkill.currentExperience.Value;
-				}
-
-				foreach (PersistenceTrait persistenceTrait in persistenceColonist.persistenceTraits) {
-					TraitInstance trait = colonist.traits.Find(t => t.prefab.type == persistenceTrait.type);
-					Debug.LogWarning("Load Colonist Traits: " + trait.prefab.type);
-				}
-
-				foreach (PersistenceNeed persistenceNeed in persistenceColonist.persistenceNeeds) {
-					NeedInstance need = colonist.needs.Find(n => n.prefab.type == persistenceNeed.type);
-					need.SetValue(persistenceNeed.value.Value);
-				}
-
-				foreach (PersistenceMoodModifier persistenceMoodModifier in persistenceColonist.persistenceMoodModifiers) {
-					colonist.Moods.AddMoodModifier(persistenceMoodModifier.type.Value);
-					colonist.Moods.MoodModifiers.Find(hm => hm.Prefab.type == persistenceMoodModifier.type.Value).Timer = persistenceMoodModifier.timeRemaining.Value;
-				}
-
-				colonist.Moods = new MoodsComponent(colonist) {
-					EffectiveMood = persistenceColonist.effectiveMood.Value
-				};
+				// foreach (PersistenceProfession persistenceProfession in persistenceColonist.persistenceProfessions) {
+				// 	ProfessionInstance professionInstance = colonist.GetProfessionFromType(persistenceProfession.type);
+				// 	professionInstance.SetPriority(persistenceProfession.priority.Value);
+				// }
+				//
+				// foreach (PersistenceSkill persistenceSkill in persistenceColonist.persistenceSkills) {
+				// 	SkillInstance skill = colonist.skills.Find(s => s.prefab.type == persistenceSkill.type);
+				// 	skill.Level = persistenceSkill.level.Value;
+				// 	skill.NextLevelExperience = persistenceSkill.nextLevelExperience.Value;
+				// 	skill.CurrentExperience = persistenceSkill.currentExperience.Value;
+				// }
+				//
+				// foreach (PersistenceTrait persistenceTrait in persistenceColonist.persistenceTraits) {
+				// 	TraitInstance trait = colonist.traits.Find(t => t.prefab.type == persistenceTrait.type);
+				// 	Debug.LogWarning("Load Colonist Traits: " + trait.prefab.type);
+				// }
+				//
+				// foreach (PersistenceNeed persistenceNeed in persistenceColonist.persistenceNeeds) {
+				// 	NeedInstance need = colonist.needs.Find(n => n.prefab.type == persistenceNeed.type);
+				// 	need.SetValue(persistenceNeed.value.Value);
+				// }
+				//
+				// foreach (PersistenceMoodModifier persistenceMoodModifier in persistenceColonist.persistenceMoodModifiers) {
+				// 	colonist.Moods.AddMoodModifier(persistenceMoodModifier.type.Value);
+				// 	colonist.Moods.MoodModifiers.Find(hm => hm.Prefab.type == persistenceMoodModifier.type.Value).Timer = persistenceMoodModifier.timeRemaining.Value;
+				// }
+				//
+				// colonist.Moods = new MoodsComponent(colonist) {
+				// 	EffectiveMood = persistenceColonist.effectiveMood.Value
+				// };
 			}
 
 			for (int i = 0; i < persistenceColonists.Count; i++) {

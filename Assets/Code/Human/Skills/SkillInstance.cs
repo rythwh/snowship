@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Linq;
-using Snowship.NHuman;
 using UnityEngine;
 
 namespace Snowship.NColonist {
 	public class SkillInstance {
-		public readonly Human human;
+
 		public readonly SkillPrefab prefab;
 
 		public int Level { get; set; }
@@ -15,8 +13,7 @@ namespace Snowship.NColonist {
 		public event Action<int> OnLevelChanged;
 		public event Action<float, float> OnExperienceChanged;
 
-		public SkillInstance(Human human, SkillPrefab prefab, bool randomStartingLevel, int startingLevel) {
-			this.human = human;
+		public SkillInstance(SkillPrefab prefab, bool randomStartingLevel, int startingLevel) {
 			this.prefab = prefab;
 
 			if (randomStartingLevel) {
@@ -50,28 +47,5 @@ namespace Snowship.NColonist {
 		public float CalculateTotalSkillLevel() {
 			return Level + CurrentExperience / NextLevelExperience;
 		}
-
-		// TODO Make not static
-		public static SkillInstance GetBestColonistAtSkill(SkillPrefab skill) {
-
-			Colonist firstColonist = Colonist.colonists.FirstOrDefault();
-			if (firstColonist == null) {
-				return null;
-			}
-			SkillInstance highestSkillInstance = firstColonist.skills.Find(findSkill => findSkill.prefab == skill);
-			float highestSkillValue = highestSkillInstance.CalculateTotalSkillLevel();
-
-			foreach (Colonist otherColonist in Colonist.colonists.Skip(1)) {
-				SkillInstance otherColonistSkillInstance = otherColonist.skills.Find(findSkill => findSkill.prefab == skill);
-				float otherColonistSkillValue = otherColonistSkillInstance.CalculateTotalSkillLevel();
-				if (otherColonistSkillValue > highestSkillValue) {
-					highestSkillValue = otherColonistSkillValue;
-					highestSkillInstance = otherColonistSkillInstance;
-				}
-			}
-
-			return highestSkillInstance;
-		}
-
 	}
 }

@@ -33,7 +33,7 @@ namespace Snowship.NUI
 		}
 
 		private void OnSkillLevelChanged(int level) {
-			SkillInstance highestSkillInColonists = SkillInstance.GetBestColonistAtSkill(skill.prefab);
+			SkillInstance highestSkillInColonists = SkillUtilities.GetBestColonistAtSkill(skill.prefab);
 			bool thisIsHighestSkill = highestSkillInColonists.Level == skill.Level;
 			Component.SetLevelSlider(
 				level,

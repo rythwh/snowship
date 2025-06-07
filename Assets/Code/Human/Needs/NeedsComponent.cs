@@ -65,5 +65,9 @@ namespace Snowship.NColonist
 		public NeedInstance Get(ENeed needType) {
 			return needs.GetValueOrDefault(needType);
 		}
+
+		public IReadOnlyList<NeedInstance> AsList() {
+			return sortedNeeds;
+		}
 	}
 }

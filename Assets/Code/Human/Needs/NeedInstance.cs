@@ -5,8 +5,8 @@ using UnityEngine;
 namespace Snowship.NColonist {
 	public class NeedInstance {
 
-		public Human human;
-		public NeedPrefab prefab;
+		public readonly Human human;
+		public readonly NeedPrefab prefab;
 		private float value = 0;
 		private int roundedValue = 0;
 

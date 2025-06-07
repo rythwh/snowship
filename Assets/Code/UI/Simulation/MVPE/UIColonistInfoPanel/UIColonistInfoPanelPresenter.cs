@@ -11,16 +11,15 @@ using UnityEngine.UI;
 
 namespace Snowship.NUI
 {
-
 	[UsedImplicitly]
 	public class UIColonistInfoPanelPresenter : UIPresenter<UIColonistInfoPanelView, UIColonistInfoPanelParameters>
 	{
-		private readonly Colonist colonist;
+		private readonly Human human;
 		private readonly Inventory inventory;
 
 		public UIColonistInfoPanelPresenter(UIColonistInfoPanelView view, UIColonistInfoPanelParameters parameters) : base(view, parameters) {
-			colonist = Parameters.Colonist;
-			inventory = colonist.Inventory;
+			human = Parameters.Human;
+			inventory = human.Inventory;
 		}
 
 		public override void OnCreate() {
@@ -30,25 +29,25 @@ namespace Snowship.NUI
 			OnTabSelected(View.ButtonToTabMap.First().button);
 
 			View.SetColonistInformation(
-				colonist.moveSprites[0],
-				$"{colonist.Name} ({colonist.gender.ToString()[0]})",
-				$"Colonist of {GameManager.Get<ColonyManager>().colony.name}"
+				human.moveSprites[0],
+				$"{human.Name} ({human.gender.ToString()[0]})",
+				$"Colonist of {GameManager.Get<ColonyManager>().colony.name}" // TODO Make affiliation accessible by Human and use that here
 			);
 
 			SetupNeedsSkillsTab();
 
-			colonist.Jobs.OnJobChanged += OnJobChanged;
-			OnJobChanged(colonist.Jobs.ActiveJob);
+			human.Jobs.OnJobChanged += OnJobChanged;
+			OnJobChanged(human.Jobs.ActiveJob);
 
-			View.SetupHealthSlider((0, 1), colonist.Health, true);
-			View.OnHealthChanged(colonist.Health);
-			colonist.OnHealthChanged += View.OnHealthChanged;
+			View.SetupHealthSlider((0, 1), human.Health, true);
+			View.OnHealthChanged(human.Health);
+			human.OnHealthChanged += View.OnHealthChanged;
 
-			View.SetupMoodSlider((0, 100), colonist.Moods.EffectiveMood, true);
-			View.OnMoodChanged(colonist.Moods.EffectiveMood, colonist.Moods.MoodModifiersSum);
-			colonist.Moods.OnMoodAdded += OnMoodAdded;
-			colonist.Moods.OnMoodChanged += View.OnMoodChanged;
-			colonist.Moods.OnMoodRemoved += OnMoodRemoved;
+			View.SetupMoodSlider((0, 100), human.Moods.EffectiveMood, true);
+			View.OnMoodChanged(human.Moods.EffectiveMood, human.Moods.MoodModifiersSum);
+			human.Moods.OnMoodAdded += OnMoodAdded;
+			human.Moods.OnMoodChanged += View.OnMoodChanged;
+			human.Moods.OnMoodRemoved += OnMoodRemoved;
 
 			View.SetupInventorySliders(inventory);
 			View.OnEmptyInventoryButtonClicked += OnEmptyInventoryButtonClicked;
@@ -61,7 +60,7 @@ namespace Snowship.NUI
 			inventory.OnReservedResourcesRemoved += View.OnInventoryReservedResourcesRemoved;
 
 			SetupClothingTab();
-			colonist.OnClothingChanged += View.OnColonistClothingChanged;
+			human.OnClothingChanged += View.OnHumanClothingChanged;
 			View.SetClothingSelectionPanelActive(false);
 		}
 
@@ -70,13 +69,13 @@ namespace Snowship.NUI
 
 			View.OnTabSelected -= OnTabSelected;
 
-			colonist.Jobs.OnJobChanged -= OnJobChanged;
+			human.Jobs.OnJobChanged -= OnJobChanged;
 
-			colonist.OnHealthChanged -= View.OnHealthChanged;
+			human.OnHealthChanged -= View.OnHealthChanged;
 
-			colonist.Moods.OnMoodAdded -= OnMoodAdded;
-			colonist.Moods.OnMoodChanged -= View.OnMoodChanged;
-			colonist.Moods.OnMoodRemoved -= OnMoodRemoved;
+			human.Moods.OnMoodAdded -= OnMoodAdded;
+			human.Moods.OnMoodChanged -= View.OnMoodChanged;
+			human.Moods.OnMoodRemoved -= OnMoodRemoved;
 
 			View.OnEmptyInventoryButtonClicked -= OnEmptyInventoryButtonClicked;
 			inventory.OnInventoryChanged -= View.OnInventoryChanged;
@@ -86,9 +85,9 @@ namespace Snowship.NUI
 			inventory.OnReservedResourcesAdded -= View.OnInventoryReservedResourcesAdded;
 			inventory.OnReservedResourcesRemoved -= View.OnInventoryReservedResourcesRemoved;
 
-			colonist.OnClothingChanged -= View.OnColonistClothingChanged;
+			human.OnClothingChanged -= View.OnHumanClothingChanged;
 
-			foreach (MoodModifierInstance mood in colonist.Moods.MoodModifiers) {
+			foreach (MoodModifierInstance mood in human.Moods.MoodModifiers) {
 				OnMoodRemoved(mood);
 			}
 		}
@@ -115,13 +114,13 @@ namespace Snowship.NUI
 		}
 
 		private void SetupNeedsSkillsTab() {
-			foreach (NeedInstance need in colonist.needs.OrderByDescending(need => need.GetValue())) {
+			foreach (NeedInstance need in human.Needs.AsList().OrderByDescending(need => need.GetValue())) {
 				View.AddNeedElement(need);
 			}
-			foreach (MoodModifierInstance mood in colonist.Moods.MoodModifiers) {
+			foreach (MoodModifierInstance mood in human.Moods.MoodModifiers) {
 				View.AddMoodElement(mood);
 			}
-			foreach (SkillInstance skill in colonist.skills) {
+			foreach (SkillInstance skill in human.Skills.AsList()) {
 				View.AddSkillElement(skill);
 			}
 		}
@@ -133,11 +132,14 @@ namespace Snowship.NUI
 		}
 
 		private void OnEmptyInventoryButtonClicked() {
+			if (human is not Colonist colonist) {
+				return;
+			}
 			colonist.EmptyInventory(colonist.FindValidContainersToEmptyInventory());
 		}
 
 		private void SetupClothingTab() {
-			foreach (KeyValuePair<BodySection, Clothing> clothingMapping in colonist.clothes) {
+			foreach (KeyValuePair<BodySection, Clothing> clothingMapping in human.clothes) {
 				UIClothingButtonElement clothingButton = View.CreateClothingButton(clothingMapping.Key, clothingMapping.Value);
 				clothingButton.OnButtonClicked += OnClothingButtonClicked;
 			}
@@ -162,7 +164,7 @@ namespace Snowship.NUI
 				if (clothing.GetAvailableAmount() > 0) {
 					clothingElement = View.CreateAvailableClothingElement(clothing);
 					View.SetClothesAvailableTitleTextPanelActive(true);
-				} else if (colonist.clothes[bodySection] == null || clothing.name != colonist.clothes[bodySection].name) {
+				} else if (human.clothes[bodySection] == null || clothing.name != human.clothes[bodySection].name) {
 					clothingElement = View.CreateTakenClothingElement(clothing);
 					View.SetClothesTakenTitleTextPanelActive(true);
 				}
@@ -174,7 +176,7 @@ namespace Snowship.NUI
 		}
 
 		private void OnClothingElementClicked(Clothing clothing) {
-			colonist.ChangeClothing(clothing.prefab.BodySection, clothing);
+			human.ChangeClothing(clothing.prefab.BodySection, clothing);
 			View.SetClothingSelectionPanelActive(false);
 		}
 	}

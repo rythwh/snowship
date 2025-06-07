@@ -19,27 +19,14 @@ namespace Snowship.NColonist {
 		public Colonist(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
 			obj.transform.SetParent(GameManager.SharedReferences.LifeParent, false);
 
-
-
-
-
 			colonists.Add(this);
-
-			GameManager.Get<TimeManager>().OnTimeChanged += OnTimeChanged;
 		}
 
 		protected Colonist() {
 
 		}
 
-		private void OnTimeChanged(SimulationDateTime time) {
-			UpdateNeeds();
-		}
-
-
-
 		public override void Update() {
-
 
 			if (playerMoved && path.Count <= 0) {
 				playerMoved = false;
@@ -76,8 +63,6 @@ namespace Snowship.NColonist {
 				Jobs.SetJob(new EmptyInventoryJob(closestContainer));
 			}
 		}
-
-
 
 		/*public void SetJob(ColonistJob colonistJob, bool reserveResourcesInContainerPickups = true) {
 			Job = colonistJob;
@@ -273,24 +258,6 @@ namespace Snowship.NColonist {
 			playerMoved = true;
 			Jobs.ReturnJob();
 			MoveToTile(tile, false);
-		}
-
-
-
-		public SkillInstance GetSkillFromEnum(ESkill type) {
-			return skills.Find(s => s.prefab.type == type);
-		}
-
-		public SkillInstance GetSkillFromJobType(string jobType) {
-			return skills.Find(s => s.prefab.affectedJobTypes.ContainsKey(jobType));
-		}
-
-		public float GetJobSkillMultiplier(string jobType) {
-			SkillInstance skill = GetSkillFromJobType(jobType);
-			if (skill != null) {
-				return 1 * (-(1f / (skill.prefab.affectedJobTypes[jobType] * skill.Level + 1)) + 1);
-			}
-			return 1.0f;
 		}
 
 		public override void SetName(string name) {

@@ -27,8 +27,7 @@ namespace Snowship.NJob
 		protected override void OnJobTaken() {
 			base.OnJobTaken();
 
-			colonist = Worker as Colonist; // TODO Remove cast when Humans have Job ability
-			foodNeed = colonist?.needs.Find(n => n.prefab.type == ENeed.Food);
+			foodNeed = Worker.Needs.Get(ENeed.Food);
 		}
 
 		protected override void OnJobStarted() {
@@ -55,12 +54,10 @@ namespace Snowship.NJob
 					) != null
 				)
 				.FirstOrDefault();
-
 		}
 
 		protected override void OnJobInProgress() {
 			base.OnJobInProgress();
-
 		}
 
 		protected override void OnJobFinished() {

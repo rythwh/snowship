@@ -1,13 +1,14 @@
 ﻿using Snowship.NColonist;
+using Snowship.NHuman;
 
 namespace Snowship.NUI
 {
 	public class UIColonistInfoPanelParameters : IUIParameters {
 
-		public Colonist Colonist { get; }
+		public Human Human { get; }
 
-		public UIColonistInfoPanelParameters(Colonist colonist) {
-			Colonist = colonist;
+		public UIColonistInfoPanelParameters(Human human) {
+			Human = human;
 		}
 
 	}

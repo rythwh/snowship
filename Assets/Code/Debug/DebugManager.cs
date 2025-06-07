@@ -361,29 +361,25 @@ public class DebugManager : IManager
 					NeedPrefab needPrefab = NeedPrefab.needPrefabs.Find(need => need.name == parameters[0]);
 					if (needPrefab != null) {
 						if (GameManager.Get<HumanManager>().selectedHuman != null) {
-							if (GameManager.Get<HumanManager>().selectedHuman is Colonist) {
-								Colonist selectedColonist = (Colonist)GameManager.Get<HumanManager>().selectedHuman;
-								NeedInstance needInstance = selectedColonist.needs.Find(need => need.prefab == needPrefab);
-								if (needInstance != null) {
-									if (float.TryParse(parameters[1], out float newNeedValue)) {
-										if (newNeedValue is >= 0 and <= 100) {
-											needInstance.SetValue(newNeedValue);
-											if (Mathf.Approximately(needInstance.GetValue(), newNeedValue)) {
-												Output($"SUCCESS: {needInstance.prefab.name} now has value {needInstance.GetValue()}.");
-											} else {
-												Output($"ERROR: Unable to change {needInstance.prefab.name} need value.");
-											}
+							Human human = GameManager.Get<HumanManager>().selectedHuman;
+							NeedInstance needInstance = human.Needs.AsList().FirstOrDefault(need => need.prefab == needPrefab);
+							if (needInstance != null) {
+								if (float.TryParse(parameters[1], out float newNeedValue)) {
+									if (newNeedValue is >= 0 and <= 100) {
+										needInstance.SetValue(newNeedValue);
+										if (Mathf.Approximately(needInstance.GetValue(), newNeedValue)) {
+											Output($"SUCCESS: {needInstance.prefab.name} now has value {needInstance.GetValue()}.");
 										} else {
-											Output("ERROR: Invalid range on need value (float from 0 to 100).");
+											Output($"ERROR: Unable to change {needInstance.prefab.name} need value.");
 										}
 									} else {
-										Output("ERROR: Unable to parse need value as float.");
+										Output("ERROR: Invalid range on need value (float from 0 to 100).");
 									}
 								} else {
-									Output("ERROR: Unable to find specified need on selected colonist.");
+									Output("ERROR: Unable to parse need value as float.");
 								}
 							} else {
-								Output("ERROR: Selected human is not a colonist.");
+								Output("ERROR: Unable to find specified need on selected human.");
 							}
 						} else {
 							Output("ERROR: No human selected.");

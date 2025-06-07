@@ -258,7 +258,7 @@ namespace Snowship.NUI
 		}
 
 		private void OnDisrobeButtonClicked(BodySection bodySection) {
-			OnColonistClothingChanged(bodySection, null);
+			OnHumanClothingChanged(bodySection, null);
 			SetClothingSelectionPanelActive(false);
 		}
 
@@ -285,7 +285,7 @@ namespace Snowship.NUI
 			clothesTakenTitleTextPanel.SetActive(active);
 		}
 
-		public void OnColonistClothingChanged(BodySection bodySection, Clothing clothing) {
+		public void OnHumanClothingChanged(BodySection bodySection, Clothing clothing) {
 			foreach (UIClothingButtonElement clothingButtonElement in clothingButtonElements) {
 				if (clothingButtonElement.BodySection != bodySection) {
 					continue;

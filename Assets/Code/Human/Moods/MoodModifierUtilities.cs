@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Snowship.NHuman;
 
 namespace Snowship.NColonist {
@@ -12,7 +13,10 @@ namespace Snowship.NColonist {
 				}
 			}, {
 				MoodModifierGroupEnum.Rest, delegate(Human human) {
-					NeedInstance restNeed = human.needs.Find(ni => ni.prefab.type == ENeed.Rest);
+					NeedInstance restNeed = human.Needs.AsList().FirstOrDefault(ni => ni.prefab.type == ENeed.Rest);
+					if (restNeed == null) {
+						return;
+					}
 					if (restNeed.GetValue() >= restNeed.prefab.critValue) {
 						human.Moods.AddMoodModifier(MoodModifierEnum.Exhausted);
 					} else if (restNeed.GetValue() >= restNeed.prefab.maxValue) {
@@ -36,7 +40,10 @@ namespace Snowship.NColonist {
 				}
 			}, */ {
 				MoodModifierGroupEnum.Food, delegate(Human human) {
-					NeedInstance foodNeed = human.Needs.Find(ni => ni.prefab.type == ENeed.Food);
+					NeedInstance foodNeed = human.Needs.AsList().FirstOrDefault(ni => ni.prefab.type == ENeed.Food);
+					if (foodNeed == null) {
+						return;
+					}
 					if (foodNeed.GetValue() >= foodNeed.prefab.critValue) {
 						human.Moods.AddMoodModifier(MoodModifierEnum.Starving);
 					} else if (foodNeed.GetValue() >= foodNeed.prefab.maxValue) {
