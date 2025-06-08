@@ -94,19 +94,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clothingSections:
-  - appearance: 0
+  - bodySection: 0
     sectionImage: {fileID: 6994656809385158110}
-  - appearance: 1
+  - bodySection: 0
     sectionImage: {fileID: 0}
-  - appearance: 2
+  - bodySection: 0
     sectionImage: {fileID: 68645740764246318}
-  - appearance: 3
+  - bodySection: 0
     sectionImage: {fileID: 1658287185644556860}
-  - appearance: 4
+  - bodySection: 0
     sectionImage: {fileID: 9148002322545937189}
-  - appearance: 5
+  - bodySection: 0
     sectionImage: {fileID: 2856803341704715232}
-  - appearance: 6
+  - bodySection: 0
     sectionImage: {fileID: 6086640616611828717}
 --- !u!1 &2787634177639969483
 GameObject:
@@ -120,7 +120,7 @@ GameObject:
   - component: {fileID: 2528010593216132385}
   - component: {fileID: 6086640616611828717}
   m_Layer: 5
-  m_Name: ColonistBackpack-Image
+  m_Name: Backpack-Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -195,7 +195,7 @@ GameObject:
   - component: {fileID: 379814990075426500}
   - component: {fileID: 9148002322545937189}
   m_Layer: 5
-  m_Name: ColonistBottoms-Image
+  m_Name: Bottoms-Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -270,7 +270,7 @@ GameObject:
   - component: {fileID: 43688370868072813}
   - component: {fileID: 1658287185644556860}
   m_Layer: 5
-  m_Name: ColonistTop-Image
+  m_Name: Top-Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -345,7 +345,7 @@ GameObject:
   - component: {fileID: 2159773837684450655}
   - component: {fileID: 2856803341704715232}
   m_Layer: 5
-  m_Name: ColonistScarf-Image
+  m_Name: Scarf-Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -420,7 +420,7 @@ GameObject:
   - component: {fileID: 7954146941383678585}
   - component: {fileID: 68645740764246318}
   m_Layer: 5
-  m_Name: ColonistHat-Image
+  m_Name: Hat-Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

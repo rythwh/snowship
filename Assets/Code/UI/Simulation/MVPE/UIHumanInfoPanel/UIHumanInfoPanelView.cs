@@ -14,7 +14,7 @@ namespace Snowship.NUI
 	public class UIHumanInfoPanelView : UIView {
 		[Header("General Information")]
 		[SerializeField] private UIHumanBodyElementComponent humanImage;
-		[SerializeField] private TMP_Text colonistNameText;
+		[SerializeField] private TMP_Text nameText;
 		[SerializeField] private TMP_Text currentActionText;
 		[SerializeField] private TMP_Text storedActionText;
 		[SerializeField] private TMP_Text affiliationText;
@@ -130,11 +130,11 @@ namespace Snowship.NUI
 			clothingElements.Clear();
 		}
 
-		public void SetColonistInformation(Sprite colonistSprite, string colonistName, string colonistAffiliation) {
-			humanImage.SetBodySectionSprite(BodySection.Skin, colonistSprite);
-			humanBody.SetBodySectionSprite(BodySection.Skin, colonistSprite);
-			colonistNameText.SetText(colonistName);
-			affiliationText.SetText(colonistAffiliation);
+		public void SetGeneralInformation(Sprite skinSprite, string humanName, string affiliation) {
+			humanImage.SetBodySectionSprite(BodySection.Skin, skinSprite);
+			humanBody.SetBodySectionSprite(BodySection.Skin, skinSprite);
+			nameText.SetText(humanName);
+			affiliationText.SetText(affiliation);
 		}
 
 		public void SetCurrentActionText(string text) {

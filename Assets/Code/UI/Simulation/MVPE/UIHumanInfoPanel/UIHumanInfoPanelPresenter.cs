@@ -28,7 +28,7 @@ namespace Snowship.NUI
 
 			OnTabSelected(View.ButtonToTabMap.First().button);
 
-			View.SetColonistInformation(
+			View.SetGeneralInformation(
 				human.moveSprites[0],
 				$"{human.Name} ({human.gender.ToString()[0]})",
 				$"Colonist of {GameManager.Get<ColonyManager>().colony.name}" // TODO Make affiliation accessible by Human and use that here
