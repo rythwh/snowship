@@ -42,11 +42,11 @@ namespace Snowship.NUI
 
 		private async UniTaskVoid OnHumanSelected(Human selectedHuman) {
 			if (selectedHuman == null) {
-				GameManager.Get<UIManager>().CloseView<UIColonistInfoPanel>();
+				GameManager.Get<UIManager>().CloseView<UIHumanInfoPanel>();
 				return;
 			}
-			UIColonistInfoPanelParameters parameters = new(selectedHuman);
-			await GameManager.Get<UIManager>().ReopenView<UIColonistInfoPanel>(this, parameters);
+			UIHumanInfoPanelParameters parameters = new(selectedHuman);
+			await GameManager.Get<UIManager>().ReopenView<UIHumanInfoPanel>(this, parameters);
 		}
 
 	}

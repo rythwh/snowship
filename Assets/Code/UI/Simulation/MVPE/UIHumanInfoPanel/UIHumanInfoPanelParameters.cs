@@ -3,11 +3,11 @@ using Snowship.NHuman;
 
 namespace Snowship.NUI
 {
-	public class UIColonistInfoPanelParameters : IUIParameters {
+	public class UIHumanInfoPanelParameters : IUIParameters {
 
 		public Human Human { get; }
 
-		public UIColonistInfoPanelParameters(Human human) {
+		public UIHumanInfoPanelParameters(Human human) {
 			Human = human;
 		}
 

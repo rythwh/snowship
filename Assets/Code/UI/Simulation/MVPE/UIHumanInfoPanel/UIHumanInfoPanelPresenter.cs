@@ -12,12 +12,12 @@ using UnityEngine.UI;
 namespace Snowship.NUI
 {
 	[UsedImplicitly]
-	public class UIColonistInfoPanelPresenter : UIPresenter<UIColonistInfoPanelView, UIColonistInfoPanelParameters>
+	public class UIHumanInfoPanelPresenter : UIPresenter<UIHumanInfoPanelView, UIHumanInfoPanelParameters>
 	{
 		private readonly Human human;
 		private readonly Inventory inventory;
 
-		public UIColonistInfoPanelPresenter(UIColonistInfoPanelView view, UIColonistInfoPanelParameters parameters) : base(view, parameters) {
+		public UIHumanInfoPanelPresenter(UIHumanInfoPanelView view, UIHumanInfoPanelParameters parameters) : base(view, parameters) {
 			human = Parameters.Human;
 			inventory = human.Inventory;
 		}

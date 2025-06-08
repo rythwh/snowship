@@ -11,7 +11,7 @@ using static Snowship.NUtilities.ColourUtilities;
 
 namespace Snowship.NUI
 {
-	public class UIColonistInfoPanelView : UIView {
+	public class UIHumanInfoPanelView : UIView {
 		[Header("General Information")]
 		[SerializeField] private UIHumanBodyElementComponent humanImage;
 		[SerializeField] private TMP_Text colonistNameText;

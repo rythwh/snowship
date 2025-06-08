@@ -1011,7 +1011,7 @@ GameObject:
   - component: {fileID: 7568201577889941554}
   - component: {fileID: 7137329324031305545}
   m_Layer: 5
-  m_Name: UIColonistInfoPanel
+  m_Name: UIHumanInfoPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

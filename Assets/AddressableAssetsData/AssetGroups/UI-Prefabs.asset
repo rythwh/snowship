@@ -16,7 +16,7 @@ MonoBehaviour:
   m_GUID: 977bb9e83e7fffe4f87075cb3e945f71
   m_SerializeEntries:
   - m_GUID: 0227b4a9dd7ad3e418a4bc62aa7ca210
-    m_Address: UI/UIColonistInfoPanel
+    m_Address: UI/UIHumanInfoPanel
     m_ReadOnly: 0
     m_SerializedLabels:
     - UI/Prefabs
