@@ -1,6 +1,4 @@
-﻿using Snowship.NColonist;
-
-namespace Snowship.NProfession {
+﻿namespace Snowship.NProfession {
 
 	public class ProfessionInstance {
 

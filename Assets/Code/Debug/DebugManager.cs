@@ -26,6 +26,9 @@ public class DebugManager : IManager
 {
 	private bool debugEnabled = false;
 
+	private CaravanManager CaravanM => GameManager.Get<CaravanManager>();
+	private UIManager UIM => GameManager.Get<UIManager>();
+
 	public event Action<string> OnConsoleOutputProduced;
 	public event Action OnConsoleClearRequested;
 
@@ -146,7 +149,8 @@ public class DebugManager : IManager
 		viewroofs,
 		viewhidden,
 		listjobs,
-		growfarms
+		growfarms,
+		opentrademenu,
 	}
 
 	private readonly Dictionary<Commands, string> commandHelpOutputs = new() {
@@ -204,7 +208,8 @@ public class DebugManager : IManager
 		{ Commands.viewroofs, "viewroofs -- highlights all tiles with a roof above it" },
 		{ Commands.viewhidden, "viewhidden -- shows all tiles on the map, including ones that are hidden from the player's view" },
 		{ Commands.listjobs, "listjobs (colonist) -- list all jobs and their costs for each colonist or for a specific colonist with the (colonist) argument" },
-		{ Commands.growfarms, "growfarms -- instantly grow all farms on the map" }
+		{ Commands.growfarms, "growfarms -- instantly grow all farms on the map" },
+		{ Commands.opentrademenu, "opentrademenu -- opens the trade menu for testing purposes" },
 	};
 
 	private readonly Dictionary<Commands, Action<List<string>>> commandFunctions = new();
@@ -1558,6 +1563,17 @@ public class DebugManager : IManager
 				} else {
 					Output("ERROR: Invalid number of parameters specified.");
 				}
+			}
+		);
+		commandFunctions.Add(
+			Commands.opentrademenu,
+			delegate(List<string> parameters) {
+				if (CaravanM.caravans.Count == 0) {
+					CaravanM.SpawnCaravan(CaravanType.Foot, Random.Range(1, 6));
+				}
+				Caravan caravan = CaravanM.caravans[0];
+				CaravanM.SetSelectedCaravan(caravan);
+				UIM.OpenViewAsync<UITradeMenu>().Forget();
 			}
 		);
 	}

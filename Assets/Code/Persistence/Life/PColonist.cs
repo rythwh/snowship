@@ -4,7 +4,6 @@ using System.IO;
 using Snowship.NColonist;
 using Snowship.NColony;
 using Snowship.NHuman;
-using Snowship.NProfession;
 using Snowship.NResource;
 using UnityEngine;
 using PU = Snowship.NPersistence.PersistenceUtilities;

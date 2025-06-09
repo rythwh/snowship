@@ -4,6 +4,7 @@
 	{
 		Ready,
 		Taken,
+		WorkerMoving,
 		Started,
 		InProgress,
 		Finished,

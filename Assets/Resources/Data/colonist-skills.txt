@@ -15,4 +15,6 @@ Crafting/
 	CreateResource,0.1`
 Hauling/
 	TransferResources,0.1;
-	CollectResources,0.1
+	CollectResources,0.1`
+Social/
+	Trade,0.1

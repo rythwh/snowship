@@ -76,7 +76,7 @@ namespace Snowship.NHuman
 					colonist.PlayerMoveToTile(GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(mousePosition));
 				}
 			}
-			if (Input.GetMouseButtonDown(1)) {
+			if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape)) {
 				SetSelectedHuman(null);
 			}
 		}

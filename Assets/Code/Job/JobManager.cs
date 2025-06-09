@@ -164,7 +164,13 @@ namespace Snowship.NJob
 		}
 
 		public IJob JobOfTypeExistsAtTile<TJob>(TileManager.Tile tile) where TJob : IJob {
-			return jobsByTile.GetValueOrDefault(tile)?.FirstOrDefault(job => job.GetType() == typeof(TJob));
+			if (!jobsByTile.ContainsKey(tile)) {
+				return null;
+			}
+			if (!jobsByTile.TryGetValue(tile, out HashSet<IJob> jobs)) {
+				return null;
+			}
+			return jobs?.FirstOrDefault(job => job.GetType() == typeof(TJob));
 		}
 
 		public IJob JobAtLayerExistsAtTile(TileManager.Tile tile, int layer) {

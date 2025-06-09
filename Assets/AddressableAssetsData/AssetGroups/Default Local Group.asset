@@ -14,7 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Default Local Group
   m_GUID: bd301d844f272e2409e42eb949b92b5b
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 0d6bac4e5ca93ba4a8df5e960021dc39
+    m_Address: UI/Element/UITradeResourceElement
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 53dd16e7a6a584b988e8edec1dfee7b8
+    m_Address: ui_icon_job_Trade
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7ac3d03e808ecc646998d855e891736a
+    m_Address: UI/UITradeMenu
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: e2a3f755bf78a09469378ac57b1c2f58, type: 2}
   m_SchemaSet:

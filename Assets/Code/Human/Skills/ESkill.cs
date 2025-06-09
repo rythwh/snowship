@@ -6,7 +6,7 @@
 		Farming,
 		Forestry,
 		Crafting,
-		Hauling
-
+		Hauling,
+		Social
 	};
 }

@@ -1137,8 +1137,8 @@ public class ResourceManager : IManager, IDisposable
 				ln =>
 					(GameManager.Get<UniverseManager>().universe == null || ln != GameManager.Get<UniverseManager>().universe.name)
 					&& (GameManager.Get<PlanetManager>().planet == null || ln != GameManager.Get<PlanetManager>().planet.name)
-					&& (GameManager.Get<ColonyManager>().colony == null || ln != GameManager.Get<ColonyManager>().colony.name)
-					&& GameManager.Get<CaravanManager>().caravans.Find(c => c.location.name == ln) == null
+					&& (GameManager.Get<ColonyManager>().colony == null || ln != GameManager.Get<ColonyManager>().colony.Name)
+					&& GameManager.Get<CaravanManager>().caravans.Find(c => c.location.Name == ln) == null
 			)
 			.ToList();
 

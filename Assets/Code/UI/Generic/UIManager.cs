@@ -176,5 +176,13 @@ namespace Snowship.NUI {
 			}
 			parentGroups.Clear();
 		}
+
+		public int OpenViewCount() {
+			int total = 0;
+			foreach (IUIGroup group in parentGroups) {
+				total = group.ChildCount(total);
+			}
+			return total;
+		}
 	}
 }

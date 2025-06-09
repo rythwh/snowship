@@ -79,6 +79,9 @@ namespace Snowship.NJob
 			if (JobPreviewObject) {
 				JobPreviewObject.transform.SetParent(Tile.obj.transform, false);
 			}
+			if (Worker != null) {
+				Worker.MoveToTile(Tile, Tile.walkable);
+			}
 		}
 
 		public void ChangePriority(int amount) {
@@ -96,6 +99,17 @@ namespace Snowship.NJob
 		}
 
 		protected virtual void OnJobTaken() {
+			ChangeJobState(EJobState.WorkerMoving);
+		}
+
+		protected virtual void OnJobWorkerMoving() {
+			if (JobState != EJobState.WorkerMoving) {
+				return;
+			}
+
+			if (Worker.Tile == Tile) {
+				ChangeJobState(EJobState.Started);
+			}
 		}
 
 		protected virtual void OnJobStarted() {
@@ -104,6 +118,7 @@ namespace Snowship.NJob
 
 		private void OnTimeChanged(SimulationDateTime time) {
 			OnJobInProgress();
+			OnJobWorkerMoving();
 		}
 
 		protected virtual void OnJobInProgress() {
@@ -165,9 +180,16 @@ namespace Snowship.NJob
 					}
 					stateChangedMethod = OnJobTaken;
 					break;
-				case EJobState.Started:
+				case EJobState.WorkerMoving:
 					if (JobState != EJobState.Taken) {
-						Debug.LogError($"Must progress from Taken -> Started (Currently {JobState}).");
+						Debug.LogError($"Must progress from Taken -> WorkerMoving (Currently {JobState}).");
+						return JobState;
+					}
+					stateChangedMethod = OnJobWorkerMoving;
+					break;
+				case EJobState.Started:
+					if (JobState != EJobState.WorkerMoving) {
+						Debug.LogError($"Must progress from WorkerMoving -> Started (Currently {JobState}).");
 						return JobState;
 					}
 					stateChangedMethod = OnJobStarted;

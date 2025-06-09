@@ -1,5 +1,4 @@
-﻿using Snowship.NColonist;
-using Snowship.NHuman;
+﻿using Snowship.NHuman;
 
 namespace Snowship.NUI
 {

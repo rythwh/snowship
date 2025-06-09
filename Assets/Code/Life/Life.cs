@@ -32,7 +32,7 @@ namespace Snowship.NLife
 		private static readonly int[] moveSpriteIndices = { 1, 2, 0, 3, 1, 0, 0, 1 };
 		private float moveTimer;
 		public List<TileManager.Tile> path = new();
-		public float moveSpeedMultiplier = 1f;
+		protected float MoveSpeedMultiplier = 1f;
 		public Vector2 previousPosition;
 		private float moveSpeedRampingMultiplier;
 
@@ -106,7 +106,7 @@ namespace Snowship.NLife
 					path.RemoveAt(0);
 				} else {
 					moveSpeedRampingMultiplier = Mathf.Clamp01(moveSpeedRampingMultiplier + GameManager.Get<TimeManager>().Time.DeltaTime);
-					moveTimer += 2 * GameManager.Get<TimeManager>().Time.DeltaTime * Tile.walkSpeed * moveSpeedMultiplier * moveSpeedRampingMultiplier;
+					moveTimer += 2 * GameManager.Get<TimeManager>().Time.DeltaTime * Tile.walkSpeed * MoveSpeedMultiplier * moveSpeedRampingMultiplier;
 				}
 			} else {
 				path.Clear();

@@ -15,8 +15,13 @@ namespace Snowship.NCaravan {
 
 		public List<TradingPost> tradingPosts;
 
+		public override string Title { get; } = "Trader";
+		public override ILocation OriginLocation => caravan.location;
+
 		public Trader(TileManager.Tile spawnTile, float startingHealth, Caravan caravan) : base(spawnTile, startingHealth) {
 			this.caravan = caravan;
+
+			MoveSpeedMultiplier = 0.5f;
 
 			obj.transform.SetParent(GameManager.SharedReferences.LifeParent, false);
 		}
@@ -54,8 +59,7 @@ namespace Snowship.NCaravan {
 				if (tradingPosts.Count <= 0) {
 					List<ResourceAmount> transferResources = caravan.confirmedResourcesToTrade
 						.Where(ctra => ctra.tradeAmount > 0)
-						.Select(
-							ctra => {
+						.Select(ctra => {
 								tradingPost.Inventory.ChangeResourceAmount(ctra.resource, ctra.tradeAmount, false);
 								ctra.amountRemaining = 0;
 								return new ResourceAmount(ctra.resource, ctra.tradeAmount);

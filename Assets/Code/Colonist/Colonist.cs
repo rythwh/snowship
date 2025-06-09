@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NColony;
 using Snowship.NHuman;
 using Snowship.NJob;
-using Snowship.NProfession;
 using Snowship.NResource;
-using Snowship.NTime;
 using Snowship.NUtilities;
-using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Snowship.NColonist {
@@ -15,6 +13,9 @@ namespace Snowship.NColonist {
 		public static readonly List<Colonist> colonists = new List<Colonist>();
 
 		public bool playerMoved;
+
+		public override string Title { get; } = "Colonist";
+		public override ILocation OriginLocation => GameManager.Get<ColonyManager>().colony;
 
 		public Colonist(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
 			obj.transform.SetParent(GameManager.SharedReferences.LifeParent, false);

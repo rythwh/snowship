@@ -1180,6 +1180,7 @@ MonoBehaviour:
   selectionParent: {fileID: 822783343}
   jobParent: {fileID: 1352574862}
   selectedJobPreview: {fileID: 556783372}
+  emptySprite: {fileID: 21300000, guid: 3cd6f4ad0e993274d9253b2bb7f720d4, type: 3}
 --- !u!1 &1604625817
 GameObject:
   m_ObjectHideFlags: 0

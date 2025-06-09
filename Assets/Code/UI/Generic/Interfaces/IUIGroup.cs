@@ -10,6 +10,7 @@
 		void SetViewActive(bool active);
 		public void AddChild(IUIGroup child);
 		public void RemoveChild(IUIGroup child);
+		public int ChildCount(int total);
 		public void Close();
 		public IUIGroup FindGroup(IUIPresenter presenterToFind);
 		public IUIGroup FindGroup(IUIView viewToFind);

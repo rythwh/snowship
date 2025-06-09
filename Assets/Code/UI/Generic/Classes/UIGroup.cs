@@ -58,10 +58,22 @@ namespace Snowship.NUI
 			children.Remove(child);
 		}
 
+		public int ChildCount(int total) {
+			total += children.Count;
+			foreach (IUIGroup child in children) {
+				total = child.ChildCount(total);
+			}
+			return total;
+		}
+
 		public void Close() {
 			foreach (IUIGroup child in children) {
 				child.Close();
 				break;
+			}
+
+			if (!config.Closeable) {
+				return;
 			}
 
 			config.OnClose();

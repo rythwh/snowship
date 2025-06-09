@@ -22,9 +22,13 @@ namespace Snowship.NHuman
 		private GameObject nameCanvas;
 		private GameObject humanObj;
 
+		public virtual string Title { get; } = "Traveler";
+		public virtual ILocation OriginLocation { get; protected set; }
+
 		// Inventory
 		public Inventory Inventory { get; }
 
+		// Components
 		public JobComponent Jobs { get; }
 		public ProfessionsComponent Professions { get; }
 		public NeedsComponent Needs { get; }
@@ -117,8 +121,8 @@ namespace Snowship.NHuman
 				Health
 			);
 
-			moveSpeedMultiplier = -((Inventory.UsedWeight() - Inventory.maxWeight) / (float)Inventory.maxWeight) + 1;
-			moveSpeedMultiplier = Mathf.Clamp(moveSpeedMultiplier, 0.1f, 1f);
+			MoveSpeedMultiplier = -((Inventory.UsedWeight() - Inventory.maxWeight) / (float)Inventory.maxWeight) + 1;
+			MoveSpeedMultiplier = Mathf.Clamp(MoveSpeedMultiplier, 0.1f, 1f);
 
 			SetMoveSprite();
 		}

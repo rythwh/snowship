@@ -9,7 +9,10 @@ namespace Snowship.NUI
 {
 	public class UIConfig<TView, TPresenter> : IUIConfig
 		where TView : IUIView
-		where TPresenter : IUIPresenter {
+		where TPresenter : IUIPresenter
+	{
+
+		public virtual bool Closeable { get; protected set; } = true;
 
 		private string AddressableKey() {
 			return $"UI/{GetType().Name}";

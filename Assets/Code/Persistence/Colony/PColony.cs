@@ -33,7 +33,7 @@ namespace Snowship.NPersistence {
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.LastSaveDateTime, colony.lastSaveDateTime, 0));
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.LastSaveTimeChunk, colony.lastSaveTimeChunk, 0));
 
-			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.Name, colony.name, 0));
+			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.Name, colony.Name, 0));
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.PlanetPosition, PU.FormatVector2ToString(colony.map.mapData.planetTilePosition), 0));
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.Seed, colony.map.mapData.mapSeed, 0));
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.Size, colony.map.mapData.mapSize, 0));

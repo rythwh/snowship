@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Snowship.NColonist;
 using Snowship.NHuman;
+using Snowship.NJob;
 using Snowship.NResource;
 using TMPro;
 using UnityEngine;
@@ -12,6 +13,7 @@ using static Snowship.NUtilities.ColourUtilities;
 namespace Snowship.NUI
 {
 	public class UIHumanInfoPanelView : UIView {
+
 		[Header("General Information")]
 		[SerializeField] private UIHumanBodyElementComponent humanImage;
 		[SerializeField] private TMP_Text nameText;
@@ -68,14 +70,21 @@ namespace Snowship.NUI
 		[SerializeField] private GameObject clothesTakenTitleTextPanel;
 		[SerializeField] private GridLayoutGroup clothesTakenGridLayoutGroup;
 
-		public List<(Button button, GameObject tab)> ButtonToTabMap => new List<(Button, GameObject)>() {
+		[Header("Trade Tab")]
+		[SerializeField] private Button tradeTabButton;
+		[SerializeField] private GameObject tradeTab;
+		[SerializeField] private Button tradeButton;
+
+		public List<(Button button, GameObject tab)> ButtonToTabMap => new() {
 			(needsSkillsTabButton, needsSkillsTab),
 			(inventoryTabButton, inventoryTab),
-			(clothingTabButton, clothingTab)
+			(clothingTabButton, clothingTab),
+			(tradeTabButton, tradeTab),
 		};
 
 		public event Action<Button> OnTabSelected;
 		public event Action OnEmptyInventoryButtonClicked;
+		public event Action TradeButtonClicked;
 
 		private readonly List<UINeedElement> needElements = new();
 		private readonly List<UIMoodElement> moodElements = new();
@@ -88,9 +97,9 @@ namespace Snowship.NUI
 		private readonly List<UIClothingElement> clothingElements = new();
 
 		public override void OnOpen() {
-			needsSkillsTabButton.onClick.AddListener(() => OnTabSelected?.Invoke(needsSkillsTabButton));
-			inventoryTabButton.onClick.AddListener(() => OnTabSelected?.Invoke(inventoryTabButton));
-			clothingTabButton.onClick.AddListener(() => OnTabSelected?.Invoke(clothingTabButton));
+			foreach ((Button button, GameObject tab) mapping in ButtonToTabMap) {
+				mapping.button.onClick.AddListener(() => OnTabSelected?.Invoke(mapping.button));
+			}
 
 			moodViewButton.onClick.AddListener(() => SetMoodPanelActive(true));
 			moodPanelCloseButton.onClick.AddListener(() => SetMoodPanelActive(false));
@@ -99,6 +108,8 @@ namespace Snowship.NUI
 			emptyInventoryButton.onClick.AddListener(() => OnEmptyInventoryButtonClicked?.Invoke());
 
 			clothingSelectionPanelBackButton.onClick.AddListener(() => SetClothingSelectionPanelActive(false));
+
+			tradeButton.onClick.AddListener(OnTradeButtonClicked);
 		}
 
 		public override void OnClose() {
@@ -310,6 +321,10 @@ namespace Snowship.NUI
 			}
 			reservedResourcesElements.Remove(reservedResourcesElement);
 			reservedResourcesElement.Close();
+		}
+
+		public void OnTradeButtonClicked() {
+			TradeButtonClicked?.Invoke();
 		}
 	}
 }

@@ -56,7 +56,7 @@ namespace Snowship.NUI
 				return;
 			}
 
-			string locationName = caravan.location.name;
+			string locationName = caravan.location.Name;
 			string wealth = caravan.location.wealth.ToLower();
 			string citySize = caravan.location.citySize.ToLower();
 			string resourceRichness = caravan.location.resourceRichness.ToLower();

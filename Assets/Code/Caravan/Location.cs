@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NUtilities;
 
 namespace Snowship.NCaravan {
-	public class Location {
+	public class Location : ILocation {
 
 		public static readonly List<string> Wealth = new List<string>() {
-			"Destitute", "Poor", "Comfortable","Wealthy"
+			"Destitute", "Poor", "Comfortable", "Wealthy"
 		};
 
 		public static readonly List<string> ResourceRichness = new List<string>() {
@@ -17,7 +18,7 @@ namespace Snowship.NCaravan {
 			"Hamlet", "Village", "Town", "City"
 		};
 
-		public readonly string name;
+		public string Name { get; }
 		public readonly string wealth;
 		public readonly string resourceRichness;
 		public readonly string citySize;
@@ -30,7 +31,7 @@ namespace Snowship.NCaravan {
 			string citySize,
 			TileManager.Biome.TypeEnum biomeType
 		) {
-			this.name = name;
+			Name = name;
 			this.wealth = wealth;
 			this.resourceRichness = resourceRichness;
 			this.citySize = citySize;

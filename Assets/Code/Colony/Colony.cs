@@ -1,18 +1,19 @@
 ﻿using Snowship.NPersistence;
+using Snowship.NUtilities;
 
 namespace Snowship.NColony {
-	public class Colony {
+	public class Colony : ILocation {
 		public string directory;
 		public string lastSaveDateTime;
 		public string lastSaveTimeChunk;
 
-		public string name;
+		public string Name { get; }
 
 		public TileManager.MapData mapData;
 		public TileManager.Map map;
 
 		public Colony(string name, TileManager.MapData mapData) {
-			this.name = name;
+			Name = name;
 			this.mapData = mapData;
 
 			lastSaveDateTime = PersistenceUtilities.GenerateSaveDateTimeString();

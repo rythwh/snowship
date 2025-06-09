@@ -76,7 +76,7 @@ namespace Snowship.NPersistence {
 				file.WriteLine(PU.CreateKeyValueString(CaravanProperty.Type, caravan.caravanType, 1));
 
 				file.WriteLine(PU.CreateKeyValueString(CaravanProperty.Location, string.Empty, 1));
-				file.WriteLine(PU.CreateKeyValueString(LocationProperty.Name, caravan.location.name, 2));
+				file.WriteLine(PU.CreateKeyValueString(LocationProperty.Name, caravan.location.Name, 2));
 				file.WriteLine(PU.CreateKeyValueString(LocationProperty.Wealth, caravan.location.wealth, 2));
 				file.WriteLine(PU.CreateKeyValueString(LocationProperty.ResourceRichness, caravan.location.resourceRichness, 2));
 				file.WriteLine(PU.CreateKeyValueString(LocationProperty.CitySize, caravan.location.citySize, 2));

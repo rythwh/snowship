@@ -6,9 +6,14 @@ namespace Snowship.NJob
 {
 	public interface IJobParams
 	{
-		virtual List<Func<TileManager.Tile, int, bool>> SelectionConditions => null;
-		Sprite JobPreviewSprite { get; }
-		int SetRotation(int rotation);
-		void UpdateJobPreviewSprite();
+		List<Func<TileManager.Tile, int, bool>> SelectionConditions => null;
+		Sprite JobPreviewSprite => null;
+
+		int SetRotation(int rotation) {
+			return 0;
+		}
+
+		void UpdateJobPreviewSprite() {
+		}
 	}
 }

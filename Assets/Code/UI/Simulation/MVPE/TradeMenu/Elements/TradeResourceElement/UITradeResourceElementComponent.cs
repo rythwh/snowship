@@ -1,6 +1,6 @@
 ﻿using System;
+using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Snowship.NUI
@@ -8,14 +8,14 @@ namespace Snowship.NUI
 	public class UITradeResourceElementComponent : UIElementComponent {
 
 		[SerializeField] private InputField tradeAmountInputField;
-		[SerializeField] private Text tradeAmountInputFieldText;
+		[SerializeField] private TMP_Text tradeAmountInputFieldText;
 		[SerializeField] private Button clearButton;
 
 		[Header("Caravan")]
 		[SerializeField] private Image caravanResourceImage;
-		[SerializeField] private Text caravanResourceName;
-		[SerializeField] private Text caravanResourcePrice;
-		[FormerlySerializedAs("caravanAmount")] [SerializeField] private Text caravanAmountText;
+		[SerializeField] private TMP_Text caravanResourceName;
+		[SerializeField] private TMP_Text caravanResourcePrice;
+		[SerializeField] private TMP_Text caravanAmountText;
 
 		[SerializeField] private Button buyOneButton;
 		[SerializeField] private Button buyAllButton;
@@ -25,9 +25,9 @@ namespace Snowship.NUI
 		[SerializeField] private Button sellAllButton;
 
 		[SerializeField] private Image colonyResourceImage;
-		[SerializeField] private Text colonyResourceName;
-		[SerializeField] private Text colonyResourcePrice;
-		[SerializeField] private Text colonyAmountText;
+		[SerializeField] private TMP_Text colonyResourceName;
+		[SerializeField] private TMP_Text colonyResourcePrice;
+		[SerializeField] private TMP_Text colonyAmountText;
 
 		public event Action<string> OnTradeAmountChanged;
 		public event Action OnClearButtonClicked;
@@ -74,21 +74,21 @@ namespace Snowship.NUI
 		}
 
 		public void SetResourceName(string resourceName) {
-			caravanResourceName.text = resourceName;
-			colonyResourceName.text = resourceName;
+			caravanResourceName.SetText(resourceName);
+			colonyResourceName.SetText(resourceName);
 		}
 
 		public void SetResourcePrice(string resourcePrice) {
-			caravanResourcePrice.text = resourcePrice;
-			colonyResourcePrice.text = resourcePrice;
+			caravanResourcePrice.SetText(resourcePrice);
+			colonyResourcePrice.SetText(resourcePrice);
 		}
 
 		public void SetCaravanAmount(int caravanAmount) {
-			caravanAmountText.text = caravanAmount == 0 ? string.Empty : caravanAmount.ToString();
+			caravanAmountText.SetText(caravanAmount == 0 ? string.Empty : caravanAmount.ToString());
 		}
 
 		public void SetColonyAmount(int colonyAmount) {
-			colonyAmountText.text = colonyAmount == 0 ? string.Empty : colonyAmount.ToString();
+			colonyAmountText.SetText(colonyAmount == 0 ? string.Empty : colonyAmount.ToString());
 		}
 
 		public void SetClearButtonInteractable(bool interactable) {

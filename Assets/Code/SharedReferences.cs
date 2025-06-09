@@ -24,5 +24,9 @@ namespace Snowship
 
 		[SerializeField] private SpriteRenderer selectedJobPreview;
 		public SpriteRenderer SelectedJobPreview => selectedJobPreview;
+
+		[SerializeField] private Sprite emptySprite;
+		public Sprite EmptySprite => emptySprite;
+
 	}
 }

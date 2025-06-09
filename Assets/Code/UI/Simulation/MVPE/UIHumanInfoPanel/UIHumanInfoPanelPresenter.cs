@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using Snowship.NCaravan;
 using Snowship.NColonist;
-using Snowship.NColony;
 using Snowship.NHuman;
 using Snowship.NJob;
 using Snowship.NResource;
@@ -31,7 +31,7 @@ namespace Snowship.NUI
 			View.SetGeneralInformation(
 				human.moveSprites[0],
 				$"{human.Name} ({human.gender.ToString()[0]})",
-				$"Colonist of {GameManager.Get<ColonyManager>().colony.name}" // TODO Make affiliation accessible by Human and use that here
+				$"{human.Title} of {human.OriginLocation.Name}"
 			);
 
 			SetupNeedsSkillsTab();
@@ -62,6 +62,8 @@ namespace Snowship.NUI
 			SetupClothingTab();
 			human.OnClothingChanged += View.OnHumanClothingChanged;
 			View.SetClothingSelectionPanelActive(false);
+
+			SetupTradeTab();
 		}
 
 		public override void OnClose() {
@@ -178,6 +180,20 @@ namespace Snowship.NUI
 		private void OnClothingElementClicked(Clothing clothing) {
 			human.ChangeClothing(clothing.prefab.BodySection, clothing);
 			View.SetClothingSelectionPanelActive(false);
+		}
+
+		private void SetupTradeTab() {
+			View.TradeButtonClicked += OnTradeButtonClicked;
+		}
+
+		private void OnTradeButtonClicked() {
+			if (human is not Trader trader) {
+				return;
+			}
+			if (GameManager.Get<JobManager>().JobOfTypeExistsAtTile<TradeJob>(trader.Tile) != null) {
+				return;
+			}
+			GameManager.Get<JobManager>().AddJob(new TradeJob(trader));
 		}
 	}
 }
