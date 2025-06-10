@@ -1,0 +1,57 @@
+﻿using System.Linq;
+using JetBrains.Annotations;
+using Snowship.NColonist;
+using Snowship.NHuman;
+
+namespace Snowship.NUI.UITab
+{
+	[UsedImplicitly]
+	public class UIBiographyTab : UITabElement<UIBiographyTabComponent>
+	{
+		private readonly Human human;
+
+		public UIBiographyTab(Human human) {
+			this.human = human;
+		}
+
+		protected override void OnCreate() {
+			base.OnCreate();
+
+			foreach (NeedInstance need in human.Needs.AsList().OrderByDescending(need => need.GetValue())) {
+				Component.AddNeedElement(need);
+			}
+			foreach (MoodModifierInstance mood in human.Moods.MoodModifiers) {
+				Component.AddMoodElement(mood);
+			}
+			foreach (SkillInstance skill in human.Skills.AsList()) {
+				Component.AddSkillElement(skill);
+			}
+
+			human.Moods.OnMoodAdded += OnMoodAdded;
+			human.Moods.OnMoodChanged += Component.OnMoodChanged;
+			human.Moods.OnMoodRemoved += OnMoodRemoved;
+		}
+
+		protected override void OnClose() {
+			base.OnClose();
+
+			human.Moods.OnMoodAdded -= OnMoodAdded;
+			human.Moods.OnMoodChanged -= Component.OnMoodChanged;
+			human.Moods.OnMoodRemoved -= OnMoodRemoved;
+
+			foreach (MoodModifierInstance mood in human.Moods.MoodModifiers) {
+				OnMoodRemoved(mood);
+			}
+		}
+
+		private void OnMoodAdded(MoodModifierInstance mood) {
+			Component.OnMoodAdded(mood);
+			mood.OnTimerAtZero += OnMoodRemoved;
+		}
+
+		private void OnMoodRemoved(MoodModifierInstance mood) {
+			mood.OnTimerAtZero -= OnMoodAdded;
+			Component.OnMoodRemoved(mood);
+		}
+	}
+}

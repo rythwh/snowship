@@ -20,13 +20,38 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 294e04c2deed3db4b9c45ff6225f6d1e
+    m_Address: UI/Element/UIClothingTab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4fcb2090860a3204180f47a9aa5710e3
+    m_Address: UI/Element/UITradeTab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 53dd16e7a6a584b988e8edec1dfee7b8
     m_Address: ui_icon_job_Trade
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 68af216c745840142a1167d95221703b
+    m_Address: UI/Element/UIBiographyTab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7ac3d03e808ecc646998d855e891736a
     m_Address: UI/UITradeMenu
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6115baa7242cf04db2aadbf29182d0f
+    m_Address: UI/Element/UITabButton
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d1e26968e5650d74f926afd876a4d047
+    m_Address: UI/Element/UIInventoryTab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

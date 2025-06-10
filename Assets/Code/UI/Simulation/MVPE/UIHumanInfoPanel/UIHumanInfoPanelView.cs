@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
-using Snowship.NColonist;
+﻿using Cysharp.Threading.Tasks;
 using Snowship.NHuman;
-using Snowship.NJob;
 using Snowship.NResource;
+using Snowship.NUI.UITab;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using static Snowship.NUtilities.ColourUtilities;
 
 namespace Snowship.NUI
@@ -29,121 +25,19 @@ namespace Snowship.NUI
 		[SerializeField] private UISliderHandler inventoryVolumeSlider;
 		[SerializeField] private TMP_Text inventoryVolumeText;
 
-		[Header("Needs, Moods, Skills Tab")]
-		[SerializeField] private Button needsSkillsTabButton;
-		[SerializeField] private GameObject needsSkillsTab;
+		[Header("Tabs")]
+		[SerializeField] private Transform tabParent;
+		[SerializeField] private Transform tabButtonParent;
 
-		[Header("Needs Sub-Panel")]
-		[SerializeField] private TMP_Text moodCurrentText;
-		[SerializeField] private Button moodViewButton;
-		[SerializeField] private TMP_Text moodModifiersSumText;
-		[SerializeField] private VerticalLayoutGroup needsListVerticalLayoutGroup;
-
-		[Header("Moods Sub-Panel")]
-		[SerializeField] private GameObject moodPanel;
-		[SerializeField] private Button moodPanelCloseButton;
-		[SerializeField] private VerticalLayoutGroup moodListVerticalLayoutGroup;
-
-		[Header("Skills Sub-Panel")]
-		[SerializeField] private VerticalLayoutGroup skillsListVerticalLayoutGroup;
-
-		[Header("Inventory Tab")]
-		[SerializeField] private Button inventoryTabButton;
-		[SerializeField] private GameObject inventoryTab;
-		[SerializeField] private Button emptyInventoryButton;
-		[SerializeField] private GridLayoutGroup inventoryListGridLayoutGroup;
-
-		[Header("Clothing Tab")]
-		[SerializeField] private Button clothingTabButton;
-		[SerializeField] private GameObject clothingTab;
-
-		[Header("Current Clothing Sub-Panel")]
-		[SerializeField] private UIHumanBodyElementComponent humanBody;
-		[SerializeField] private VerticalLayoutGroup clothingButtonsListVerticalLayoutGroup;
-
-		[Header("Clothing Selection Sub-Panel")]
-		[SerializeField] private GameObject clothingSelectionPanel;
-		[SerializeField] private Button disrobeButton;
-		[SerializeField] private Button clothingSelectionPanelBackButton;
-		[SerializeField] private GameObject clothesAvailableTitleTextPanel;
-		[SerializeField] private GridLayoutGroup clothesAvailableGridLayoutGroup;
-		[SerializeField] private GameObject clothesTakenTitleTextPanel;
-		[SerializeField] private GridLayoutGroup clothesTakenGridLayoutGroup;
-
-		[Header("Trade Tab")]
-		[SerializeField] private Button tradeTabButton;
-		[SerializeField] private GameObject tradeTab;
-		[SerializeField] private Button tradeButton;
-
-		public List<(Button button, GameObject tab)> ButtonToTabMap => new() {
-			(needsSkillsTabButton, needsSkillsTab),
-			(inventoryTabButton, inventoryTab),
-			(clothingTabButton, clothingTab),
-			(tradeTabButton, tradeTab),
-		};
-
-		public event Action<Button> OnTabSelected;
-		public event Action OnEmptyInventoryButtonClicked;
-		public event Action TradeButtonClicked;
-
-		private readonly List<UINeedElement> needElements = new();
-		private readonly List<UIMoodElement> moodElements = new();
-		private readonly List<UISkillElement> skillElements = new();
-
-		private readonly List<UIReservedResourcesElement> reservedResourcesElements = new();
-		private readonly List<UIResourceAmountElement> inventoryResourceAmountElements = new();
-
-		private readonly List<UIClothingButtonElement> clothingButtonElements = new();
-		private readonly List<UIClothingElement> clothingElements = new();
-
-		public override void OnOpen() {
-			foreach ((Button button, GameObject tab) mapping in ButtonToTabMap) {
-				mapping.button.onClick.AddListener(() => OnTabSelected?.Invoke(mapping.button));
-			}
-
-			moodViewButton.onClick.AddListener(() => SetMoodPanelActive(true));
-			moodPanelCloseButton.onClick.AddListener(() => SetMoodPanelActive(false));
-			SetMoodPanelActive(false);
-
-			emptyInventoryButton.onClick.AddListener(() => OnEmptyInventoryButtonClicked?.Invoke());
-
-			clothingSelectionPanelBackButton.onClick.AddListener(() => SetClothingSelectionPanelActive(false));
-
-			tradeButton.onClick.AddListener(OnTradeButtonClicked);
-		}
-
-		public override void OnClose() {
-			base.OnClose();
-
-			foreach (UINeedElement needElement in needElements) {
-				needElement.Close();
-			}
-			needElements.Clear();
-
-			foreach (UISkillElement skillElement in skillElements) {
-				skillElement.Close();
-			}
-			skillElements.Clear();
-
-			foreach (UIResourceAmountElement resourceAmountElement in inventoryResourceAmountElements) {
-				resourceAmountElement.Close();
-			}
-			inventoryResourceAmountElements.Clear();
-
-			foreach (UIClothingButtonElement clothingButtonElement in clothingButtonElements) {
-				clothingButtonElement.Close();
-			}
-			clothingButtonElements.Clear();
-
-			foreach (UIClothingElement clothingElement in clothingElements) {
-				clothingElement.Close();
-			}
-			clothingElements.Clear();
+		public async UniTask CreateTab(IUITabElement tab, UITabButton button, string buttonText) {
+			await tab.Open(tabParent);
+			tab.SetActive(false);
+			await button.Open(tabButtonParent);
+			button.SetText(buttonText);
 		}
 
 		public void SetGeneralInformation(Sprite skinSprite, string humanName, string affiliation) {
 			humanImage.SetBodySectionSprite(BodySection.Skin, skinSprite);
-			humanBody.SetBodySectionSprite(BodySection.Skin, skinSprite);
 			nameText.SetText(humanName);
 			affiliationText.SetText(affiliation);
 		}
@@ -179,152 +73,18 @@ namespace Snowship.NUI
 			inventoryVolumeSlider.SetValue(usedVolume, $"{Mathf.RoundToInt(usedVolume / (float)inventory.maxVolume * 100)}");
 		}
 
-		public void AddNeedElement(NeedInstance need) {
-			UINeedElement needElement = new(need);
-			needElement.Open(needsListVerticalLayoutGroup.transform).Forget();
-			needElements.Add(needElement);
-		}
-
-		private void SetMoodPanelActive(bool active) {
-			moodPanel.SetActive(active);
-		}
-
 		public void SetupMoodSlider((float min, float max) sliderRange, float moodValue, bool wholeNumbers) {
 			moodSlider.SetFillColours(EColour.DarkRed, EColour.DarkGreen);
 			moodSlider.SetHandleColours(EColour.LightRed, EColour.LightGreen);
 			moodSlider.SetSliderRange(sliderRange.min, sliderRange.max, moodValue, wholeNumbers);
 		}
 
-		public void AddMoodElement(MoodModifierInstance mood) {
-			UIMoodElement moodElement = new(mood);
-			moodElement.Open(moodListVerticalLayoutGroup.transform).Forget();
-			moodElements.Add(moodElement);
-		}
-
-		public void OnMoodAdded(MoodModifierInstance mood) {
-			AddMoodElement(mood);
-		}
-
 		public void OnMoodChanged(float effectiveMood, float moodModifiersSum) {
 			moodSlider.SetValue(effectiveMood);
-
-			moodCurrentText.SetText($"{Mathf.RoundToInt(effectiveMood)}%");
-			moodCurrentText.color = Color.Lerp(GetColour(EColour.DarkRed), GetColour(EColour.DarkGreen), effectiveMood / 100);
-
-			moodModifiersSumText.SetText($"{(moodModifiersSum > 0 ? '+' : string.Empty)}{moodModifiersSum}%");
-			moodModifiersSumText.color = moodModifiersSum switch {
-				> 0 => GetColour(EColour.LightGreen),
-				< 0 => GetColour(EColour.LightRed),
-				_ => GetColour(EColour.DarkGrey50)
-			};
-		}
-
-		public void OnMoodRemoved(MoodModifierInstance mood) {
-			UIMoodElement moodElementToRemove = moodElements.Find(moodElement => moodElement.Mood == mood);
-			if (moodElementToRemove == null) {
-				return;
-			}
-			moodElements.Remove(moodElementToRemove);
-			moodElementToRemove.Close();
-		}
-
-		public void AddSkillElement(SkillInstance skill) {
-			UISkillElement skillElement = new(skill);
-			skillElement.Open(skillsListVerticalLayoutGroup.transform).Forget();
-			skillElements.Add(skillElement);
-		}
-
-		public void OnInventoryResourceAmountAdded(ResourceAmount resourceAmount) {
-			UIResourceAmountElement resourceAmountElement = new(resourceAmount);
-			resourceAmountElement.Open(inventoryListGridLayoutGroup.transform).Forget();
-			inventoryResourceAmountElements.Add(resourceAmountElement);
-		}
-
-		public void OnInventoryResourceAmountRemoved(ResourceAmount resourceAmount) {
-			UIResourceAmountElement resourceAmountElementToRemove = inventoryResourceAmountElements.Find(e => e.ResourceAmount == resourceAmount);
-			inventoryResourceAmountElements.Remove(resourceAmountElementToRemove);
-			resourceAmountElementToRemove.Close();
-		}
-
-		public UIClothingButtonElement CreateClothingButton(BodySection bodySection, Clothing clothing) {
-			UIClothingButtonElement clothingButton = new(bodySection, clothing);
-			clothingButton.Open(clothingButtonsListVerticalLayoutGroup.transform).Forget();
-			clothingButtonElements.Add(clothingButton);
-			return clothingButton;
-		}
-
-		public void SetClothingSelectionPanelActive(bool active) {
-
-			foreach (UIClothingElement clothingElement in clothingElements) {
-				clothingElement.Close();
-			}
-			clothingElements.Clear();
-
-			clothingSelectionPanel.SetActive(active);
-		}
-
-		public void SetDisrobeButtonTarget(BodySection bodySection) {
-			disrobeButton.onClick.RemoveAllListeners();
-			disrobeButton.onClick.AddListener(() => OnDisrobeButtonClicked(bodySection));
-		}
-
-		private void OnDisrobeButtonClicked(BodySection bodySection) {
-			OnHumanClothingChanged(bodySection, null);
-			SetClothingSelectionPanelActive(false);
-		}
-
-		public UIClothingElement CreateAvailableClothingElement(Clothing clothing) {
-			return CreateClothingElement(clothing, true);
-		}
-
-		public UIClothingElement CreateTakenClothingElement(Clothing clothing) {
-			return CreateClothingElement(clothing, false);
-		}
-
-		private UIClothingElement CreateClothingElement(Clothing clothing, bool available) {
-			UIClothingElement clothingElement = new(clothing);
-			clothingElement.Open((available ? clothesAvailableGridLayoutGroup : clothesTakenGridLayoutGroup).transform).Forget();
-			clothingElements.Add(clothingElement);
-			return clothingElement;
-		}
-
-		public void SetClothesAvailableTitleTextPanelActive(bool active) {
-			clothesAvailableTitleTextPanel.SetActive(active);
-		}
-
-		public void SetClothesTakenTitleTextPanelActive(bool active) {
-			clothesTakenTitleTextPanel.SetActive(active);
 		}
 
 		public void OnHumanClothingChanged(BodySection bodySection, Clothing clothing) {
-			foreach (UIClothingButtonElement clothingButtonElement in clothingButtonElements) {
-				if (clothingButtonElement.BodySection != bodySection) {
-					continue;
-				}
-				clothingButtonElement.SetClothing(clothing);
-				humanBody.SetClothingOnBodySection(bodySection, clothing);
-				humanImage.SetClothingOnBodySection(bodySection, clothing);
-				return;
-			}
-		}
-
-		public void OnInventoryReservedResourcesAdded(ReservedResources reservedResources) {
-			UIReservedResourcesElement reservedResourcesElement = new(reservedResources);
-			reservedResourcesElement.Open(inventoryListGridLayoutGroup.transform).Forget();
-			reservedResourcesElements.Add(reservedResourcesElement);
-		}
-
-		public void OnInventoryReservedResourcesRemoved(ReservedResources reservedResources) {
-			UIReservedResourcesElement reservedResourcesElement = reservedResourcesElements.Find(rre => rre.ReservedResources == reservedResources);
-			if (reservedResourcesElement == null) {
-				return;
-			}
-			reservedResourcesElements.Remove(reservedResourcesElement);
-			reservedResourcesElement.Close();
-		}
-
-		public void OnTradeButtonClicked() {
-			TradeButtonClicked?.Invoke();
+			humanImage.SetClothingOnBodySection(bodySection, clothing);
 		}
 	}
 }

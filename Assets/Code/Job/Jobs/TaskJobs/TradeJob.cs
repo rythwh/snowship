@@ -1,6 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
 using Snowship.NCaravan;
-using Snowship.NColonist;
 using Snowship.NTime;
 using Snowship.NUI;
 using Snowship.NUtilities;
