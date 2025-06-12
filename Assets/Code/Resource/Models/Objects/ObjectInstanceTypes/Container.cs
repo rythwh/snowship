@@ -9,15 +9,15 @@ namespace Snowship.NResource
 
 		public Inventory Inventory { get; private set; }
 
-		public Container(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex) : base(prefab, variation, tile, rotationIndex) {
+		public Container(ObjectPrefab prefab, Variation variation, Tile tile, int rotationIndex) : base(prefab, variation, tile, rotationIndex) {
 			Inventory = new Inventory(this, prefab.maxInventoryWeight, prefab.maxInventoryVolume);
 		}
 
-		public static List<Container> GetContainersInRegion(TileManager.Map.Region region) {
+		public static List<Container> GetContainersInRegion(Region region) {
 			return containers.Where(c => c.tile.region == region).ToList();
 		}
 
-		public static Container GetContainerOrChildOnTile(TileManager.Tile tile) {
+		public static Container GetContainerOrChildOnTile(Tile tile) {
 			Container container = null;
 			if (container == null) {
 				container = containers.Find(c => c.tile == tile);

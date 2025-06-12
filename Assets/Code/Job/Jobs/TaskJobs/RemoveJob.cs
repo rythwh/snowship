@@ -12,7 +12,7 @@ namespace Snowship.NJob
 	[RegisterJob("Remove", "Remove", "Remove")]
 	public class RemoveJobDefinition : JobDefinition<RemoveJob>
 	{
-		public override Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; } = {
+		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
 			Selectable.SelectionConditions.SameLayerObject,
 			Selectable.SelectionConditions.NoSameLayerJobs
 		};
@@ -25,7 +25,7 @@ namespace Snowship.NJob
 	{
 		private readonly ObjectPrefab objectPrefab;
 
-		public RemoveJob(TileManager.Tile tile, ObjectPrefab objectPrefab) : base(tile) {
+		public RemoveJob(Tile tile, ObjectPrefab objectPrefab) : base(tile) {
 			TargetName = Tile.GetObjectInstanceAtLayer(objectPrefab.layer).prefab.Name;
 			Description = $"Removing a {TargetName}.";
 		}
@@ -86,7 +86,7 @@ namespace Snowship.NJob
 				Tile.RemoveObjectAtLayer(instance.prefab.layer);
 			}
 
-			GameManager.Get<ResourceManager>().Bitmask(new List<TileManager.Tile> { Tile }.Concat(Tile.surroundingTiles).ToList());
+			GameManager.Get<ResourceManager>().Bitmask(new List<Tile> { Tile }.Concat(Tile.surroundingTiles).ToList());
 			if (Tile.walkable && !previousWalkability) {
 				GameManager.Get<ColonyManager>().colony.map.RemoveTileBrightnessEffect(Tile);
 			}

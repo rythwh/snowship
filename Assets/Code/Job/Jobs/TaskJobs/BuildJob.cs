@@ -10,7 +10,7 @@ namespace Snowship.NJob
 	[RegisterJob("Build", "Build", "Build")]
 	public class BuildJobDefinition : JobDefinition<BuildJob>
 	{
-		public override Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; } = {
+		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
 			Selectable.SelectionConditions.WalkableIncludingFences,
 			Selectable.SelectionConditions.Buildable,
 			Selectable.SelectionConditions.NoPlant,
@@ -26,7 +26,7 @@ namespace Snowship.NJob
 
 	public class BuildJobParams : IJobParams
 	{
-		public List<Func<TileManager.Tile, int, bool>> SelectionConditions { get; }
+		public List<Func<Tile, int, bool>> SelectionConditions { get; }
 		public Sprite JobPreviewSprite { get; private set; }
 
 		[NotNull] public readonly ObjectPrefab ObjectPrefab;
@@ -71,7 +71,7 @@ namespace Snowship.NJob
 		public Variation Variation { get; }
 		public int Rotation { get; }
 
-		public BuildJob(TileManager.Tile tile, BuildJobParams args) : base(tile) {
+		public BuildJob(Tile tile, BuildJobParams args) : base(tile) {
 			ObjectPrefab = args.ObjectPrefab;
 			Variation = ObjectPrefab.selectedVariation;
 			Rotation = args.Rotation;

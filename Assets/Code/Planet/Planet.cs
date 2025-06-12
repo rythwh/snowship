@@ -2,7 +2,7 @@
 using Snowship.NPersistence;
 
 namespace Snowship.NPlanet {
-	public class Planet : TileManager.Map {
+	public class Planet : Map {
 
 		public string directory;
 		public string lastSaveDateTime;
@@ -13,12 +13,12 @@ namespace Snowship.NPlanet {
 
 		public string regenerationCode;
 
-		public Planet(string name, TileManager.MapData mapData) : base(mapData) {
+		public Planet(string name, MapData mapData) : base(mapData) {
 
 			this.name = name;
 
 			planetTiles = new List<PlanetTile>();
-			foreach (TileManager.Tile tile in tiles) {
+			foreach (Tile tile in tiles) {
 				planetTiles.Add(new PlanetTile(this, tile));
 			}
 

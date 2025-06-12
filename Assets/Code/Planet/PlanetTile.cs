@@ -4,19 +4,19 @@ using UnityEngine;
 namespace Snowship.NPlanet {
 	public class PlanetTile {
 		public Planet planet;
-		public TileManager.Tile tile;
+		public Tile tile;
 
 		public Sprite sprite;
 
 		public float equatorOffset;
 		public bool isRiver;
-		public Dictionary<TileManager.TileTypeGroup.TypeEnum, float> terrainTypeHeights;
+		public Dictionary<TileTypeGroup.TypeEnum, float> terrainTypeHeights;
 		public List<int> surroundingPlanetTileHeightDirections = new List<int>();
 		public List<int> surroundingPlanetTileRivers = new List<int>();
 
 		public string altitude;
 
-		public PlanetTile(Planet planet, TileManager.Tile tile) {
+		public PlanetTile(Planet planet, Tile tile) {
 			this.planet = planet;
 			this.tile = tile;
 
@@ -25,15 +25,15 @@ namespace Snowship.NPlanet {
 			// Setup PlanetTile-specific Information
 			equatorOffset = ((tile.position.y - (planet.mapData.mapSize / 2f)) * 2) / planet.mapData.mapSize;
 
-			TileManager.Map.River river = planet.RiversContainTile(tile, true).Value;
+			River river = planet.RiversContainTile(tile, true).Value;
 			isRiver = river != null;
 
-			foreach (TileManager.Tile sTile in tile.horizontalSurroundingTiles) {
+			foreach (Tile sTile in tile.horizontalSurroundingTiles) {
 				if (sTile != null) {
 					if (planet.rivers.Find(r => r.tiles.Contains(sTile)) == null) {
-						if (sTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Water) {
+						if (sTile.tileType.groupType == TileTypeGroup.TypeEnum.Water) {
 							surroundingPlanetTileHeightDirections.Add(-2);
-						} else if (sTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Stone) {
+						} else if (sTile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 							surroundingPlanetTileHeightDirections.Add(5);
 						} else {
 							surroundingPlanetTileHeightDirections.Add(0);
@@ -45,7 +45,7 @@ namespace Snowship.NPlanet {
 					if (isRiver) {
 						int nTileRiverIndex = river.tiles.IndexOf(sTile);
 						if (nTileRiverIndex == -1) {
-							foreach (TileManager.Map.River r in planet.rivers) {
+							foreach (River r in planet.rivers) {
 								if (r != river) {
 									if (r.tiles.Contains(sTile)) {
 										nTileRiverIndex = r.tiles.IndexOf(sTile);
@@ -55,9 +55,9 @@ namespace Snowship.NPlanet {
 						}
 
 						if (nTileRiverIndex == -1) {
-							if (river.startTile == tile && sTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Stone) {
+							if (river.startTile == tile && sTile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 								nTileRiverIndex = 0;
-							} else if (river.endTile == tile && sTile.tileType.groupType == TileManager.TileTypeGroup.TypeEnum.Water) {
+							} else if (river.endTile == tile && sTile.tileType.groupType == TileTypeGroup.TypeEnum.Water) {
 								nTileRiverIndex = int.MaxValue;
 							}
 						}
@@ -72,12 +72,12 @@ namespace Snowship.NPlanet {
 				}
 			}
 
-			terrainTypeHeights = new Dictionary<TileManager.TileTypeGroup.TypeEnum, float>() {
-				{ TileManager.TileTypeGroup.TypeEnum.Water, 0.40f * tile.GetPrecipitation() * (1 - tile.height) },
-				{ TileManager.TileTypeGroup.TypeEnum.Stone, 0.75f * (1 - (tile.height - (1 - 0.75f))) }
+			terrainTypeHeights = new Dictionary<TileTypeGroup.TypeEnum, float>() {
+				{ TileTypeGroup.TypeEnum.Water, 0.40f * tile.GetPrecipitation() * (1 - tile.height) },
+				{ TileTypeGroup.TypeEnum.Stone, 0.75f * (1 - (tile.height - (1 - 0.75f))) }
 			};
 
-			altitude = Mathf.RoundToInt((tile.height - terrainTypeHeights[TileManager.TileTypeGroup.TypeEnum.Water]) * 5000f) + "m";
+			altitude = Mathf.RoundToInt((tile.height - terrainTypeHeights[TileTypeGroup.TypeEnum.Water]) * 5000f) + "m";
 
 			// Remove Tile-specific Information
 			MonoBehaviour.Destroy(tile.obj);

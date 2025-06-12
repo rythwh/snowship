@@ -22,7 +22,7 @@ namespace Snowship.NColonist
 			human.OnTileChanged += OnHumanTileChanged;
 		}
 
-		private void OnHumanTileChanged(Life life, TileManager.Tile tile) {
+		private void OnHumanTileChanged(Life life, Tile tile) {
 			if (ActiveJob == null) {
 				return;
 			}

@@ -25,7 +25,7 @@ namespace Snowship.NColony {
 		public Colony CreateColony(CreateColonyData createColonyData) {
 			Colony colony = new Colony(
 				createColonyData.Name,
-				new TileManager.MapData(
+				new MapData(
 					GameManager.Get<PlanetManager>().planet.mapData,
 					createColonyData.Seed,
 					createColonyData.Size,
@@ -61,7 +61,7 @@ namespace Snowship.NColony {
 
 		public void SetColony(Colony colony) {
 			if (this.colony != null && this.colony.map != null) {
-				foreach (TileManager.Tile tile in this.colony.map.tiles) {
+				foreach (Tile tile in this.colony.map.tiles) {
 					MonoBehaviour.Destroy(tile.obj);
 				}
 			}

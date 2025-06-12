@@ -12,9 +12,9 @@ namespace Snowship.NResource
 	{
 		public static readonly Dictionary<ObjectPrefab, List<ObjectInstance>> ObjectInstances = new();
 
-		public readonly TileManager.Tile tile; // The tile that this object covers that is closest to the zeroPointTile (usually they are the same tile)
-		public readonly List<TileManager.Tile> additionalTiles = new();
-		public readonly TileManager.Tile zeroPointTile; // The tile representing the (0,0) position of the object even if the object doesn't cover it
+		public readonly Tile tile; // The tile that this object covers that is closest to the zeroPointTile (usually they are the same tile)
+		public readonly List<Tile> additionalTiles = new();
+		public readonly Tile zeroPointTile; // The tile representing the (0,0) position of the object even if the object doesn't cover it
 
 		public readonly ObjectPrefab prefab;
 		public readonly Variation variation;
@@ -44,14 +44,14 @@ namespace Snowship.NResource
 			Farm
 		}
 
-		protected ObjectInstance(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex) {
+		protected ObjectInstance(ObjectPrefab prefab, Variation variation, Tile tile, int rotationIndex) {
 			this.prefab = prefab;
 			this.variation = variation;
 
 			this.tile = tile;
 			zeroPointTile = tile;
 			foreach (Vector2 multiTilePosition in prefab.multiTilePositions[rotationIndex]) {
-				TileManager.Tile additionalTile = zeroPointTile.map.GetTileFromPosition(zeroPointTile.obj.transform.position + (Vector3)multiTilePosition);
+				Tile additionalTile = zeroPointTile.map.GetTileFromPosition(zeroPointTile.obj.transform.position + (Vector3)multiTilePosition);
 				additionalTiles.Add(additionalTile);
 				if (additionalTile != zeroPointTile) {
 					additionalTile.SetObjectInstanceReference(this);
@@ -78,7 +78,7 @@ namespace Snowship.NResource
 
 			if (prefab.blocksLight) {
 				foreach (LightSource lightSource in LightSource.lightSources) {
-					foreach (TileManager.Tile objectTile in additionalTiles) {
+					foreach (Tile objectTile in additionalTiles) {
 						if (lightSource.litTiles.Contains(objectTile)) {
 							lightSource.SetTileBrightnesses();
 						}
@@ -92,15 +92,15 @@ namespace Snowship.NResource
 		}
 
 		public void FinishCreation() {
-			List<TileManager.Tile> bitmaskingTiles = new();
-			foreach (TileManager.Tile additionalTile in additionalTiles) {
+			List<Tile> bitmaskingTiles = new();
+			foreach (Tile additionalTile in additionalTiles) {
 				bitmaskingTiles.Add(additionalTile);
 				bitmaskingTiles.AddRange(additionalTile.surroundingTiles);
 			}
 			bitmaskingTiles = bitmaskingTiles.Distinct().ToList();
 			GameManager.Get<ResourceManager>().Bitmask(bitmaskingTiles);
 			GameManager.Get<ColonyManager>().colony.map.Bitmasking(bitmaskingTiles, true, true);
-			foreach (TileManager.Tile tile in additionalTiles) {
+			foreach (Tile tile in additionalTiles) {
 				SetColour(tile.sr.color);
 			}
 		}
@@ -151,7 +151,7 @@ namespace Snowship.NResource
 
 		}
 
-		public static ObjectInstance CreateObjectInstance(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex, bool addToList) {
+		public static ObjectInstance CreateObjectInstance(ObjectPrefab prefab, Variation variation, Tile tile, int rotationIndex, bool addToList) {
 			ObjectInstance instance = null;
 			switch (prefab.instanceType) {
 				case ObjectInstanceType.Normal:

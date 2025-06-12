@@ -16,9 +16,9 @@ namespace Snowship.NJob
 			ObjectsAtSameLayer, OmitNonCoastWater, OmitHoles, OmitPreviousDig, BiomeSupportsSelectedPlants, OmitObjectInstancesOnAdditionalTiles, Fillable
 		}
 
-		public static readonly Dictionary<SelectionModifiersEnum, Func<TileManager.Tile, TileManager.Tile, ObjectPrefab, Variation, bool>> selectionModifierFunctions = new() {
+		public static readonly Dictionary<SelectionModifiersEnum, Func<Tile, Tile, ObjectPrefab, Variation, bool>> selectionModifierFunctions = new() {
 			{
-				SelectionModifiersEnum.OmitSameLayerJobs, delegate(TileManager.Tile tile, TileManager.Tile posTile, ObjectPrefab prefab, Variation variation) {
+				SelectionModifiersEnum.OmitSameLayerJobs, delegate(Tile tile, Tile posTile, ObjectPrefab prefab, Variation variation) {
 
 					foreach (IJob job in GameManager.Get<JobManager>().Jobs) {
 						if (job.Layer == prefab.layer) {
@@ -65,10 +65,10 @@ namespace Snowship.NJob
 					return true;
 				}
 			}, {
-				SelectionModifiersEnum.CloseToSupport, delegate(TileManager.Tile tile, TileManager.Tile posTile, ObjectPrefab prefab, Variation variation) {
+				SelectionModifiersEnum.CloseToSupport, delegate(Tile tile, Tile posTile, ObjectPrefab prefab, Variation variation) {
 					for (int y = -5; y < 5; y++) {
 						for (int x = -5; x < 5; x++) {
-							TileManager.Tile supportTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(posTile.position.x + x, posTile.position.y + y));
+							Tile supportTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(posTile.position.x + x, posTile.position.y + y));
 							if (!supportTile.buildable && !supportTile.walkable) {
 								return true;
 							}
@@ -77,7 +77,7 @@ namespace Snowship.NJob
 					return false;
 				}
 			}, {
-				SelectionModifiersEnum.BiomeSupportsSelectedPlants, delegate(TileManager.Tile tile, TileManager.Tile posTile, ObjectPrefab prefab, Variation variation) { return posTile.biome.plantChances.Keys.Intersect(variation.plants.Select(plant => plant.Key.type)).Any(); }
+				SelectionModifiersEnum.BiomeSupportsSelectedPlants, delegate(Tile tile, Tile posTile, ObjectPrefab prefab, Variation variation) { return posTile.biome.plantChances.Keys.Intersect(variation.plants.Select(plant => plant.Key.type)).Any(); }
 			}
 		};
 	}

@@ -5,10 +5,10 @@ namespace Snowship.NPersistence {
 
 		public int? tileIndex;
 		public float? tileHeight;
-		public TileManager.TileType tileType;
+		public TileType tileType;
 		public float? tileTemperature;
 		public float? tilePrecipitation;
-		public TileManager.Biome tileBiome;
+		public Biome tileBiome;
 		public bool? tileRoof;
 		public bool? tileDug;
 		public string tileSpriteName;
@@ -23,10 +23,10 @@ namespace Snowship.NPersistence {
 		public PersistenceTile(
 			int? tileIndex,
 			float? tileHeight,
-			TileManager.TileType tileType,
+			TileType tileType,
 			float? tileTemperature,
 			float? tilePrecipitation,
-			TileManager.Biome tileBiome,
+			Biome tileBiome,
 			bool? tileRoof,
 			bool? tileDug,
 			string tileSpriteName,

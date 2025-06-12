@@ -20,7 +20,7 @@ namespace Snowship.NJob
 		private Colonist colonist;
 		private NeedInstance foodNeed;
 
-		public EatJob(TileManager.Tile tile) : base(tile) {
+		public EatJob(Tile tile) : base(tile) {
 			Description = "Eating.";
 		}
 

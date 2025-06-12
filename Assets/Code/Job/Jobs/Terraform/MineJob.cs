@@ -10,7 +10,7 @@ namespace Snowship.NJob
 	[RegisterJob("Terraform", "Terrain", "Mine")]
 	public class MineJobDefinition : JobDefinition<MineJob>
 	{
-		public override Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; } = {
+		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
 			Selectable.SelectionConditions.Stone,
 			Selectable.SelectionConditions.NoSameLayerJobs
 		};
@@ -22,7 +22,7 @@ namespace Snowship.NJob
 
 	public class MineJob : Job<MineJobDefinition>
 	{
-		public MineJob(TileManager.Tile tile) : base(tile) {
+		public MineJob(Tile tile) : base(tile) {
 			TargetName = Tile.tileType.name;
 			Description = $"Mining {Tile.tileType.name}.";
 		}
@@ -35,8 +35,8 @@ namespace Snowship.NJob
 			}
 			Tile.SetTileType(
 				Tile.HasRoof()
-					? TileManager.TileType.GetTileTypeByEnum(TileManager.TileType.TypeEnum.Dirt)
-					: Tile.biome.tileTypes[TileManager.TileTypeGroup.TypeEnum.Ground],
+					? TileType.GetTileTypeByEnum(TileType.TypeEnum.Dirt)
+					: Tile.biome.tileTypes[TileTypeGroup.TypeEnum.Ground],
 				false,
 				true,
 				true

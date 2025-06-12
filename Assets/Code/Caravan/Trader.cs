@@ -11,14 +11,14 @@ namespace Snowship.NCaravan {
 
 		public Caravan caravan;
 
-		public TileManager.Tile leaveTile;
+		public Tile leaveTile;
 
 		public List<TradingPost> tradingPosts;
 
 		public override string Title { get; } = "Trader";
 		public override ILocation OriginLocation => caravan.location;
 
-		public Trader(TileManager.Tile spawnTile, float startingHealth, Caravan caravan) : base(spawnTile, startingHealth) {
+		public Trader(Tile spawnTile, float startingHealth, Caravan caravan) : base(spawnTile, startingHealth) {
 			this.caravan = caravan;
 
 			MoveSpeedMultiplier = 0.5f;

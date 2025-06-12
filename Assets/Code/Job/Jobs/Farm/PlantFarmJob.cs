@@ -6,7 +6,7 @@ namespace Snowship.NJob
 	[RegisterJob("Farm", "PlantFarm", "PlantFarm")]
 	public class PlantFarmJobDefinition : JobDefinition<PlantFarmJob>
 	{
-		public override Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; } = {
+		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
 			Selectable.SelectionConditions.Walkable,
 			Selectable.SelectionConditions.Buildable,
 			Selectable.SelectionConditions.NoObjects,
@@ -22,7 +22,7 @@ namespace Snowship.NJob
 	public class PlantFarmJob : BuildJob
 	{
 		public PlantFarmJob(
-			TileManager.Tile tile,
+			Tile tile,
 			BuildJobParams args
 		) : base(
 			tile,
@@ -34,9 +34,9 @@ namespace Snowship.NJob
 		protected override void OnJobFinished() {
 			base.OnJobFinished();
 
-			if (Tile.tileType.classes[TileManager.TileType.ClassEnum.Dirt]) {
+			if (Tile.tileType.classes[TileType.ClassEnum.Dirt]) {
 				Tile.SetTileType(
-					TileManager.TileType.GetTileTypeByEnum(TileManager.TileType.TypeEnum.Mud),
+					TileType.GetTileTypeByEnum(TileType.TypeEnum.Mud),
 					false,
 					true,
 					false

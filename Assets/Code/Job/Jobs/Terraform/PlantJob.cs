@@ -12,7 +12,7 @@ namespace Snowship.NJob
 	[RegisterJob("Terraform", "Plants", "Plant")]
 	public class PlantJobDefinition : JobDefinition<PlantJob>
 	{
-		public override Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; } = {
+		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
 			Selectable.SelectionConditions.Walkable,
 			Selectable.SelectionConditions.Buildable,
 			Selectable.SelectionConditions.NoObjects,
@@ -30,7 +30,7 @@ namespace Snowship.NJob
 	{
 		private readonly Variation variation;
 
-		public PlantJob(TileManager.Tile tile, Variation variation) : base(tile) {
+		public PlantJob(Tile tile, Variation variation) : base(tile) {
 			this.variation = variation;
 
 			TargetName = PlantGroup.GetPlantGroupByEnum(variation.plants.First().Key.groupType).name;

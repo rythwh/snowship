@@ -23,7 +23,7 @@ namespace Snowship.NCaravan {
 
 		public List<ConfirmedTradeResourceAmount> confirmedResourcesToTrade = new List<ConfirmedTradeResourceAmount>();
 
-		public TileManager.Tile targetTile;
+		public Tile targetTile;
 
 		public ResourceGroup resourceGroup;
 
@@ -47,8 +47,8 @@ namespace Snowship.NCaravan {
 		public Caravan(
 			int numTraders,
 			CaravanType caravanType,
-			List<TileManager.Tile> spawnTiles,
-			TileManager.Tile targetTile
+			List<Tile> spawnTiles,
+			Tile targetTile
 		) {
 			this.numTraders = numTraders;
 			this.caravanType = caravanType;
@@ -57,7 +57,7 @@ namespace Snowship.NCaravan {
 			location = Location.GenerateLocation();
 
 			for (int i = 0; i < numTraders && spawnTiles.Count > 0; i++) {
-				TileManager.Tile spawnTile = spawnTiles[Random.Range(0, spawnTiles.Count)];
+				Tile spawnTile = spawnTiles[Random.Range(0, spawnTiles.Count)];
 				SpawnTrader(spawnTile);
 				spawnTiles.Remove(spawnTile);
 			}
@@ -81,15 +81,15 @@ namespace Snowship.NCaravan {
 			GameManager.Get<TimeManager>().OnTimeChanged -= UpdateCaravanLeaveState;
 		}
 
-		private void SpawnTrader(TileManager.Tile spawnTile) {
+		private void SpawnTrader(Tile spawnTile) {
 			Trader trader = new Trader(spawnTile, 1f, this);
 			traders.Add(trader);
 
-			List<TileManager.Tile> targetTiles = new List<TileManager.Tile> { targetTile };
+			List<Tile> targetTiles = new List<Tile> { targetTile };
 			targetTiles.AddRange(targetTile.horizontalSurroundingTiles.Where(t => t is { walkable: true, buildable: true }));
 
-			List<TileManager.Tile> additionalTargetTiles = new List<TileManager.Tile>();
-			foreach (TileManager.Tile tt in targetTiles) {
+			List<Tile> additionalTargetTiles = new List<Tile>();
+			foreach (Tile tt in targetTiles) {
 				additionalTargetTiles.AddRange(tt.horizontalSurroundingTiles.Where(t => t is { walkable: true, buildable: true } && !additionalTargetTiles.Contains(t)));
 			}
 
@@ -259,7 +259,7 @@ namespace Snowship.NCaravan {
 				leaveTimer = 0;
 
 				foreach (Trader trader in traders) {
-					List<TileManager.Tile> validLeaveTiles = GameManager.Get<ColonyManager>().colony.map.edgeTiles.Where(t => t.region == trader.Tile.region).ToList();
+					List<Tile> validLeaveTiles = GameManager.Get<ColonyManager>().colony.map.edgeTiles.Where(t => t.region == trader.Tile.region).ToList();
 					if (validLeaveTiles.Count > 0) {
 						trader.leaveTile = validLeaveTiles[Random.Range(0, validLeaveTiles.Count)];
 						trader.MoveToTile(trader.leaveTile, false);

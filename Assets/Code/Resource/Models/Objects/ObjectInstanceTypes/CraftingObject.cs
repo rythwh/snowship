@@ -12,7 +12,7 @@ namespace Snowship.NResource
 		public List<CraftableResourceInstance> resources = new();
 		public List<PriorityResourceInstance> fuels = new();
 
-		public CraftingObject(ObjectPrefab prefab, Variation variation, TileManager.Tile tile, int rotationIndex) : base(prefab, variation, tile, rotationIndex) {
+		public CraftingObject(ObjectPrefab prefab, Variation variation, Tile tile, int rotationIndex) : base(prefab, variation, tile, rotationIndex) {
 
 		}
 

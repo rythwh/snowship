@@ -63,9 +63,9 @@ public class GameManager : MonoBehaviour {
 
 	private void SpecialManagerSetups() {
 		// TODO Move these to be called from their respective files
-		TileManager.TileType.InitializeTileTypes();
-		TileManager.Biome.InitializeBiomes();
-		TileManager.ResourceVein.InitializeResourceVeins();
+		TileType.InitializeTileTypes();
+		Biome.InitializeBiomes();
+		ResourceVein.InitializeResourceVeins();
 
 		Get<HumanManager>().CreateNames();
 		Get<HumanManager>().CreateHumanSprites();

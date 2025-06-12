@@ -24,14 +24,14 @@ namespace Snowship.Selectable
 		private SpriteRenderer selectedJobPreviewObject;
 		private int rotation = 0;
 
-		private TileManager.Tile firstTile;
-		private TileManager.Tile secondTile;
-		private TileManager.Tile previousSecondTile;
+		private Tile firstTile;
+		private Tile secondTile;
+		private Tile previousSecondTile;
 
-		private HashSet<TileManager.Tile> selectionArea = new();
-		private readonly Dictionary<TileManager.Tile, GameObject> selectionIndicators = new();
+		private HashSet<Tile> selectionArea = new();
+		private readonly Dictionary<Tile, GameObject> selectionIndicators = new();
 
-		private TileManager.Map map;
+		private Map map;
 		private Camera camera;
 
 		public void OnCreate() {
@@ -138,7 +138,7 @@ namespace Snowship.Selectable
 			selecting = false;
 
 			if (selectionArea is { Count: > 0 }) {
-				foreach (TileManager.Tile tile in selectionArea) {
+				foreach (Tile tile in selectionArea) {
 					if (selectedJobParams == null) {
 						GameManager.Get<JobManager>().AddJob(Activator.CreateInstance(selectedJobType, tile) as IJob);
 					} else {
@@ -180,7 +180,7 @@ namespace Snowship.Selectable
 			selectedJobPreviewObject.gameObject.SetActive(true);
 
 			selectedJobPreviewObject.sprite = GameManager.Get<JobManager>().GetJobSprite(selectedJobDefinition, selectedJobParams);
-			TileManager.Tile overTile = GetTileFromMouseScreenPosition(Input.mousePosition);
+			Tile overTile = GetTileFromMouseScreenPosition(Input.mousePosition);
 			selectedJobPreviewObject.transform.position = overTile.obj.transform.position;
 			selectedJobPreviewObject.sortingOrder = selectedJobDefinition.Layer + overTile.sr.sortingOrder + (int)SortingOrder.Selection;
 		}
@@ -197,7 +197,7 @@ namespace Snowship.Selectable
 			SetSelectionIndicators(selectedJobParams);
 		}
 
-		private HashSet<TileManager.Tile> GetSelectionArea(IJobDefinition jobDefinition, IJobParams jobParams = null) {
+		private HashSet<Tile> GetSelectionArea(IJobDefinition jobDefinition, IJobParams jobParams = null) {
 			if (!selecting) {
 				return null;
 			}
@@ -217,7 +217,7 @@ namespace Snowship.Selectable
 				Mathf.FloorToInt(Mathf.Max(firstTile.position.y, secondTile.position.y))
 			);
 
-			HashSet<TileManager.Tile> selection = new();
+			HashSet<Tile> selection = new();
 
 			for (int y = smallerPosition.y; y <= largerPosition.y; y++) {
 				for (int x = smallerPosition.x; x <= largerPosition.x; x++) {
@@ -244,7 +244,7 @@ namespace Snowship.Selectable
 						continue;
 					}
 
-					TileManager.Tile tile = map.GetTileFromPosition(x, y);
+					Tile tile = map.GetTileFromPosition(x, y);
 
 					if (!(jobDefinition.SelectionConditions?.All(condition => condition(tile, jobDefinition.Layer)) ?? true)) {
 						continue;
@@ -260,31 +260,31 @@ namespace Snowship.Selectable
 			return selection;
 		}
 
-		private TileManager.Tile GetTileFromMouseScreenPosition(Vector2 mousePosition) {
+		private Tile GetTileFromMouseScreenPosition(Vector2 mousePosition) {
 			return map?.GetTileFromPosition(camera.ScreenToWorldPoint(mousePosition));
 		}
 
 		private void SetSelectionIndicators(IJobParams jobParams) {
-			List<TileManager.Tile> selectionIndicatorsToRemove = new();
+			List<Tile> selectionIndicatorsToRemove = new();
 
 			if (selectionArea == null || selectionArea.Count == 0) {
-				foreach (TileManager.Tile tile in selectionIndicators.Keys) {
+				foreach (Tile tile in selectionIndicators.Keys) {
 					Object.Destroy(selectionIndicators[tile]);
 				}
 				selectionIndicators.Clear();
 				return;
 			}
 
-			foreach (TileManager.Tile tile in selectionIndicators.Keys) {
+			foreach (Tile tile in selectionIndicators.Keys) {
 				if (!selectionArea.Contains(tile)) {
 					selectionIndicatorsToRemove.Add(tile);
 				}
 			}
-			foreach (TileManager.Tile tile in selectionIndicatorsToRemove) {
+			foreach (Tile tile in selectionIndicatorsToRemove) {
 				Object.Destroy(selectionIndicators[tile]);
 				selectionIndicators.Remove(tile);
 			}
-			foreach (TileManager.Tile tile in selectionArea) {
+			foreach (Tile tile in selectionArea) {
 				if (!selectionIndicators.ContainsKey(tile)) {
 					GameObject selectionIndicator = Object.Instantiate(GameManager.Get<ResourceManager>().tilePrefab, tile.obj.transform, false);
 					SpriteRenderer selectionIndicatorSpriteRenderer = selectionIndicator.GetComponent<SpriteRenderer>();

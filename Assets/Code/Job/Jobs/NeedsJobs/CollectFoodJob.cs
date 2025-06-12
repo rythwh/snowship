@@ -23,7 +23,7 @@ namespace Snowship.NJob
 		private Colonist colonist;
 
 		public CollectFoodJob(
-			TileManager.Tile tile,
+			Tile tile,
 			Container container,
 			List<Container> alreadyCheckedContainers,
 			float nutritionTarget

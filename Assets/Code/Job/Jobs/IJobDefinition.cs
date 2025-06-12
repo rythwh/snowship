@@ -12,7 +12,7 @@ namespace Snowship.NJob
 		public Type JobParamsType { get; }
 
 		// Job Definition Properties
-		Func<TileManager.Tile, int, bool>[] SelectionConditions { get; }
+		Func<Tile, int, bool>[] SelectionConditions { get; }
 		List<ResourceAmount> BaseRequiredResources { get; }
 		int TimeToWork { get; }
 		bool Returnable { get; }

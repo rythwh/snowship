@@ -22,7 +22,7 @@ namespace Snowship.NJob
 		private float sleepTime;
 		private Bed bed;
 
-		public SleepJob(TileManager.Tile tile) : base(tile) {
+		public SleepJob(Tile tile) : base(tile) {
 			Description = "Sleeping.";
 		}
 

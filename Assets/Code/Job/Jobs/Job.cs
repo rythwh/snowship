@@ -22,7 +22,7 @@ namespace Snowship.NJob
 		public IGroupItem SubGroup => Definition.SubGroup;
 
 		// Job Instance Properties
-		public TileManager.Tile Tile { get; private set; }
+		public Tile Tile { get; private set; }
 		public EJobState JobState { get; private set; } = EJobState.Ready;
 		public float Progress { get; private set; }
 		public Human Worker { get; private set; }
@@ -45,7 +45,7 @@ namespace Snowship.NJob
 		public event Action<Job<TJobDefinition>, EJobState> OnJobStateChanged;
 		public event Action<Job<TJobDefinition>, int> OnPriorityChanged;
 
-		protected Job(TileManager.Tile tile) {
+		protected Job(Tile tile) {
 			Definition = GameManager.Get<JobManager>().JobRegistry.GetJobDefinition(typeof(TJobDefinition)) ?? throw new InvalidOperationException();
 			Tile = tile;
 			Layer = Definition.Layer;
@@ -74,7 +74,7 @@ namespace Snowship.NJob
 			Progress = timeToWork;
 		}
 
-		protected void ChangeTile(TileManager.Tile tile) {
+		protected void ChangeTile(Tile tile) {
 			Tile = tile;
 			if (JobPreviewObject) {
 				JobPreviewObject.transform.SetParent(Tile.obj.transform, false);

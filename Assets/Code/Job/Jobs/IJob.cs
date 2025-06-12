@@ -7,7 +7,7 @@ namespace Snowship.NJob
 	public interface IJob
 	{
 		IJobDefinition Definition { get; }
-		TileManager.Tile Tile { get; }
+		Tile Tile { get; }
 		EJobState JobState { get; }
 		int Layer { get; }
 		string Name { get; }

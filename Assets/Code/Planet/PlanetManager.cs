@@ -16,7 +16,7 @@
 		public Planet CreatePlanet(CreatePlanetData createPlanetData) {
 			Planet planet = new Planet(
 				createPlanetData.Name,
-				new TileManager.MapData(
+				new MapData(
 					null,
 					createPlanetData.Seed,
 					createPlanetData.Size,

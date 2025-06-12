@@ -420,7 +420,7 @@ namespace Snowship.NPersistence {
 
 		public void ApplyLoadedObjects(List<PersistenceObject> persistenceObjects) {
 			foreach (PersistenceObject persistenceObject in persistenceObjects) {
-				TileManager.Tile zeroPointTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceObject.zeroPointTilePosition.Value);
+				Tile zeroPointTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceObject.zeroPointTilePosition.Value);
 
 				ObjectPrefab objectPrefab = ObjectPrefab.GetObjectPrefabByEnum(persistenceObject.type.Value);
 				ObjectInstance objectInstance = ObjectInstance.CreateObjectInstance(

@@ -31,7 +31,7 @@ namespace Snowship.NColony {
 
 		private void SetDefaultValues() {
 			Name = GenerateRandomColonyName();
-			Seed = TileManager.Map.GetRandomMapSeed();
+			Seed = Map.GetRandomMapSeed();
 
 			SetSize(2);
 			PlanetTile = null;

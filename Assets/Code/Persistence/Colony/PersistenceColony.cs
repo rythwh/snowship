@@ -16,7 +16,7 @@ namespace Snowship.NPersistence {
 		public int size;
 		public float averageTemperature;
 		public float averagePrecipitation;
-		public Dictionary<TileManager.TileTypeGroup.TypeEnum, float> terrainTypeHeights = new Dictionary<TileManager.TileTypeGroup.TypeEnum, float>();
+		public Dictionary<TileTypeGroup.TypeEnum, float> terrainTypeHeights = new Dictionary<TileTypeGroup.TypeEnum, float>();
 		public List<int> surroundingPlanetTileHeights = new List<int>();
 		public bool onRiver;
 		public List<int> surroundingPlanetTileRivers = new List<int>();

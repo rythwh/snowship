@@ -17,7 +17,7 @@ namespace Snowship.NColonist {
 		public override string Title { get; } = "Colonist";
 		public override ILocation OriginLocation => GameManager.Get<ColonyManager>().colony;
 
-		public Colonist(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
+		public Colonist(Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
 			obj.transform.SetParent(GameManager.SharedReferences.LifeParent, false);
 
 			colonists.Add(this);
@@ -255,7 +255,7 @@ namespace Snowship.NColonist {
 			}
 		}*/
 
-		public void PlayerMoveToTile(TileManager.Tile tile) {
+		public void PlayerMoveToTile(Tile tile) {
 			playerMoved = true;
 			Jobs.ReturnJob();
 			MoveToTile(tile, false);

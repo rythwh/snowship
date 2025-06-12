@@ -7,7 +7,7 @@ using UnityEngine;
 using PU = Snowship.NPersistence.PersistenceUtilities;
 
 namespace Snowship.NPersistence {
-	public class PMap : TileManager.Map
+	public class PMap : Map
 	{
 
 		private readonly PRiver pRiver = new PRiver();
@@ -36,7 +36,7 @@ namespace Snowship.NPersistence {
 		}
 
 		public void SaveOriginalTiles(StreamWriter file) {
-			foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+			foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
 				file.WriteLine(PU.CreateKeyValueString(TileProperty.Tile, string.Empty, 0));
 
 				file.WriteLine(PU.CreateKeyValueString(TileProperty.Height, tile.height, 1));
@@ -72,10 +72,10 @@ namespace Snowship.NPersistence {
 					case TileProperty.Tile:
 						int? tileIndex = null;
 						float? tileHeight = null;
-						TileManager.TileType tileType = null;
+						TileType tileType = null;
 						float? tileTemperature = null;
 						float? tilePrecipitation = null;
-						TileManager.Biome tileBiome = null;
+						Biome tileBiome = null;
 						bool? tileRoof = null;
 						bool? tileDug = null;
 						string tileSpriteName = null;
@@ -96,7 +96,7 @@ namespace Snowship.NPersistence {
 									tileHeight = float.Parse((string)tileProperty.Value);
 									break;
 								case TileProperty.TileType:
-									tileType = TileManager.TileType.GetTileTypeByString((string)tileProperty.Value);
+									tileType = TileType.GetTileTypeByString((string)tileProperty.Value);
 									break;
 								case TileProperty.Temperature:
 									tileTemperature = float.Parse((string)tileProperty.Value);
@@ -105,7 +105,7 @@ namespace Snowship.NPersistence {
 									tilePrecipitation = float.Parse((string)tileProperty.Value);
 									break;
 								case TileProperty.Biome:
-									tileBiome = TileManager.Biome.GetBiomeByString((string)tileProperty.Value);
+									tileBiome = Biome.GetBiomeByString((string)tileProperty.Value);
 									break;
 								case TileProperty.Roof:
 									tileRoof = bool.Parse((string)tileProperty.Value);
@@ -181,13 +181,13 @@ namespace Snowship.NPersistence {
 
 			StreamWriter file = PU.CreateFileAtDirectory(saveDirectoryPath, "tiles.snowship");
 
-			TileManager.Map map = GameManager.Get<ColonyManager>().colony.map;
+			Map map = GameManager.Get<ColonyManager>().colony.map;
 			if (map.tiles.Count != originalTiles.Count) {
 				Debug.LogError("Loaded tile count " + map.tiles.Count + " and current tile count " + originalTiles.Count + " does not match.");
 			}
 
 			for (int i = 0; i < map.tiles.Count; i++) {
-				TileManager.Tile tile = map.tiles[i];
+				Tile tile = map.tiles[i];
 				PersistenceTile originalTile = originalTiles[i];
 
 				Dictionary<TileProperty, string> tileDifferences = new Dictionary<TileProperty, string>();
@@ -293,19 +293,19 @@ namespace Snowship.NPersistence {
 			}
 		}
 
-		public void ApplyLoadedTiles(List<PersistenceTile> originalTiles, List<PersistenceTile> modifiedTiles, TileManager.Map map) {
+		public void ApplyLoadedTiles(List<PersistenceTile> originalTiles, List<PersistenceTile> modifiedTiles, Map map) {
 			if (originalTiles.Count != Mathf.Pow(map.mapData.mapSize, 2)) {
 				Debug.LogError("Map size " + Mathf.Pow(map.mapData.mapSize, 2) + " and number of persistence tiles " + originalTiles.Count + " does not match.");
 			}
 
 			for (int y = 0; y < map.mapData.mapSize; y++) {
-				List<TileManager.Tile> innerTiles = new List<TileManager.Tile>();
+				List<Tile> innerTiles = new List<Tile>();
 				for (int x = 0; x < map.mapData.mapSize; x++) {
 					int tileIndex = y * map.mapData.mapSize + x;
 					PersistenceTile originalTile = originalTiles[tileIndex];
 					PersistenceTile modifiedTile = modifiedTiles.Find(mt => mt.tileIndex == tileIndex);
 
-					TileManager.Tile tile = new TileManager.Tile(map, new Vector2(x, y), modifiedTile != null && modifiedTile.tileHeight.HasValue ? modifiedTile.tileHeight.Value : originalTile.tileHeight.Value);
+					Tile tile = new Tile(map, new Vector2(x, y), modifiedTile != null && modifiedTile.tileHeight.HasValue ? modifiedTile.tileHeight.Value : originalTile.tileHeight.Value);
 					map.tiles.Add(tile);
 					innerTiles.Add(tile);
 
@@ -352,11 +352,11 @@ namespace Snowship.NPersistence {
 			GameManager.Get<PersistenceManager>().loadingState = PersistenceManager.LoadingState.LoadedMap;
 		}
 
-		public void ApplyMapBitmasking(List<PersistenceTile> originalTiles, List<PersistenceTile> modifiedTiles, TileManager.Map map) {
+		public void ApplyMapBitmasking(List<PersistenceTile> originalTiles, List<PersistenceTile> modifiedTiles, Map map) {
 			map.Bitmasking(map.tiles, true, false);
 
 			for (int i = 0; i < map.tiles.Count; i++) {
-				TileManager.Tile tile = map.tiles[i];
+				Tile tile = map.tiles[i];
 				PersistenceTile originalTile = originalTiles[i];
 				PersistenceTile modifiedTile = modifiedTiles.Find(mf => mf.tileIndex == i);
 

@@ -12,7 +12,7 @@ namespace Snowship.NResource
 		public Bed(
 			ObjectPrefab prefab,
 			Variation variation,
-			TileManager.Tile tile,
+			Tile tile,
 			int rotationIndex
 		) : base(
 			prefab,

@@ -8,13 +8,13 @@ namespace Snowship.NPersistence {
 
 			public PLife.PersistenceLife persistenceLife;
 			public PHuman.PersistenceHuman persistenceHuman;
-			public TileManager.Tile leaveTile;
+			public Tile leaveTile;
 			public List<TradingPost> tradingPosts;
 
 			public PersistenceTrader(
 				PLife.PersistenceLife persistenceLife,
 				PHuman.PersistenceHuman persistenceHuman,
-				TileManager.Tile leaveTile,
+				Tile leaveTile,
 				List<TradingPost> tradingPosts
 			) {
 				this.persistenceLife = persistenceLife;

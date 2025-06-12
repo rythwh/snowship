@@ -214,7 +214,7 @@ public class DebugManager : IManager
 
 	private readonly Dictionary<Commands, Action<List<string>>> commandFunctions = new();
 
-	private List<TileManager.Tile> selectedTiles = new();
+	private List<Tile> selectedTiles = new();
 	private bool selectTileMouseToggle;
 
 	private void SelectTileMouseUpdate() {
@@ -672,7 +672,7 @@ public class DebugManager : IManager
 			Commands.viewtileproperty,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 1) {
-					foreach (TileManager.Tile tile in selectedTiles) {
+					foreach (Tile tile in selectedTiles) {
 						Type type = tile.GetType();
 						PropertyInfo propertyInfo = type.GetProperty(parameters[0]);
 						if (propertyInfo != null) {
@@ -718,13 +718,13 @@ public class DebugManager : IManager
 			delegate(List<string> parameters) {
 				int counter = 0;
 				if (parameters.Count == 0) {
-					List<TileManager.Tile> deselectedTiles = new();
-					foreach (TileManager.Tile tile in selectedTiles) {
+					List<Tile> deselectedTiles = new();
+					foreach (Tile tile in selectedTiles) {
 						if (!tile.walkable) {
 							deselectedTiles.Add(tile);
 						}
 					}
-					foreach (TileManager.Tile tile in deselectedTiles) {
+					foreach (Tile tile in deselectedTiles) {
 						selectedTiles.Remove(tile);
 						counter += 1;
 					}
@@ -739,13 +739,13 @@ public class DebugManager : IManager
 			delegate(List<string> parameters) {
 				int counter = 0;
 				if (parameters.Count == 0) {
-					List<TileManager.Tile> deselectedTiles = new();
-					foreach (TileManager.Tile tile in selectedTiles) {
+					List<Tile> deselectedTiles = new();
+					foreach (Tile tile in selectedTiles) {
 						if (tile.walkable) {
 							deselectedTiles.Add(tile);
 						}
 					}
-					foreach (TileManager.Tile tile in deselectedTiles) {
+					foreach (Tile tile in deselectedTiles) {
 						selectedTiles.Remove(tile);
 						counter += 1;
 					}
@@ -760,13 +760,13 @@ public class DebugManager : IManager
 			delegate(List<string> parameters) {
 				int counter = 0;
 				if (parameters.Count == 0) {
-					List<TileManager.Tile> deselectedTiles = new();
-					foreach (TileManager.Tile tile in selectedTiles) {
+					List<Tile> deselectedTiles = new();
+					foreach (Tile tile in selectedTiles) {
 						if (!tile.buildable) {
 							deselectedTiles.Add(tile);
 						}
 					}
-					foreach (TileManager.Tile tile in deselectedTiles) {
+					foreach (Tile tile in deselectedTiles) {
 						selectedTiles.Remove(tile);
 						counter += 1;
 					}
@@ -781,13 +781,13 @@ public class DebugManager : IManager
 			delegate(List<string> parameters) {
 				int counter = 0;
 				if (parameters.Count == 0) {
-					List<TileManager.Tile> deselectedTiles = new();
-					foreach (TileManager.Tile tile in selectedTiles) {
+					List<Tile> deselectedTiles = new();
+					foreach (Tile tile in selectedTiles) {
 						if (tile.buildable) {
 							deselectedTiles.Add(tile);
 						}
 					}
-					foreach (TileManager.Tile tile in deselectedTiles) {
+					foreach (Tile tile in deselectedTiles) {
 						selectedTiles.Remove(tile);
 						counter += 1;
 					}
@@ -802,16 +802,16 @@ public class DebugManager : IManager
 			delegate(List<string> parameters) {
 				int counter = 0;
 				if (parameters.Count == 1) {
-					TileManager.TileType tileType = TileManager.TileType.GetTileTypeByString(parameters[0]);
+					TileType tileType = TileType.GetTileTypeByString(parameters[0]);
 					if (tileType != null) {
 						if (selectedTiles.Count > 0) {
-							foreach (TileManager.Tile tile in selectedTiles) {
+							foreach (Tile tile in selectedTiles) {
 								bool previousWalkableState = tile.walkable;
 								tile.SetTileType(tileType, false, true, true);
 								if (!previousWalkableState && tile.walkable) {
 									GameManager.Get<ColonyManager>().colony.map.RemoveTileBrightnessEffect(tile);
 								} else if (previousWalkableState && !tile.walkable) {
-									GameManager.Get<ColonyManager>().colony.map.RecalculateLighting(new List<TileManager.Tile> { tile }, true);
+									GameManager.Get<ColonyManager>().colony.map.RecalculateLighting(new List<Tile> { tile }, true);
 								}
 								counter += 1;
 							}
@@ -831,7 +831,7 @@ public class DebugManager : IManager
 			Commands.listtiletypes,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.TileType tileType in TileManager.TileType.tileTypes) {
+					foreach (TileType tileType in TileType.tileTypes) {
 						Output(tileType.type.ToString());
 					}
 				} else {
@@ -852,7 +852,7 @@ public class DebugManager : IManager
 						if (int.TryParse(parameters[1], out int rotation)) {
 							if (rotation >= 0 && rotation < objectPrefab.GetBitmaskSpritesForVariation(variation).Count) {
 								if (selectedTiles.Count > 0) {
-									foreach (TileManager.Tile tile in selectedTiles) {
+									foreach (Tile tile in selectedTiles) {
 										if (tile.objectInstances.ContainsKey(objectPrefab.layer) && tile.objectInstances[objectPrefab.layer] != null) {
 											ObjectInstance.RemoveObjectInstance(tile.objectInstances[objectPrefab.layer]);
 											tile.RemoveObjectAtLayer(objectPrefab.layer);
@@ -880,7 +880,7 @@ public class DebugManager : IManager
 						Variation variation = objectPrefab.GetVariationFromString(parameters[1]);
 
 						if (selectedTiles.Count > 0) {
-							foreach (TileManager.Tile tile in selectedTiles) {
+							foreach (Tile tile in selectedTiles) {
 								if (tile.objectInstances.ContainsKey(objectPrefab.layer) && tile.objectInstances[objectPrefab.layer] != null) {
 									ObjectInstance.RemoveObjectInstance(tile.objectInstances[objectPrefab.layer]);
 									tile.RemoveObjectAtLayer(objectPrefab.layer);
@@ -908,7 +908,7 @@ public class DebugManager : IManager
 				int counter = 0;
 				if (parameters.Count == 0) {
 					if (selectedTiles.Count > 0) {
-						foreach (TileManager.Tile tile in selectedTiles) {
+						foreach (Tile tile in selectedTiles) {
 							List<ObjectInstance> removeTOIs = new();
 							foreach (KeyValuePair<int, ObjectInstance> toiKVP in tile.objectInstances) {
 								removeTOIs.Add(toiKVP.Value);
@@ -925,7 +925,7 @@ public class DebugManager : IManager
 				} else if (parameters.Count == 1) {
 					if (int.TryParse(parameters[0], out int layer)) {
 						if (selectedTiles.Count > 0) {
-							foreach (TileManager.Tile tile in selectedTiles) {
+							foreach (Tile tile in selectedTiles) {
 								if (tile.objectInstances.ContainsKey(layer) && tile.objectInstances[layer] != null) {
 									ObjectInstance.RemoveObjectInstance(tile.objectInstances[layer]);
 									tile.RemoveObjectAtLayer(layer);
@@ -965,7 +965,7 @@ public class DebugManager : IManager
 					if (plantPrefab != null) {
 						if (bool.TryParse(parameters[1], out bool small)) {
 							if (selectedTiles.Count > 0) {
-								foreach (TileManager.Tile tile in selectedTiles) {
+								foreach (Tile tile in selectedTiles) {
 									tile.SetPlant(false, new Plant(plantPrefab, tile, small, true, null));
 									GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 									if (tile.plant != null) {
@@ -993,7 +993,7 @@ public class DebugManager : IManager
 				int counter = 0;
 				if (parameters.Count == 0) {
 					if (selectedTiles.Count > 0) {
-						foreach (TileManager.Tile tile in selectedTiles) {
+						foreach (Tile tile in selectedTiles) {
 							tile.SetPlant(true, null);
 							if (tile.plant == null) {
 								counter += 1;
@@ -1100,7 +1100,7 @@ public class DebugManager : IManager
 					if (selectedTiles.Count <= 0) {
 						Output("No tiles are currently selected.");
 					} else {
-						foreach (TileManager.Tile tile in selectedTiles) {
+						foreach (Tile tile in selectedTiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = Color.blue;
 						}
@@ -1114,7 +1114,7 @@ public class DebugManager : IManager
 			Commands.viewnormal,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
 						tile.sr.color = Color.white;
 					}
 					GameManager.Get<ColonyManager>().colony.map.Bitmasking(GameManager.Get<ColonyManager>().colony.map.tiles, true, true);
@@ -1128,9 +1128,9 @@ public class DebugManager : IManager
 			Commands.viewregions,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Map.Region region in GameManager.Get<ColonyManager>().colony.map.regions) {
+					foreach (Region region in GameManager.Get<ColonyManager>().colony.map.regions) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
-						foreach (TileManager.Tile tile in region.tiles) {
+						foreach (Tile tile in region.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = colour;
 						}
@@ -1144,7 +1144,7 @@ public class DebugManager : IManager
 			Commands.viewheightmap,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
 						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 						tile.sr.color = new Color(tile.height, tile.height, tile.height, 1f);
 					}
@@ -1157,7 +1157,7 @@ public class DebugManager : IManager
 			Commands.viewprecipitation,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
 						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 						tile.sr.color = new Color(tile.GetPrecipitation(), tile.GetPrecipitation(), tile.GetPrecipitation(), 1f);
 					}
@@ -1170,7 +1170,7 @@ public class DebugManager : IManager
 			Commands.viewtemperature,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
 						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 						tile.sr.color = new Color((tile.temperature + 50f) / 100f, (tile.temperature + 50f) / 100f, (tile.temperature + 50f) / 100f, 1f);
 					}
@@ -1183,7 +1183,7 @@ public class DebugManager : IManager
 			Commands.viewbiomes,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
 						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 						tile.sr.color = tile.biome?.colour ?? Color.black;
 					}
@@ -1197,8 +1197,8 @@ public class DebugManager : IManager
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
 					GameManager.Get<ColonyManager>().colony.map.Bitmasking(GameManager.Get<ColonyManager>().colony.map.tiles, false, true);
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
-						if (tile.tileType.resourceRanges.Find(rr => TileManager.ResourceVein.resourceVeinValidTileFunctions.ContainsKey(rr.resource.type)) == null) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+						if (tile.tileType.resourceRanges.Find(rr => ResourceVein.resourceVeinValidTileFunctions.ContainsKey(rr.resource.type)) == null) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = Color.white;
 						}
@@ -1212,9 +1212,9 @@ public class DebugManager : IManager
 			Commands.viewdrainagebasins,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (KeyValuePair<TileManager.Map.Region, TileManager.Tile> kvp in GameManager.Get<ColonyManager>().colony.map.drainageBasins) {
+					foreach (KeyValuePair<Region, Tile> kvp in GameManager.Get<ColonyManager>().colony.map.drainageBasins) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
-						foreach (TileManager.Tile tile in kvp.Key.tiles) {
+						foreach (Tile tile in kvp.Key.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = colour;
 						}
@@ -1228,9 +1228,9 @@ public class DebugManager : IManager
 			Commands.viewrivers,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Map.River river in GameManager.Get<ColonyManager>().colony.map.rivers) {
+					foreach (River river in GameManager.Get<ColonyManager>().colony.map.rivers) {
 						Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-						foreach (TileManager.Tile tile in river.tiles) {
+						foreach (Tile tile in river.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = riverColour;
 						}
@@ -1244,7 +1244,7 @@ public class DebugManager : IManager
 					if (int.TryParse(parameters[0], out viewRiverAtIndex)) {
 						if (viewRiverAtIndex >= 0 && viewRiverAtIndex < GameManager.Get<ColonyManager>().colony.map.rivers.Count) {
 							Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-							foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.rivers[viewRiverAtIndex].tiles) {
+							foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.rivers[viewRiverAtIndex].tiles) {
 								tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 								tile.sr.color = riverColour;
 							}
@@ -1268,9 +1268,9 @@ public class DebugManager : IManager
 			Commands.viewlargerivers,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Map.River river in GameManager.Get<ColonyManager>().colony.map.largeRivers) {
+					foreach (River river in GameManager.Get<ColonyManager>().colony.map.largeRivers) {
 						Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-						foreach (TileManager.Tile tile in river.tiles) {
+						foreach (Tile tile in river.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = riverColour;
 						}
@@ -1285,7 +1285,7 @@ public class DebugManager : IManager
 					if (int.TryParse(parameters[0], out viewRiverAtIndex)) {
 						if (viewRiverAtIndex >= 0 && viewRiverAtIndex < GameManager.Get<ColonyManager>().colony.map.largeRivers.Count) {
 							Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-							foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.largeRivers[viewRiverAtIndex].tiles) {
+							foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.largeRivers[viewRiverAtIndex].tiles) {
 								tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 								tile.sr.color = riverColour;
 							}
@@ -1310,7 +1310,7 @@ public class DebugManager : IManager
 			Commands.viewwalkspeed,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
 						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 						tile.sr.color = new Color(tile.walkSpeed, tile.walkSpeed, tile.walkSpeed, 1f);
 					}
@@ -1323,13 +1323,13 @@ public class DebugManager : IManager
 			Commands.viewregionblocks,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Map.RegionBlock region in GameManager.Get<ColonyManager>().colony.map.regionBlocks) {
+					foreach (RegionBlock region in GameManager.Get<ColonyManager>().colony.map.regionBlocks) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
-						foreach (TileManager.Tile tile in region.tiles) {
+						foreach (Tile tile in region.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = colour;
 						}
-						TileManager.Tile averageTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(region.averagePosition);
+						Tile averageTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(region.averagePosition);
 						averageTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.White);
 					}
 				} else {
@@ -1341,13 +1341,13 @@ public class DebugManager : IManager
 			Commands.viewsquareregionblocks,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Map.RegionBlock region in GameManager.Get<ColonyManager>().colony.map.squareRegionBlocks) {
+					foreach (RegionBlock region in GameManager.Get<ColonyManager>().colony.map.squareRegionBlocks) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
-						foreach (TileManager.Tile tile in region.tiles) {
+						foreach (Tile tile in region.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = colour;
 						}
-						TileManager.Tile averageTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(region.averagePosition);
+						Tile averageTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(region.averagePosition);
 						averageTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.White);
 					}
 				} else {
@@ -1359,7 +1359,7 @@ public class DebugManager : IManager
 			Commands.viewlightblockingtiles,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
 						tile.SetVisible(true);
 						if (tile.blocksLight) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
@@ -1375,7 +1375,7 @@ public class DebugManager : IManager
 			Commands.viewshadowstarttiles,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.DetermineShadowSourceTiles(GameManager.Get<ColonyManager>().colony.map.tiles)) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.DetermineShadowSourceTiles(GameManager.Get<ColonyManager>().colony.map.tiles)) {
 						tile.SetVisible(true);
 						tile.sr.color = Color.red;
 					}
@@ -1390,9 +1390,9 @@ public class DebugManager : IManager
 				if (parameters.Count == 0) {
 					GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
-						foreach (TileManager.Tile tile in selectedTiles) {
-							foreach (KeyValuePair<int, Dictionary<TileManager.Tile, float>> shadowsFromKVP in tile.shadowsFrom) {
-								foreach (KeyValuePair<TileManager.Tile, float> sTile in shadowsFromKVP.Value) {
+						foreach (Tile tile in selectedTiles) {
+							foreach (KeyValuePair<int, Dictionary<Tile, float>> shadowsFromKVP in tile.shadowsFrom) {
+								foreach (KeyValuePair<Tile, float> sTile in shadowsFromKVP.Value) {
 									sTile.Key.SetColour(new Color(shadowsFromKVP.Key / 24f, 1 - shadowsFromKVP.Key / 24f, shadowsFromKVP.Key / 24f, 1f), 12);
 								}
 							}
@@ -1405,8 +1405,8 @@ public class DebugManager : IManager
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
-								foreach (TileManager.Tile tile in selectedTiles) {
-									foreach (KeyValuePair<TileManager.Tile, float> sTile in tile.shadowsFrom[hour]) {
+								foreach (Tile tile in selectedTiles) {
+									foreach (KeyValuePair<Tile, float> sTile in tile.shadowsFrom[hour]) {
 										sTile.Key.SetColour(new Color(hour / 24f, 1 - hour / 24f, hour / 24f, 1f), 12);
 									}
 								}
@@ -1430,9 +1430,9 @@ public class DebugManager : IManager
 				if (parameters.Count == 0) {
 					GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
-						foreach (TileManager.Tile tile in selectedTiles) {
-							foreach (KeyValuePair<int, List<TileManager.Tile>> shadowsToKVP in tile.shadowsTo) {
-								foreach (TileManager.Tile shadowsToTile in shadowsToKVP.Value) {
+						foreach (Tile tile in selectedTiles) {
+							foreach (KeyValuePair<int, List<Tile>> shadowsToKVP in tile.shadowsTo) {
+								foreach (Tile shadowsToTile in shadowsToKVP.Value) {
 									shadowsToTile.SetColour(new Color(shadowsToKVP.Key / 24f, 1 - shadowsToKVP.Key / 24f, shadowsToKVP.Key / 24f, 1f), 12);
 								}
 							}
@@ -1445,8 +1445,8 @@ public class DebugManager : IManager
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
-								foreach (TileManager.Tile tile in selectedTiles) {
-									foreach (TileManager.Tile sTile in tile.shadowsTo[hour]) {
+								foreach (Tile tile in selectedTiles) {
+									foreach (Tile sTile in tile.shadowsTo[hour]) {
 										sTile.SetColour(new Color(hour / 24f, 1 - hour / 24f, hour / 24f, 1f), 12);
 									}
 								}
@@ -1470,9 +1470,9 @@ public class DebugManager : IManager
 				if (parameters.Count == 0) {
 					GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
-						foreach (TileManager.Tile tile in selectedTiles) {
-							foreach (KeyValuePair<int, List<TileManager.Tile>> blockingShadowsFromKVP in tile.blockingShadowsFrom) {
-								foreach (TileManager.Tile blockingShadowsFromTile in blockingShadowsFromKVP.Value) {
+						foreach (Tile tile in selectedTiles) {
+							foreach (KeyValuePair<int, List<Tile>> blockingShadowsFromKVP in tile.blockingShadowsFrom) {
+								foreach (Tile blockingShadowsFromTile in blockingShadowsFromKVP.Value) {
 									blockingShadowsFromTile.SetColour(Color.red, 12);
 								}
 							}
@@ -1485,8 +1485,8 @@ public class DebugManager : IManager
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
-								foreach (TileManager.Tile tile in selectedTiles) {
-									foreach (TileManager.Tile blockingShadowsFromTile in tile.blockingShadowsFrom[hour]) {
+								foreach (Tile tile in selectedTiles) {
+									foreach (Tile blockingShadowsFromTile in tile.blockingShadowsFrom[hour]) {
 										blockingShadowsFromTile.SetColour(Color.red, 12);
 									}
 								}
@@ -1508,7 +1508,7 @@ public class DebugManager : IManager
 			Commands.viewroofs,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
 						tile.SetVisible(true);
 						if (tile.HasRoof()) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
@@ -1524,7 +1524,7 @@ public class DebugManager : IManager
 			Commands.viewhidden,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
 						tile.SetVisible(true);
 					}
 				} else {

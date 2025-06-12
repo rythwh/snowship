@@ -12,7 +12,7 @@ namespace Snowship.NJob
 		public JobRegistry JobRegistry { get; private set; }
 		public HashSet<IJob> Jobs { get; } = new();
 		private readonly Dictionary<Type, HashSet<IJob>> jobsByType = new();
-		private readonly Dictionary<TileManager.Tile, HashSet<IJob>> jobsByTile = new();
+		private readonly Dictionary<Tile, HashSet<IJob>> jobsByTile = new();
 
 		private readonly Dictionary<Colonist, SortedSet<JobCostEntry>> colonistJobs = new();
 
@@ -49,7 +49,7 @@ namespace Snowship.NJob
 					colonistJobs.Add(colonist, new SortedSet<JobCostEntry>());
 				}
 
-				HashSet<TileManager.Map.RegionBlock> checkedRegionBlocks = new();
+				HashSet<RegionBlock> checkedRegionBlocks = new();
 				HashSet<IJobDefinition> checkedJobTypes = new();
 
 				foreach (IJob job in Jobs.OrderBy(j => Vector2.Distance(j.Tile.position, colonist.Tile.position))) {
@@ -163,7 +163,7 @@ namespace Snowship.NJob
 			job?.AssignWorker(null);
 		}
 
-		public IJob JobOfTypeExistsAtTile<TJob>(TileManager.Tile tile) where TJob : IJob {
+		public IJob JobOfTypeExistsAtTile<TJob>(Tile tile) where TJob : IJob {
 			if (!jobsByTile.ContainsKey(tile)) {
 				return null;
 			}
@@ -173,11 +173,11 @@ namespace Snowship.NJob
 			return jobs?.FirstOrDefault(job => job.GetType() == typeof(TJob));
 		}
 
-		public IJob JobAtLayerExistsAtTile(TileManager.Tile tile, int layer) {
+		public IJob JobAtLayerExistsAtTile(Tile tile, int layer) {
 			return jobsByTile.GetValueOrDefault(tile)?.FirstOrDefault(j => j.Layer == layer);
 		}
 
-		public HashSet<IJob> JobsAtTile(TileManager.Tile tile) {
+		public HashSet<IJob> JobsAtTile(Tile tile) {
 			return jobsByTile.GetValueOrDefault(tile);
 		}
 

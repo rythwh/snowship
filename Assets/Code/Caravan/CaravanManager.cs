@@ -73,11 +73,11 @@ namespace Snowship.NCaravan {
 
 		public void SpawnCaravan(CaravanType caravanType, int maxNumTraders) {
 
-			List<TileManager.Tile> validSpawnTiles = new List<TileManager.Tile>();
+			List<Tile> validSpawnTiles = new List<Tile>();
 
 			switch (caravanType) {
 				case CaravanType.Foot or CaravanType.Wagon:
-					validSpawnTiles.AddRange(GameManager.Get<ColonyManager>().colony.map.edgeTiles.Where(tile => tile.walkable && !tile.tileType.classes[TileManager.TileType.ClassEnum.LiquidWater]).ToList());
+					validSpawnTiles.AddRange(GameManager.Get<ColonyManager>().colony.map.edgeTiles.Where(tile => tile.walkable && !tile.tileType.classes[TileType.ClassEnum.LiquidWater]).ToList());
 					break;
 				case CaravanType.Boat:
 					// TODO Implement boat caravans
@@ -88,18 +88,18 @@ namespace Snowship.NCaravan {
 				return;
 			}
 
-			TileManager.Tile targetSpawnTile = validSpawnTiles[UnityEngine.Random.Range(0, validSpawnTiles.Count)];
+			Tile targetSpawnTile = validSpawnTiles[UnityEngine.Random.Range(0, validSpawnTiles.Count)];
 
-			List<TileManager.Tile> edgeTilesConnectedToTargetSpawnTile = new List<TileManager.Tile>();
+			List<Tile> edgeTilesConnectedToTargetSpawnTile = new List<Tile>();
 
-			List<TileManager.Tile> spawnTilesFrontier = new List<TileManager.Tile>() { targetSpawnTile };
-			List<TileManager.Tile> spawnTilesChecked = new List<TileManager.Tile>();
+			List<Tile> spawnTilesFrontier = new List<Tile>() { targetSpawnTile };
+			List<Tile> spawnTilesChecked = new List<Tile>();
 			while (spawnTilesFrontier.Count > 0) {
-				TileManager.Tile currentTile = spawnTilesFrontier[0];
+				Tile currentTile = spawnTilesFrontier[0];
 				spawnTilesFrontier.RemoveAt(0);
 				spawnTilesChecked.Add(currentTile);
 				edgeTilesConnectedToTargetSpawnTile.Add(currentTile);
-				foreach (TileManager.Tile nTile in currentTile.horizontalSurroundingTiles) {
+				foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
 					if (!spawnTilesChecked.Contains(nTile) && validSpawnTiles.Contains(nTile)) {
 						spawnTilesFrontier.Add(nTile);
 					}
@@ -111,7 +111,7 @@ namespace Snowship.NCaravan {
 			}
 
 			int numTraders = UnityEngine.Random.Range(1, maxNumTraders + 1);
-			List<TileManager.Tile> edgeTilesCloseToTargetSpawnTile = edgeTilesConnectedToTargetSpawnTile.Where(tile => Vector2.Distance(tile.obj.transform.position, targetSpawnTile.obj.transform.position) <= numTraders * 2).ToList();
+			List<Tile> edgeTilesCloseToTargetSpawnTile = edgeTilesConnectedToTargetSpawnTile.Where(tile => Vector2.Distance(tile.obj.transform.position, targetSpawnTile.obj.transform.position) <= numTraders * 2).ToList();
 
 			if (edgeTilesCloseToTargetSpawnTile.Count <= 0) {
 				return;
@@ -135,12 +135,12 @@ namespace Snowship.NCaravan {
 				selectedTradingPost = tradingPosts[UnityEngine.Random.Range(0, tradingPosts.Count)];
 			}
 
-			TileManager.Tile targetTile = null;
+			Tile targetTile = null;
 			if (selectedTradingPost != null) {
 				targetTile = selectedTradingPost.zeroPointTile;
 			}
 			else {
-				List<TileManager.Tile> validTargetTiles = targetSpawnTile.region.tiles.Where(tile => tile.walkable && !tile.tileType.classes[TileManager.TileType.ClassEnum.LiquidWater]).ToList();
+				List<Tile> validTargetTiles = targetSpawnTile.region.tiles.Where(tile => tile.walkable && !tile.tileType.classes[TileType.ClassEnum.LiquidWater]).ToList();
 				targetTile = validTargetTiles[UnityEngine.Random.Range(0, validTargetTiles.Count)];
 			}
 

@@ -60,7 +60,7 @@ namespace Snowship.NUI
 			string wealth = caravan.location.wealth.ToLower();
 			string citySize = caravan.location.citySize.ToLower();
 			string resourceRichness = caravan.location.resourceRichness.ToLower();
-			string biome = TileManager.Biome.GetBiomeByEnum(caravan.location.biomeType).name.ToLower();
+			string biome = Biome.GetBiomeByEnum(caravan.location.biomeType).name.ToLower();
 
 			tradeCaravanAffiliationText.SetText($"Trade Caravan of {locationName}");
 			tradeCaravanDescriptionText.SetText($"{locationName} is a {wealth} {citySize} with {resourceRichness} resources in a {biome} climate.");

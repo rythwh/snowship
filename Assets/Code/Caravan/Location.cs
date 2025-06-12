@@ -22,14 +22,14 @@ namespace Snowship.NCaravan {
 		public readonly string wealth;
 		public readonly string resourceRichness;
 		public readonly string citySize;
-		public readonly TileManager.Biome.TypeEnum biomeType;
+		public readonly Biome.TypeEnum biomeType;
 
 		public Location(
 			string name,
 			string wealth,
 			string resourceRichness,
 			string citySize,
-			TileManager.Biome.TypeEnum biomeType
+			Biome.TypeEnum biomeType
 		) {
 			Name = name;
 			this.wealth = wealth;
@@ -46,8 +46,8 @@ namespace Snowship.NCaravan {
 			string resourceRichness = ResourceRichness[UnityEngine.Random.Range(0, ResourceRichness.Count)];
 			string citySize = CitySize[UnityEngine.Random.Range(0, CitySize.Count)];
 
-			List<TileManager.Biome.TypeEnum> biomeTypes = ((TileManager.Biome.TypeEnum[])Enum.GetValues(typeof(TileManager.Biome.TypeEnum))).ToList();
-			TileManager.Biome.TypeEnum biomeType = biomeTypes[UnityEngine.Random.Range(0, biomeTypes.Count)];
+			List<Biome.TypeEnum> biomeTypes = ((Biome.TypeEnum[])Enum.GetValues(typeof(Biome.TypeEnum))).ToList();
+			Biome.TypeEnum biomeType = biomeTypes[UnityEngine.Random.Range(0, biomeTypes.Count)];
 
 			return new Location(name, wealth, resourceRichness, citySize, biomeType);
 		}

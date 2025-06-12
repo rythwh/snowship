@@ -8,7 +8,7 @@ namespace Snowship.NJob
 	[RegisterJob("Remove", "Remove", "RemoveRoof")]
 	public class RemoveRoofJobDefinition : JobDefinition<RemoveRoofJob>
 	{
-		public override Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; } = {
+		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
 			Selectable.SelectionConditions.Roof,
 			Selectable.SelectionConditions.NoSameLayerJobs
 		};
@@ -20,7 +20,7 @@ namespace Snowship.NJob
 
 	public class RemoveRoofJob : Job<RemoveRoofJobDefinition>
 	{
-		public RemoveRoofJob(TileManager.Tile tile) : base(tile) {
+		public RemoveRoofJob(Tile tile) : base(tile) {
 			TargetName = "Roof";
 			Description = "Removing a roof.";
 		}

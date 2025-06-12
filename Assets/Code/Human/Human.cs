@@ -56,7 +56,7 @@ namespace Snowship.NHuman
 		// Events
 		public event Action<BodySection, Clothing> OnClothingChanged;
 
-		public Human(TileManager.Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
+		public Human(Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
 
 			SetName(GameManager.Get<HumanManager>().GetName(gender));
 
@@ -165,9 +165,9 @@ namespace Snowship.NHuman
 			}
 		}
 
-		protected void Wander(TileManager.Tile stayNearTile, int stayNearTileDistance) {
+		protected void Wander(Tile stayNearTile, int stayNearTileDistance) {
 			if (WanderTimer <= 0) {
-				List<TileManager.Tile> validWanderTiles = Tile.surroundingTiles
+				List<Tile> validWanderTiles = Tile.surroundingTiles
 					.Where(tile => tile != null && tile.walkable && tile.buildable && GameManager.Get<HumanManager>().humans.Find(human => human.Tile == tile) == null)
 					.Where(tile => tile.GetObjectInstanceAtLayer(2) == null)
 					.ToList();
@@ -189,13 +189,13 @@ namespace Snowship.NHuman
 
 		public void MoveToClosestWalkableTile(bool careIfOvertileIsWalkable) {
 			if (!careIfOvertileIsWalkable || !Tile.walkable) {
-				List<TileManager.Tile> walkableSurroundingTiles = Tile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
+				List<Tile> walkableSurroundingTiles = Tile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
 				if (walkableSurroundingTiles.Count > 0) {
 					MoveToTile(walkableSurroundingTiles[UnityEngine.Random.Range(0, walkableSurroundingTiles.Count)], false);
 				} else {
 					walkableSurroundingTiles.Clear();
-					List<TileManager.Tile> potentialWalkableSurroundingTiles = new();
-					foreach (TileManager.Map.RegionBlock regionBlock in Tile.regionBlock.horizontalSurroundingRegionBlocks) {
+					List<Tile> potentialWalkableSurroundingTiles = new();
+					foreach (RegionBlock regionBlock in Tile.regionBlock.horizontalSurroundingRegionBlocks) {
 						if (regionBlock.tileType.walkable) {
 							potentialWalkableSurroundingTiles.AddRange(regionBlock.tiles);
 						}
@@ -205,7 +205,7 @@ namespace Snowship.NHuman
 						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
 						MoveToTile(walkableSurroundingTiles[0], false);
 					} else {
-						List<TileManager.Tile> validTiles = GameManager.Get<ColonyManager>().colony.map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
+						List<Tile> validTiles = GameManager.Get<ColonyManager>().colony.map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
 						if (validTiles.Count > 0) {
 							MoveToTile(validTiles[0], false);
 						}

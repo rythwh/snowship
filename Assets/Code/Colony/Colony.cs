@@ -9,10 +9,10 @@ namespace Snowship.NColony {
 
 		public string Name { get; }
 
-		public TileManager.MapData mapData;
-		public TileManager.Map map;
+		public MapData mapData;
+		public Map map;
 
-		public Colony(string name, TileManager.MapData mapData) {
+		public Colony(string name, MapData mapData) {
 			Name = name;
 			this.mapData = mapData;
 

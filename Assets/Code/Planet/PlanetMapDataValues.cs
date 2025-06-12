@@ -7,9 +7,9 @@ namespace Snowship.NPlanet {
 		public const bool PlanetTemperature = true;
 		public const float AverageTemperature = -1;
 		public const float AveragePrecipitation = -1;
-		public readonly Dictionary<TileManager.TileTypeGroup.TypeEnum, float> terrainTypeHeights = new Dictionary<TileManager.TileTypeGroup.TypeEnum, float> {
-			{ TileManager.TileTypeGroup.TypeEnum.Water, 0.40f },
-			{ TileManager.TileTypeGroup.TypeEnum.Stone, 0.75f }
+		public readonly Dictionary<TileTypeGroup.TypeEnum, float> terrainTypeHeights = new Dictionary<TileTypeGroup.TypeEnum, float> {
+			{ TileTypeGroup.TypeEnum.Water, 0.40f },
+			{ TileTypeGroup.TypeEnum.Stone, 0.75f }
 		};
 		public readonly List<int> surroundingPlanetTileHeightDirections = null;
 		public const bool River = false;

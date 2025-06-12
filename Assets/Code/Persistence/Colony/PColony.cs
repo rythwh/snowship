@@ -41,7 +41,7 @@ namespace Snowship.NPersistence {
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.AveragePrecipitation, colony.map.mapData.averagePrecipitation, 0));
 
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.TerrainTypeHeights, string.Empty, 0));
-			foreach (KeyValuePair<TileManager.TileTypeGroup.TypeEnum, float> terrainTypeHeight in colony.map.mapData.terrainTypeHeights) {
+			foreach (KeyValuePair<TileTypeGroup.TypeEnum, float> terrainTypeHeight in colony.map.mapData.terrainTypeHeights) {
 				file.WriteLine(PU.CreateKeyValueString(terrainTypeHeight.Key, terrainTypeHeight.Value, 1));
 			}
 
@@ -104,7 +104,7 @@ namespace Snowship.NPersistence {
 						break;
 					case ColonyProperty.TerrainTypeHeights:
 						foreach (KeyValuePair<string, object> terrainTypeHeightProperty in (List<KeyValuePair<string, object>>)property.Value) {
-							TileManager.TileTypeGroup.TypeEnum terrainTypeHeightPropertyKey = (TileManager.TileTypeGroup.TypeEnum)Enum.Parse(typeof(TileManager.TileTypeGroup.TypeEnum), terrainTypeHeightProperty.Key);
+							TileTypeGroup.TypeEnum terrainTypeHeightPropertyKey = (TileTypeGroup.TypeEnum)Enum.Parse(typeof(TileTypeGroup.TypeEnum), terrainTypeHeightProperty.Key);
 							persistenceColony.terrainTypeHeights.Add(terrainTypeHeightPropertyKey, float.Parse((string)terrainTypeHeightProperty.Value));
 						}
 						break;

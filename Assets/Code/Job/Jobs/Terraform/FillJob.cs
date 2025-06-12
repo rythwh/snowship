@@ -8,7 +8,7 @@ namespace Snowship.NJob
 	[RegisterJob("Terraform", "Terrain", "Fill")]
 	public class FillJobDefinition : JobDefinition<FillJob>
 	{
-		public override Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; } = {
+		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
 			Selectable.SelectionConditions.Fillable,
 			Selectable.SelectionConditions.NoObjects,
 			Selectable.SelectionConditions.NoPlant,
@@ -25,14 +25,14 @@ namespace Snowship.NJob
 
 	public class FillJob : Job<FillJobDefinition>
 	{
-		public FillJob(TileManager.Tile tile) : base(tile) {
+		public FillJob(Tile tile) : base(tile) {
 			Description = $"Filling {Tile.tileType.groupType.ToString().ToLower()}.";
 		}
 
 		protected override void OnJobFinished() {
 			base.OnJobFinished();
 
-			TileManager.TileType fillType = TileManager.TileType.GetTileTypeByEnum(TileManager.TileType.TypeEnum.Dirt);
+			TileType fillType = TileType.GetTileTypeByEnum(TileType.TypeEnum.Dirt);
 			Tile.dugPreviously = false;
 			foreach (ResourceRange resourceRange in fillType.resourceRanges) {
 				Worker.Inventory.ChangeResourceAmount(resourceRange.resource, -(resourceRange.max + 1), true);

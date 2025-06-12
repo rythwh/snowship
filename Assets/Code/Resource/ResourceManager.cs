@@ -1145,9 +1145,9 @@ public class ResourceManager : IManager, IDisposable
 		return filteredLocationNames[Random.Range(0, filteredLocationNames.Count)];
 	}
 
-	private int BitSumObjects(List<ObjectPrefab.ObjectEnum> compareObjectTypes, List<TileManager.Tile> tileSurroundingTiles) {
+	private int BitSumObjects(List<ObjectPrefab.ObjectEnum> compareObjectTypes, List<Tile> tileSurroundingTiles) {
 		List<int> layers = new();
-		foreach (TileManager.Tile tile in tileSurroundingTiles) {
+		foreach (Tile tile in tileSurroundingTiles) {
 			if (tile != null) {
 				foreach (KeyValuePair<int, ObjectInstance> kvp in tile.objectInstances) {
 					if (!layers.Contains(kvp.Key)) {
@@ -1165,9 +1165,9 @@ public class ResourceManager : IManager, IDisposable
 				if (tileSurroundingTiles[i] != null && tileSurroundingTiles[i].GetObjectInstanceAtLayer(layer) != null) {
 					if (compareObjectTypes.Contains(tileSurroundingTiles[i].GetObjectInstanceAtLayer(layer).prefab.type)) {
 						bool ignoreTile = false;
-						if (compareObjectTypes.Contains(tileSurroundingTiles[i].GetObjectInstanceAtLayer(layer).prefab.type) && TileManager.Map.diagonalCheckMap.ContainsKey(i)) {
-							List<TileManager.Tile> surroundingHorizontalTiles = new() { tileSurroundingTiles[TileManager.Map.diagonalCheckMap[i][0]], tileSurroundingTiles[TileManager.Map.diagonalCheckMap[i][1]] };
-							List<TileManager.Tile> similarTiles = surroundingHorizontalTiles.Where(tile => tile != null && tile.GetObjectInstanceAtLayer(layer) != null && compareObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)).ToList();
+						if (compareObjectTypes.Contains(tileSurroundingTiles[i].GetObjectInstanceAtLayer(layer).prefab.type) && Map.diagonalCheckMap.ContainsKey(i)) {
+							List<Tile> surroundingHorizontalTiles = new() { tileSurroundingTiles[Map.diagonalCheckMap[i][0]], tileSurroundingTiles[Map.diagonalCheckMap[i][1]] };
+							List<Tile> similarTiles = surroundingHorizontalTiles.Where(tile => tile != null && tile.GetObjectInstanceAtLayer(layer) != null && compareObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)).ToList();
 							if (similarTiles.Count < 2) {
 								ignoreTile = true;
 							}
@@ -1183,7 +1183,7 @@ public class ResourceManager : IManager, IDisposable
 						if (i <= 3) {
 							layerSumTiles[i] = 1;
 						} else {
-							List<TileManager.Tile> surroundingHorizontalTiles = new() { tileSurroundingTiles[TileManager.Map.diagonalCheckMap[i][0]], tileSurroundingTiles[TileManager.Map.diagonalCheckMap[i][1]] };
+							List<Tile> surroundingHorizontalTiles = new() { tileSurroundingTiles[Map.diagonalCheckMap[i][0]], tileSurroundingTiles[Map.diagonalCheckMap[i][1]] };
 							if (surroundingHorizontalTiles.Find(tile => tile != null && tile.GetObjectInstanceAtLayer(layer) != null && !compareObjectTypes.Contains(tile.GetObjectInstanceAtLayer(layer).prefab.type)) == null) {
 								layerSumTiles[i] = 1;
 							}
@@ -1200,7 +1200,7 @@ public class ResourceManager : IManager, IDisposable
 			foreach (ObjectPrefab.ObjectEnum objectEnum in compareObjectTypes) {
 				ObjectPrefab objectPrefab = ObjectPrefab.GetObjectPrefabByEnum(objectEnum);
 				if (objectPrefab.layer == layerSumTiles.Key) {
-					foreach (TileManager.Tile tile in tileSurroundingTiles) {
+					foreach (Tile tile in tileSurroundingTiles) {
 						if (tile != null) {
 							ObjectInstance objectInstance = tile.GetAllObjectInstances().Find(instances => instances.prefab == objectPrefab);
 							if (objectInstance != null) {
@@ -1232,7 +1232,7 @@ public class ResourceManager : IManager, IDisposable
 		bool compareEquivalentObjects,
 		List<ObjectPrefab.ObjectEnum> customCompareObjectTypes
 	) {
-		List<TileManager.Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles;
+		List<Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles;
 
 		int sum;
 		if (customBitSumInputs) {
@@ -1270,11 +1270,11 @@ public class ResourceManager : IManager, IDisposable
 
 		SpriteRenderer spriteRenderer = objectInstance.obj.GetComponent<SpriteRenderer>();
 		List<Sprite> sprites = objectInstance.prefab.GetBitmaskSpritesForVariation(objectInstance.variation);
-		spriteRenderer.sprite = sum >= 16 ? sprites[TileManager.Map.bitmaskMap[sum]] : sprites[sum];
+		spriteRenderer.sprite = sum >= 16 ? sprites[Map.bitmaskMap[sum]] : sprites[sum];
 	}
 
-	public void Bitmask(List<TileManager.Tile> tilesToBitmask) {
-		foreach (TileManager.Tile tile in tilesToBitmask) {
+	public void Bitmask(List<Tile> tilesToBitmask) {
+		foreach (Tile tile in tilesToBitmask) {
 			if (tile != null && tile.GetAllObjectInstances().Count > 0) {
 				foreach (ObjectInstance objectInstance in tile.GetAllObjectInstances()) {
 					if (objectInstance.prefab.bitmasking) {

@@ -49,26 +49,26 @@ namespace Snowship.NColonist {
 			if (amount > 0) {
 				int mapSize = GameManager.Get<ColonyManager>().colony.map.mapData.mapSize;
 				for (int i = 0; i < amount; i++) {
-					List<TileManager.Tile> walkableTilesByDistanceToCentre = GameManager.Get<ColonyManager>().colony.map.tiles.Where(o => o.walkable && o.buildable && Colonist.colonists.Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) /*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
+					List<Tile> walkableTilesByDistanceToCentre = GameManager.Get<ColonyManager>().colony.map.tiles.Where(o => o.walkable && o.buildable && Colonist.colonists.Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) /*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 					if (walkableTilesByDistanceToCentre.Count <= 0) {
-						foreach (TileManager.Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
-							tile.SetTileType(tile.biome.tileTypes[TileManager.TileTypeGroup.TypeEnum.Ground], true, true, true);
+						foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
+							tile.SetTileType(tile.biome.tileTypes[TileTypeGroup.TypeEnum.Ground], true, true, true);
 						}
 						walkableTilesByDistanceToCentre = GameManager.Get<ColonyManager>().colony.map.tiles.Where(o => o.walkable && Colonist.colonists.Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) /*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 					}
 
-					List<TileManager.Tile> validSpawnTiles = new List<TileManager.Tile>();
-					TileManager.Tile currentTile = walkableTilesByDistanceToCentre[0];
+					List<Tile> validSpawnTiles = new List<Tile>();
+					Tile currentTile = walkableTilesByDistanceToCentre[0];
 					float minimumDistance = Vector2.Distance(currentTile.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f));
-					foreach (TileManager.Tile tile in walkableTilesByDistanceToCentre) {
+					foreach (Tile tile in walkableTilesByDistanceToCentre) {
 						float distance = Vector2.Distance(currentTile.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f));
 						if (distance < minimumDistance) {
 							currentTile = tile;
 							minimumDistance = distance;
 						}
 					}
-					List<TileManager.Tile> frontier = new List<TileManager.Tile>() { currentTile };
-					List<TileManager.Tile> checkedTiles = new List<TileManager.Tile>();
+					List<Tile> frontier = new List<Tile>() { currentTile };
+					List<Tile> checkedTiles = new List<Tile>();
 					while (frontier.Count > 0) {
 						currentTile = frontier[0];
 						frontier.RemoveAt(0);
@@ -77,13 +77,13 @@ namespace Snowship.NColonist {
 						if (validSpawnTiles.Count > 100) {
 							break;
 						}
-						foreach (TileManager.Tile nTile in currentTile.horizontalSurroundingTiles) {
+						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
 							if (walkableTilesByDistanceToCentre.Contains(nTile) && !checkedTiles.Contains(nTile)) {
 								frontier.Add(nTile);
 							}
 						}
 					}
-					TileManager.Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[UnityEngine.Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[UnityEngine.Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
+					Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[UnityEngine.Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[UnityEngine.Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
 
 					new Colonist(colonistSpawnTile, 1);
 				}

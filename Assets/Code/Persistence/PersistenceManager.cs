@@ -163,8 +163,8 @@ namespace Snowship.NPersistence {
 				loadingState = LoadingState.LoadingMap;
 				UIEvents.UpdateLoadingScreenText("Loading Original Map", string.Empty);
 				await UniTask.WaitForEndOfFrame();
-				GameManager.Get<ColonyManager>().colony.map = new TileManager.Map() { mapData = GameManager.Get<ColonyManager>().colony.mapData };
-				TileManager.Map map = GameManager.Get<ColonyManager>().colony.map;
+				GameManager.Get<ColonyManager>().colony.map = new Map() { mapData = GameManager.Get<ColonyManager>().colony.mapData };
+				Map map = GameManager.Get<ColonyManager>().colony.map;
 
 				List<PersistenceTile> originalTiles = PMap.LoadTiles(GameManager.Get<ColonyManager>().colony.directory + "/Map/tiles.snowship");
 				List<PersistenceRiver> originalRivers = PRiver.LoadRivers(GameManager.Get<ColonyManager>().colony.directory + "/Map/rivers.snowship");

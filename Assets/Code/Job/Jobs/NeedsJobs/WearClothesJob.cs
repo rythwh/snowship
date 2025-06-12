@@ -16,7 +16,7 @@ namespace Snowship.NJob
 		private readonly Container container;
 		private readonly Clothing clothing;
 
-		public WearClothesJob(TileManager.Tile tile, Container container, Clothing clothing) : base(tile) {
+		public WearClothesJob(Tile tile, Container container, Clothing clothing) : base(tile) {
 			this.container = container;
 			this.clothing = clothing;
 

@@ -5,12 +5,12 @@ using System.Linq;
 public static class PathManager {
 
 	public class PathfindingTile {
-		public TileManager.Tile tile;
+		public Tile tile;
 		public PathfindingTile cameFrom;
 		public int pathDistance = 0;
 		public float cost;
 
-		public PathfindingTile(TileManager.Tile tile, PathfindingTile cameFrom, float cost) {
+		public PathfindingTile(Tile tile, PathfindingTile cameFrom, float cost) {
 			this.tile = tile;
 			this.cameFrom = cameFrom;
 			this.cost = cost;
@@ -22,14 +22,14 @@ public static class PathManager {
 		}
 	}
 
-	public static List<TileManager.Tile> FindPathToTile(TileManager.Tile startTile, TileManager.Tile endTile, bool allowEndTileNonWalkable) {
+	public static List<Tile> FindPathToTile(Tile startTile, Tile endTile, bool allowEndTileNonWalkable) {
 
 		bool stop = !allowEndTileNonWalkable && (!endTile.walkable || startTile.region != endTile.region);
 		if (!startTile.walkable && endTile.walkable) {
 			stop = false;
 		}
 		if (stop) {
-			return new List<TileManager.Tile>();
+			return new List<Tile>();
 		}
 
 		PathfindingTile currentTile = new PathfindingTile(startTile, null, 0);
@@ -37,7 +37,7 @@ public static class PathManager {
 		List<PathfindingTile> frontier = new List<PathfindingTile>() { currentTile };
 		List<PathfindingTile> checkedTiles = new List<PathfindingTile>() { currentTile };
 
-		List<TileManager.Tile> path = new List<TileManager.Tile>();
+		List<Tile> path = new List<Tile>();
 
 		bool walkable = startTile.walkable;
 
@@ -58,12 +58,12 @@ public static class PathManager {
 				return path;
 			}
 
-			foreach (TileManager.Tile nTile in (currentTile.tile.surroundingTiles.Find(tile => tile != null && !tile.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
+			foreach (Tile nTile in (currentTile.tile.surroundingTiles.Find(tile => tile != null && !tile.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
 				if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (allowEndTileNonWalkable && nTile == endTile || (!walkable || nTile.walkable))) {
 					float cost = 0;
 					cost += 1 * Vector2.Distance(nTile.obj.transform.position, endTile.obj.transform.position);
 					cost += 1 * RegionBlockDistance(nTile.regionBlock, endTile.regionBlock, true, true, true);
-					cost += 50 * (nTile.tileType.classes[TileManager.TileType.ClassEnum.LiquidWater] ? 1 : 0);
+					cost += 50 * (nTile.tileType.classes[TileType.ClassEnum.LiquidWater] ? 1 : 0);
 					cost += 5 * currentTile.pathDistance;
 					cost -= nTile.map.mapData.mapSize * nTile.walkSpeed;
 
@@ -74,13 +74,13 @@ public static class PathManager {
 			}
 			frontier = frontier.OrderBy(frontierTile => frontierTile.cost).ToList();
 		}
-		return new List<TileManager.Tile>();
+		return new List<Tile>();
 	}
 
 	public enum WalkableSetting { Walkable, NonWalkable, Both };
 	public enum DirectionSetting { Horizontal, Diagonal, Both };
 
-	public static bool PathExists(TileManager.Tile startTile, TileManager.Tile endTile, bool breakTooLong, int breakAfterTiles, WalkableSetting walkableSetting, DirectionSetting directionSetting) {
+	public static bool PathExists(Tile startTile, Tile endTile, bool breakTooLong, int breakAfterTiles, WalkableSetting walkableSetting, DirectionSetting directionSetting) {
 
 		PathfindingTile currentTile = new PathfindingTile(startTile, null, 0);
 
@@ -104,7 +104,7 @@ public static class PathManager {
 				return true;
 			}
 
-			foreach (TileManager.Tile nTile in (directionSetting == DirectionSetting.Horizontal ? currentTile.tile.horizontalSurroundingTiles : (directionSetting == DirectionSetting.Diagonal ? currentTile.tile.diagonalSurroundingTiles : currentTile.tile.surroundingTiles))) {
+			foreach (Tile nTile in (directionSetting == DirectionSetting.Horizontal ? currentTile.tile.horizontalSurroundingTiles : (directionSetting == DirectionSetting.Diagonal ? currentTile.tile.diagonalSurroundingTiles : currentTile.tile.surroundingTiles))) {
 				if (nTile != null && checkedTiles.Find(o => o.tile == nTile) == null && (walkableSetting == WalkableSetting.Walkable ? nTile.walkable : (walkableSetting != WalkableSetting.NonWalkable || !nTile.walkable))) {
 					PathfindingTile pTile = new PathfindingTile(nTile, null, Vector2.Distance(nTile.obj.transform.position, endTile.obj.transform.position));
 					frontier.Add(pTile);
@@ -117,18 +117,18 @@ public static class PathManager {
 	}
 
 	public class PathfindingRegionBlock {
-		public TileManager.Map.RegionBlock regionBlock;
+		public RegionBlock regionBlock;
 		public PathfindingRegionBlock cameFrom;
 		public float cost;
 
-		public PathfindingRegionBlock(TileManager.Map.RegionBlock regionBlock, PathfindingRegionBlock cameFrom, float cost) {
+		public PathfindingRegionBlock(RegionBlock regionBlock, PathfindingRegionBlock cameFrom, float cost) {
 			this.regionBlock = regionBlock;
 			this.cameFrom = cameFrom;
 			this.cost = cost;
 		}
 	}
 
-	public static float RegionBlockDistance(TileManager.Map.RegionBlock startRegionBlock, TileManager.Map.RegionBlock endRegionBlock, bool careAboutWalkability, bool walkable, bool allowEndTileNonWalkable) {
+	public static float RegionBlockDistance(RegionBlock startRegionBlock, RegionBlock endRegionBlock, bool careAboutWalkability, bool walkable, bool allowEndTileNonWalkable) {
 
 		if (!allowEndTileNonWalkable && (careAboutWalkability && (startRegionBlock.tileType.walkable != endRegionBlock.tileType.walkable || startRegionBlock.tiles[0].region != endRegionBlock.tiles[0].region))) {
 			return Mathf.Infinity;
@@ -136,7 +136,7 @@ public static class PathManager {
 
 		PathfindingRegionBlock currentRegionBlock = new PathfindingRegionBlock(startRegionBlock, null, 0);
 		List<PathfindingRegionBlock> frontier = new List<PathfindingRegionBlock>() { currentRegionBlock };
-		List<TileManager.Map.RegionBlock> checkedBlocks = new List<TileManager.Map.RegionBlock>() { startRegionBlock };
+		List<RegionBlock> checkedBlocks = new List<RegionBlock>() { startRegionBlock };
 		while (frontier.Count > 0) {
 			currentRegionBlock = frontier[0];
 			if (currentRegionBlock.regionBlock == endRegionBlock) {
@@ -148,7 +148,7 @@ public static class PathManager {
 				return distance;
 			}
 			frontier.RemoveAt(0);
-			foreach (TileManager.Map.RegionBlock regionBlock in currentRegionBlock.regionBlock.horizontalSurroundingRegionBlocks) {
+			foreach (RegionBlock regionBlock in currentRegionBlock.regionBlock.horizontalSurroundingRegionBlocks) {
 				if ((allowEndTileNonWalkable && regionBlock == endRegionBlock || (!careAboutWalkability || regionBlock.tileType.walkable == walkable)) && !checkedBlocks.Contains(regionBlock)) {
 					PathfindingRegionBlock pRegionBlock = new PathfindingRegionBlock(regionBlock, currentRegionBlock, Vector2.Distance(regionBlock.averagePosition, endRegionBlock.averagePosition));
 					frontier.Add(pRegionBlock);

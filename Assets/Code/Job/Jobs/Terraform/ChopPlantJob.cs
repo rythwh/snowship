@@ -9,7 +9,7 @@ namespace Snowship.NJob
 	[RegisterJob("Terraform", "Plants", "ChopPlant")]
 	public class ChopPlantJobDefinition : JobDefinition<ChopPlantJob>
 	{
-		public override Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; } = {
+		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
 			Selectable.SelectionConditions.Plant,
 			Selectable.SelectionConditions.NoSameLayerJobs
 		};
@@ -20,7 +20,7 @@ namespace Snowship.NJob
 
 	public class ChopPlantJob : Job<ChopPlantJobDefinition>
 	{
-		public ChopPlantJob(TileManager.Tile tile) : base(tile) {
+		public ChopPlantJob(Tile tile) : base(tile) {
 			TargetName = Tile.plant.name;
 			Description = $"Chopping down a {Tile.plant.prefab.name}";
 		}

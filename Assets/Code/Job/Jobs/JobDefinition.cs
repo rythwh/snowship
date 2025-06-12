@@ -23,7 +23,7 @@ namespace Snowship.NJob
 		public Type JobParamsType { get; protected set; } = null;
 
 		// Job Definition Properties
-		public virtual Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; }
+		public virtual Func<Tile, int, bool>[] SelectionConditions { get; protected set; }
 		public virtual List<ResourceAmount> BaseRequiredResources { get; } = new();
 		public int TimeToWork { get; protected set; } = 10;
 		public bool Returnable { get; protected set; } = true;

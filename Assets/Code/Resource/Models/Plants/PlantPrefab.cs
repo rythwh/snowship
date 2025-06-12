@@ -87,7 +87,7 @@ namespace Snowship.NResource
 			return plantPrefabs.Values.ToList();
 		}
 
-		public static PlantPrefab GetPlantPrefabByBiome(TileManager.Biome biome, bool guaranteedTree) {
+		public static PlantPrefab GetPlantPrefabByBiome(Biome biome, bool guaranteedTree) {
 			if (guaranteedTree) {
 				List<Plant.PlantEnum> biomePlantEnums = biome.plantChances.Keys.Where(plantEnum => plantEnum != Plant.PlantEnum.DeadTree).ToList();
 				if (biomePlantEnums.Count > 0) {

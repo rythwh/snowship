@@ -176,7 +176,7 @@ namespace Snowship.NPersistence {
 									string locationWealth = null;
 									string locationResourceRichness = null;
 									string locationCitySize = null;
-									TileManager.Biome.TypeEnum? locationBiomeType = null;
+									Biome.TypeEnum? locationBiomeType = null;
 
 									foreach (KeyValuePair<string, object> locationProperty in (List<KeyValuePair<string, object>>)caravanProperty.Value) {
 										switch ((LocationProperty)Enum.Parse(typeof(LocationProperty), locationProperty.Key)) {
@@ -193,7 +193,7 @@ namespace Snowship.NPersistence {
 												locationCitySize = (string)locationProperty.Value;
 												break;
 											case LocationProperty.BiomeType:
-												locationBiomeType = (TileManager.Biome.TypeEnum)Enum.Parse(typeof(TileManager.Biome.TypeEnum), (string)locationProperty.Value);
+												locationBiomeType = (Biome.TypeEnum)Enum.Parse(typeof(Biome.TypeEnum), (string)locationProperty.Value);
 												break;
 											default:
 												Debug.LogError("Unknown location property: " + locationProperty.Key + " " + locationProperty.Value);
@@ -314,7 +314,7 @@ namespace Snowship.NPersistence {
 
 												PLife.PersistenceLife persistenceLife = null;
 												PHuman.PersistenceHuman persistenceHuman = null;
-												TileManager.Tile traderLeaveTile = null;
+												Tile traderLeaveTile = null;
 												List<TradingPost> traderTradingPosts = new();
 
 												foreach (KeyValuePair<string, object> traderSubProperty in (List<KeyValuePair<string, object>>)traderProperty.Value) {
@@ -330,7 +330,7 @@ namespace Snowship.NPersistence {
 															break;
 														case TraderProperty.TradingPosts:
 															foreach (string vector2String in ((string)traderSubProperty.Value).Split(';')) {
-																TileManager.Tile tradingPostZeroPointTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(float.Parse(vector2String.Split(',')[0]), float.Parse(vector2String.Split(',')[1])));
+																Tile tradingPostZeroPointTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(float.Parse(vector2String.Split(',')[0]), float.Parse(vector2String.Split(',')[1])));
 																traderTradingPosts.Add(TradingPost.tradingPosts.Find(tp => tp.zeroPointTile == tradingPostZeroPointTile));
 															}
 															break;

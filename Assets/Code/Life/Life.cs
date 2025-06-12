@@ -16,8 +16,8 @@ namespace Snowship.NLife
 		public GameObject obj;
 
 		// ReSharper disable once InconsistentNaming
-		private TileManager.Tile _tile;
-		public TileManager.Tile Tile {
+		private Tile _tile;
+		public Tile Tile {
 			get => _tile;
 			private set {
 				if (_tile == value) {
@@ -31,7 +31,7 @@ namespace Snowship.NLife
 		public List<Sprite> moveSprites = new();
 		private static readonly int[] moveSpriteIndices = { 1, 2, 0, 3, 1, 0, 0, 1 };
 		private float moveTimer;
-		public List<TileManager.Tile> path = new();
+		public List<Tile> path = new();
 		protected float MoveSpeedMultiplier = 1f;
 		public Vector2 previousPosition;
 		private float moveSpeedRampingMultiplier;
@@ -44,11 +44,11 @@ namespace Snowship.NLife
 
 		public enum Gender { Male, Female };
 
-		public event Action<Life, TileManager.Tile> OnTileChanged;
+		public event Action<Life, Tile> OnTileChanged;
 		public event Action<float> OnHealthChanged;
 		public event Action<Life> OnDied;
 
-		protected Life(TileManager.Tile spawnTile, float startingHealth) {
+		protected Life(Tile spawnTile, float startingHealth) {
 			_tile = spawnTile;
 			Health = startingHealth;
 
@@ -68,7 +68,7 @@ namespace Snowship.NLife
 			OnTileChanged += OnTileChangedInvoked;
 		}
 
-		private void OnTileChangedInvoked(Life life, TileManager.Tile tile) {
+		private void OnTileChangedInvoked(Life life, Tile tile) {
 			SetColour(Tile.sr.color);
 			SetVisible(Tile.visible);
 		}
@@ -82,7 +82,7 @@ namespace Snowship.NLife
 			SetMoveSprite();
 		}
 
-		public bool MoveToTile(TileManager.Tile tile, bool allowEndTileNonWalkable) {
+		public bool MoveToTile(Tile tile, bool allowEndTileNonWalkable) {
 			if (Tile == tile) {
 				return true;
 			}
@@ -122,7 +122,7 @@ namespace Snowship.NLife
 		public int CalculateMoveSpriteIndex() {
 			int moveSpriteIndex = 0;
 			if (path.Count > 0) {
-				TileManager.Tile previousTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(previousPosition);
+				Tile previousTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(previousPosition);
 				if (previousTile != path[0]) {
 					moveSpriteIndex = previousTile.surroundingTiles.IndexOf(path[0]);
 					if (moveSpriteIndex == -1) {

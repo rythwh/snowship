@@ -12,7 +12,7 @@ namespace Snowship.NResource
 		public readonly string name;
 
 		public readonly PlantPrefab prefab;
-		public readonly TileManager.Tile tile;
+		public readonly Tile tile;
 
 		public readonly GameObject obj;
 		public readonly SpriteRenderer sr;
@@ -27,7 +27,7 @@ namespace Snowship.NResource
 
 		public bool visible;
 
-		public Plant(PlantPrefab prefab, TileManager.Tile tile, bool? small, bool randomHarvestResource, Resource specificHarvestResource) {
+		public Plant(PlantPrefab prefab, Tile tile, bool? small, bool randomHarvestResource, Resource specificHarvestResource) {
 			this.prefab = prefab;
 			this.tile = tile;
 

@@ -7,7 +7,7 @@ using UnityEngine;
 using PU = Snowship.NPersistence.PersistenceUtilities;
 
 namespace Snowship.NPersistence {
-	public class PRiver : TileManager.Map.River
+	public class PRiver : River
 	{
 
 		public enum RiverProperty {
@@ -27,15 +27,15 @@ namespace Snowship.NPersistence {
 		}
 
 		public void SaveOriginalRivers(StreamWriter file) {
-			foreach (TileManager.Map.River river in GameManager.Get<ColonyManager>().colony.map.rivers) {
+			foreach (River river in GameManager.Get<ColonyManager>().colony.map.rivers) {
 				WriteOriginalRiverLines(file, river, 0, RiverProperty.SmallRiver);
 			}
-			foreach (TileManager.Map.River river in GameManager.Get<ColonyManager>().colony.map.largeRivers) {
+			foreach (River river in GameManager.Get<ColonyManager>().colony.map.largeRivers) {
 				WriteOriginalRiverLines(file, river, 0, RiverProperty.LargeRiver);
 			}
 		}
 
-		private void WriteOriginalRiverLines(StreamWriter file, TileManager.Map.River river, int startLevel, RiverProperty riverType) {
+		private void WriteOriginalRiverLines(StreamWriter file, River river, int startLevel, RiverProperty riverType) {
 			file.WriteLine(PU.CreateKeyValueString(RiverProperty.River, string.Empty, startLevel));
 
 			file.WriteLine(PU.CreateKeyValueString(RiverProperty.Type, riverType, startLevel + 1));
@@ -131,7 +131,7 @@ namespace Snowship.NPersistence {
 
 			StreamWriter file = PU.CreateFileAtDirectory(saveDirectoryPath, "rivers.snowship");
 
-			TileManager.Map map = GameManager.Get<ColonyManager>().colony.map;
+			Map map = GameManager.Get<ColonyManager>().colony.map;
 			int numRivers = map.rivers.Count + map.largeRivers.Count;
 			if (originalRivers.Count != numRivers) {
 				Debug.LogError("Loaded river count " + originalRivers.Count + " and current river count " + numRivers + " does not match.");
@@ -156,7 +156,7 @@ namespace Snowship.NPersistence {
 			file.Close();
 		}
 
-		public void WriteModifiedRiverLines(StreamWriter file, TileManager.Map.River river, PersistenceRiver originalRiver, int index) {
+		public void WriteModifiedRiverLines(StreamWriter file, River river, PersistenceRiver originalRiver, int index) {
 			Dictionary<RiverProperty, string> riverDifferences = new Dictionary<RiverProperty, string>();
 
 			if (river.startTile.position != originalRiver.startTilePosition.Value) {
@@ -220,8 +220,8 @@ namespace Snowship.NPersistence {
 			}
 		}
 
-		public void ApplyLoadedRivers(List<PersistenceRiver> originalRivers, List<PersistenceRiver> modifiedRivers, TileManager.Map map) {
-			List<TileManager.Map.River> riverList = null;
+		public void ApplyLoadedRivers(List<PersistenceRiver> originalRivers, List<PersistenceRiver> modifiedRivers, Map map) {
+			List<River> riverList = null;
 			for (int i = 0; i < originalRivers.Count; i++) {
 				PersistenceRiver originalRiver = originalRivers[i];
 				PersistenceRiver modifiedRiver = modifiedRivers.Find(mr => mr.riverIndex == i);
@@ -238,7 +238,7 @@ namespace Snowship.NPersistence {
 						break;
 				}
 
-				List<TileManager.Tile> riverTiles = new List<TileManager.Tile>();
+				List<Tile> riverTiles = new List<Tile>();
 				foreach (Vector2 riverTilePosition in originalRiver.tilePositions) {
 					riverTiles.Add(map.GetTileFromPosition(riverTilePosition));
 				}
@@ -253,7 +253,7 @@ namespace Snowship.NPersistence {
 				}
 
 				riverList.Add(
-					new TileManager.Map.River(
+					new River(
 						modifiedRiver != null && modifiedRiver.startTilePosition.HasValue ? map.GetTileFromPosition(modifiedRiver.startTilePosition.Value) : (originalRiver.startTilePosition.HasValue ? map.GetTileFromPosition(originalRiver.startTilePosition.Value) : null),
 						modifiedRiver != null && modifiedRiver.centreTilePosition.HasValue ? map.GetTileFromPosition(modifiedRiver.centreTilePosition.Value) : (originalRiver.centreTilePosition.HasValue ? map.GetTileFromPosition(originalRiver.centreTilePosition.Value) : null),
 						modifiedRiver != null && modifiedRiver.endTilePosition.HasValue ? map.GetTileFromPosition(modifiedRiver.endTilePosition.Value) : (originalRiver.endTilePosition.HasValue ? map.GetTileFromPosition(originalRiver.endTilePosition.Value) : null),

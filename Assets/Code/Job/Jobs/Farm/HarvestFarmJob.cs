@@ -10,7 +10,7 @@ namespace Snowship.NJob
 	[RegisterJob("Farm", "Harvest", "HarvestFarm")]
 	public class HarvestFarmJobDefinition : JobDefinition<HarvestFarmJob>
 	{
-		public override Func<TileManager.Tile, int, bool>[] SelectionConditions { get; protected set; } = {
+		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
 			Selectable.SelectionConditions.Farm,
 			Selectable.SelectionConditions.NoSameLayerJobs
 		};
@@ -23,7 +23,7 @@ namespace Snowship.NJob
 	{
 		private Farm Farm { get; }
 
-		public HarvestFarmJob(TileManager.Tile tile) : base(tile) {
+		public HarvestFarmJob(Tile tile) : base(tile) {
 			Farm = tile.farm;
 
 			TargetName = Farm.name;
@@ -46,7 +46,7 @@ namespace Snowship.NJob
 				ObjectInstance.RemoveObjectInstance(Farm);
 				Tile.RemoveObjectAtLayer(Farm.prefab.layer);
 			}
-			GameManager.Get<ResourceManager>().Bitmask(new List<TileManager.Tile> { Tile }.Concat(Tile.surroundingTiles).ToList());
+			GameManager.Get<ResourceManager>().Bitmask(new List<Tile> { Tile }.Concat(Tile.surroundingTiles).ToList());
 		}
 	}
 }

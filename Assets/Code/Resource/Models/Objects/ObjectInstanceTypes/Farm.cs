@@ -21,7 +21,7 @@ namespace Snowship.NResource
 		private readonly float precipitationGrowthMultiplier;
 		private readonly float temperatureGrowthMultipler;
 
-		public Farm(ObjectPrefab prefab, Variation variation, TileManager.Tile tile) : base(prefab, variation, tile, 0) {
+		public Farm(ObjectPrefab prefab, Variation variation, Tile tile) : base(prefab, variation, tile, 0) {
 			name = prefab.harvestResources[0].resource.name + " Farm";
 
 			growProgressSprites = prefab.GetBitmaskSpritesForVariation(variation);
@@ -61,11 +61,11 @@ namespace Snowship.NResource
 			return growthRate;
 		}
 
-		public static float CalculatePrecipitationGrowthMultiplierForTile(TileManager.Tile tile) {
+		public static float CalculatePrecipitationGrowthMultiplierForTile(Tile tile) {
 			return Mathf.Min(-2 * Mathf.Pow(tile.GetPrecipitation() - 0.7f, 2) + 1, -30 * Mathf.Pow(tile.GetPrecipitation() - 0.7f, 3) + 1);
 		}
 
-		public static float CalculateTemperatureGrowthMultiplierForTile(TileManager.Tile tile) {
+		public static float CalculateTemperatureGrowthMultiplierForTile(Tile tile) {
 			return Mathf.Clamp(Mathf.Min((tile.temperature - 10) / 15f + 1, -((tile.temperature - 50) / 20f)), 0, 1);
 		}
 
