@@ -1,6 +1,7 @@
 ﻿using Snowship.NResource;
 using Snowship.NUI;
 using Snowship.NUtilities;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,8 +9,8 @@ public class UIConfirmedTradeResourceElementComponent : UIElementComponent {
 
 	[SerializeField] private Image background;
 	[SerializeField] private Image resourceImage;
-	[SerializeField] private Text resourceNameText;
-	[SerializeField] private Text collectedVsRemainingAmountText;
+	[SerializeField] private TMP_Text resourceNameText;
+	[SerializeField] private TMP_Text collectedVsRemainingAmountText;
 
 	public void SetResource(ConfirmedTradeResourceAmount resourceAmount) {
 		resourceImage.sprite = resourceAmount.resource.image;

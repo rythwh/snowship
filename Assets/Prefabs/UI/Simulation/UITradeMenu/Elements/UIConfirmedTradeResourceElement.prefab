@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 224735313990953532}
   - component: {fileID: 222799213226559272}
   - component: {fileID: 114413596717852756}
+  - component: {fileID: -4971567429825296379}
   m_Layer: 5
-  m_Name: ConfirmedTradeResourceElement-Panel
+  m_Name: UIConfirmedTradeResourceElement
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -78,6 +79,22 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &-4971567429825296379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1116258191600354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aa5dc9c8c734b828fc253acc28c3f0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  background: {fileID: 114413596717852756}
+  resourceImage: {fileID: 114741120471557316}
+  resourceNameText: {fileID: 114316762363487588}
+  collectedVsRemainingAmountText: {fileID: 114061627612227156}
 --- !u!1 &1237956883926670
 GameObject:
   m_ObjectHideFlags: 0
