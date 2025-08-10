@@ -27,11 +27,11 @@ namespace Snowship.NPersistence {
 			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.LastSaveTimeChunk, planet.lastSaveTimeChunk, 0));
 
 			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.Name, planet.name, 0));
-			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.Seed, planet.mapData.mapSeed, 0));
-			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.Size, planet.mapData.mapSize, 0));
-			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.SunDistance, planet.mapData.planetDistance, 0));
-			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.TempRange, planet.mapData.temperatureRange, 0));
-			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.WindDirection, planet.mapData.primaryWindDirection, 0));
+			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.Seed, planet.MapData.mapSeed, 0));
+			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.Size, planet.MapData.mapSize, 0));
+			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.SunDistance, planet.MapData.planetDistance, 0));
+			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.TempRange, planet.MapData.temperatureRange, 0));
+			file.WriteLine(PU.CreateKeyValueString(PlanetProperty.WindDirection, planet.MapData.primaryWindDirection, 0));
 		}
 
 		public List<PersistencePlanet> GetPersistencePlanets() {

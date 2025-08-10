@@ -1,9 +1,7 @@
-﻿using System;
-using Snowship.NPersistence;
+﻿/*using System;
 
 namespace Snowship.NUI
 {
-
 	public class UILoadColonyElement : UIElement<UILoadColonyElementComponent> {
 
 		private readonly PersistenceColony colony;
@@ -30,4 +28,4 @@ namespace Snowship.NUI
 			OnLoadColonyElementClicked?.Invoke(colony);
 		}
 	}
-}
+}*/

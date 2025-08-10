@@ -4,7 +4,6 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using Snowship.NCamera;
 using Snowship.NColonist;
-using Snowship.NColony;
 using Snowship.NLife;
 using Snowship.NMap.Models.Geography;
 using Snowship.NMap.Models.Structure;
@@ -23,11 +22,11 @@ namespace Snowship.NMap
 
 		public bool Created = false;
 
-		public MapData mapData;
+		public MapData MapData;
 
 		public Map(MapData mapData) {
 
-			this.mapData = mapData;
+			MapData = mapData;
 
 			DetermineShadowDirectionsAtHour(mapData.equatorOffset);
 
@@ -44,22 +43,22 @@ namespace Snowship.NMap
 
 		public async UniTask CreateMap() {
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Map", "Creating Tiles");
 				await UniTask.NextFrame();
 			}
 			CreateTiles();
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Map", "Validating");
 				await UniTask.NextFrame();
 				Bitmasking(tiles, false, false);
 			}
 
-			if (mapData.preventEdgeTouching) {
+			if (MapData.preventEdgeTouching) {
 				PreventEdgeTouching();
 			}
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Map", "Determining Map Edges");
 				await UniTask.NextFrame();
 				SetMapEdgeTiles();
@@ -74,19 +73,19 @@ namespace Snowship.NMap
 				Bitmasking(tiles, false, false);
 			}
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Terrain", "Determining Regions by Tile Type");
 				await UniTask.NextFrame();
 			}
 			SetTileRegions(true, false);
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Terrain", "Reducing Terrain Noise");
 				await UniTask.NextFrame();
 			}
 			ReduceNoise();
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Rivers", "Determining Large River Paths");
 				await UniTask.NextFrame();
 				CreateLargeRivers();
@@ -97,45 +96,45 @@ namespace Snowship.NMap
 				await UniTask.NextFrame();
 				ReduceNoise();
 			}
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Terrain", "Determining Regions by Walkability");
 				await UniTask.NextFrame();
 			}
 			SetTileRegions(false, true);
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Terrain", "Validating");
 				await UniTask.NextFrame();
 				Bitmasking(tiles, false, false);
 			}
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Rivers", "Determining Drainage Basins");
 				await UniTask.NextFrame();
 			}
 			DetermineDrainageBasins();
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Rivers", "Determining River Paths");
 				await UniTask.NextFrame();
 			}
 			CreateRivers();
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Rivers", "Validating");
 				await UniTask.NextFrame();
 				Bitmasking(tiles, false, false);
 			}
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Biomes", "Calculating Temperature");
 				await UniTask.NextFrame();
 			}
 			CalculateTemperature();
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Biomes", "Calculating Precipitation");
 				await UniTask.NextFrame();
 			}
 			CalculatePrecipitation();
-			mapData.primaryWindDirection = primaryWindDirection;
+			MapData.primaryWindDirection = primaryWindDirection;
 
 			/*
 			foreach (Tile tile in tiles) {
@@ -145,24 +144,24 @@ namespace Snowship.NMap
 			}
 			*/
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Biomes", "Setting Biomes");
 				await UniTask.NextFrame();
 			}
-			SetBiomes(mapData.actualMap);
-			if (mapData.actualMap) {
+			SetBiomes(MapData.actualMap);
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Biomes", "Validating");
 				await UniTask.NextFrame();
 				Bitmasking(tiles, false, false);
 			}
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Region Blocks", "Determining Region Blocks");
 				await UniTask.NextFrame();
 			}
 			CreateRegionBlocks();
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Roofs", "Determining Roofs");
 				await UniTask.NextFrame();
 				SetRoofs();
@@ -189,19 +188,19 @@ namespace Snowship.NMap
 				SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 			}
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Lighting", "Validating");
 				await UniTask.NextFrame();
 			}
 			Bitmasking(tiles, false, false);
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				UIEvents.UpdateLoadingScreenText("Finalizing", string.Empty);
 				await UniTask.NextFrame();
 			}
 			Created = true;
 
-			if (mapData.actualMap) {
+			if (MapData.actualMap) {
 				await GameManager.Get<StateManager>().TransitionToState(EState.Simulation);
 			}
 		}
@@ -215,9 +214,9 @@ namespace Snowship.NMap
 		}
 
 		void CreateTiles() {
-			for (int y = 0; y < mapData.mapSize; y++) {
+			for (int y = 0; y < MapData.mapSize; y++) {
 				List<Tile.Tile> innerTiles = new List<Tile.Tile>();
-				for (int x = 0; x < mapData.mapSize; x++) {
+				for (int x = 0; x < MapData.mapSize; x++) {
 
 					float height = UnityEngine.Random.Range(0f, 1f);
 
@@ -237,15 +236,15 @@ namespace Snowship.NMap
 		}
 
 		public void SetSurroundingTiles() {
-			for (int y = 0; y < mapData.mapSize; y++) {
-				for (int x = 0; x < mapData.mapSize; x++) {
+			for (int y = 0; y < MapData.mapSize; y++) {
+				for (int x = 0; x < MapData.mapSize; x++) {
 					/* Horizontal */
-					if (y + 1 < mapData.mapSize) {
+					if (y + 1 < MapData.mapSize) {
 						sortedTiles[y][x].horizontalSurroundingTiles.Add(sortedTiles[y + 1][x]);
 					} else {
 						sortedTiles[y][x].horizontalSurroundingTiles.Add(null);
 					}
-					if (x + 1 < mapData.mapSize) {
+					if (x + 1 < MapData.mapSize) {
 						sortedTiles[y][x].horizontalSurroundingTiles.Add(sortedTiles[y][x + 1]);
 					} else {
 						sortedTiles[y][x].horizontalSurroundingTiles.Add(null);
@@ -262,12 +261,12 @@ namespace Snowship.NMap
 					}
 
 					/* Diagonal */
-					if (x + 1 < mapData.mapSize && y + 1 < mapData.mapSize) {
+					if (x + 1 < MapData.mapSize && y + 1 < MapData.mapSize) {
 						sortedTiles[y][x].diagonalSurroundingTiles.Add(sortedTiles[y + 1][x + 1]);
 					} else {
 						sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
 					}
-					if (y - 1 >= 0 && x + 1 < mapData.mapSize) {
+					if (y - 1 >= 0 && x + 1 < MapData.mapSize) {
 						sortedTiles[y][x].diagonalSurroundingTiles.Add(sortedTiles[y - 1][x + 1]);
 					} else {
 						sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
@@ -277,7 +276,7 @@ namespace Snowship.NMap
 					} else {
 						sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
 					}
-					if (y + 1 < mapData.mapSize && x - 1 >= 0) {
+					if (y + 1 < MapData.mapSize && x - 1 >= 0) {
 						sortedTiles[y][x].diagonalSurroundingTiles.Add(sortedTiles[y + 1][x - 1]);
 					} else {
 						sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
@@ -290,22 +289,22 @@ namespace Snowship.NMap
 		}
 
 		void GenerateTerrain() {
-			int lastSize = mapData.mapSize;
-			for (int halves = 0; halves < Mathf.CeilToInt(Mathf.Log(mapData.mapSize, 2)); halves++) {
+			int lastSize = MapData.mapSize;
+			for (int halves = 0; halves < Mathf.CeilToInt(Mathf.Log(MapData.mapSize, 2)); halves++) {
 				int size = Mathf.CeilToInt(lastSize / 2f);
-				for (int sectionY = 0; sectionY < mapData.mapSize; sectionY += size) {
-					for (int sectionX = 0; sectionX < mapData.mapSize; sectionX += size) {
+				for (int sectionY = 0; sectionY < MapData.mapSize; sectionY += size) {
+					for (int sectionX = 0; sectionX < MapData.mapSize; sectionX += size) {
 						float sectionAverage = 0;
-						for (int y = sectionY; (y < sectionY + size && y < mapData.mapSize); y++) {
-							for (int x = sectionX; (x < sectionX + size && x < mapData.mapSize); x++) {
+						for (int y = sectionY; (y < sectionY + size && y < MapData.mapSize); y++) {
+							for (int x = sectionX; (x < sectionX + size && x < MapData.mapSize); x++) {
 								sectionAverage += sortedTiles[y][x].height;
 							}
 						}
 						sectionAverage /= (size * size);
-						float maxDeviationSize = -(((float)(size - mapData.mapSize)) / (4 * mapData.mapSize));
+						float maxDeviationSize = -(((float)(size - MapData.mapSize)) / (4 * MapData.mapSize));
 						sectionAverage += UnityEngine.Random.Range(-maxDeviationSize, maxDeviationSize);
-						for (int y = sectionY; (y < sectionY + size && y < mapData.mapSize); y++) {
-							for (int x = sectionX; (x < sectionX + size && x < mapData.mapSize); x++) {
+						for (int y = sectionY; (y < sectionY + size && y < MapData.mapSize); y++) {
+							for (int x = sectionX; (x < sectionX + size && x < MapData.mapSize); x++) {
 								sortedTiles[y][x].height = sectionAverage;
 							}
 						}
@@ -352,7 +351,7 @@ namespace Snowship.NMap
 
 		void PreventEdgeTouching() {
 			foreach (Tile.Tile tile in tiles) {
-				float edgeDistance = (mapData.mapSize - (Vector2.Distance(tile.obj.transform.position, new Vector2(mapData.mapSize / 2f, mapData.mapSize / 2f)))) / mapData.mapSize;
+				float edgeDistance = (MapData.mapSize - (Vector2.Distance(tile.obj.transform.position, new Vector2(MapData.mapSize / 2f, MapData.mapSize / 2f)))) / MapData.mapSize;
 				tile.SetTileHeight(tile.height * Mathf.Clamp(-Mathf.Pow(edgeDistance - 1.5f, 10) + 1, 0f, 1f));
 			}
 		}
@@ -361,11 +360,11 @@ namespace Snowship.NMap
 		public int currentRegionID = 0;
 
 		void SmoothHeightWithSurroundingPlanetTiles() {
-			for (int i = 0; i < mapData.surroundingPlanetTileHeightDirections.Count; i++) {
-				if (mapData.surroundingPlanetTileHeightDirections[i] != 0) {
+			for (int i = 0; i < MapData.surroundingPlanetTileHeightDirections.Count; i++) {
+				if (MapData.surroundingPlanetTileHeightDirections[i] != 0) {
 					foreach (Tile.Tile tile in tiles) {
-						float closestEdgeDistance = sortedEdgeTiles[i].Min(edgeTile => Vector2.Distance(edgeTile.obj.transform.position, tile.obj.transform.position)) / (mapData.mapSize);
-						float heightMultiplier = mapData.surroundingPlanetTileHeightDirections[i] * Mathf.Pow(closestEdgeDistance - 1f, 10f) + 1f;
+						float closestEdgeDistance = sortedEdgeTiles[i].Min(edgeTile => Vector2.Distance(edgeTile.obj.transform.position, tile.obj.transform.position)) / (MapData.mapSize);
+						float heightMultiplier = MapData.surroundingPlanetTileHeightDirections[i] * Mathf.Pow(closestEdgeDistance - 1f, 10f) + 1f;
 						float newHeight = Mathf.Clamp(tile.height * heightMultiplier, 0f, 1f);
 						tile.SetTileHeight(newHeight);
 					}
@@ -458,12 +457,12 @@ namespace Snowship.NMap
 
 			int size = regionBlockSize;
 			int regionIndex = 0;
-			for (int sectionY = 0; sectionY < mapData.mapSize; sectionY += size) {
-				for (int sectionX = 0; sectionX < mapData.mapSize; sectionX += size) {
+			for (int sectionY = 0; sectionY < MapData.mapSize; sectionY += size) {
+				for (int sectionX = 0; sectionX < MapData.mapSize; sectionX += size) {
 					RegionBlock regionBlock = new RegionBlock(TileType.GetTileTypeByEnum(TileType.TypeEnum.Grass), regionIndex);
 					RegionBlock squareRegionBlock = new RegionBlock(TileType.GetTileTypeByEnum(TileType.TypeEnum.Grass), regionIndex);
-					for (int y = sectionY; (y < sectionY + size && y < mapData.mapSize); y++) {
-						for (int x = sectionX; (x < sectionX + size && x < mapData.mapSize); x++) {
+					for (int y = sectionY; (y < sectionY + size && y < MapData.mapSize); y++) {
+						for (int x = sectionX; (x < sectionX + size && x < MapData.mapSize); x++) {
 							regionBlock.tiles.Add(sortedTiles[y][x]);
 							squareRegionBlock.tiles.Add(sortedTiles[y][x]);
 							sortedTiles[y][x].squareRegionBlock = squareRegionBlock;
@@ -651,7 +650,7 @@ namespace Snowship.NMap
 						if (!removeTiles.Contains(startTile)) {
 							foreach (Tile.Tile endTile in horizontalGroups) {
 								if (!removeTiles.Contains(endTile) && startTile != endTile) {
-									if (PathManager.PathExists(startTile, endTile, true, mapData.mapSize, PathManager.WalkableSetting.Walkable, PathManager.DirectionSetting.Horizontal)) {
+									if (PathManager.PathExists(startTile, endTile, true, MapData.mapSize, PathManager.WalkableSetting.Walkable, PathManager.DirectionSetting.Horizontal)) {
 										removeTiles.Add(endTile);
 									}
 								}
@@ -669,8 +668,8 @@ namespace Snowship.NMap
 		}
 
 		public void ReduceNoise() {
-			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 5f), new List<TileTypeGroup.TypeEnum>() { TileTypeGroup.TypeEnum.Water, TileTypeGroup.TypeEnum.Stone, TileTypeGroup.TypeEnum.Ground });
-			ReduceNoise(Mathf.RoundToInt(mapData.mapSize / 2f), new List<TileTypeGroup.TypeEnum>() { TileTypeGroup.TypeEnum.Water });
+			ReduceNoise(Mathf.RoundToInt(MapData.mapSize / 5f), new List<TileTypeGroup.TypeEnum>() { TileTypeGroup.TypeEnum.Water, TileTypeGroup.TypeEnum.Stone, TileTypeGroup.TypeEnum.Ground });
+			ReduceNoise(Mathf.RoundToInt(MapData.mapSize / 2f), new List<TileTypeGroup.TypeEnum>() { TileTypeGroup.TypeEnum.Water });
 		}
 
 		private void ReduceNoise(int removeRegionsBelowSize, List<TileTypeGroup.TypeEnum> tileTypeGroupsToRemove) {
@@ -743,20 +742,20 @@ namespace Snowship.NMap
 
 		void CreateLargeRivers() {
 			largeRivers.Clear();
-			if (mapData.isRiver) {
-				int riverEndRiverIndex = mapData.surroundingPlanetTileRivers.OrderByDescending(i => i).ToList()[0];
-				int riverEndListIndex = mapData.surroundingPlanetTileRivers.IndexOf(riverEndRiverIndex);
+			if (MapData.isRiver) {
+				int riverEndRiverIndex = MapData.surroundingPlanetTileRivers.OrderByDescending(i => i).ToList()[0];
+				int riverEndListIndex = MapData.surroundingPlanetTileRivers.IndexOf(riverEndRiverIndex);
 
 				List<Tile.Tile> validEndTiles = sortedEdgeTiles[riverEndListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverEndListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverEndListIndex][sortedEdgeTiles[riverEndListIndex].Count - 1].obj.transform.position) >= 10).ToList();
 				Tile.Tile riverEndTile = validEndTiles[UnityEngine.Random.Range(0, validEndTiles.Count)];
 
 				int riverStartListIndex = 0;
-				foreach (int riverStartRiverIndex in mapData.surroundingPlanetTileRivers) {
+				foreach (int riverStartRiverIndex in MapData.surroundingPlanetTileRivers) {
 					if (riverStartRiverIndex != -1 && riverStartRiverIndex != riverEndRiverIndex) {
-						int expandRadius = UnityEngine.Random.Range(1, 3) * Mathf.CeilToInt(mapData.mapSize / 100f);
+						int expandRadius = UnityEngine.Random.Range(1, 3) * Mathf.CeilToInt(MapData.mapSize / 100f);
 						List<Tile.Tile> validStartTiles = sortedEdgeTiles[riverStartListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][sortedEdgeTiles[riverStartListIndex].Count - 1].obj.transform.position) >= 10).ToList();
 						Tile.Tile riverStartTile = validStartTiles[UnityEngine.Random.Range(0, validStartTiles.Count)];
-						List<Tile.Tile> possibleCentreTiles = tiles.Where(t => Vector2.Distance(new Vector2(mapData.mapSize / 2f, mapData.mapSize / 2f), t.obj.transform.position) < mapData.mapSize / 5f).ToList();
+						List<Tile.Tile> possibleCentreTiles = tiles.Where(t => Vector2.Distance(new Vector2(MapData.mapSize / 2f, MapData.mapSize / 2f), t.obj.transform.position) < MapData.mapSize / 5f).ToList();
 						River river = new River(riverStartTile, possibleCentreTiles[UnityEngine.Random.Range(0, possibleCentreTiles.Count)], riverEndTile, expandRadius, true, this, true);
 						if (river.tiles.Count > 0) {
 							largeRivers.Add(river);
@@ -782,7 +781,7 @@ namespace Snowship.NMap
 					}
 				}
 			}
-			for (int i = 0; i < mapData.mapSize / 10f && i < riverStartTiles.Count; i++) {
+			for (int i = 0; i < MapData.mapSize / 10f && i < riverStartTiles.Count; i++) {
 				Tile.Tile riverStartTile = Enumerable.ToList(riverStartTiles.Keys)[UnityEngine.Random.Range(0, riverStartTiles.Count)];
 				Tile.Tile riverEndTile = riverStartTiles[riverStartTile];
 				List<Tile.Tile> removeTiles = new List<Tile.Tile>();
@@ -834,7 +833,7 @@ namespace Snowship.NMap
 							nTile.SetTileType(TileType.GetTileTypeByEnum(TileType.TypeEnum.GrassWater), true, false, false);
 							break;
 						}
-						float cost = Vector2.Distance(nTile.obj.transform.position, riverEndTile.obj.transform.position) + (nTile.height * (mapData.mapSize / 10f)) + UnityEngine.Random.Range(0, 10);
+						float cost = Vector2.Distance(nTile.obj.transform.position, riverEndTile.obj.transform.position) + (nTile.height * (MapData.mapSize / 10f)) + UnityEngine.Random.Range(0, 10);
 						PathManager.PathfindingTile pTile = new PathManager.PathfindingTile(nTile, currentTile, cost);
 						frontier.Add(pTile);
 						checkedTiles.Add(pTile);
@@ -887,14 +886,14 @@ namespace Snowship.NMap
 		}
 
 		private float CalculateLargeRiverTileHeight(int expandRadius, float distanceExpandTileRiverTile) {
-			float height = (mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water] / expandRadius) * distanceExpandTileRiverTile;//(2 * mapData.terrainTypeHeights[TileTypes.GrassWater]) * (distanceExpandTileRiverTile / expandedExpandRadius);
+			float height = (MapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water] / expandRadius) * distanceExpandTileRiverTile;//(2 * mapData.terrainTypeHeights[TileTypes.GrassWater]) * (distanceExpandTileRiverTile / expandedExpandRadius);
 			height -= 0.01f;
 			return Mathf.Clamp(height, 0f, 1f);
 		}
 
 		private float CalculateLargeRiverBankTileHeight(int expandRadius, float distanceExpandTileRiverTile) {
 			float height = CalculateLargeRiverTileHeight(expandRadius, distanceExpandTileRiverTile / 2f);
-			height += (mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water] / 2f);
+			height += (MapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water] / 2f);
 			return Mathf.Clamp(height, 0f, 1f);
 		}
 
@@ -915,10 +914,10 @@ namespace Snowship.NMap
 
 		public void CalculateTemperature() {
 			foreach (Tile.Tile tile in tiles) {
-				if (mapData.planetTemperature) {
-					tile.temperature = TemperatureFromMapLatitude(tile.position.y, mapData.temperatureRange, mapData.temperatureOffset, mapData.mapSize);
+				if (MapData.planetTemperature) {
+					tile.temperature = TemperatureFromMapLatitude(tile.position.y, MapData.temperatureRange, MapData.temperatureOffset, MapData.mapSize);
 				} else {
-					tile.temperature = mapData.averageTemperature;
+					tile.temperature = MapData.averageTemperature;
 				}
 				tile.temperature += -(50f * Mathf.Pow(tile.height - 0.5f, 3));
 			}
@@ -978,24 +977,24 @@ namespace Snowship.NMap
 					bool yStartAtTop = (windDirection == 2);
 					bool xStartAtRight = (windDirection == 3);
 
-					for (int y = (yStartAtTop ? mapData.mapSize - 1 : 0); (yStartAtTop ? y >= 0 : y < mapData.mapSize); y += (yStartAtTop ? -1 : 1)) {
-						for (int x = (xStartAtRight ? mapData.mapSize - 1 : 0); (xStartAtRight ? x >= 0 : x < mapData.mapSize); x += (xStartAtRight ? -1 : 1)) {
+					for (int y = (yStartAtTop ? MapData.mapSize - 1 : 0); (yStartAtTop ? y >= 0 : y < MapData.mapSize); y += (yStartAtTop ? -1 : 1)) {
+						for (int x = (xStartAtRight ? MapData.mapSize - 1 : 0); (xStartAtRight ? x >= 0 : x < MapData.mapSize); x += (xStartAtRight ? -1 : 1)) {
 							Tile.Tile tile = sortedTiles[y][x];
 							Tile.Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
-							SetTilePrecipitation(tile, previousTile, mapData.planetTemperature);
+							SetTilePrecipitation(tile, previousTile, MapData.planetTemperature);
 						}
 					}
 				} else { // Wind is going diagonally
 					bool up = (windDirection == 4 || windDirection == 7);
 					bool left = (windDirection == 6 || windDirection == 7);
-					int mapSize2x = mapData.mapSize * 2;
+					int mapSize2x = MapData.mapSize * 2;
 					for (int k = (up ? 0 : mapSize2x); (up ? k < mapSize2x : k >= 0); k += (up ? 1 : -1)) {
 						for (int x = (left ? k : 0); (left ? x >= 0 : x <= k); x += (left ? -1 : 1)) {
 							int y = k - x;
-							if (y < mapData.mapSize && x < mapData.mapSize) {
+							if (y < MapData.mapSize && x < MapData.mapSize) {
 								Tile.Tile tile = sortedTiles[y][x];
 								Tile.Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
-								SetTilePrecipitation(tile, previousTile, mapData.planetTemperature);
+								SetTilePrecipitation(tile, previousTile, MapData.planetTemperature);
 							}
 						}
 					}
@@ -1008,10 +1007,10 @@ namespace Snowship.NMap
 				directionPrecipitations.Add(singleDirectionPrecipitations);
 			}
 
-			if (mapData.primaryWindDirection == -1) {
+			if (MapData.primaryWindDirection == -1) {
 				primaryWindDirection = UnityEngine.Random.Range(windDirectionMin, (windDirectionMax + 1));
 			} else {
-				primaryWindDirection = mapData.primaryWindDirection;
+				primaryWindDirection = MapData.primaryWindDirection;
 			}
 
 			float windStrengthMapSum = 0;
@@ -1031,8 +1030,8 @@ namespace Snowship.NMap
 			AverageTilePrecipitations();
 
 			foreach (Tile.Tile tile in tiles) {
-				if (Mathf.RoundToInt(mapData.averagePrecipitation) != -1) {
-					tile.SetPrecipitation((tile.GetPrecipitation() + mapData.averagePrecipitation) / 2f);
+				if (Mathf.RoundToInt(MapData.averagePrecipitation) != -1) {
+					tile.SetPrecipitation((tile.GetPrecipitation() + MapData.averagePrecipitation) / 2f);
 				}
 				tile.SetPrecipitation(Mathf.Clamp(tile.GetPrecipitation(), 0f, 1f));
 			}
@@ -1043,7 +1042,7 @@ namespace Snowship.NMap
 				if (previousTile != null) {
 					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
 					if (tile.tileType.classes[TileType.ClassEnum.LiquidWater]) {
-						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * (mapData.mapSize / 5f));
+						tile.SetPrecipitation(((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier) * (MapData.mapSize / 5f));
 					} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						tile.SetPrecipitation((previousTile.GetPrecipitation() * previousTileDistanceMultiplier) * 0.9f);
 					} else {
@@ -1062,7 +1061,7 @@ namespace Snowship.NMap
 				if (previousTile != null) {
 					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
 					if (tile.tileType.classes[TileType.ClassEnum.LiquidWater]) {
-						float waterMultiplier = (mapData.mapSize / 5f);
+						float waterMultiplier = (MapData.mapSize / 5f);
 						if (RiversContainTile(tile, true).Value != null) {
 							waterMultiplier *= 5;
 						}
@@ -1078,7 +1077,7 @@ namespace Snowship.NMap
 					} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						tile.SetPrecipitation(1f);
 					} else {
-						tile.SetPrecipitation(mapData.averagePrecipitation);
+						tile.SetPrecipitation(MapData.averagePrecipitation);
 					}
 				}
 			}
@@ -1144,16 +1143,16 @@ namespace Snowship.NMap
 
 		public void SetMapEdgeTiles() {
 			edgeTiles.Clear();
-			for (int i = 1; i < mapData.mapSize - 1; i++) {
+			for (int i = 1; i < MapData.mapSize - 1; i++) {
 				edgeTiles.Add(sortedTiles[0][i]);
-				edgeTiles.Add(sortedTiles[mapData.mapSize - 1][i]);
+				edgeTiles.Add(sortedTiles[MapData.mapSize - 1][i]);
 				edgeTiles.Add(sortedTiles[i][0]);
-				edgeTiles.Add(sortedTiles[i][mapData.mapSize - 1]);
+				edgeTiles.Add(sortedTiles[i][MapData.mapSize - 1]);
 			}
 			edgeTiles.Add(sortedTiles[0][0]);
-			edgeTiles.Add(sortedTiles[0][mapData.mapSize - 1]);
-			edgeTiles.Add(sortedTiles[mapData.mapSize - 1][0]);
-			edgeTiles.Add(sortedTiles[mapData.mapSize - 1][mapData.mapSize - 1]);
+			edgeTiles.Add(sortedTiles[0][MapData.mapSize - 1]);
+			edgeTiles.Add(sortedTiles[MapData.mapSize - 1][0]);
+			edgeTiles.Add(sortedTiles[MapData.mapSize - 1][MapData.mapSize - 1]);
 		}
 
 		public void SetSortedMapEdgeTiles() {
@@ -1161,17 +1160,17 @@ namespace Snowship.NMap
 
 			int sideNum = -1;
 			List<Tile.Tile> tilesOnThisEdge = null;
-			for (int i = 0; i <= mapData.mapSize; i++) {
-				i %= mapData.mapSize;
+			for (int i = 0; i <= MapData.mapSize; i++) {
+				i %= MapData.mapSize;
 				if (i == 0) {
 					sideNum += 1;
 					sortedEdgeTiles.Add(sideNum, new List<Tile.Tile>());
 					tilesOnThisEdge = sortedEdgeTiles[sideNum];
 				}
 				if (sideNum == 0) {
-					tilesOnThisEdge.Add(sortedTiles[mapData.mapSize - 1][i]);
+					tilesOnThisEdge.Add(sortedTiles[MapData.mapSize - 1][i]);
 				} else if (sideNum == 1) {
-					tilesOnThisEdge.Add(sortedTiles[i][mapData.mapSize - 1]);
+					tilesOnThisEdge.Add(sortedTiles[i][MapData.mapSize - 1]);
 				} else if (sideNum == 2) {
 					tilesOnThisEdge.Add(sortedTiles[0][i]);
 				} else if (sideNum == 3) {
@@ -1185,7 +1184,7 @@ namespace Snowship.NMap
 		public void SetRoofs() {
 			float roofHeightMultiplier = 1.25f;
 			foreach (Tile.Tile tile in tiles) {
-				tile.SetRoof(tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone && tile.height >= mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Stone] * roofHeightMultiplier);
+				tile.SetRoof(tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone && tile.height >= MapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Stone] * roofHeightMultiplier);
 			}
 		}
 
@@ -1228,7 +1227,7 @@ namespace Snowship.NMap
 
 		void PlaceResourceVeins(ResourceVein resourceVeinData, List<Tile.Tile> mediumTiles) {
 			List<Tile.Tile> previousVeinStartTiles = new List<Tile.Tile>();
-			for (int i = 0; i < Mathf.CeilToInt(mapData.mapSize / (float)resourceVeinData.numVeinsByMapSize); i++) {
+			for (int i = 0; i < Mathf.CeilToInt(MapData.mapSize / (float)resourceVeinData.numVeinsByMapSize); i++) {
 				List<Tile.Tile> validVeinStartTiles = mediumTiles.Where(tile => !resourceVeinData.tileTypes.ContainsValue(tile.tileType.type) && resourceVeinData.tileTypes.ContainsKey(tile.tileType.groupType) && ResourceVein.resourceVeinValidTileFunctions[resourceVeinData.resourceType](tile)).ToList();
 				foreach (Tile.Tile previousVeinStartTile in previousVeinStartTiles) {
 					List<Tile.Tile> removeTiles = new List<Tile.Tile>();
@@ -1549,7 +1548,7 @@ namespace Snowship.NMap
 		private static readonly float distanceIncreaseAmount = 0.1f; // 0.1f
 		private void DetermineShadowTiles(List<Tile.Tile> shadowSourceTiles, bool setBrightnessAtEnd, bool forceBrightnessUpdate) {
 			if (!shadowDirectionsCalculated) {
-				DetermineShadowDirectionsAtHour(GameManager.Get<ColonyManager>().colony.mapData.equatorOffset);
+				DetermineShadowDirectionsAtHour(GameManager.Get<MapManager>().Map.MapData.equatorOffset);
 			}
 			for (int h = 0; h < 24; h++) {
 				Vector2 hourDirection = shadowDirectionAtHour[h];
@@ -1563,7 +1562,7 @@ namespace Snowship.NMap
 					List<Tile.Tile> shadowTiles = new List<Tile.Tile>();
 					for (float distance = 0; distance <= maxShadowDistanceAtHour; distance += distanceIncreaseAmount) {
 						Vector2 nextTilePosition = shadowSourceTilePosition + (hourDirection * distance);
-						if (nextTilePosition.x < 0 || nextTilePosition.x >= mapData.mapSize || nextTilePosition.y < 0 || nextTilePosition.y >= mapData.mapSize) {
+						if (nextTilePosition.x < 0 || nextTilePosition.x >= MapData.mapSize || nextTilePosition.y < 0 || nextTilePosition.y >= MapData.mapSize) {
 							break;
 						}
 						Tile.Tile tileToShadow = GetTileFromPosition(nextTilePosition);
@@ -1660,7 +1659,7 @@ namespace Snowship.NMap
 		}
 
 		public Tile.Tile GetTileFromPosition(int x, int y) {
-			return sortedTiles[Mathf.Clamp(y, 0, mapData.mapSize - 1)][Mathf.Clamp(x, 0, mapData.mapSize - 1)];
+			return sortedTiles[Mathf.Clamp(y, 0, MapData.mapSize - 1)][Mathf.Clamp(x, 0, MapData.mapSize - 1)];
 		}
 
 		public static int GetRandomMapSeed() {

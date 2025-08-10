@@ -320,7 +320,7 @@ namespace Snowship.NUI {
 		public void OnUpdate() {
 			if (GameManager.Get<TileManager>().mapState == TileManager.MapState.Generated) {
 				mousePosition = GameManager.Get<CameraManager>().camera.ScreenToWorldPoint(Input.mousePosition);
-				TileManager.Tile newMouseOverTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(mousePosition);
+				TileManager.Tile newMouseOverTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(mousePosition);
 				if (newMouseOverTile != mouseOverTile) {
 					mouseOverTile = newMouseOverTile;
 					//if (!pauseMenu.activeSelf) {

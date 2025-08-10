@@ -30,10 +30,10 @@ namespace Snowship.NPersistence {
 		}
 
 		public void SaveOriginalRivers(StreamWriter file) {
-			foreach (River river in GameManager.Get<ColonyManager>().colony.map.rivers) {
+			foreach (River river in GameManager.Get<MapManager>().Map.rivers) {
 				WriteOriginalRiverLines(file, river, 0, RiverProperty.SmallRiver);
 			}
-			foreach (River river in GameManager.Get<ColonyManager>().colony.map.largeRivers) {
+			foreach (River river in GameManager.Get<MapManager>().Map.largeRivers) {
 				WriteOriginalRiverLines(file, river, 0, RiverProperty.LargeRiver);
 			}
 		}
@@ -134,7 +134,7 @@ namespace Snowship.NPersistence {
 
 			StreamWriter file = PU.CreateFileAtDirectory(saveDirectoryPath, "rivers.snowship");
 
-			Map map = GameManager.Get<ColonyManager>().colony.map;
+			Map map = GameManager.Get<MapManager>().Map;
 			int numRivers = map.rivers.Count + map.largeRivers.Count;
 			if (originalRivers.Count != numRivers) {
 				Debug.LogError("Loaded river count " + originalRivers.Count + " and current river count " + numRivers + " does not match.");

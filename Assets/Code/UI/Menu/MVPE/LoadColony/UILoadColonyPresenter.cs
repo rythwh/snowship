@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
-using Snowship.NPersistence;
+
 using Snowship.NPlanet;
 
 namespace Snowship.NUI
@@ -11,8 +11,8 @@ namespace Snowship.NUI
 	public class UILoadColonyPresenter : UIPresenter<UILoadColonyView> {
 
 		private PlanetViewModule planetViewModule;
-		private PersistenceColony selectedColony;
-		private readonly PColony pColony = new PColony();
+		// private PersistenceColony selectedColony;
+		// private readonly PColony pColony = new PColony();
 
 		public UILoadColonyPresenter(UILoadColonyView view) : base(view) {
 		}
@@ -20,9 +20,9 @@ namespace Snowship.NUI
 		public override void OnCreate() {
 			View.OnBackButtonClicked += OnBackButtonClicked;
 			View.OnCreateColonyButtonClicked += OnCreateColonyButtonClicked;
-			View.OnLoadColonyButtonClicked += OnLoadColonyButtonClicked;
+			// View.OnLoadColonyButtonClicked += OnLoadColonyButtonClicked;
 
-			CreateColonyElements();
+			// CreateColonyElements();
 
 			CreatePlanetViewModule();
 		}
@@ -30,7 +30,7 @@ namespace Snowship.NUI
 		public override void OnClose() {
 			View.OnBackButtonClicked -= OnBackButtonClicked;
 			View.OnCreateColonyButtonClicked -= OnCreateColonyButtonClicked;
-			View.OnLoadColonyButtonClicked -= OnLoadColonyButtonClicked;
+			// View.OnLoadColonyButtonClicked -= OnLoadColonyButtonClicked;
 
 			ClosePlanetViewModule();
 		}
@@ -39,12 +39,12 @@ namespace Snowship.NUI
 			planetViewModule = new PlanetViewModule(View.PlanetViewGridLayoutGroup, View.PlanetTilePrefab);
 
 			planetViewModule.OnPlanetTileClicked += OnPlanetTileClicked;
-			planetViewModule.OnColonyTileClicked += OnColonyTileClicked;
+			// planetViewModule.OnColonyTileClicked += OnColonyTileClicked;
 		}
 
 		private void ClosePlanetViewModule() {
 			planetViewModule.OnPlanetTileClicked -= OnPlanetTileClicked;
-			planetViewModule.OnColonyTileClicked -= OnColonyTileClicked;
+			// planetViewModule.OnColonyTileClicked -= OnColonyTileClicked;
 
 			planetViewModule.DestroyPlanet();
 		}
@@ -57,15 +57,15 @@ namespace Snowship.NUI
 			GameManager.Get<UIManager>().OpenViewAsync<UICreateColony>(this, false).Forget();
 		}
 
-		private void OnColonyElementClicked(PersistenceColony colony) {
+		/*private void OnColonyElementClicked(PersistenceColony colony) {
 			SelectColony(colony);
-		}
+		}*/
 
-		private void OnLoadColonyButtonClicked() {
+		/*private void OnLoadColonyButtonClicked() {
 			pColony.ApplyLoadedColony(selectedColony);
-		}
+		}*/
 
-		private void CreateColonyElements() {
+		/*private void CreateColonyElements() {
 			List<PersistenceColony> colonies = pColony.GetPersistenceColonies();
 
 			planetViewModule.DisplayPlanet(GameManager.Get<PlanetManager>().planet, colonies, true);
@@ -75,22 +75,22 @@ namespace Snowship.NUI
 				loadColonyElement.Open(View.ColonyElementsParent).Forget();
 				loadColonyElement.OnLoadColonyElementClicked += OnColonyElementClicked;
 			}
-		}
+		}*/
 
 		private void OnPlanetTileClicked(PlanetTile planetTile) {
 			// Do nothing
 		}
 
-		private void OnColonyTileClicked(PersistenceColony colony) {
+		/*private void OnColonyTileClicked(PersistenceColony colony) {
 			SelectColony(colony);
-		}
+		}*/
 
-		private void SelectColony(PersistenceColony colony) {
+		/*private void SelectColony(PersistenceColony colony) {
 			selectedColony = colony;
 
 			bool colonyValid = selectedColony != null;
 			string loadColonyButtonText = colonyValid ? $"Load {colony.name}" : "Select a Colony to Load";
 			View.SetLoadColonyButtonInteractable(colonyValid, loadColonyButtonText);
-		}
+		}*/
 	}
 }

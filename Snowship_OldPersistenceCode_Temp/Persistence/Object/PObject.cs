@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Snowship.NMap.Tile;
 using Snowship.NColony;
+using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
@@ -421,7 +422,7 @@ namespace Snowship.NPersistence {
 
 		public void ApplyLoadedObjects(List<PersistenceObject> persistenceObjects) {
 			foreach (PersistenceObject persistenceObject in persistenceObjects) {
-				Tile zeroPointTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceObject.zeroPointTilePosition.Value);
+				Tile zeroPointTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(persistenceObject.zeroPointTilePosition.Value);
 
 				ObjectPrefab objectPrefab = ObjectPrefab.GetObjectPrefabByEnum(persistenceObject.type.Value);
 				ObjectInstance objectInstance = ObjectInstance.CreateObjectInstance(

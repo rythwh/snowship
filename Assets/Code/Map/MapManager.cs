@@ -28,21 +28,20 @@ namespace Snowship.NMap
 		}
 
 		public async UniTask PostInitializeMap(MapInitializeType mapInitializeType) {
-			Map map = ColonyM.colony.map;
-			while (!map.Created) {
+			while (!Map.Created) {
 				await UniTask.NextFrame();
 			}
 
 			MapState = MapState.Generated;
 
 			if (mapInitializeType == MapInitializeType.NewMap) {
-				ColonyM.SetupNewColony(ColonyM.colony, true);
+				ColonyM.SetupNewColony();
 			}
 
-			map.DetermineVisibleRegionBlocks();
+			Map.DetermineVisibleRegionBlocks();
 
-			CameraM.OnCameraPositionChanged += map.OnCameraPositionChanged;
-			CameraM.OnCameraZoomChanged += map.OnCameraZoomChanged;
+			CameraM.OnCameraPositionChanged += Map.OnCameraPositionChanged;
+			CameraM.OnCameraZoomChanged += Map.OnCameraZoomChanged;
 		}
 
 		public Map CreateMap(MapData mapData) {

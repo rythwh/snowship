@@ -81,7 +81,7 @@ namespace Snowship.NHuman
 				if (newSelectedHuman != null) {
 					SetSelectedHuman(newSelectedHuman);
 				} else if (selectedHuman != null && selectedHuman is Colonist colonist) {
-					colonist.PlayerMoveToTile(ColonyM.colony.map.GetTileFromPosition(mousePosition));
+					colonist.PlayerMoveToTile(MapM.Map.GetTileFromPosition(mousePosition));
 				}
 			}
 			if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape)) {

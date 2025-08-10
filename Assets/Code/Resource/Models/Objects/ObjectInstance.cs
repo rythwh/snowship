@@ -3,6 +3,7 @@ using System.Linq;
 using Snowship.NMap.Tile;
 using Snowship.NColony;
 using Snowship.NJob;
+using Snowship.NMap;
 using Snowship.NUtilities;
 using Snowship.Selectable;
 using UnityEngine;
@@ -100,7 +101,7 @@ namespace Snowship.NResource
 			}
 			bitmaskingTiles = bitmaskingTiles.Distinct().ToList();
 			GameManager.Get<ResourceManager>().Bitmask(bitmaskingTiles);
-			GameManager.Get<ColonyManager>().colony.map.Bitmasking(bitmaskingTiles, true, true);
+			GameManager.Get<MapManager>().Map.Bitmasking(bitmaskingTiles, true, true);
 			foreach (Tile tile in additionalTiles) {
 				SetColour(tile.sr.color);
 			}

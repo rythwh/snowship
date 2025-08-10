@@ -1,11 +1,11 @@
-﻿using System;
-using Snowship.NPersistence;
+﻿/*using System;
 using Snowship.NUtilities;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Snowship.NUI
 {
+
 	internal class UniverseElement {
 
 		public static event Action<UniverseElement> OnUniverseElementClicked;
@@ -81,4 +81,4 @@ namespace Snowship.NUI
 			MonoBehaviour.Destroy(obj);
 		}
 	}
-}
+}*/

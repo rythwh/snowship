@@ -1258,7 +1258,7 @@ public class ResourceManager : IManager, IDisposable
 						surroundingTilesToUse
 					);
 					// TODO Not-fully-working implementation of walls and stone connecting
-					//sum += ColonyM.colony.map.BitSum(
+					//sum += MapM.Map.BitSum(
 					//	TileManager.TileTypeGroup.GetTileTypeGroupByEnum(TileManager.TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tileType => tileType.type).ToList(),
 					//	new List<ObjectEnum>() { objectInstance.prefab.type },
 					//	surroundingTilesToUse,

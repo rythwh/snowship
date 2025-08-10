@@ -87,7 +87,7 @@ namespace Snowship.NPersistence {
 				PPlanet.UpdatePlanetSave(PlanetM.planet);
 
 				colony.SetLastSaveDateTime(lastSaveDateTime, lastSaveTimeChunk);
-				PColony.UpdateColonySave(ColonyM.colony);
+				PColony.UpdateColonySave(ColonyM.colony, MapM.Map);
 
 				PSave.SaveSave(saveDirectoryPath, lastSaveDateTime);
 
@@ -172,8 +172,8 @@ namespace Snowship.NPersistence {
 				loadingState = LoadingState.LoadingMap;
 				UIEvents.UpdateLoadingScreenText("Loading Original Map", string.Empty);
 				await UniTask.WaitForEndOfFrame();
-				ColonyM.colony.map = new Map() { mapData = ColonyM.colony.mapData };
-				Map map = ColonyM.colony.map;
+				MapM.Map = new Map() { MapData = ColonyM.colony.mapData };
+				Map map = MapM.Map;
 
 				List<PersistenceTile> originalTiles = PMap.LoadTiles(ColonyM.colony.directory + "/Map/tiles.snowship");
 				List<PersistenceRiver> originalRivers = PRiver.LoadRivers(ColonyM.colony.directory + "/Map/rivers.snowship");
@@ -229,7 +229,7 @@ namespace Snowship.NPersistence {
 
 				for (int i = 0; i < persistenceObjects.Count; i++) {
 					PObject.PersistenceObject persistenceObject = persistenceObjects[i];
-					ObjectInstance objectInstance = ColonyM.colony.map.GetTileFromPosition(persistenceObject.zeroPointTilePosition.Value).objectInstances.Values.ToList().Find(o => o.prefab.type == persistenceObject.type);
+					ObjectInstance objectInstance = MapM.Map.GetTileFromPosition(persistenceObject.zeroPointTilePosition.Value).objectInstances.Values.ToList().Find(o => o.prefab.type == persistenceObject.type);
 
 					switch (objectInstance.prefab.instanceType) {
 						case ObjectInstance.ObjectInstanceType.Container:

@@ -54,7 +54,7 @@ namespace Snowship.Selectable
 
 		private void OnStateChanged((EState previousState, EState newState) state) {
 			if (state is { previousState: EState.LoadToSimulation, newState: EState.Simulation }) {
-				map = GameManager.Get<ColonyManager>().colony.map;
+				map = GameManager.Get<MapManager>().Map;
 				camera = GameManager.Get<CameraManager>().camera;
 			}
 		}

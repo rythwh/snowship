@@ -4,6 +4,7 @@ using System.Linq;
 using Snowship.NMap.Tile;
 using Snowship.NColony;
 using Snowship.NHuman;
+using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
@@ -89,7 +90,7 @@ namespace Snowship.NJob
 
 			GameManager.Get<ResourceManager>().Bitmask(new List<Tile> { Tile }.Concat(Tile.surroundingTiles).ToList());
 			if (Tile.walkable && !previousWalkability) {
-				GameManager.Get<ColonyManager>().colony.map.RemoveTileBrightnessEffect(Tile);
+				GameManager.Get<MapManager>().Map.RemoveTileBrightnessEffect(Tile);
 			}
 		}
 	}

@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Snowship.NColony;
 using Snowship.NInput;
+using Snowship.NMap;
 using Snowship.NState;
 using UnityEngine;
 using Time = UnityEngine.Time;
@@ -40,7 +41,7 @@ namespace Snowship.NCamera {
 				return;
 			}
 
-			int mapSize = GameManager.Get<ColonyManager>().colony.mapData.mapSize;
+			int mapSize = GameManager.Get<MapManager>().Map.MapData.mapSize;
 			SetCameraPosition(Vector2.one * mapSize / 2f);
 			SetCameraZoom(5);
 		}
@@ -67,8 +68,8 @@ namespace Snowship.NCamera {
 
 			camera.transform.Translate(moveVector * (CameraMoveSpeedMultiplier * camera.orthographicSize * Time.deltaTime));
 			camera.transform.position = new Vector2(
-				Mathf.Clamp(camera.transform.position.x, 0, GameManager.Get<ColonyManager>().colony.map.mapData.mapSize),
-				Mathf.Clamp(camera.transform.position.y, 0, GameManager.Get<ColonyManager>().colony.map.mapData.mapSize)
+				Mathf.Clamp(camera.transform.position.x, 0, GameManager.Get<MapManager>().Map.MapData.mapSize),
+				Mathf.Clamp(camera.transform.position.y, 0, GameManager.Get<MapManager>().Map.MapData.mapSize)
 			);
 			OnCameraPositionChanged?.Invoke(camera.transform.position);
 		}

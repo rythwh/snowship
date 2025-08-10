@@ -1,11 +1,12 @@
-﻿using System;
-using Snowship.NPersistence;
+﻿#if old_persistence
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace Snowship.NUI
 {
+
 	internal class PlanetElement {
 		public PersistencePlanet persistencePlanet;
 
@@ -35,4 +36,6 @@ namespace Snowship.NUI
 			MonoBehaviour.Destroy(obj);
 		}
 	}
+
 }
+	#endif

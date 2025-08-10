@@ -68,14 +68,14 @@ namespace Snowship.NColonist {
 				return;
 			}
 
-			int mapSize = ColonyM.colony.map.mapData.mapSize;
+			int mapSize = MapM.Map.MapData.mapSize;
 			for (int i = 0; i < amount; i++) {
-				List<Tile> walkableTilesByDistanceToCentre = ColonyM.colony.map.tiles.Where(o => o.walkable && o.buildable && colonists.Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) /*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
+				List<Tile> walkableTilesByDistanceToCentre = MapM.Map.tiles.Where(o => o.walkable && o.buildable && colonists.Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) /*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 				if (walkableTilesByDistanceToCentre.Count <= 0) {
-					foreach (Tile tile in ColonyM.colony.map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
+					foreach (Tile tile in MapM.Map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
 						tile.SetTileType(tile.biome.tileTypes[TileTypeGroup.TypeEnum.Ground], true, true, true);
 					}
-					walkableTilesByDistanceToCentre = ColonyM.colony.map.tiles.Where(o => o.walkable && colonists.Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) /*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
+					walkableTilesByDistanceToCentre = MapM.Map.tiles.Where(o => o.walkable && colonists.Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) /*pathM.RegionBlockDistance(o.regionBlock,tileM.GetTileFromPosition(new Vector2(mapSize / 2f,mapSize / 2f)).regionBlock,true,true)*/).ToList();
 				}
 
 				List<Tile> validSpawnTiles = new List<Tile>();
@@ -110,8 +110,8 @@ namespace Snowship.NColonist {
 				colonists.Add(colonist);
 			}
 
-			ColonyM.colony.map.Bitmasking(ColonyM.colony.map.tiles, true, true);
-			ColonyM.colony.map.SetTileBrightness(TimeM.Time.TileBrightnessTime, true);
+			MapM.Map.Bitmasking(MapM.Map.tiles, true, true);
+			MapM.Map.SetTileBrightness(TimeM.Time.TileBrightnessTime, true);
 		}
 
 		public bool IsRegionVisibleToAnyColonist(Region region) {

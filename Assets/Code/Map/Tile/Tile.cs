@@ -142,11 +142,11 @@ namespace Snowship.NMap.Tile
 								tile.ChangeRegion(largestRegion, false, false);
 							}
 							surroundingRegion.tiles.Clear();
-							GameManager.Get<ColonyManager>().colony.map.regions.Remove(surroundingRegion);
+							GameManager.Get<MapManager>().Map.regions.Remove(surroundingRegion);
 						}
 						region.SetVisible(anyVisible, true, false);
 					} else {
-						ChangeRegion(new Region(tileType, GameManager.Get<ColonyManager>().colony.map.regions[GameManager.Get<ColonyManager>().colony.map.regions.Count - 1].id + 1), false, false);
+						ChangeRegion(new Region(tileType, GameManager.Get<MapManager>().Map.regions[GameManager.Get<MapManager>().Map.regions.Count - 1].id + 1), false, false);
 					}
 				} else { // Type is not walkable, old type was walkable (e.g. was ground, now stone)
 					ChangeRegion(null, false, false);
@@ -281,9 +281,9 @@ namespace Snowship.NMap.Tile
 		}
 
 		public void SetTileTypeByHeight() {
-			if (height < map.mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water]) {
+			if (height < map.MapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water]) {
 				SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).defaultTileType), false, false, false);
-			} else if (height > map.mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Stone]) {
+			} else if (height > map.MapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Stone]) {
 				SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).defaultTileType), false, false, false);
 			} else {
 				SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Ground).defaultTileType), false, false, false);

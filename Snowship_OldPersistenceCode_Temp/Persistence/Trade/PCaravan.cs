@@ -328,11 +328,11 @@ namespace Snowship.NPersistence {
 															persistenceHuman = pHuman.LoadPersistenceHuman((List<KeyValuePair<string, object>>)traderSubProperty.Value);
 															break;
 														case TraderProperty.LeaveTile:
-															traderLeaveTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(float.Parse(((string)traderSubProperty.Value).Split(',')[0]), float.Parse(((string)traderSubProperty.Value).Split(',')[1])));
+															traderLeaveTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(float.Parse(((string)traderSubProperty.Value).Split(',')[0]), float.Parse(((string)traderSubProperty.Value).Split(',')[1])));
 															break;
 														case TraderProperty.TradingPosts:
 															foreach (string vector2String in ((string)traderSubProperty.Value).Split(';')) {
-																Tile tradingPostZeroPointTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(float.Parse(vector2String.Split(',')[0]), float.Parse(vector2String.Split(',')[1])));
+																Tile tradingPostZeroPointTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(float.Parse(vector2String.Split(',')[0]), float.Parse(vector2String.Split(',')[1])));
 																traderTradingPosts.Add(TradingPost.tradingPosts.Find(tp => tp.zeroPointTile == tradingPostZeroPointTile));
 															}
 															break;
@@ -388,7 +388,7 @@ namespace Snowship.NPersistence {
 
 		public void ApplyLoadedCaravans(List<PersistenceCaravan> persistenceCaravans) {
 			foreach (PersistenceCaravan persistenceCaravan in persistenceCaravans) {
-				Caravan caravan = new() { numTraders = persistenceCaravan.persistenceTraders.Count, caravanType = persistenceCaravan.type.Value, location = persistenceCaravan.location, targetTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceCaravan.targetTilePosition.Value), resourceGroup = persistenceCaravan.resourceGroup, leaveTimer = persistenceCaravan.leaveTimer.Value, leaving = persistenceCaravan.leaving.Value };
+				Caravan caravan = new() { numTraders = persistenceCaravan.persistenceTraders.Count, caravanType = persistenceCaravan.type.Value, location = persistenceCaravan.location, targetTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(persistenceCaravan.targetTilePosition.Value), resourceGroup = persistenceCaravan.resourceGroup, leaveTimer = persistenceCaravan.leaveTimer.Value, leaving = persistenceCaravan.leaving.Value };
 
 				caravan.Inventory.maxWeight = persistenceCaravan.persistenceInventory.maxWeight.Value;
 				caravan.Inventory.maxVolume = persistenceCaravan.persistenceInventory.maxVolume.Value;
@@ -417,7 +417,7 @@ namespace Snowship.NPersistence {
 
 				foreach (PersistenceTrader persistenceTrader in persistenceCaravan.persistenceTraders) {
 					Trader trader = new Trader(
-						GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceTrader.persistenceLife.position.Value),
+						GameManager.Get<MapManager>().Map.GetTileFromPosition(persistenceTrader.persistenceLife.position.Value),
 						persistenceTrader.persistenceLife.health.Value,
 						caravan
 					) { gender = persistenceTrader.persistenceLife.gender.Value, previousPosition = persistenceTrader.persistenceLife.previousPosition.Value };
@@ -442,7 +442,7 @@ namespace Snowship.NPersistence {
 					}
 
 					if (persistenceTrader.persistenceLife.pathEndPosition.HasValue) {
-						trader.MoveToTile(GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceTrader.persistenceLife.pathEndPosition.Value), true);
+						trader.MoveToTile(GameManager.Get<MapManager>().Map.GetTileFromPosition(persistenceTrader.persistenceLife.pathEndPosition.Value), true);
 					}
 
 					trader.leaveTile = persistenceTrader.leaveTile;

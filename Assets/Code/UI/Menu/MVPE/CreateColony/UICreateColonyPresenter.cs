@@ -1,7 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NColony;
-using Snowship.NPersistence;
 using Snowship.NPlanet;
 using Snowship.NState;
 using Snowship.NUtilities;
@@ -9,13 +8,11 @@ using UnityEngine;
 
 namespace Snowship.NUI
 {
-
 	[UsedImplicitly]
 	public class UICreateColonyPresenter : UIPresenter<UICreateColonyView> {
 
 		private PlanetViewModule planetViewModule;
 		private readonly CreateColonyData createColonyData = new CreateColonyData();
-		private readonly PColony pColony = new PColony();
 
 		public UICreateColonyPresenter(UICreateColonyView view) : base(view) {
 		}
@@ -57,17 +54,17 @@ namespace Snowship.NUI
 			planetViewModule = new PlanetViewModule(View.PlanetViewGridLayoutGroup, View.PlanetTilePrefab);
 			planetViewModule.DisplayPlanet(
 				GameManager.Get<PlanetManager>().planet,
-				pColony.GetPersistenceColonies(),
+				// pColony.GetPersistenceColonies(),
 				true
 			);
 
 			planetViewModule.OnPlanetTileClicked += OnPlanetTileClicked;
-			planetViewModule.OnColonyTileClicked += OnColonyTileClicked;
+			// planetViewModule.OnColonyTileClicked += OnColonyTileClicked;
 		}
 
 		private void ClosePlanetViewModule() {
 			planetViewModule.OnPlanetTileClicked -= OnPlanetTileClicked;
-			planetViewModule.OnColonyTileClicked -= OnColonyTileClicked;
+			// planetViewModule.OnColonyTileClicked -= OnColonyTileClicked;
 
 			planetViewModule.DestroyPlanet();
 		}
@@ -76,7 +73,7 @@ namespace Snowship.NUI
 			Planet planet = GameManager.Get<PlanetManager>().planet;
 			planetViewModule.DisplayPlanet(
 				planet,
-				pColony.GetPersistenceColonies(),
+				// pColony.GetPersistenceColonies(),
 				true
 			);
 		}
@@ -133,16 +130,14 @@ namespace Snowship.NUI
 		}
 
 		private void OnCreateColonyButtonClicked() {
-			Colony colony = GameManager.Get<ColonyManager>().CreateColony(createColonyData);
-
 			// TODO This should be handled in the ColonyManager itself
-			GameManager.Get<ColonyManager>().SetupNewColony(colony, false);
+			GameManager.Get<ColonyManager>().CreateColony(createColonyData);
 
 			GameManager.Get<StateManager>().TransitionToState(EState.LoadToSimulation).Forget();
 		}
 
-		private void OnColonyTileClicked(PersistenceColony persistenceColony) {
-			// TODO Popup asking to load colony?
-		}
+		// private void OnColonyTileClicked(PersistenceColony persistenceColony) {
+		// 	// TODO Popup asking to load colony?
+		// }
 	}
 }

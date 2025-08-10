@@ -11,7 +11,7 @@ namespace Snowship.NUI
 	[UsedImplicitly]
 	public class UIMainMenuPresenter : UIPresenter<UIMainMenuView> {
 
-		private readonly PLastSave pLastSave = new PLastSave();
+		// private readonly PLastSave pLastSave = new PLastSave();
 
 		public UIMainMenuPresenter(UIMainMenuView view) : base(view) {
 		}
@@ -24,17 +24,17 @@ namespace Snowship.NUI
 			View.OnSettingsButtonClicked += OnSettingsButtonClicked;
 			View.OnExitButtonClicked += OnExitButtonClicked;
 
-			View.SetDisclaimerText($"Lumi Games (Snowship {PersistenceManager.GameVersion.text})");
+			View.SetDisclaimerText($"Lumi Games (Snowship {GameManager.GameVersion.text})");
 
-			PLastSave.LastSaveProperties lastSaveProperties = pLastSave.GetLastSaveProperties();
+			/*PLastSave.LastSaveProperties lastSaveProperties = pLastSave.GetLastSaveProperties();
 			if (lastSaveProperties != null) {
 				View.SetupContinueButton(
 					pLastSave.IsLastSaveUniverseLoadable(),
 					PersistenceUtilities.LoadSaveImageFromSaveDirectoryPath(lastSaveProperties.lastSaveSavePath)
 				);
-			} else {
-				View.DisableContinueButton();
-			}
+			} else {*/
+			View.DisableContinueButton();
+			// }
 
 			List<Sprite> backgroundImages = Resources.LoadAll<Sprite>(@"UI/Backgrounds/SingleMap").ToList();
 			View.SetBackground(backgroundImages[Random.Range(0, backgroundImages.Count)]);
@@ -53,7 +53,7 @@ namespace Snowship.NUI
 		}
 
 		private void OnContinueButtonClicked() {
-			GameManager.Get<PersistenceManager>().ContinueFromMostRecentSave().Forget();
+			// GameManager.Get<PersistenceManager>().ContinueFromMostRecentSave().Forget();
 		}
 
 		private void OnLoadButtonClicked() {

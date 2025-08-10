@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NColony;
 using Snowship.NInput;
-using Snowship.NPersistence;
+
 using Snowship.NState;
 using Snowship.NUtilities;
 using UnityEngine;
@@ -49,7 +49,7 @@ namespace Snowship.NUI
 
 		private async void OnSaveButtonClicked() {
 			try {
-				await GameManager.Get<PersistenceManager>().CreateSave(GameManager.Get<ColonyManager>().colony);
+				// await GameManager.Get<PersistenceManager>().CreateSave(GameManager.Get<ColonyManager>().colony);
 				View.SetSaveButtonImageColour(ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen));
 			} catch (Exception e) {
 				View.SetSaveButtonImageColour(ColourUtilities.GetColour(ColourUtilities.EColour.LightRed));

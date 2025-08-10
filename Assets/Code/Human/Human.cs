@@ -7,6 +7,7 @@ using Snowship.NCamera;
 using Snowship.NColonist;
 using Snowship.NColony;
 using Snowship.NLife;
+using Snowship.NMap;
 using Snowship.NProfession;
 using Snowship.NResource;
 using Snowship.NTime;
@@ -207,7 +208,7 @@ namespace Snowship.NHuman
 						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
 						MoveToTile(walkableSurroundingTiles[0], false);
 					} else {
-						List<Tile> validTiles = GameManager.Get<ColonyManager>().colony.map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
+						List<Tile> validTiles = GameManager.Get<MapManager>().Map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
 						if (validTiles.Count > 0) {
 							MoveToTile(validTiles[0], false);
 						}

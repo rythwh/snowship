@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Snowship.NMap.Tile;
 using Snowship.NColony;
+using Snowship.NMap;
 using Snowship.NTime;
 using Snowship.NUtilities;
 using Snowship.Selectable;
@@ -98,7 +99,7 @@ namespace Snowship.NLife
 			if (path.Count > 0) {
 
 				obj.transform.position = Vector2.Lerp(previousPosition, path[0].obj.transform.position, moveTimer);
-				Tile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(obj.transform.position);
+				Tile = GameManager.Get<MapManager>().Map.GetTileFromPosition(obj.transform.position);
 
 				if (moveTimer >= 1f) {
 					previousPosition = obj.transform.position;
@@ -123,7 +124,7 @@ namespace Snowship.NLife
 		public int CalculateMoveSpriteIndex() {
 			int moveSpriteIndex = 0;
 			if (path.Count > 0) {
-				Tile previousTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(previousPosition);
+				Tile previousTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(previousPosition);
 				if (previousTile != path[0]) {
 					moveSpriteIndex = previousTile.surroundingTiles.IndexOf(path[0]);
 					if (moveSpriteIndex == -1) {

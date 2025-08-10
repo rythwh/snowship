@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Snowship.NMap.Tile;
 using Snowship.NColony;
+using Snowship.NMap;
 using Snowship.NPlanet;
 using UnityEngine;
 using PU = Snowship.NPersistence.PersistenceUtilities;
@@ -30,25 +31,25 @@ namespace Snowship.NPersistence {
 			SurroundingPlanetTileRivers
 		}
 
-		private void SaveColony(StreamWriter file, Colony colony) {
+		private void SaveColony(StreamWriter file, Colony colony, Map map) {
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.LastSaveDateTime, colony.lastSaveDateTime, 0));
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.LastSaveTimeChunk, colony.lastSaveTimeChunk, 0));
 
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.Name, colony.Name, 0));
-			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.PlanetPosition, PU.FormatVector2ToString(colony.map.mapData.planetTilePosition), 0));
-			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.Seed, colony.map.mapData.mapSeed, 0));
-			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.Size, colony.map.mapData.mapSize, 0));
-			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.AverageTemperature, colony.map.mapData.averageTemperature, 0));
-			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.AveragePrecipitation, colony.map.mapData.averagePrecipitation, 0));
+			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.PlanetPosition, PU.FormatVector2ToString(map.MapData.planetTilePosition), 0));
+			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.Seed, map.MapData.mapSeed, 0));
+			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.Size, map.MapData.mapSize, 0));
+			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.AverageTemperature, map.MapData.averageTemperature, 0));
+			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.AveragePrecipitation, map.MapData.averagePrecipitation, 0));
 
 			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.TerrainTypeHeights, string.Empty, 0));
-			foreach (KeyValuePair<TileTypeGroup.TypeEnum, float> terrainTypeHeight in colony.map.mapData.terrainTypeHeights) {
+			foreach (KeyValuePair<TileTypeGroup.TypeEnum, float> terrainTypeHeight in map.MapData.terrainTypeHeights) {
 				file.WriteLine(PU.CreateKeyValueString(terrainTypeHeight.Key, terrainTypeHeight.Value, 1));
 			}
 
-			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.SurroundingPlanetTileHeights, string.Join(",", colony.map.mapData.surroundingPlanetTileHeightDirections.Select(i => i.ToString()).ToArray()), 0));
-			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.OnRiver, colony.map.mapData.isRiver, 0));
-			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.SurroundingPlanetTileRivers, string.Join(",", colony.map.mapData.surroundingPlanetTileRivers.Select(i => i.ToString()).ToArray()), 0));
+			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.SurroundingPlanetTileHeights, string.Join(",", map.MapData.surroundingPlanetTileHeightDirections.Select(i => i.ToString()).ToArray()), 0));
+			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.OnRiver, map.MapData.isRiver, 0));
+			file.WriteLine(PU.CreateKeyValueString(ColonyProperty.SurroundingPlanetTileRivers, string.Join(",", map.MapData.surroundingPlanetTileRivers.Select(i => i.ToString()).ToArray()), 0));
 		}
 
 		public List<PersistenceColony> GetPersistenceColonies() {
@@ -149,7 +150,7 @@ namespace Snowship.NPersistence {
 			return colony;
 		}
 
-		public void CreateColony(Colony colony) {
+		public void CreateColony(Colony colony, Map map) {
 			if (colony == null) {
 				Debug.LogError("Colony to be saved is null.");
 				return;
@@ -171,7 +172,7 @@ namespace Snowship.NPersistence {
 			Directory.CreateDirectory(colonyDirectoryPath);
 			colony.SetDirectory(colonyDirectoryPath);
 
-			UpdateColonySave(colony);
+			UpdateColonySave(colony, map);
 
 			string mapDirectoryPath = colonyDirectoryPath + "/Map";
 			Directory.CreateDirectory(mapDirectoryPath);
@@ -188,7 +189,7 @@ namespace Snowship.NPersistence {
 			Directory.CreateDirectory(savesDirectoryPath);
 		}
 
-		public void UpdateColonySave(Colony colony) {
+		public void UpdateColonySave(Colony colony, Map map) {
 			if (colony == null) {
 				Debug.LogError("Colony to be saved is null.");
 				return;
@@ -211,7 +212,7 @@ namespace Snowship.NPersistence {
 				PU.CreateFileAtDirectory(colony.directory, "colony.snowship").Close();
 			}
 			StreamWriter colonyFile = new StreamWriter(colonyFilePath);
-			SaveColony(colonyFile, colony);
+			SaveColony(colonyFile, colony, map);
 			colonyFile.Close();
 		}
 

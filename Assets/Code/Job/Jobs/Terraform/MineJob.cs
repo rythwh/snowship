@@ -1,6 +1,7 @@
 ﻿using System;
 using Snowship.NMap.Tile;
 using Snowship.NColony;
+using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
@@ -43,7 +44,7 @@ namespace Snowship.NJob
 				true
 			);
 
-			GameManager.Get<ColonyManager>().colony.map.RemoveTileBrightnessEffect(Tile);
+			GameManager.Get<MapManager>().Map.RemoveTileBrightnessEffect(Tile);
 
 			foreach (LightSource lightSource in LightSource.lightSources) {
 				if (Vector2.Distance(Tile.obj.transform.position, lightSource.obj.transform.position) <= lightSource.prefab.maxLightDistance) {

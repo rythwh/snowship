@@ -5,6 +5,7 @@ using System.Linq;
 using Snowship.NMap.Tile;
 using Cysharp.Threading.Tasks;
 using Snowship.NColony;
+using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NUI;
 using UnityEngine;
@@ -78,7 +79,7 @@ namespace Snowship.NCaravan {
 
 			switch (caravanType) {
 				case CaravanType.Foot or CaravanType.Wagon:
-					validSpawnTiles.AddRange(GameManager.Get<ColonyManager>().colony.map.edgeTiles.Where(tile => tile.walkable && !tile.tileType.classes[TileType.ClassEnum.LiquidWater]).ToList());
+					validSpawnTiles.AddRange(GameManager.Get<MapManager>().Map.edgeTiles.Where(tile => tile.walkable && !tile.tileType.classes[TileType.ClassEnum.LiquidWater]).ToList());
 					break;
 				case CaravanType.Boat:
 					// TODO Implement boat caravans

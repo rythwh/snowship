@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Snowship.NColony;
 using Snowship.NInput;
+using Snowship.NMap;
 using Snowship.NState;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -88,7 +89,7 @@ namespace Snowship.NTime {
 			Time.Minute += 1;
 			timer = 0;
 			if (Time.Minute % 10 == 0) {
-				GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(Time.TileBrightnessTime, false);
+				GameManager.Get<MapManager>().Map.SetTileBrightness(Time.TileBrightnessTime, false);
 			}
 			if (Time.Minute >= 60) {
 				Time.Hour += 1;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Snowship.NMap.Tile;
 using Snowship.NColony;
+using Snowship.NMap;
 using Snowship.NTime;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ namespace Snowship.NResource
 		public void SetTileBrightnesses() {
 			RemoveTileBrightnesses();
 			List<Tile> newLitTiles = new();
-			foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+			foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 				float distance = Vector2.Distance(tile.obj.transform.position, this.tile.obj.transform.position);
 				if (distance <= prefab.maxLightDistance) {
 					float intensityAtTile = Mathf.Clamp(prefab.maxLightDistance * (1f / Mathf.Pow(distance, 2f)), 0f, 1f);
@@ -27,9 +28,9 @@ namespace Snowship.NResource
 						bool lightTile = true;
 						Vector3 lightVector = obj.transform.position;
 						while ((obj.transform.position - lightVector).magnitude <= distance) {
-							Tile lightVectorTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(lightVector);
+							Tile lightVectorTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(lightVector);
 							if (lightVectorTile != this.tile) {
-								if (lightVectorTile.blocksLight /*GameManager.Get<ColonyManager>().colony.map.TileBlocksLight(lightVectorTile)*/) {
+								if (lightVectorTile.blocksLight /*GameManager.Get<MapManager>().Map.TileBlocksLight(lightVectorTile)*/) {
 									/*
 									if (!lightVectorTile.horizontalSurroundingTiles.Any(t => newLitTiles.Contains(t) && !tileM.map.TileBlocksLight(t))) {
 										lightTile = false;
@@ -51,7 +52,7 @@ namespace Snowship.NResource
 					}
 				}
 			}
-			GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+			GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 			litTiles.AddRange(newLitTiles);
 		}
 
@@ -61,7 +62,7 @@ namespace Snowship.NResource
 			}
 			litTiles.Clear();
 			tile.RemoveLightSourceBrightness(this);
-			GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+			GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 		}
 	}
 }

@@ -4,6 +4,7 @@ using System.IO;
 using Snowship.NColonist;
 using Snowship.NColony;
 using Snowship.NHuman;
+using Snowship.NMap;
 using Snowship.NResource;
 using UnityEngine;
 using PU = Snowship.NPersistence.PersistenceUtilities;
@@ -521,7 +522,7 @@ namespace Snowship.NPersistence {
 		public void ApplyLoadedColonists(List<PersistenceColonist> persistenceColonists) {
 			foreach (PersistenceColonist persistenceColonist in persistenceColonists) {
 				Colonist colonist = new Colonist(
-					GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceColonist.persistenceLife.position.Value),
+					GameManager.Get<MapManager>().Map.GetTileFromPosition(persistenceColonist.persistenceLife.position.Value),
 					persistenceColonist.persistenceLife.health.Value
 				) { gender = persistenceColonist.persistenceLife.gender.Value, previousPosition = persistenceColonist.persistenceLife.previousPosition.Value, playerMoved = persistenceColonist.playerMoved.Value, };
 
@@ -560,7 +561,7 @@ namespace Snowship.NPersistence {
 				// }
 
 				if (persistenceColonist.persistenceLife.pathEndPosition.HasValue) {
-					colonist.MoveToTile(GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceColonist.persistenceLife.pathEndPosition.Value), true);
+					colonist.MoveToTile(GameManager.Get<MapManager>().Map.GetTileFromPosition(persistenceColonist.persistenceLife.pathEndPosition.Value), true);
 				}
 
 				// foreach (PersistenceProfession persistenceProfession in persistenceColonist.persistenceProfessions) {

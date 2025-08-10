@@ -67,7 +67,7 @@ public static class PathManager {
 					cost += 1 * RegionBlockDistance(nTile.regionBlock, endTile.regionBlock, true, true, true);
 					cost += 50 * (nTile.tileType.classes[TileType.ClassEnum.LiquidWater] ? 1 : 0);
 					cost += 5 * currentTile.pathDistance;
-					cost -= nTile.map.mapData.mapSize * nTile.walkSpeed;
+					cost -= nTile.map.MapData.mapSize * nTile.walkSpeed;
 
 					PathfindingTile pTile = new PathfindingTile(nTile, currentTile, cost);
 					frontier.Add(pTile);

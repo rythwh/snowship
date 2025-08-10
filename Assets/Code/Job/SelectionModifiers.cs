@@ -4,6 +4,7 @@ using System.Linq;
 using Snowship.NMap.Tile;
 using Snowship.NColonist;
 using Snowship.NColony;
+using Snowship.NMap;
 using Snowship.NResource;
 using UnityEngine;
 
@@ -30,7 +31,7 @@ namespace Snowship.NJob
 							}
 							if (job is BuildJob buildJob) {
 								foreach (Vector2 multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
-									if (GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
+									if (GameManager.Get<MapManager>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
 										return false;
 									}
 								}
@@ -44,7 +45,7 @@ namespace Snowship.NJob
 							}
 							if (colonist.Jobs.ActiveJob is BuildJob buildJob) {
 								foreach (Vector2 multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
-									if (GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
+									if (GameManager.Get<MapManager>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
 										return false;
 									}
 								}
@@ -58,7 +59,7 @@ namespace Snowship.NJob
 					// 		}
 					// 		if (colonist.StoredJob is BuildJob buildJob) {
 					// 			foreach (Vector2 multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
-					// 				if (GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
+					// 				if (GameManager.Get<MapManager>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
 					// 					return false;
 					// 				}
 					// 			}
@@ -71,7 +72,7 @@ namespace Snowship.NJob
 				SelectionModifiersEnum.CloseToSupport, delegate(Tile tile, Tile posTile, ObjectPrefab prefab, Variation variation) {
 					for (int y = -5; y < 5; y++) {
 						for (int x = -5; x < 5; x++) {
-							Tile supportTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(posTile.position.x + x, posTile.position.y + y));
+							Tile supportTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(posTile.position.x + x, posTile.position.y + y));
 							if (!supportTile.buildable && !supportTile.walkable) {
 								return true;
 							}

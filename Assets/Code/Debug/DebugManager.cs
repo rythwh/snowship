@@ -10,10 +10,10 @@ using Cysharp.Threading.Tasks;
 using Snowship.NCamera;
 using Snowship.NCaravan;
 using Snowship.NColonist;
-using Snowship.NColony;
 using Snowship.NHuman;
 using Snowship.NInput;
 using Snowship.NLife;
+using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NTime;
 using Snowship.NUI;
@@ -230,7 +230,7 @@ public class DebugManager : IManager
 	private float holdHour = 12;
 
 	private void ToggleSunCycleUpdate() {
-		GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(holdHour, true);
+		GameManager.Get<MapManager>().Map.SetTileBrightness(holdHour, true);
 	}
 
 	private int viewRiverAtIndex = 0;
@@ -577,8 +577,8 @@ public class DebugManager : IManager
 				if (parameters.Count == 2) {
 					if (int.TryParse(parameters[0], out int startX)) {
 						if (int.TryParse(parameters[1], out int startY)) {
-							if (startX >= 0 && startY >= 0 && startX < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize && startY < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize) {
-								selectedTiles.Add(GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(startX, startY)));
+							if (startX >= 0 && startY >= 0 && startX < GameManager.Get<MapManager>().Map.MapData.mapSize && startY < GameManager.Get<MapManager>().Map.MapData.mapSize) {
+								selectedTiles.Add(GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(startX, startY)));
 							} else {
 								Output("ERROR: Positions out of range.");
 							}
@@ -587,10 +587,10 @@ public class DebugManager : IManager
 								string startYString = parameters[1].Split(',')[0];
 								string endYString = parameters[1].Split(',')[1];
 								if (int.TryParse(startYString, out startY) && int.TryParse(endYString, out int endY)) {
-									if (startX >= 0 && startY >= 0 && endY >= 0 && startX < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize && startY < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize && endY < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize) {
+									if (startX >= 0 && startY >= 0 && endY >= 0 && startX < GameManager.Get<MapManager>().Map.MapData.mapSize && startY < GameManager.Get<MapManager>().Map.MapData.mapSize && endY < GameManager.Get<MapManager>().Map.MapData.mapSize) {
 										if (startY <= endY) {
 											for (int y = startY; y <= endY; y++) {
-												selectedTiles.Add(GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(startX, y)));
+												selectedTiles.Add(GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(startX, y)));
 											}
 										} else {
 											Output("ERROR: Starting y position is greater than ending y position.");
@@ -611,10 +611,10 @@ public class DebugManager : IManager
 							string endXString = parameters[0].Split(',')[1];
 							if (int.TryParse(startXString, out startX) && int.TryParse(endXString, out int endX)) {
 								if (int.TryParse(parameters[1], out int startY)) {
-									if (startX >= 0 && startY >= 0 && endX >= 0 && startX < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize && startY < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize && endX < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize) {
+									if (startX >= 0 && startY >= 0 && endX >= 0 && startX < GameManager.Get<MapManager>().Map.MapData.mapSize && startY < GameManager.Get<MapManager>().Map.MapData.mapSize && endX < GameManager.Get<MapManager>().Map.MapData.mapSize) {
 										if (startX <= endX) {
 											for (int x = startX; x <= endX; x++) {
-												selectedTiles.Add(GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(x, startY)));
+												selectedTiles.Add(GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(x, startY)));
 											}
 										} else {
 											Output("ERROR: Starting x position is greater than ending x position.");
@@ -627,11 +627,11 @@ public class DebugManager : IManager
 										string startYString = parameters[1].Split(',')[0];
 										string endYString = parameters[1].Split(',')[1];
 										if (int.TryParse(startYString, out startY) && int.TryParse(endYString, out int endY)) {
-											if (startX >= 0 && startY >= 0 && endX >= 0 && endY >= 0 && startX < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize && startY < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize && endX < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize && endY < GameManager.Get<ColonyManager>().colony.map.mapData.mapSize) {
+											if (startX >= 0 && startY >= 0 && endX >= 0 && endY >= 0 && startX < GameManager.Get<MapManager>().Map.MapData.mapSize && startY < GameManager.Get<MapManager>().Map.MapData.mapSize && endX < GameManager.Get<MapManager>().Map.MapData.mapSize && endY < GameManager.Get<MapManager>().Map.MapData.mapSize) {
 												if (startX <= endX && startY <= endY) {
 													for (int y = startY; y <= endY; y++) {
 														for (int x = startX; x <= endX; x++) {
-															selectedTiles.Add(GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(new Vector2(x, y)));
+															selectedTiles.Add(GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(x, y)));
 														}
 													}
 												} else {
@@ -813,9 +813,9 @@ public class DebugManager : IManager
 								bool previousWalkableState = tile.walkable;
 								tile.SetTileType(tileType, false, true, true);
 								if (!previousWalkableState && tile.walkable) {
-									GameManager.Get<ColonyManager>().colony.map.RemoveTileBrightnessEffect(tile);
+									GameManager.Get<MapManager>().Map.RemoveTileBrightnessEffect(tile);
 								} else if (previousWalkableState && !tile.walkable) {
-									GameManager.Get<ColonyManager>().colony.map.RecalculateLighting(new List<Tile> { tile }, true);
+									GameManager.Get<MapManager>().Map.RecalculateLighting(new List<Tile> { tile }, true);
 								}
 								counter += 1;
 							}
@@ -902,7 +902,7 @@ public class DebugManager : IManager
 				} else {
 					Output("ERROR: Invalid number of parameters specified.");
 				}
-				GameManager.Get<ColonyManager>().colony.map.RemoveTileBrightnessEffect(null);
+				GameManager.Get<MapManager>().Map.RemoveTileBrightnessEffect(null);
 				Output($"Changed {counter} tile objects.");
 			}
 		);
@@ -971,7 +971,7 @@ public class DebugManager : IManager
 							if (selectedTiles.Count > 0) {
 								foreach (Tile tile in selectedTiles) {
 									tile.SetPlant(false, new Plant(plantPrefab, tile, small, true, null));
-									GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+									GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 									if (tile.plant != null) {
 										counter += 1;
 									}
@@ -1075,7 +1075,7 @@ public class DebugManager : IManager
 						if (time is >= 0 and < 24) {
 							holdHour = time;
 							GameManager.Get<TimeManager>().SetTime(time);
-							GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+							GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 						} else {
 							Output("ERROR: Time out of range.");
 						}
@@ -1118,11 +1118,11 @@ public class DebugManager : IManager
 			Commands.viewnormal,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						tile.sr.color = Color.white;
 					}
-					GameManager.Get<ColonyManager>().colony.map.Bitmasking(GameManager.Get<ColonyManager>().colony.map.tiles, true, true);
-					GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.Bitmasking(GameManager.Get<MapManager>().Map.tiles, true, true);
+					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 				} else {
 					Output("ERROR: Invalid number of parameters specified.");
 				}
@@ -1132,7 +1132,7 @@ public class DebugManager : IManager
 			Commands.viewregions,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Region region in GameManager.Get<ColonyManager>().colony.map.regions) {
+					foreach (Region region in GameManager.Get<MapManager>().Map.regions) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 						foreach (Tile tile in region.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
@@ -1148,7 +1148,7 @@ public class DebugManager : IManager
 			Commands.viewheightmap,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 						tile.sr.color = new Color(tile.height, tile.height, tile.height, 1f);
 					}
@@ -1161,7 +1161,7 @@ public class DebugManager : IManager
 			Commands.viewprecipitation,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 						tile.sr.color = new Color(tile.GetPrecipitation(), tile.GetPrecipitation(), tile.GetPrecipitation(), 1f);
 					}
@@ -1174,7 +1174,7 @@ public class DebugManager : IManager
 			Commands.viewtemperature,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 						tile.sr.color = new Color((tile.temperature + 50f) / 100f, (tile.temperature + 50f) / 100f, (tile.temperature + 50f) / 100f, 1f);
 					}
@@ -1187,7 +1187,7 @@ public class DebugManager : IManager
 			Commands.viewbiomes,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 						tile.sr.color = tile.biome?.colour ?? Color.black;
 					}
@@ -1200,8 +1200,8 @@ public class DebugManager : IManager
 			Commands.viewresourceveins,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<ColonyManager>().colony.map.Bitmasking(GameManager.Get<ColonyManager>().colony.map.tiles, false, true);
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					GameManager.Get<MapManager>().Map.Bitmasking(GameManager.Get<MapManager>().Map.tiles, false, true);
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						if (tile.tileType.resourceRanges.Find(rr => ResourceVein.resourceVeinValidTileFunctions.ContainsKey(rr.resource.type)) == null) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = Color.white;
@@ -1216,7 +1216,7 @@ public class DebugManager : IManager
 			Commands.viewdrainagebasins,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (KeyValuePair<Region, Tile> kvp in GameManager.Get<ColonyManager>().colony.map.drainageBasins) {
+					foreach (KeyValuePair<Region, Tile> kvp in GameManager.Get<MapManager>().Map.drainageBasins) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 						foreach (Tile tile in kvp.Key.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
@@ -1232,7 +1232,7 @@ public class DebugManager : IManager
 			Commands.viewrivers,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (River river in GameManager.Get<ColonyManager>().colony.map.rivers) {
+					foreach (River river in GameManager.Get<MapManager>().Map.rivers) {
 						Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
 						foreach (Tile tile in river.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
@@ -1243,20 +1243,20 @@ public class DebugManager : IManager
 						river.tiles[^1].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkGreen);
 						river.startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
 					}
-					Output($"Showing {GameManager.Get<ColonyManager>().colony.map.rivers.Count} rivers.");
+					Output($"Showing {GameManager.Get<MapManager>().Map.rivers.Count} rivers.");
 				} else if (parameters.Count == 1) {
 					if (int.TryParse(parameters[0], out viewRiverAtIndex)) {
-						if (viewRiverAtIndex >= 0 && viewRiverAtIndex < GameManager.Get<ColonyManager>().colony.map.rivers.Count) {
+						if (viewRiverAtIndex >= 0 && viewRiverAtIndex < GameManager.Get<MapManager>().Map.rivers.Count) {
 							Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-							foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.rivers[viewRiverAtIndex].tiles) {
+							foreach (Tile tile in GameManager.Get<MapManager>().Map.rivers[viewRiverAtIndex].tiles) {
 								tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 								tile.sr.color = riverColour;
 							}
-							GameManager.Get<ColonyManager>().colony.map.rivers[viewRiverAtIndex].tiles[0].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkRed);
-							GameManager.Get<ColonyManager>().colony.map.rivers[viewRiverAtIndex].endTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightRed);
-							GameManager.Get<ColonyManager>().colony.map.rivers[viewRiverAtIndex].tiles[^1].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkGreen);
-							GameManager.Get<ColonyManager>().colony.map.rivers[viewRiverAtIndex].startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
-							Output($"Showing river {viewRiverAtIndex + 1} of {GameManager.Get<ColonyManager>().colony.map.rivers.Count} rivers.");
+							GameManager.Get<MapManager>().Map.rivers[viewRiverAtIndex].tiles[0].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkRed);
+							GameManager.Get<MapManager>().Map.rivers[viewRiverAtIndex].endTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightRed);
+							GameManager.Get<MapManager>().Map.rivers[viewRiverAtIndex].tiles[^1].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkGreen);
+							GameManager.Get<MapManager>().Map.rivers[viewRiverAtIndex].startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
+							Output($"Showing river {viewRiverAtIndex + 1} of {GameManager.Get<MapManager>().Map.rivers.Count} rivers.");
 						} else {
 							Output("ERROR: River index out of range.");
 						}
@@ -1272,7 +1272,7 @@ public class DebugManager : IManager
 			Commands.viewlargerivers,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (River river in GameManager.Get<ColonyManager>().colony.map.largeRivers) {
+					foreach (River river in GameManager.Get<MapManager>().Map.largeRivers) {
 						Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
 						foreach (Tile tile in river.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
@@ -1284,21 +1284,21 @@ public class DebugManager : IManager
 						river.startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
 						river.centreTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightBlue);
 					}
-					Output($"Showing {GameManager.Get<ColonyManager>().colony.map.largeRivers.Count} large rivers.");
+					Output($"Showing {GameManager.Get<MapManager>().Map.largeRivers.Count} large rivers.");
 				} else if (parameters.Count == 1) {
 					if (int.TryParse(parameters[0], out viewRiverAtIndex)) {
-						if (viewRiverAtIndex >= 0 && viewRiverAtIndex < GameManager.Get<ColonyManager>().colony.map.largeRivers.Count) {
+						if (viewRiverAtIndex >= 0 && viewRiverAtIndex < GameManager.Get<MapManager>().Map.largeRivers.Count) {
 							Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-							foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.largeRivers[viewRiverAtIndex].tiles) {
+							foreach (Tile tile in GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].tiles) {
 								tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 								tile.sr.color = riverColour;
 							}
-							GameManager.Get<ColonyManager>().colony.map.largeRivers[viewRiverAtIndex].tiles[0].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkRed);
-							GameManager.Get<ColonyManager>().colony.map.largeRivers[viewRiverAtIndex].endTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightRed);
-							GameManager.Get<ColonyManager>().colony.map.largeRivers[viewRiverAtIndex].tiles[^1].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkGreen);
-							GameManager.Get<ColonyManager>().colony.map.largeRivers[viewRiverAtIndex].startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
-							GameManager.Get<ColonyManager>().colony.map.largeRivers[viewRiverAtIndex].centreTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightBlue);
-							Output($"Showing river {viewRiverAtIndex + 1} of {GameManager.Get<ColonyManager>().colony.map.largeRivers.Count} large rivers.");
+							GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].tiles[0].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkRed);
+							GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].endTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightRed);
+							GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].tiles[^1].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkGreen);
+							GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
+							GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].centreTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightBlue);
+							Output($"Showing river {viewRiverAtIndex + 1} of {GameManager.Get<MapManager>().Map.largeRivers.Count} large rivers.");
 						} else {
 							Output("ERROR: River index out of range.");
 						}
@@ -1314,7 +1314,7 @@ public class DebugManager : IManager
 			Commands.viewwalkspeed,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 						tile.sr.color = new Color(tile.walkSpeed, tile.walkSpeed, tile.walkSpeed, 1f);
 					}
@@ -1327,13 +1327,13 @@ public class DebugManager : IManager
 			Commands.viewregionblocks,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (RegionBlock region in GameManager.Get<ColonyManager>().colony.map.regionBlocks) {
+					foreach (RegionBlock region in GameManager.Get<MapManager>().Map.regionBlocks) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 						foreach (Tile tile in region.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = colour;
 						}
-						Tile averageTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(region.averagePosition);
+						Tile averageTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(region.averagePosition);
 						averageTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.White);
 					}
 				} else {
@@ -1345,13 +1345,13 @@ public class DebugManager : IManager
 			Commands.viewsquareregionblocks,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (RegionBlock region in GameManager.Get<ColonyManager>().colony.map.squareRegionBlocks) {
+					foreach (RegionBlock region in GameManager.Get<MapManager>().Map.squareRegionBlocks) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 						foreach (Tile tile in region.tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = colour;
 						}
-						Tile averageTile = GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(region.averagePosition);
+						Tile averageTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(region.averagePosition);
 						averageTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.White);
 					}
 				} else {
@@ -1363,7 +1363,7 @@ public class DebugManager : IManager
 			Commands.viewlightblockingtiles,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						tile.SetVisible(true);
 						if (tile.blocksLight) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
@@ -1379,7 +1379,7 @@ public class DebugManager : IManager
 			Commands.viewshadowstarttiles,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.DetermineShadowSourceTiles(GameManager.Get<ColonyManager>().colony.map.tiles)) {
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.DetermineShadowSourceTiles(GameManager.Get<MapManager>().Map.tiles)) {
 						tile.SetVisible(true);
 						tile.sr.color = Color.red;
 					}
@@ -1392,7 +1392,7 @@ public class DebugManager : IManager
 			Commands.viewshadowsfrom,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						foreach (Tile tile in selectedTiles) {
 							foreach (KeyValuePair<int, Dictionary<Tile, float>> shadowsFromKVP in tile.shadowsFrom) {
@@ -1405,7 +1405,7 @@ public class DebugManager : IManager
 						Output("No tiles are currently selected.");
 					}
 				} else if (parameters.Count == 1) {
-					GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
@@ -1432,7 +1432,7 @@ public class DebugManager : IManager
 			Commands.viewshadowsto,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						foreach (Tile tile in selectedTiles) {
 							foreach (KeyValuePair<int, List<Tile>> shadowsToKVP in tile.shadowsTo) {
@@ -1445,7 +1445,7 @@ public class DebugManager : IManager
 						Output("No tiles are currently selected.");
 					}
 				} else if (parameters.Count == 1) {
-					GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
@@ -1472,7 +1472,7 @@ public class DebugManager : IManager
 			Commands.viewblockingfrom,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						foreach (Tile tile in selectedTiles) {
 							foreach (KeyValuePair<int, List<Tile>> blockingShadowsFromKVP in tile.blockingShadowsFrom) {
@@ -1485,7 +1485,7 @@ public class DebugManager : IManager
 						Output("No tiles are currently selected.");
 					}
 				} else if (parameters.Count == 1) {
-					GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
@@ -1512,7 +1512,7 @@ public class DebugManager : IManager
 			Commands.viewroofs,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						tile.SetVisible(true);
 						if (tile.HasRoof()) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
@@ -1528,7 +1528,7 @@ public class DebugManager : IManager
 			Commands.viewhidden,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						tile.SetVisible(true);
 					}
 				} else {

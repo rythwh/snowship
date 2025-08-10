@@ -378,7 +378,7 @@ namespace Snowship.NPersistence {
 			// 	foreach (PersistenceContainerPickup persistenceContainerPickup in persistenceJob.containerPickups) {
 			// 		containerPickups.Add(
 			// 			new ContainerPickup(
-			// 				Container.containers.Find(c => c.zeroPointTile == GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceContainerPickup.containerPickupZeroPointTilePosition.Value)),
+			// 				Container.containers.Find(c => c.zeroPointTile == GameManager.Get<MapManager>().Map.GetTileFromPosition(persistenceContainerPickup.containerPickupZeroPointTilePosition.Value)),
 			// 				persistenceContainerPickup.containerPickupResourceAmounts
 			// 			)
 			// 		);
@@ -387,7 +387,7 @@ namespace Snowship.NPersistence {
 			//
 			// Job job = new(
 			// 	JobPrefab.GetJobPrefabByName(persistenceJob.prefab),
-			// 	GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(persistenceJob.position.Value),
+			// 	GameManager.Get<MapManager>().Map.GetTileFromPosition(persistenceJob.position.Value),
 			// 	ObjectPrefab.GetObjectPrefabByEnum(persistenceJob.type.Value),
 			// 	ObjectPrefab.GetObjectPrefabByEnum(persistenceJob.type.Value).GetVariationFromString(persistenceJob.variation),
 			// 	persistenceJob.rotationIndex.Value

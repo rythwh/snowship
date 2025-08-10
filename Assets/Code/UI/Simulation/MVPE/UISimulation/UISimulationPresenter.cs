@@ -2,14 +2,13 @@
 using JetBrains.Annotations;
 using Snowship.NHuman;
 using Snowship.NInput;
-using Snowship.NPersistence;
+
 using Snowship.NState;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Snowship.NUI
 {
-
 	[UsedImplicitly]
 	public class UISimulationPresenter : UIPresenter<UISimulationView>
 	{
@@ -24,7 +23,7 @@ namespace Snowship.NUI
 		public override void OnCreate() {
 			InputM.InputSystemActions.Simulation.Escape.performed += OnEscapePerformed;
 
-			View.SetDisclaimerText($"Lumi Games (Snowship {PersistenceManager.GameVersion.text})");
+			View.SetDisclaimerText($"Lumi Games (Snowship {GameManager.GameVersion.text})");
 
 			SetupChildUIs().Forget();
 

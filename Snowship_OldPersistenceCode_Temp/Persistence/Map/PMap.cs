@@ -39,7 +39,7 @@ namespace Snowship.NPersistence {
 		}
 
 		public void SaveOriginalTiles(StreamWriter file) {
-			foreach (Tile tile in GameManager.Get<ColonyManager>().colony.map.tiles) {
+			foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 				file.WriteLine(PU.CreateKeyValueString(TileProperty.Tile, string.Empty, 0));
 
 				file.WriteLine(PU.CreateKeyValueString(TileProperty.Height, tile.height, 1));
@@ -184,7 +184,7 @@ namespace Snowship.NPersistence {
 
 			StreamWriter file = PU.CreateFileAtDirectory(saveDirectoryPath, "tiles.snowship");
 
-			Map map = GameManager.Get<ColonyManager>().colony.map;
+			Map map = GameManager.Get<MapManager>().Map;
 			if (map.tiles.Count != originalTiles.Count) {
 				Debug.LogError("Loaded tile count " + map.tiles.Count + " and current tile count " + originalTiles.Count + " does not match.");
 			}
@@ -297,14 +297,14 @@ namespace Snowship.NPersistence {
 		}
 
 		public void ApplyLoadedTiles(List<PersistenceTile> originalTiles, List<PersistenceTile> modifiedTiles, Map map) {
-			if (originalTiles.Count != Mathf.Pow(map.mapData.mapSize, 2)) {
-				Debug.LogError("Map size " + Mathf.Pow(map.mapData.mapSize, 2) + " and number of persistence tiles " + originalTiles.Count + " does not match.");
+			if (originalTiles.Count != Mathf.Pow(map.MapData.mapSize, 2)) {
+				Debug.LogError("Map size " + Mathf.Pow(map.MapData.mapSize, 2) + " and number of persistence tiles " + originalTiles.Count + " does not match.");
 			}
 
-			for (int y = 0; y < map.mapData.mapSize; y++) {
+			for (int y = 0; y < map.MapData.mapSize; y++) {
 				List<Tile> innerTiles = new List<Tile>();
-				for (int x = 0; x < map.mapData.mapSize; x++) {
-					int tileIndex = y * map.mapData.mapSize + x;
+				for (int x = 0; x < map.MapData.mapSize; x++) {
+					int tileIndex = y * map.MapData.mapSize + x;
 					PersistenceTile originalTile = originalTiles[tileIndex];
 					PersistenceTile modifiedTile = modifiedTiles.Find(mt => mt.tileIndex == tileIndex);
 

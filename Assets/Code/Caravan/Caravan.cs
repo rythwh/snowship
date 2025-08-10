@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Snowship.NMap.Tile;
 using Snowship.NColony;
+using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NTime;
 using UnityEngine;
@@ -260,7 +261,7 @@ namespace Snowship.NCaravan {
 				leaveTimer = 0;
 
 				foreach (Trader trader in traders) {
-					List<Tile> validLeaveTiles = GameManager.Get<ColonyManager>().colony.map.edgeTiles.Where(t => t.region == trader.Tile.region).ToList();
+					List<Tile> validLeaveTiles = GameManager.Get<MapManager>().Map.edgeTiles.Where(t => t.region == trader.Tile.region).ToList();
 					if (validLeaveTiles.Count > 0) {
 						trader.leaveTile = validLeaveTiles[Random.Range(0, validLeaveTiles.Count)];
 						trader.MoveToTile(trader.leaveTile, false);

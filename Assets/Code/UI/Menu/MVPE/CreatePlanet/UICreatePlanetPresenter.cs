@@ -1,6 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
-using Snowship.NPersistence;
+
 using Snowship.NPlanet;
 using Snowship.NUtilities;
 using UnityEngine;
@@ -13,8 +13,6 @@ namespace Snowship.NUI
 
 		private PlanetViewModule planetViewModule;
 		private readonly CreatePlanetData createPlanetData = new CreatePlanetData();
-		private readonly PPlanet pPlanet = new PPlanet();
-		private readonly PColony pColony = new PColony();
 
 		public UICreatePlanetPresenter(UICreatePlanetView view) : base(view) {
 		}
@@ -71,12 +69,12 @@ namespace Snowship.NUI
 			planetViewModule = new PlanetViewModule(View.PlanetViewGridLayoutGroup, View.PlanetTilePrefab);
 
 			planetViewModule.OnPlanetTileClicked += OnPlanetTileClicked;
-			planetViewModule.OnColonyTileClicked += OnColonyTileClicked;
+			// planetViewModule.OnColonyTileClicked += OnColonyTileClicked;
 		}
 
 		private void ClosePlanetViewModule() {
 			planetViewModule.OnPlanetTileClicked -= OnPlanetTileClicked;
-			planetViewModule.OnColonyTileClicked -= OnColonyTileClicked;
+			// planetViewModule.OnColonyTileClicked -= OnColonyTileClicked;
 
 			planetViewModule.DestroyPlanet();
 		}
@@ -168,7 +166,7 @@ namespace Snowship.NUI
 		}
 
 		private void OnCreatePlanetButtonClicked() {
-			pPlanet.CreatePlanet(GameManager.Get<PlanetManager>().planet);
+			// pPlanet.CreatePlanet(GameManager.Get<PlanetManager>().planet);
 			GameManager.Get<UIManager>().OpenViewAsync<UICreateColony>(this, false).Forget();
 		}
 
@@ -177,15 +175,15 @@ namespace Snowship.NUI
 			View.SetPlanetTileData(planetTile);
 		}
 
-		private void OnColonyTileClicked(PersistenceColony persistenceColony) {
-			Debug.LogError("Clicked loaded colony on new planet, this should not be possible!");
-		}
+		// private void OnColonyTileClicked(PersistenceColony persistenceColony) {
+		// 	Debug.LogError("Clicked loaded colony on new planet, this should not be possible!");
+		// }
 
 		private void CreatePlanetPreview() {
 			Planet planet = GameManager.Get<PlanetManager>().CreatePlanet(createPlanetData);
 			planetViewModule.DisplayPlanet(
 				planet,
-				pColony.GetPersistenceColonies(),
+				// pColony.GetPersistenceColonies(),
 				true
 			);
 		}

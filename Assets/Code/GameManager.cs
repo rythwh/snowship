@@ -15,14 +15,18 @@ using Snowship.NHuman;
 using Snowship.NInput;
 using Snowship.NLife;
 using Snowship.NMap;
-using Snowship.NPersistence;
 using Snowship.NPlanet;
 using Snowship.NResource;
+using Snowship.NSettings;
 using Snowship.NState;
 using Snowship.NUI;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour {
+
+	public static readonly (int increment, string text) GameVersion = (3, "2025.1");
+	public static readonly (int increment, string text) SaveVersion = (3, "2025.1");
+
 	public static SharedReferences SharedReferences { get; private set; }
 
 	private static readonly Dictionary<Type, IManager> managersMap = new();
@@ -43,6 +47,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	private void CreateManagers() {
+		Create<SettingsManager>();
 		Create<InputManager>();
 		Create<TimeManager>();
 		Create<CameraManager>();
@@ -58,7 +63,6 @@ public class GameManager : MonoBehaviour {
 		Create<ColonyManager>();
 		Create<PlanetManager>();
 		Create<UniverseManager>();
-		Create<PersistenceManager>();
 		Create<UIManager>();
 		Create<SelectionManager>();
 		Create<DebugManager>();
@@ -80,8 +84,6 @@ public class GameManager : MonoBehaviour {
 		MoodModifierGroup.CreateMoodModifiers();
 
 		// Get<UIManagerOld>().SetupUI();
-
-		Get<PersistenceManager>().PSettings.CreateSettingsState();
 	}
 
 	public void Start() {

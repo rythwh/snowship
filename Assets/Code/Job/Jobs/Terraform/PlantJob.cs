@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Snowship.NMap.Tile;
 using Snowship.NColony;
+using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NTime;
 using Snowship.NUtilities;
@@ -78,7 +79,7 @@ namespace Snowship.NJob
 					variation.plants[chosenPlantPrefab]
 				)
 			);
-			GameManager.Get<ColonyManager>().colony.map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+			GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 		}
 	}
 }
