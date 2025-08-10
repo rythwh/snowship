@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NMap.Models.Structure;
+using Snowship.NMap.Tile;
 using Snowship.NColonist;
 using Snowship.NTime;
 using UnityEngine;
@@ -19,9 +21,13 @@ namespace Snowship.NJob
 		public event Action<IJob> OnJobAdded;
 		public event Action<IJob> OnJobRemoved;
 
+		private TimeManager TimeM => GameManager.Get<TimeManager>();
+		private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
+		private ResourceManager ResourceM => GameManager.Get<ResourceManager>();
+
 		public void OnCreate() {
 			JobRegistry = new JobRegistry();
-			GameManager.Get<TimeManager>().OnTimeChanged += OnTimeChanged;
+			TimeM.OnTimeChanged += OnTimeChanged;
 		}
 
 		private void OnTimeChanged(SimulationDateTime _) {
@@ -33,11 +39,11 @@ namespace Snowship.NJob
 			if (Jobs.Count(j => j.CanBeAssigned()) == 0) {
 				return;
 			}
-			if (Colonist.colonists.Count(c => c.Jobs.CanTakeNewJob()) == 0) {
+			if (ColonistM.Colonists.Count(c => c.Jobs.CanTakeNewJob()) == 0) {
 				return;
 			}
 
-			foreach (Colonist colonist in Colonist.colonists) {
+			foreach (Colonist colonist in ColonistM.Colonists) {
 				if (!colonist.Jobs.CanTakeNewJob()) {
 					colonistJobs.Remove(colonist);
 					continue;
@@ -183,7 +189,7 @@ namespace Snowship.NJob
 
 		public Sprite GetJobSprite(IJobDefinition jobDefinition, IJobParams args) {
 			args?.UpdateJobPreviewSprite();
-			return args?.JobPreviewSprite ?? jobDefinition?.Icon ?? GameManager.Get<ResourceManager>().selectionCornersSprite;
+			return args?.JobPreviewSprite ?? jobDefinition?.Icon ?? ResourceM.selectionCornersSprite;
 		}
 	}
 

@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Snowship.NMap;
+using Snowship.NMap.Models.Geography;
+using Snowship.NMap.Tile;
 using Snowship.NColony;
 using UnityEngine;
 using PU = Snowship.NPersistence.PersistenceUtilities;

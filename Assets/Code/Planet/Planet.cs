@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Snowship.NMap;
+using Snowship.NMap.Tile;
 using Snowship.NPersistence;
 
 namespace Snowship.NPlanet {

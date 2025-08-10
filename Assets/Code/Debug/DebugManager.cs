@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using Snowship.NMap.Models.Geography;
+using Snowship.NMap.Models.Structure;
+using Snowship.NMap.Tile;
 using Cysharp.Threading.Tasks;
 using Snowship.NCamera;
 using Snowship.NCaravan;
@@ -28,6 +31,7 @@ public class DebugManager : IManager
 
 	private CaravanManager CaravanM => GameManager.Get<CaravanManager>();
 	private UIManager UIM => GameManager.Get<UIManager>();
+	private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
 
 	public event Action<string> OnConsoleOutputProduced;
 	public event Action OnConsoleClearRequested;
@@ -281,12 +285,12 @@ public class DebugManager : IManager
 			delegate(List<string> parameters) {
 				if (parameters.Count == 1) {
 					if (int.TryParse(parameters[0], out int numberToSpawn)) {
-						int oldNumColonists = Colonist.colonists.Count;
+						int oldNumColonists = ColonistM.Colonists.Count;
 						GameManager.Get<ColonistManager>().SpawnColonists(numberToSpawn);
-						if (oldNumColonists + numberToSpawn == Colonist.colonists.Count) {
+						if (oldNumColonists + numberToSpawn == ColonistM.Colonists.Count) {
 							Output($"SUCCESS: Spawned {numberToSpawn} colonists.");
 						} else {
-							Output($"ERROR: Unable to spawn colonists. Spawned {Colonist.colonists.Count - oldNumColonists} colonists.");
+							Output($"ERROR: Unable to spawn colonists. Spawned {ColonistM.Colonists.Count - oldNumColonists} colonists.");
 						}
 					} else {
 						Output("ERROR: Invalid number of colonists.");
@@ -461,7 +465,7 @@ public class DebugManager : IManager
 							}*/
 						} else {
 							if (int.TryParse(parameters[1], out int amount)) {
-								foreach (Colonist colonist in Colonist.colonists) {
+								foreach (Colonist colonist in ColonistM.Colonists) {
 									colonist.Inventory.ChangeResourceAmount(resource, amount, false);
 								}
 								foreach (Container container in Container.containers) {
@@ -481,7 +485,7 @@ public class DebugManager : IManager
 							Resource resource = Resource.GetResources().Find(r => r.type.ToString() == parameters[0]);
 							if (resource != null) {
 								if (int.TryParse(parameters[1], out int amount)) {
-									foreach (Colonist colonist in Colonist.colonists) {
+									foreach (Colonist colonist in ColonistM.Colonists) {
 										colonist.Inventory.ChangeResourceAmount(resource, amount, false);
 									}
 								} else {
@@ -500,7 +504,7 @@ public class DebugManager : IManager
 							Resource resource = Resource.GetResources().Find(r => r.type.ToString() == parameters[0]);
 							if (resource != null) {
 								if (int.TryParse(parameters[1], out int amount)) {
-									foreach (Colonist colonist in Colonist.colonists) {
+									foreach (Colonist colonist in ColonistM.Colonists) {
 										colonist.Inventory.ChangeResourceAmount(resource, amount, false);
 									}
 								} else {
@@ -1536,7 +1540,7 @@ public class DebugManager : IManager
 			Commands.listjobs,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Colonist colonist in Colonist.colonists) {
+					foreach (Colonist colonist in ColonistM.Colonists) {
 						Output(colonist.Name);
 						// foreach (JobInstance job in JobManager.GetSortedJobs(colonist)) {
 						// 	Output($"\t{job.objectPrefab.jobType} {job.objectPrefab.type} {JobManager.CalculateJobCost(colonist, job, null)}");

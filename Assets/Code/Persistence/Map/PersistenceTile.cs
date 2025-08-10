@@ -1,4 +1,6 @@
-﻿using Snowship.NResource;
+﻿using Snowship.NMap.Models.Geography;
+using Snowship.NMap.Tile;
+using Snowship.NResource;
 
 namespace Snowship.NPersistence {
 	public class PersistenceTile {

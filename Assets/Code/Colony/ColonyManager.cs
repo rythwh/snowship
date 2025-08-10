@@ -1,4 +1,6 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using Snowship.NMap;
+using Snowship.NMap.Tile;
+using Cysharp.Threading.Tasks;
 using Snowship.NColonist;
 using Snowship.NPersistence;
 using Snowship.NPlanet;
@@ -9,16 +11,21 @@ namespace Snowship.NColony {
 
 		private readonly PColony pColony = new PColony();
 
+		private MapManager MapM => GameManager.Get<MapManager>();
+		private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
+		private PersistenceManager PersistenceM => GameManager.Get<PersistenceManager>();
+		private PlanetManager PlanetM => GameManager.Get<PlanetManager>();
+
 		public void SetupNewColony(Colony colony, bool initialized) {
 			if (!initialized) {
 				this.colony = colony;
 
-				GameManager.Get<TileManager>().Initialize(colony, TileManager.MapInitializeType.NewMap).Forget();
+				MapM.Initialize(colony.mapData, MapInitializeType.NewMap).Forget();
 			} else {
-				GameManager.Get<ColonistManager>().SpawnStartColonists(3);
+				ColonistM.SpawnStartColonists(3);
 
 				pColony.CreateColony(colony);
-				GameManager.Get<PersistenceManager>().CreateSave(colony).Forget();
+				PersistenceM.CreateSave(colony).Forget();
 			}
 		}
 
@@ -26,7 +33,7 @@ namespace Snowship.NColony {
 			Colony colony = new Colony(
 				createColonyData.Name,
 				new MapData(
-					GameManager.Get<PlanetManager>().planet.mapData,
+					PlanetM.planet.mapData,
 					createColonyData.Seed,
 					createColonyData.Size,
 					true,
@@ -40,7 +47,7 @@ namespace Snowship.NColony {
 					createColonyData.PlanetTile.isRiver,
 					createColonyData.PlanetTile.surroundingPlanetTileRivers,
 					false,
-					GameManager.Get<PlanetManager>().planet.primaryWindDirection,
+					PlanetM.planet.primaryWindDirection,
 					createColonyData.PlanetTile.tile.position
 				)
 			);
@@ -53,7 +60,7 @@ namespace Snowship.NColony {
 
 				Random.InitState(colony.mapData.mapSeed);
 
-				//GameManager.Get<TileManager>().Initialize(colony, TileManager.MapInitializeType.LoadMap);
+				//TileM.Initialize(colony, TileManager.MapInitializeType.LoadMap);
 			}
 		}
 

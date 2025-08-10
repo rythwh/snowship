@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NMap.Tile;
 using Snowship.NCamera;
 using Snowship.NColonist;
 using Snowship.NColony;
 using Snowship.NInput;
 using Snowship.NLife;
+using Snowship.NMap;
 using Snowship.NUtilities;
 using UnityEngine;
 
@@ -19,6 +21,12 @@ namespace Snowship.NHuman
 		public List<List<Sprite>> humanMoveSprites = new();
 
 		public event Action<Human> OnHumanSelected;
+
+		private CameraManager CameraM => GameManager.Get<CameraManager>();
+		private InputManager InputM => GameManager.Get<InputManager>();
+		private ColonyManager ColonyM => GameManager.Get<ColonyManager>();
+		private ResourceManager ResourceM => GameManager.Get<ResourceManager>();
+		private MapManager MapM => GameManager.Get<MapManager>();
 
 		public void CreateNames() {
 			foreach (string name in Resources.Load<TextAsset>(@"Data/names-male").text.Split(' ').ToList()) {
@@ -39,11 +47,11 @@ namespace Snowship.NHuman
 		public Human selectedHuman;
 
 		public void OnUpdate() {
-			if (GameManager.Get<TileManager>().mapState == TileManager.MapState.Generated) {
+			if (MapM.MapState == MapState.Generated) {
 				SetSelectedHumanFromClick();
 			}
 			if (Input.GetKey(KeyCode.F) && selectedHuman != null) {
-				GameManager.Get<CameraManager>().SetCameraPosition(selectedHuman.obj.transform.position);
+				CameraM.SetCameraPosition(selectedHuman.obj.transform.position);
 			}
 		}
 
@@ -67,13 +75,13 @@ namespace Snowship.NHuman
 		public List<Human> humans = new();
 
 		private void SetSelectedHumanFromClick() {
-			if (Input.GetMouseButtonDown(0) && !GameManager.Get<InputManager>().IsPointerOverUI()) {
-				Vector2 mousePosition = GameManager.Get<CameraManager>().camera.ScreenToWorldPoint(Input.mousePosition);
+			if (Input.GetMouseButtonDown(0) && !InputM.IsPointerOverUI()) {
+				Vector2 mousePosition = CameraM.camera.ScreenToWorldPoint(Input.mousePosition);
 				Human newSelectedHuman = humans.Find(human => Vector2.Distance(human.obj.transform.position, mousePosition) < 0.5f);
 				if (newSelectedHuman != null) {
 					SetSelectedHuman(newSelectedHuman);
 				} else if (selectedHuman != null && selectedHuman is Colonist colonist) {
-					colonist.PlayerMoveToTile(GameManager.Get<ColonyManager>().colony.map.GetTileFromPosition(mousePosition));
+					colonist.PlayerMoveToTile(ColonyM.colony.map.GetTileFromPosition(mousePosition));
 				}
 			}
 			if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape)) {
@@ -96,12 +104,12 @@ namespace Snowship.NHuman
 				MonoBehaviour.Destroy(selectedHumanIndicator);
 			}
 			if (selectedHuman != null) {
-				selectedHumanIndicator = MonoBehaviour.Instantiate(GameManager.Get<ResourceManager>().tilePrefab, selectedHuman.obj.transform, false);
+				selectedHumanIndicator = MonoBehaviour.Instantiate(ResourceM.tilePrefab, selectedHuman.obj.transform, false);
 				selectedHumanIndicator.name = "SelectedHumanIndicator";
 				selectedHumanIndicator.transform.localScale = new Vector2(1f, 1f) * 1.2f;
 
 				SpriteRenderer sCISR = selectedHumanIndicator.GetComponent<SpriteRenderer>();
-				sCISR.sprite = GameManager.Get<ResourceManager>().selectionCornersSprite;
+				sCISR.sprite = ResourceM.selectionCornersSprite;
 				sCISR.sortingOrder = (int)SortingOrder.UI; // Selected Colonist Indicator Sprite
 				sCISR.color = new Color(1f, 1f, 1f, 0.75f);
 			}

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Snowship.NMap.Tile;
 using Snowship.NHuman;
 using Snowship.NJob;
 using Snowship.NResource;

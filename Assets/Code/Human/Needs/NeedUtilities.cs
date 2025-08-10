@@ -8,6 +8,9 @@ using Snowship.NTime;
 namespace Snowship.NColonist {
 	public static class NeedUtilities {
 
+		private static TimeManager TimeM => GameManager.Get<TimeManager>();
+		private static ColonistManager ColonistM => GameManager.Get<ColonistManager>();
+
 		// TODO Add "relatedNeeds" variable to JobPrefab and then find a way to delete this
 		public static readonly Dictionary<string, ENeed> jobToNeedMap = new Dictionary<string, ENeed> {
 			{ "Sleep", ENeed.Rest },
@@ -38,7 +41,7 @@ namespace Snowship.NColonist {
 						break;
 				}
 			}
-			if (!GameManager.Get<TimeManager>().Time.IsDay && positiveRestMoodModifier == null) {
+			if (!TimeM.Time.IsDay && positiveRestMoodModifier == null) {
 				totalSpecialIncrease += needInstance.prefab.baseIncreaseRate * 2f;
 			}
 			return totalSpecialIncrease;
@@ -108,7 +111,7 @@ namespace Snowship.NColonist {
 
 				if (includeOtherColonists) {
 					int amountOnOtherColonists = 0;
-					foreach (Colonist otherColonist in Colonist.colonists) {
+					foreach (Colonist otherColonist in ColonistM.Colonists) {
 						if (colonist != otherColonist) {
 							int amountOnOtherColonist = 0;
 							foreach (ResourceAmount resourceAmount in otherColonist.Inventory.resources.Where(ra => ra.Resource.groupType == resourceGroup)) {

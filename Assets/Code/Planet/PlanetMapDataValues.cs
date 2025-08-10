@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Snowship.NMap.Tile;
 using UnityEngine;
 
 namespace Snowship.NPlanet {

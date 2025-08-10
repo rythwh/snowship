@@ -1,4 +1,5 @@
 ﻿using System;
+using Snowship.NMap.Tile;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;

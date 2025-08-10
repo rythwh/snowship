@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Snowship.NMap.Models.Structure;
+using Snowship.NMap.Tile;
 
 public static class PathManager {
 

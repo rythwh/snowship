@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NMap.Tile;
 using Snowship.NColonist;
 using Snowship.NColony;
 using Snowship.NResource;
@@ -10,6 +11,8 @@ namespace Snowship.NJob
 {
 	public static class SelectionModifiers
 	{
+		private static ColonistManager ColonistM => GameManager.Get<ColonistManager>();
+
 		public enum SelectionModifiersEnum
 		{
 			OmitSameLayerJobs, OmitSameLayerObjectInstances, CloseToSupport,
@@ -34,7 +37,7 @@ namespace Snowship.NJob
 							}
 						}
 					}
-					foreach (Colonist colonist in Colonist.colonists) {
+					foreach (Colonist colonist in ColonistM.Colonists) {
 						if (colonist.Jobs.ActiveJob != null && colonist.Jobs.ActiveJob.Layer == prefab.layer) {
 							if (colonist.Jobs.ActiveJob.Tile == posTile) {
 								return false;

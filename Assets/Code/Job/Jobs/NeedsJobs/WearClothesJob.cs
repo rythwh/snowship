@@ -1,4 +1,5 @@
-﻿using Snowship.NResource;
+﻿using Snowship.NMap.Tile;
+using Snowship.NResource;
 using Snowship.NUtilities;
 
 namespace Snowship.NJob

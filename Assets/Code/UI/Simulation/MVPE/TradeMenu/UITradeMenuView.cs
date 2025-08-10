@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NMap.Models.Geography;
 using Cysharp.Threading.Tasks;
 using Snowship.NCaravan;
 using Snowship.NResource;

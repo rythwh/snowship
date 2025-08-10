@@ -16,6 +16,8 @@ namespace Snowship.NPersistence {
 
 		// private readonly PJob pJob = new(); // TODO
 
+		private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
+
 		public enum ColonistProperty {
 			Colonist,
 			Life,
@@ -71,7 +73,7 @@ namespace Snowship.NPersistence {
 
 			StreamWriter file = PU.CreateFileAtDirectory(saveDirectoryPath, "colonists.snowship");
 
-			foreach (Colonist colonist in Colonist.colonists) {
+			foreach (Colonist colonist in ColonistM.Colonists) {
 				file.WriteLine(PU.CreateKeyValueString(ColonistProperty.Colonist, string.Empty, 0));
 
 				pLife.WriteLifeLines(file, colonist, 1);
@@ -595,7 +597,7 @@ namespace Snowship.NPersistence {
 
 			for (int i = 0; i < persistenceColonists.Count; i++) {
 				PersistenceColonist persistenceColonist = persistenceColonists[i];
-				Colonist colonist = Colonist.colonists[i];
+				Colonist colonist = ColonistM.Colonists[i];
 
 				foreach (KeyValuePair<string, List<ResourceAmount>> humanToReservedResourcesKVP in persistenceColonist.persistenceHuman.persistenceInventory.reservedResources) {
 					foreach (ResourceAmount resourceAmount in humanToReservedResourcesKVP.Value) {

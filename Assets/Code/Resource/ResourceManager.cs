@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NMap;
+using Snowship.NMap.Tile;
 using Snowship.NCaravan;
 using Snowship.NColonist;
 using Snowship.NColony;
@@ -31,6 +33,14 @@ public class ResourceManager : IManager, IDisposable
 
 	private static readonly List<string> locationNames = new();
 
+	private TimeManager TimeM => GameManager.Get<TimeManager>();
+	private JobManager JobM => GameManager.Get<JobManager>();
+	private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
+	private UniverseManager UniverseM => GameManager.Get<UniverseManager>();
+	private PlanetManager PlanetM => GameManager.Get<PlanetManager>();
+	private ColonyManager ColonyM => GameManager.Get<ColonyManager>();
+	private CaravanManager CaravanM => GameManager.Get<CaravanManager>();
+
 	public void OnCreate() {
 		SetResourceReferences();
 		CreateResources();
@@ -40,11 +50,11 @@ public class ResourceManager : IManager, IDisposable
 	}
 
 	public void OnGameSetupComplete() {
-		GameManager.Get<TimeManager>().OnTimeChanged += OnTimeChanged;
+		TimeM.OnTimeChanged += OnTimeChanged;
 	}
 
 	public void Dispose() {
-		GameManager.Get<TimeManager>().OnTimeChanged -= OnTimeChanged;
+		TimeM.OnTimeChanged -= OnTimeChanged;
 	}
 
 	private void OnTimeChanged(SimulationDateTime time) {
@@ -438,7 +448,7 @@ public class ResourceManager : IManager, IDisposable
 
 	public CreateResourceJob CreateResource(CraftableResourceInstance resource, CraftingObject craftingObject) {
 		CreateResourceJob job = new(craftingObject, resource);
-		GameManager.Get<JobManager>().AddJob(job);
+		JobM.AddJob(job);
 		return job;
 	}
 
@@ -452,7 +462,7 @@ public class ResourceManager : IManager, IDisposable
 			resource.SetAvailableAmount(0);
 		}
 
-		foreach (Colonist colonist in Colonist.colonists) {
+		foreach (Colonist colonist in ColonistM.Colonists) {
 			foreach (ResourceAmount resourceAmount in colonist.Inventory.resources) {
 				resourceAmount.Resource.AddToWorldTotalAmount(resourceAmount.Amount);
 				resourceAmount.Resource.AddToColonistsTotalAmount(resourceAmount.Amount);
@@ -493,7 +503,7 @@ public class ResourceManager : IManager, IDisposable
 	public List<ResourceAmount> GetFilteredResources(bool colonistInventory, bool colonistReserved, bool containerInventory, bool containerReserved) {
 		List<ResourceAmount> returnResources = new();
 		if (colonistInventory || colonistReserved) {
-			foreach (Colonist colonist in Colonist.colonists) {
+			foreach (Colonist colonist in ColonistM.Colonists) {
 				if (colonistInventory) {
 					foreach (ResourceAmount resourceAmount in colonist.Inventory.resources) {
 						ResourceAmount existingResourceAmount = returnResources.Find(ra => ra.Resource == resourceAmount.Resource);
@@ -1135,10 +1145,10 @@ public class ResourceManager : IManager, IDisposable
 	public string GetRandomLocationName() {
 		List<string> filteredLocationNames = locationNames.Where(
 				ln =>
-					(GameManager.Get<UniverseManager>().universe == null || ln != GameManager.Get<UniverseManager>().universe.name)
-					&& (GameManager.Get<PlanetManager>().planet == null || ln != GameManager.Get<PlanetManager>().planet.name)
-					&& (GameManager.Get<ColonyManager>().colony == null || ln != GameManager.Get<ColonyManager>().colony.Name)
-					&& GameManager.Get<CaravanManager>().caravans.Find(c => c.location.Name == ln) == null
+					(UniverseM.universe == null || ln != UniverseM.universe.name)
+					&& (PlanetM.planet == null || ln != PlanetM.planet.name)
+					&& (ColonyM.colony == null || ln != ColonyM.colony.Name)
+					&& CaravanM.caravans.Find(c => c.location.Name == ln) == null
 			)
 			.ToList();
 
@@ -1248,7 +1258,7 @@ public class ResourceManager : IManager, IDisposable
 						surroundingTilesToUse
 					);
 					// TODO Not-fully-working implementation of walls and stone connecting
-					//sum += GameManager.Get<ColonyManager>().colony.map.BitSum(
+					//sum += ColonyM.colony.map.BitSum(
 					//	TileManager.TileTypeGroup.GetTileTypeGroupByEnum(TileManager.TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tileType => tileType.type).ToList(),
 					//	new List<ObjectEnum>() { objectInstance.prefab.type },
 					//	surroundingTilesToUse,

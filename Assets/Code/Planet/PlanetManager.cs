@@ -1,4 +1,6 @@
-﻿namespace Snowship.NPlanet {
+﻿using Snowship.NMap;
+
+namespace Snowship.NPlanet {
 	public class PlanetManager : IManager {
 
 		public Planet planet;

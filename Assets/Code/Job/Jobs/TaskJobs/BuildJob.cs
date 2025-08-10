@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Snowship.NMap.Tile;
 using JetBrains.Annotations;
 using Snowship.NResource;
 using Snowship.NUtilities;

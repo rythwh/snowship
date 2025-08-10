@@ -2,152 +2,157 @@ using System.Collections.Generic;
 using System.Linq;
 using Snowship.NColonist;
 using Snowship.NColony;
+using Snowship.NMap.Models.Geography;
+using Snowship.NMap.Models.Structure;
 using Snowship.NResource;
 using Snowship.NTime;
 using UnityEngine;
 
-public class Tile {
-	public readonly Map map;
+namespace Snowship.NMap.Tile
+{
+	public class Tile {
 
-	public GameObject obj;
-	public readonly Vector2 position;
+		public readonly Map map;
 
-	public SpriteRenderer sr;
+		public GameObject obj;
+		public SpriteRenderer sr;
 
-	public List<Tile> horizontalSurroundingTiles = new List<Tile>();
-	public List<Tile> diagonalSurroundingTiles = new List<Tile>();
-	public List<Tile> surroundingTiles = new List<Tile>();
+		public readonly Vector2 position;
 
-	public float height;
+		public List<Tile> horizontalSurroundingTiles = new List<Tile>();
+		public List<Tile> diagonalSurroundingTiles = new List<Tile>();
+		public List<Tile> surroundingTiles = new List<Tile>();
 
-	public TileType tileType;
+		public float height;
 
-	public Region region;
-	public Region drainageBasin;
-	public RegionBlock regionBlock;
-	public RegionBlock squareRegionBlock;
+		public TileType tileType;
 
-	public Biome biome;
-	public Plant plant;
-	public Farm farm;
+		public Region region;
+		public Region drainageBasin;
+		public RegionBlock regionBlock;
+		public RegionBlock squareRegionBlock;
 
-	private float precipitation = 0;
-	public float temperature = 0;
+		public Biome biome;
+		public Plant plant;
+		public Farm farm;
 
-	public bool walkable = false;
-	public float walkSpeed = 0;
+		private float precipitation = 0;
+		public float temperature = 0;
 
-	public bool buildable = false;
+		public bool walkable = false;
+		public float walkSpeed = 0;
 
-	public bool blocksLight = false;
+		public bool buildable = false;
 
-	private bool roof = false;
-	public bool CoastalWater { get; set; } = false;
+		public bool blocksLight = false;
 
-	public float brightness = 0;
-	public Dictionary<int, float> brightnessAtHour = new Dictionary<int, float>();
-	public Dictionary<int, Dictionary<Tile, float>> shadowsFrom = new Dictionary<int, Dictionary<Tile, float>>(); // Tiles that affect the shadow on this tile
-	public Dictionary<int, List<Tile>> shadowsTo = new Dictionary<int, List<Tile>>(); // Tiles that have shadows due to this tile
-	public Dictionary<int, List<Tile>> blockingShadowsFrom = new Dictionary<int, List<Tile>>(); // Tiles that have shadows that were cut short because this tile was in the way
+		private bool roof = false;
+		public bool CoastalWater { get; set; } = false;
 
-	public Dictionary<LightSource, float> lightSourceBrightnesses = new();
-	public LightSource primaryLightSource;
-	public float lightSourceBrightness;
+		public float brightness = 0;
+		public Dictionary<int, float> brightnessAtHour = new Dictionary<int, float>();
+		public Dictionary<int, Dictionary<Tile, float>> shadowsFrom = new Dictionary<int, Dictionary<Tile, float>>(); // Tiles that affect the shadow on this tile
+		public Dictionary<int, List<Tile>> shadowsTo = new Dictionary<int, List<Tile>>(); // Tiles that have shadows due to this tile
+		public Dictionary<int, List<Tile>> blockingShadowsFrom = new Dictionary<int, List<Tile>>(); // Tiles that have shadows that were cut short because this tile was in the way
 
-	public Dictionary<int, ObjectInstance> objectInstances = new();
+		public Dictionary<LightSource, float> lightSourceBrightnesses = new();
+		public LightSource primaryLightSource;
+		public float lightSourceBrightness;
 
-	public bool dugPreviously;
+		public Dictionary<int, ObjectInstance> objectInstances = new();
 
-	public bool visible;
+		public bool dugPreviously;
 
-	public Tile(Map map, Vector2 position, float height) {
-		this.map = map;
+		public bool visible;
 
-		this.position = position;
+		public Tile(Map map, Vector2 position, float height) {
+			this.map = map;
 
-		obj = MonoBehaviour.Instantiate(GameManager.Get<ResourceManager>().tilePrefab, new Vector2(position.x + 0.5f, position.y + 0.5f), Quaternion.identity);
-		obj.transform.SetParent(GameManager.SharedReferences.TileParent, true);
-		obj.name = "Tile: " + position;
+			this.position = position;
 
-		sr = obj.GetComponent<SpriteRenderer>();
+			obj = MonoBehaviour.Instantiate(GameManager.Get<ResourceManager>().tilePrefab, new Vector2(position.x + 0.5f, position.y + 0.5f), Quaternion.identity);
+			obj.transform.SetParent(GameManager.SharedReferences.TileParent, true);
+			obj.name = "Tile: " + position;
 
-		SetTileHeight(height);
+			sr = obj.GetComponent<SpriteRenderer>();
 
-		SetBrightness(1f, 12);
-	}
+			SetTileHeight(height);
 
-	public void SetTileHeight(float height) {
-		this.height = height;
-		SetTileTypeByHeight();
-	}
-
-	public void SetTileType(TileType tileType, bool setBiomeTileType, bool bitmask, bool redetermineRegion) {
-		TileType oldTileType = this.tileType;
-		this.tileType = tileType;
-
-		if (setBiomeTileType && biome != null) {
-			SetBiome(biome, true);
+			SetBrightness(1f, 12);
 		}
 
-		walkable = tileType.walkable;
-		buildable = tileType.buildable;
-		blocksLight = tileType.blocksLight;
-
-		if (bitmask) {
-			map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList(), true, !redetermineRegion); // Lighting automatically recalculated in RedetermineRegion()
+		public void SetTileHeight(float height) {
+			this.height = height;
+			SetTileTypeByHeight();
 		}
 
-		if (plant != null && !tileType.classes[TileType.ClassEnum.Plantable]) {
-			plant.Remove();
-			plant = null;
-		}
+		public void SetTileType(TileType tileType, bool setBiomeTileType, bool bitmask, bool redetermineRegion) {
+			TileType oldTileType = this.tileType;
+			this.tileType = tileType;
 
-		if (redetermineRegion) {
-			RedetermineRegion(oldTileType);
-		}
-
-		SetWalkSpeed();
-	}
-
-	public void RedetermineRegion(TileType oldTileType) {
-		if (walkable != oldTileType.walkable) { // Difference in walkability
-			if (region != null) {
-				region.tiles.Remove(this);
+			if (setBiomeTileType && biome != null) {
+				SetBiome(biome, true);
 			}
-			if (walkable && !oldTileType.walkable) { // Type is walkable, old type wasn't (e.g. stone mined, now ground)
-				List<Region> surroundingRegions = new List<Region>();
-				bool anyVisible = false;
-				foreach (Tile tile in horizontalSurroundingTiles) {
-					if (tile != null && tile.region != null && !surroundingRegions.Contains(tile.region)) {
-						surroundingRegions.Add(tile.region);
-						if (tile.visible) {
-							anyVisible = true;
+
+			walkable = tileType.walkable;
+			buildable = tileType.buildable;
+			blocksLight = tileType.blocksLight;
+
+			if (bitmask) {
+				map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList(), true, !redetermineRegion); // Lighting automatically recalculated in RedetermineRegion()
+			}
+
+			if (plant != null && !tileType.classes[TileType.ClassEnum.Plantable]) {
+				plant.Remove();
+				plant = null;
+			}
+
+			if (redetermineRegion) {
+				RedetermineRegion(oldTileType);
+			}
+
+			SetWalkSpeed();
+		}
+
+		public void RedetermineRegion(TileType oldTileType) {
+			if (walkable != oldTileType.walkable) { // Difference in walkability
+				if (region != null) {
+					region.tiles.Remove(this);
+				}
+				if (walkable && !oldTileType.walkable) { // Type is walkable, old type wasn't (e.g. stone mined, now ground)
+					List<Region> surroundingRegions = new List<Region>();
+					bool anyVisible = false;
+					foreach (Tile tile in horizontalSurroundingTiles) {
+						if (tile != null && tile.region != null && !surroundingRegions.Contains(tile.region)) {
+							surroundingRegions.Add(tile.region);
+							if (tile.visible) {
+								anyVisible = true;
+							}
 						}
 					}
-				}
-				if (surroundingRegions.Count > 0) {
-					Region largestRegion = surroundingRegions.OrderByDescending(r => r.tiles.Count).FirstOrDefault();
-					ChangeRegion(largestRegion, false, false);
-					surroundingRegions.Remove(largestRegion);
-					foreach (Region surroundingRegion in surroundingRegions) {
-						if (surroundingRegion.visible != anyVisible) {
-							surroundingRegion.SetVisible(anyVisible, false, true);
+					if (surroundingRegions.Count > 0) {
+						Region largestRegion = surroundingRegions.OrderByDescending(r => r.tiles.Count).FirstOrDefault();
+						ChangeRegion(largestRegion, false, false);
+						surroundingRegions.Remove(largestRegion);
+						foreach (Region surroundingRegion in surroundingRegions) {
+							if (surroundingRegion.Visible != anyVisible) {
+								surroundingRegion.SetVisible(anyVisible, false, true);
+							}
+							foreach (Tile tile in surroundingRegion.tiles) {
+								tile.ChangeRegion(largestRegion, false, false);
+							}
+							surroundingRegion.tiles.Clear();
+							GameManager.Get<ColonyManager>().colony.map.regions.Remove(surroundingRegion);
 						}
-						foreach (Tile tile in surroundingRegion.tiles) {
-							tile.ChangeRegion(largestRegion, false, false);
-						}
-						surroundingRegion.tiles.Clear();
-						GameManager.Get<ColonyManager>().colony.map.regions.Remove(surroundingRegion);
+						region.SetVisible(anyVisible, true, false);
+					} else {
+						ChangeRegion(new Region(tileType, GameManager.Get<ColonyManager>().colony.map.regions[GameManager.Get<ColonyManager>().colony.map.regions.Count - 1].id + 1), false, false);
 					}
-					region.SetVisible(anyVisible, true, false);
-				} else {
-					ChangeRegion(new Region(tileType, GameManager.Get<ColonyManager>().colony.map.regions[GameManager.Get<ColonyManager>().colony.map.regions.Count - 1].id + 1), false, false);
+				} else { // Type is not walkable, old type was walkable (e.g. was ground, now stone)
+					ChangeRegion(null, false, false);
 				}
-			} else { // Type is not walkable, old type was walkable (e.g. was ground, now stone)
-				ChangeRegion(null, false, false);
 			}
-		}
-		/*
+			/*
 			if (oldTileType.walkable != walkable && region != null) {
 				bool setParentTileRegion = false;
 				if (!oldTileType.walkable && walkable) { // If a non-walkable tile became a walkable tile (splits two non-walkable regions)
@@ -257,293 +262,252 @@ public class Tile {
 				}
 			}
 			*/
-	}
-
-	public void ChangeRegion(Region region, bool changeTileTypeToRegionType, bool bitmask) {
-		//if (this.region != null) {
-		//	this.region.tiles.Remove(this);
-		//}
-		this.region = region;
-		if (region != null) {
-			region.tiles.Add(this);
-			if (!map.regions.Contains(region)) {
-				map.regions.Add(region);
-			}
-			if (changeTileTypeToRegionType) {
-				SetTileType(region.tileType, true, bitmask, false);
-			}
 		}
-	}
 
-	public void SetTileTypeByHeight() {
-		if (height < map.mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water]) {
-			SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).defaultTileType), false, false, false);
-		} else if (height > map.mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Stone]) {
-			SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).defaultTileType), false, false, false);
-		} else {
-			SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Ground).defaultTileType), false, false, false);
-		}
-	}
-
-	public void SetBiome(Biome biome, bool setPlant) {
-		this.biome = biome;
-		SetTileType(biome.tileTypes[tileType.groupType], false, false, false);
-		if (setPlant && tileType.classes[TileType.ClassEnum.Plantable]) {
-			SetPlant(false, null);
-		}
-	}
-
-	public void SetPlant(bool onlyRemovePlant, Plant specificPlant) {
-		if (plant != null) {
-			plant.Remove();
-			plant = null;
-		}
-		if (!onlyRemovePlant) {
-			if (specificPlant == null) {
-				PlantPrefab biomePlantGroup = PlantPrefab.GetPlantPrefabByBiome(biome, false);
-				if (biomePlantGroup != null) {
-					plant = new Plant(biomePlantGroup, this, null, true, null);
+		public void ChangeRegion(Region region, bool changeTileTypeToRegionType, bool bitmask) {
+			//if (this.region != null) {
+			//	this.region.tiles.Remove(this);
+			//}
+			this.region = region;
+			if (region != null) {
+				region.tiles.Add(this);
+				if (!map.regions.Contains(region)) {
+					map.regions.Add(region);
 				}
+				if (changeTileTypeToRegionType) {
+					SetTileType(region.tileType, true, bitmask, false);
+				}
+			}
+		}
+
+		public void SetTileTypeByHeight() {
+			if (height < map.mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Water]) {
+				SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).defaultTileType), false, false, false);
+			} else if (height > map.mapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Stone]) {
+				SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).defaultTileType), false, false, false);
 			} else {
-				plant = specificPlant;
+				SetTileType(TileType.GetTileTypeByEnum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Ground).defaultTileType), false, false, false);
 			}
 		}
-		SetWalkSpeed();
-	}
 
-	public void SetObject(ObjectInstance instance) {
-		AddObjectInstanceToLayer(instance, instance.prefab.layer);
-		PostChangeObject();
-	}
-
-	public void PostChangeObject() {
-		walkable = tileType.walkable;
-		buildable = tileType.buildable;
-		blocksLight = tileType.blocksLight;
-
-		bool recalculatedLighting = false;
-		bool recalculatedRegion = false;
-
-		foreach (KeyValuePair<int, ObjectInstance> layerToObjectInstance in objectInstances) {
-			if (layerToObjectInstance.Value != null) {
-
-				// Object Instances are iterated from lowest layer to highest layer (sorted in AddObjectInstaceToLayer),
-				// therefore, the highest layer is the buildable value that should be applied
-				buildable = layerToObjectInstance.Value.prefab.buildable;
-
-				if (!recalculatedLighting && layerToObjectInstance.Value.prefab.blocksLight) {
-					blocksLight = true;
-					map.RecalculateLighting(new List<Tile>() { this }, true);
-
-					recalculatedLighting = true;
-				}
-
-				if (!recalculatedRegion && !layerToObjectInstance.Value.prefab.walkable) {
-					walkable = false;
-					map.RecalculateRegionsAtTile(this);
-
-					recalculatedRegion = true;
-				}
+		public void SetBiome(Biome biome, bool setPlant) {
+			this.biome = biome;
+			SetTileType(biome.tileTypes[tileType.groupType], false, false, false);
+			if (setPlant && tileType.classes[TileType.ClassEnum.Plantable]) {
+				SetPlant(false, null);
 			}
 		}
-		SetWalkSpeed();
-	}
 
-	private void AddObjectInstanceToLayer(ObjectInstance instance, int layer) {
-		if (objectInstances.ContainsKey(layer)) { // If the layer exists
-			if (objectInstances[layer] != null) { // If the object at the layer exists
-				if (instance != null) { // If the object being added exists, throw error
-					Debug.LogError("Trying to add object where one already exists at " + obj.transform.position);
-				} else { // If the object being added is null, set this layer to null
+		public void SetPlant(bool onlyRemovePlant, Plant specificPlant) {
+			if (plant != null) {
+				plant.Remove();
+				plant = null;
+			}
+			if (!onlyRemovePlant) {
+				if (specificPlant == null) {
+					PlantPrefab biomePlantGroup = PlantPrefab.GetPlantPrefabByBiome(biome, false);
+					if (biomePlantGroup != null) {
+						plant = new Plant(biomePlantGroup, this, null, true, null);
+					}
+				} else {
+					plant = specificPlant;
+				}
+			}
+			SetWalkSpeed();
+		}
+
+		public void SetObject(ObjectInstance instance) {
+			AddObjectInstanceToLayer(instance, instance.prefab.layer);
+			PostChangeObject();
+		}
+
+		public void PostChangeObject() {
+			walkable = tileType.walkable;
+			buildable = tileType.buildable;
+			blocksLight = tileType.blocksLight;
+
+			bool recalculatedLighting = false;
+			bool recalculatedRegion = false;
+
+			foreach (KeyValuePair<int, ObjectInstance> layerToObjectInstance in objectInstances) {
+				if (layerToObjectInstance.Value != null) {
+
+					// Object Instances are iterated from lowest layer to highest layer (sorted in AddObjectInstaceToLayer),
+					// therefore, the highest layer is the buildable value that should be applied
+					buildable = layerToObjectInstance.Value.prefab.buildable;
+
+					if (!recalculatedLighting && layerToObjectInstance.Value.prefab.blocksLight) {
+						blocksLight = true;
+						map.RecalculateLighting(new List<Tile>() { this }, true);
+
+						recalculatedLighting = true;
+					}
+
+					if (!recalculatedRegion && !layerToObjectInstance.Value.prefab.walkable) {
+						walkable = false;
+						map.RecalculateRegionsAtTile(this);
+
+						recalculatedRegion = true;
+					}
+				}
+			}
+			SetWalkSpeed();
+		}
+
+		private void AddObjectInstanceToLayer(ObjectInstance instance, int layer) {
+			if (objectInstances.ContainsKey(layer)) { // If the layer exists
+				if (objectInstances[layer] != null) { // If the object at the layer exists
+					if (instance != null) { // If the object being added exists, throw error
+						Debug.LogError("Trying to add object where one already exists at " + obj.transform.position);
+					} else { // If the object being added is null, set this layer to null
+						objectInstances[layer] = null;
+					}
+				} else { // If the object at the layer does not exist
+					objectInstances[layer] = instance;
+				}
+			} else { // If the layer does not exist
+				objectInstances.Add(layer, instance);
+			}
+			objectInstances.OrderBy(kvp => kvp.Key); // Sorted from lowest layer to highest layer for iterating
+		}
+
+		public void RemoveObjectAtLayer(int layer) {
+			if (objectInstances.ContainsKey(layer)) {
+				ObjectInstance instance = objectInstances[layer];
+				if (instance != null) {
+					MonoBehaviour.Destroy(instance.obj);
+					foreach (Tile additionalTile in instance.additionalTiles) {
+						additionalTile.objectInstances[layer] = null;
+						additionalTile.PostChangeObject();
+					}
+					if (instance.prefab.instanceType == ObjectInstance.ObjectInstanceType.Farm) {
+						farm = null;
+					}
 					objectInstances[layer] = null;
 				}
-			} else { // If the object at the layer does not exist
-				objectInstances[layer] = instance;
 			}
-		} else { // If the layer does not exist
-			objectInstances.Add(layer, instance);
+			PostChangeObject();
 		}
-		objectInstances.OrderBy(kvp => kvp.Key); // Sorted from lowest layer to highest layer for iterating
-	}
 
-	public void RemoveObjectAtLayer(int layer) {
-		if (objectInstances.ContainsKey(layer)) {
-			ObjectInstance instance = objectInstances[layer];
-			if (instance != null) {
-				MonoBehaviour.Destroy(instance.obj);
-				foreach (Tile additionalTile in instance.additionalTiles) {
-					additionalTile.objectInstances[layer] = null;
-					additionalTile.PostChangeObject();
-				}
-				if (instance.prefab.instanceType == ObjectInstance.ObjectInstanceType.Farm) {
-					farm = null;
-				}
-				objectInstances[layer] = null;
-			}
-		}
-		PostChangeObject();
-	}
-
-	public void SetObjectInstanceReference(ObjectInstance objectInstanceReference) {
-		if (objectInstances.ContainsKey(objectInstanceReference.prefab.layer)) {
-			if (objectInstances[objectInstanceReference.prefab.layer] != null) {
-				if (objectInstanceReference != null) {
-					Debug.LogError("Trying to add object where one already exists at " + obj.transform.position);
+		public void SetObjectInstanceReference(ObjectInstance objectInstanceReference) {
+			if (objectInstances.ContainsKey(objectInstanceReference.prefab.layer)) {
+				if (objectInstances[objectInstanceReference.prefab.layer] != null) {
+					if (objectInstanceReference != null) {
+						Debug.LogError("Trying to add object where one already exists at " + obj.transform.position);
+					} else {
+						objectInstances[objectInstanceReference.prefab.layer] = null;
+					}
 				} else {
-					objectInstances[objectInstanceReference.prefab.layer] = null;
+					objectInstances[objectInstanceReference.prefab.layer] = objectInstanceReference;
 				}
 			} else {
-				objectInstances[objectInstanceReference.prefab.layer] = objectInstanceReference;
+				objectInstances.Add(objectInstanceReference.prefab.layer, objectInstanceReference);
 			}
-		} else {
-			objectInstances.Add(objectInstanceReference.prefab.layer, objectInstanceReference);
+			PostChangeObject();
 		}
-		PostChangeObject();
-	}
 
-	public ObjectInstance GetObjectInstanceAtLayer(int layer) {
-		if (objectInstances.ContainsKey(layer)) {
-			return objectInstances[layer];
+		public ObjectInstance GetObjectInstanceAtLayer(int layer) {
+			if (objectInstances.ContainsKey(layer)) {
+				return objectInstances[layer];
+			}
+			return null;
 		}
-		return null;
-	}
 
-	public List<ObjectInstance> GetAllObjectInstances() {
-		List<ObjectInstance> allObjectInstances = new();
-		foreach (KeyValuePair<int, ObjectInstance> kvp in objectInstances) {
-			if (kvp.Value != null) {
-				allObjectInstances.Add(kvp.Value);
+		public List<ObjectInstance> GetAllObjectInstances() {
+			List<ObjectInstance> allObjectInstances = new();
+			foreach (KeyValuePair<int, ObjectInstance> kvp in objectInstances) {
+				if (kvp.Value != null) {
+					allObjectInstances.Add(kvp.Value);
+				}
+			}
+			return allObjectInstances;
+		}
+
+		public bool HasRoof() {
+			return roof;
+		}
+
+		public void SetRoof(bool roof) {
+			this.roof = roof;
+		}
+
+		public void SetWalkSpeed() {
+			walkSpeed = tileType.walkSpeed;
+			if (plant != null && walkSpeed > 0.6f) {
+				walkSpeed = 0.6f;
+			}
+			ObjectInstance lowestWalkSpeedObject = objectInstances.Values.Where(o => o != null).OrderBy(o => o.prefab.walkSpeed).FirstOrDefault();
+			if (lowestWalkSpeedObject != null) {
+				walkSpeed = lowestWalkSpeedObject.prefab.walkSpeed;
 			}
 		}
-		return allObjectInstances;
-	}
 
-	public bool HasRoof() {
-		return roof;
-	}
+		public void SetColour(Color newColour, int hour) {
+			float currentHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f), lightSourceBrightness);
+			int nextHour = (hour == 23 ? 0 : hour + 1);
+			float nextHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(nextHour) ? brightnessAtHour[nextHour] : 1f), lightSourceBrightness);
 
-	public void SetRoof(bool roof) {
-		this.roof = roof;
-	}
+			if (primaryLightSource != null) {
+				sr.color = Color.Lerp(newColour, primaryLightSource.prefab.lightColour + (newColour * (brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f) * 0.8f), lightSourceBrightness);
+			} else {
+				sr.color = newColour;
+			}
+			float colourBrightnessMultiplier = Mathf.Lerp(currentHourBrightness, nextHourBrightness, GameManager.Get<TimeManager>().Time.TileBrightnessTime - hour);
+			sr.color = new Color(sr.color.r * colourBrightnessMultiplier, sr.color.g * colourBrightnessMultiplier, sr.color.b * colourBrightnessMultiplier, 1f);
 
-	public void SetWalkSpeed() {
-		walkSpeed = tileType.walkSpeed;
-		if (plant != null && walkSpeed > 0.6f) {
-			walkSpeed = 0.6f;
+			if (plant != null) {
+				plant.obj.GetComponent<SpriteRenderer>().color = sr.color;
+			}
+			foreach (ObjectInstance instance in GetAllObjectInstances()) {
+				instance.SetColour(sr.color);
+			}
+			brightness = colourBrightnessMultiplier;
 		}
-		ObjectInstance lowestWalkSpeedObject = objectInstances.Values.Where(o => o != null).OrderBy(o => o.prefab.walkSpeed).FirstOrDefault();
-		if (lowestWalkSpeedObject != null) {
-			walkSpeed = lowestWalkSpeedObject.prefab.walkSpeed;
+
+		public void SetBrightness(float newBrightness, int hour) {
+			brightness = newBrightness;
+			SetColour(sr.color, hour);
 		}
-	}
 
-	public void SetColour(Color newColour, int hour) {
-		float currentHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f), lightSourceBrightness);
-		int nextHour = (hour == 23 ? 0 : hour + 1);
-		float nextHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(nextHour) ? brightnessAtHour[nextHour] : 1f), lightSourceBrightness);
-
-		if (primaryLightSource != null) {
-			sr.color = Color.Lerp(newColour, primaryLightSource.prefab.lightColour + (newColour * (brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f) * 0.8f), lightSourceBrightness);
-		} else {
-			sr.color = newColour;
-		}
-		float colourBrightnessMultiplier = Mathf.Lerp(currentHourBrightness, nextHourBrightness, GameManager.Get<TimeManager>().Time.TileBrightnessTime - hour);
-		sr.color = new Color(sr.color.r * colourBrightnessMultiplier, sr.color.g * colourBrightnessMultiplier, sr.color.b * colourBrightnessMultiplier, 1f);
-
-		if (plant != null) {
-			plant.obj.GetComponent<SpriteRenderer>().color = sr.color;
-		}
-		foreach (ObjectInstance instance in GetAllObjectInstances()) {
-			instance.SetColour(sr.color);
-		}
-		brightness = colourBrightnessMultiplier;
-	}
-
-	public void SetBrightness(float newBrightness, int hour) {
-		brightness = newBrightness;
-		SetColour(sr.color, hour);
-	}
-
-	public void AddLightSourceBrightness(LightSource lightSource, float brightness) {
-		lightSourceBrightnesses.Add(lightSource, brightness);
-		lightSourceBrightness = lightSourceBrightnesses.Max(kvp => kvp.Value);
-		primaryLightSource = lightSourceBrightnesses.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
-	}
-
-	public void RemoveLightSourceBrightness(LightSource lightSource) {
-		lightSourceBrightnesses.Remove(lightSource);
-		if (lightSourceBrightnesses.Count > 0) {
+		public void AddLightSourceBrightness(LightSource lightSource, float brightness) {
+			lightSourceBrightnesses.Add(lightSource, brightness);
 			lightSourceBrightness = lightSourceBrightnesses.Max(kvp => kvp.Value);
 			primaryLightSource = lightSourceBrightnesses.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
-		} else {
-			lightSourceBrightness = 0;
-			primaryLightSource = null;
 		}
-	}
 
-	public void SetPrecipitation(float precipitation) {
-		this.precipitation = precipitation;
-	}
-
-	public float GetPrecipitation() {
-		return precipitation;
-	}
-
-	public bool IsVisibleToAColonist() {
-		if (walkable) {
-			foreach (Colonist colonist in Colonist.colonists) {
-				if (colonist.Tile.walkable) {
-					if (colonist.Tile.region == region) {
-						return true;
-					}
-				} else {
-					foreach (Tile tile in colonist.Tile.horizontalSurroundingTiles) {
-						if (tile != null && tile.visible) {
-							if (tile.region == region) {
-								return true;
-							}
-						}
-					}
-				}
+		public void RemoveLightSourceBrightness(LightSource lightSource) {
+			lightSourceBrightnesses.Remove(lightSource);
+			if (lightSourceBrightnesses.Count > 0) {
+				lightSourceBrightness = lightSourceBrightnesses.Max(kvp => kvp.Value);
+				primaryLightSource = lightSourceBrightnesses.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
+			} else {
+				lightSourceBrightness = 0;
+				primaryLightSource = null;
 			}
 		}
-		for (int i = 0; i < surroundingTiles.Count; i++) {
-			Tile surroundingTile = surroundingTiles[i];
-			if (surroundingTile != null && surroundingTile.walkable) {
-				if (Map.diagonalCheckMap.ContainsKey(i)) {
-					bool skip = true;
-					foreach (int horizontalTileIndex in Map.diagonalCheckMap[i]) {
-						Tile horizontalTile = surroundingTile.surroundingTiles[horizontalTileIndex];
-						if (horizontalTile != null && horizontalTile.walkable) {
-							skip = false;
-							break;
-						}
-					}
-					if (skip) {
-						continue;
-					}
-				}
-				foreach (Colonist colonist in Colonist.colonists) {
-					if (colonist.Tile.region == surroundingTile.region) {
-						return true;
-					}
-				}
+
+		public void SetPrecipitation(float precipitation) {
+			this.precipitation = precipitation;
+		}
+
+		public float GetPrecipitation() {
+			return precipitation;
+		}
+
+
+
+		public void SetVisible(bool visible) {
+			this.visible = visible;
+
+			obj.SetActive(visible);
+
+			if (plant != null) {
+				plant.SetVisible(visible);
 			}
-		}
-		return false;
-	}
 
-	public void SetVisible(bool visible) {
-		this.visible = visible;
-
-		obj.SetActive(visible);
-
-		if (plant != null) {
-			plant.SetVisible(visible);
-		}
-
-		foreach (ObjectInstance objectInstance in GetAllObjectInstances()) {
-			objectInstance.SetVisible(visible);
+			foreach (ObjectInstance objectInstance in GetAllObjectInstances()) {
+				objectInstance.SetVisible(visible);
+			}
 		}
 	}
 }

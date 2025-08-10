@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Snowship.NMap.Models.Geography;
+using Snowship.NMap.Tile;
 using Snowship.NCaravan;
 using Snowship.NColony;
 using Snowship.NHuman;

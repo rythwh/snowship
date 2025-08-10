@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Snowship.NMap.Models.Structure;
+using Snowship.NMap.Tile;
 
 namespace Snowship.NResource
 {

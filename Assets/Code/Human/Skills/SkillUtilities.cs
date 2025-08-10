@@ -4,9 +4,11 @@ namespace Snowship.NColonist
 {
 	public static class SkillUtilities
 	{
+		private static ColonistManager ColonistM => GameManager.Get<ColonistManager>();
+
 		public static SkillInstance GetBestColonistAtSkill(SkillPrefab skill) {
 
-			Colonist firstColonist = Colonist.colonists.FirstOrDefault();
+			Colonist firstColonist = ColonistM.Colonists.FirstOrDefault();
 			if (firstColonist == null) {
 				return null;
 			}
@@ -16,7 +18,7 @@ namespace Snowship.NColonist
 			}
 			float highestSkillValue = highestSkillInstance.CalculateTotalSkillLevel();
 
-			foreach (Colonist otherColonist in Colonist.colonists.Skip(1)) {
+			foreach (Colonist otherColonist in ColonistM.Colonists.Skip(1)) {
 				SkillInstance otherColonistSkillInstance = otherColonist.Skills.AsList().FirstOrDefault(s => s.prefab == skill);
 				if (otherColonistSkillInstance == null) {
 					continue;

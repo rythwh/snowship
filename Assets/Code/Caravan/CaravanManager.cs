@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NMap.Tile;
 using Cysharp.Threading.Tasks;
 using Snowship.NColony;
 using Snowship.NResource;

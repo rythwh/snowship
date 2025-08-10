@@ -1,53 +1,47 @@
 using System.Collections.Generic;
 using System.Linq;
-using Snowship.NColonist;
-using Snowship.NColony;
+using Snowship.NMap.Tile;
 
-public class Region {
-	public TileType tileType;
-	public List<Tile> tiles = new List<Tile>();
-	public int id;
+namespace Snowship.NMap.Models.Structure
+{
+	public class Region {
 
-	public List<Region> connectedRegions = new List<Region>();
+		public TileType tileType;
+		public List<Tile.Tile> tiles = new List<Tile.Tile>();
+		public int id;
 
-	public bool visible;
+		public List<Region> connectedRegions = new List<Region>();
 
-	public Region(TileType regionTileType, int regionID) {
-		tileType = regionTileType;
-		id = regionID;
-	}
+		public bool Visible { get; private set; }
 
-	public bool IsVisibleToAColonist() {
-		if (tileType.walkable) {
-			foreach (Colonist colonist in Colonist.colonists) {
-				if (colonist.Tile.region == this) {
-					return true;
-				}
+		private MapManager MapManager => GameManager.Get<MapManager>();
+
+		public Region(TileType regionTileType, int regionID) {
+			tileType = regionTileType;
+			id = regionID;
+		}
+
+		public void SetVisible(bool visible, bool retile, bool recalculateLighting) {
+			Visible = visible;
+
+			List<Tile.Tile> tilesToModify = new List<Tile.Tile>();
+			foreach (Tile.Tile tile in tiles) {
+				tile.SetVisible(Visible);
+
+				tilesToModify.Add(tile);
+				tilesToModify.AddRange(tile.surroundingTiles);
 			}
+
+			tilesToModify = tilesToModify.Distinct().ToList();
+
+			if (retile) {
+				MapManager.Map.Bitmasking(tilesToModify, true, false);
+			}
+
+			if (recalculateLighting) {
+				MapManager.Map.RecalculateLighting(tilesToModify, true);
+			}
+
 		}
-		return false;
-	}
-
-	public void SetVisible(bool visible, bool bitmasking, bool recalculateLighting) {
-		this.visible = visible;
-
-		List<Tile> tilesToModify = new List<Tile>();
-		foreach (Tile tile in tiles) {
-			tile.SetVisible(this.visible);
-
-			tilesToModify.Add(tile);
-			tilesToModify.AddRange(tile.surroundingTiles);
-		}
-
-		tilesToModify = tilesToModify.Distinct().ToList();
-
-		if (bitmasking) {
-			GameManager.Get<ColonyManager>().colony.map.Bitmasking(tilesToModify, true, false);
-		}
-
-		if (recalculateLighting) {
-			GameManager.Get<ColonyManager>().colony.map.RecalculateLighting(tilesToModify, true);
-		}
-
 	}
 }

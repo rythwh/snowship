@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Snowship.NMap;
+using Snowship.NMap.Models.Geography;
+using Snowship.NMap.Tile;
 using Snowship.NColony;
 using Snowship.NResource;
 using UnityEngine;

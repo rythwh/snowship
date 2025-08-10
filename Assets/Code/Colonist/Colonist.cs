@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NMap.Tile;
 using Snowship.NColony;
 using Snowship.NHuman;
 using Snowship.NJob;
@@ -10,17 +11,13 @@ using Random = UnityEngine.Random;
 namespace Snowship.NColonist {
 	public class Colonist : Human
 	{
-		public static readonly List<Colonist> colonists = new List<Colonist>();
-
 		public bool playerMoved;
 
-		public override string Title { get; } = "Colonist";
+		public override string Title => "Colonist";
 		public override ILocation OriginLocation => GameManager.Get<ColonyManager>().colony;
 
 		public Colonist(Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
 			obj.transform.SetParent(GameManager.SharedReferences.LifeParent, false);
-
-			colonists.Add(this);
 		}
 
 		protected Colonist() {
@@ -46,12 +43,6 @@ namespace Snowship.NColonist {
 					WanderTimer = Random.Range(10f, 20f);
 				}
 			}
-		}
-
-		public override void Die() {
-			base.Die();
-
-			colonists.Remove(this);
 		}
 
 		public List<Container> FindValidContainersToEmptyInventory() {

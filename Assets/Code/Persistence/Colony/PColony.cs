@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Snowship.NMap.Tile;
 using Snowship.NColony;
 using Snowship.NPlanet;
 using UnityEngine;

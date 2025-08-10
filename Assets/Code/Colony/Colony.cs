@@ -1,4 +1,5 @@
-﻿using Snowship.NPersistence;
+﻿using Snowship.NMap;
+using Snowship.NPersistence;
 using Snowship.NUtilities;
 
 namespace Snowship.NColony {
