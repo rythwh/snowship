@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Snowship.NMap.Tile;
 using Snowship.NHuman;
 using Snowship.NJob;
 using Snowship.NLife;
+using Snowship.NResource;
 using UnityEngine;
 
 namespace Snowship.NColonist
@@ -14,6 +16,8 @@ namespace Snowship.NColonist
 
 		public IJob ActiveJob { get; private set; }
 		public readonly Queue<IJob> Backlog = new();
+
+		private List<ContainerPickup> currentContainerPickups;
 
 		public event Action<IJob> OnJobChanged;
 
@@ -38,8 +42,20 @@ namespace Snowship.NColonist
 			ActiveJob.ChangeJobState(EJobState.Started);
 		}
 
-		public void SetJob(IJob job) {
+		public void SetJob(IJob job, bool reserveRequiredResources = true) {
 			ReturnJob();
+
+			if (reserveRequiredResources) {
+				if (ReserveRequiredResources(job)) {
+					foreach (ContainerPickup containerPickup in currentContainerPickups) {
+						Backlog.Enqueue(new CollectResourcesJob(containerPickup.container, containerPickup.resourcesToPickup));
+					}
+					Backlog.Enqueue(job);
+					// TODO need to SetJob to the CollectResourcesJob somewhere around here
+				} else {
+					return;
+				}
+			}
 
 			ActiveJob = job;
 
@@ -59,10 +75,60 @@ namespace Snowship.NColonist
 			OnJobChanged?.Invoke(ActiveJob);
 		}
 
+		private bool ReserveRequiredResources(IJob job) {
+			List<ResourceAmount> requiredResources = new();
+
+			// Clone RequiredResources so they can be modified to keep track of how much we still need to reserve
+			foreach (ResourceAmount resourceAmount in job.RequiredResources) {
+				requiredResources.Add(resourceAmount.Clone());
+			}
+
+			List<ResourceAmount> resourcesToReserve = new();
+
+			// Make a shallow copy of requiredResources with ToList() so ew can remove empty entries within the loop
+			foreach (ResourceAmount requiredResourceAmount in requiredResources.ToList()) {
+				ResourceAmount foundResourceAmount = human.Inventory.ContainsResource(requiredResourceAmount.Resource);
+				if (foundResourceAmount == null) {
+					continue;
+				}
+				// If the Worker has enough of the resource already, reserve it all
+				if (foundResourceAmount.Amount >= requiredResourceAmount.Amount) {
+					resourcesToReserve.Add(requiredResourceAmount.Clone());
+					requiredResources.Remove(requiredResourceAmount);
+				} else { // Otherwise reserve the amount we have, the rest needs to be found in containers(TODO /other colonists)
+					resourcesToReserve.Add(foundResourceAmount.Clone());
+					requiredResourceAmount.Amount -= foundResourceAmount.Amount;
+				}
+			}
+			human.Inventory.ReserveResources(resourcesToReserve, human);
+
+			List<ContainerPickup> containerPickups = job.CalculateWorkerResourcePickups(human, requiredResources);
+			foreach (ContainerPickup containerPickup in containerPickups) {
+				containerPickup.container.Inventory.ReserveResources(containerPickup.resourcesToPickup, human);
+			}
+
+			currentContainerPickups = containerPickups;
+
+			// Return true if we have no more required resources to find
+			return requiredResources.Count == 0;
+		}
+
 		public void ReturnJob() {
+			// Release any reserved resources
+			human.Inventory.ReleaseReservedResources(human);
+			if (currentContainerPickups != null) {
+				foreach (ContainerPickup containerPickup in currentContainerPickups) {
+					containerPickup.container.Inventory.ReleaseReservedResources(human);
+				}
+				currentContainerPickups.Clear();
+				currentContainerPickups = null;
+			}
+
 			if (ActiveJob == null) {
 				return;
 			}
+
+			// If the job is not returnable, it will simply be closed
 			if (!ActiveJob.Definition.Returnable) {
 				ActiveJob.Close();
 				return;

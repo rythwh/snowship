@@ -1,5 +1,8 @@
-﻿using Snowship.NMap.Tile;
+﻿using System.Collections.Generic;
+using Snowship.NColonist;
+using Snowship.NMap.Tile;
 using Snowship.NHuman;
+using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
 
@@ -14,10 +17,12 @@ namespace Snowship.NJob
 		string Name { get; }
 		Sprite Icon { get; }
 		string Description { get; }
+		List<ResourceAmount> RequiredResources { get; }
 		IGroupItem Group { get; }
 		IGroupItem SubGroup { get; }
 		Human Worker { get; }
-		void AssignWorker(Human human);
+		List<ContainerPickup> CalculateWorkerResourcePickups(Human worker, List<ResourceAmount> resourcesToPickup);
+		void AssignWorker(Human worker);
 		EJobState ChangeJobState(EJobState newState);
 		bool CanBeAssigned();
 		void Close();

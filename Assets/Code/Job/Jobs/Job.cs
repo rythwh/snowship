@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Snowship.NMap.Tile;
 using Snowship.NColonist;
 using Snowship.NHuman;
@@ -30,7 +31,7 @@ namespace Snowship.NJob
 		public string TargetName { get; protected set; } = string.Empty;
 		public string Description { get; protected set; } = string.Empty;
 		public List<ResourceAmount> RequiredResources { get; } = new();
-		public List<ContainerPickup> ContainerPickups { get; protected set; } = new();
+
 		public bool ShouldBeCancelled { get; protected set; } = false;
 		public GameObject JobPreviewObject { get; protected set; }
 		public int Priority { get; private set; } = 1;
@@ -231,6 +232,51 @@ namespace Snowship.NJob
 				return false;
 			}
 			return true;
+		}
+
+		public List<ContainerPickup> CalculateWorkerResourcePickups(Human worker, List<ResourceAmount> resourcesToPickup) {
+			List<Container> sortedContainersByDistance = Container.GetContainersInRegion(worker.Tile.region)
+				.OrderBy(container => PathManager.RegionBlockDistance(
+					worker.Tile.regionBlock,
+					container.tile.regionBlock,
+					true,
+					true,
+					false))
+				.ToList();
+
+			List<ContainerPickup> containersToPickupFrom = new List<ContainerPickup>();
+			if (sortedContainersByDistance.Count <= 0) {
+				return null;
+			}
+			foreach (Container container in sortedContainersByDistance) {
+				List<ResourceAmount> resourcesToPickupAtContainer = new();
+				IEnumerable<ResourceAmount> matchingResourceInContainer = container.Inventory.resources
+					.Where(ra => resourcesToPickup
+						.Find(pickupResource => pickupResource.Resource == ra.Resource) != null);
+				foreach (ResourceAmount resourceAmount in matchingResourceInContainer) {
+					ResourceAmount pickupResource = resourcesToPickup.Find(pR => pR.Resource == resourceAmount.Resource);
+					if (resourceAmount.Amount >= pickupResource.Amount) {
+						resourcesToPickupAtContainer.Add(new ResourceAmount(pickupResource.Resource, pickupResource.Amount));
+						resourcesToPickup.Remove(pickupResource);
+					} else if (resourceAmount.Amount > 0 && resourceAmount.Amount < pickupResource.Amount) {
+						resourcesToPickupAtContainer.Add(new ResourceAmount(pickupResource.Resource, resourceAmount.Amount));
+						pickupResource.Amount -= resourceAmount.Amount;
+						if (pickupResource.Amount <= 0) {
+							resourcesToPickup.Remove(pickupResource);
+						}
+					}
+				}
+				if (resourcesToPickupAtContainer.Count > 0) {
+					containersToPickupFrom.Add(new ContainerPickup(container, resourcesToPickupAtContainer));
+				}
+			}
+			if (containersToPickupFrom.Count <= 0) {
+				return null;
+			}
+			if (resourcesToPickup.Count <= 0) {
+				return containersToPickupFrom;
+			}
+			return null;
 		}
 
 		public void Close() {

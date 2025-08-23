@@ -23,5 +23,9 @@ namespace Snowship.NResource
 			amount = value;
 			OnAmountChanged?.Invoke(amount);
 		}
+
+		public ResourceAmount Clone() {
+			return new ResourceAmount(Resource, Amount);
+		}
 	}
 }

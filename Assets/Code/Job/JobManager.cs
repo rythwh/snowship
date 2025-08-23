@@ -4,6 +4,7 @@ using System.Linq;
 using Snowship.NMap.Models.Structure;
 using Snowship.NMap.Tile;
 using Snowship.NColonist;
+using Snowship.NResource;
 using Snowship.NTime;
 using UnityEngine;
 
@@ -75,6 +76,18 @@ namespace Snowship.NJob
 
 					// Check if a similar job has already been checked in that area (mostly redundant)
 					if (checkedRegionBlocks.Contains(job.Tile.regionBlock) && checkedJobTypes.Contains(job.Definition)) {
+						continue;
+					}
+
+					// Check if the resources for the job are available in the world totals, if not, skip
+					bool resourcesAvailable = true;
+					foreach (ResourceAmount resourceAmount in job.RequiredResources) {
+						resourcesAvailable &= resourceAmount.Resource.GetAvailableAmount() >= resourceAmount.Amount;
+						if (!resourcesAvailable) {
+							break;
+						}
+					}
+					if (!resourcesAvailable) {
 						continue;
 					}
 
