@@ -7,5 +7,6 @@ namespace Snowship.NUI.UITab
 	{
 		void SetActive(bool active);
 		UniTask Open(Transform parent);
+		void Close();
 	}
 }

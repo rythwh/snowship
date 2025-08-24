@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NCaravan;
@@ -65,6 +66,11 @@ namespace Snowship.NUI
 			inventory.OnInventoryChanged -= View.OnInventoryChanged;
 
 			human.OnClothingChanged -= View.OnHumanClothingChanged;
+
+			RemoveTab<UIBiographyTab>();
+			RemoveTab<UIInventoryTab>();
+			RemoveTab<UIClothingTab>();
+			RemoveTab<UITradeTab>();
 		}
 
 		private async UniTask AddTabAsync<TTab>(string buttonText) where TTab : class, IUITabElement {
@@ -83,6 +89,17 @@ namespace Snowship.NUI
 				bool isActiveTab = group.tab == tab;
 				group.tab.SetActive(isActiveTab);
 				group.button.ShowConnector(isActiveTab);
+			}
+		}
+
+		private void RemoveTab<TTab>() where TTab : class, IUITabElement {
+			foreach ((IUITabElement tab, UITabButton button) group in tabAndButtonGroups.ToList()) {
+				if (group.tab is not TTab) {
+					continue;
+				}
+				group.tab.Close();
+				tabAndButtonGroups.Remove(group);
+				return;
 			}
 		}
 
