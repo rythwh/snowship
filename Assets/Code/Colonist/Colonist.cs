@@ -52,7 +52,7 @@ namespace Snowship.NColonist {
 		public void EmptyInventory(List<Container> validContainers) {
 			if (Inventory.UsedWeight() > 0 && Inventory.UsedVolume() > 0 && validContainers.Count > 0) {
 				Container closestContainer = validContainers.OrderBy(container => PathManager.RegionBlockDistance(container.tile.regionBlock, Tile.regionBlock, true, true, false)).ToList()[0];
-				Jobs.SetJob(new EmptyInventoryJob(closestContainer));
+				Jobs.ForceJob(new EmptyInventoryJob(closestContainer));
 			}
 		}
 
@@ -268,7 +268,7 @@ namespace Snowship.NColonist {
 
 				ResourceAmount clothingToPickup = new(clothing, 1);
 				container.Inventory.ReserveResources(new List<ResourceAmount> { clothingToPickup }, this);
-				Jobs.SetJob(new WearClothesJob(container.tile, container, clothing));
+				Jobs.ForceJob(new WearClothesJob(container.tile, container, clothing));
 			}
 		}
 	}

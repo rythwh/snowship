@@ -134,7 +134,7 @@ namespace Snowship.NColonist {
 			if (need.human.Jobs.ActiveJob is { Group: { Name: "Needs" }, SubGroup: { Name: "Food" } }) {
 				return false;
 			}
-			need.human.Jobs.SetJob(new CollectFoodJob(need.human.Tile, null, null, need.GetValue()));
+			need.human.Jobs.ForceJob(new CollectFoodJob(need.human.Tile, null, null, need.GetValue()));
 			return false;
 		}
 
@@ -145,7 +145,7 @@ namespace Snowship.NColonist {
 			if (need.human.Jobs.ActiveJob is { Group: { Name: "Needs" }, SubGroup: { Name: "Rest" } }) {
 				return false;
 			}
-			need.human.Jobs.SetJob(new SleepJob(need.human.Tile));
+			need.human.Jobs.ForceJob(new SleepJob(need.human.Tile));
 			return false;
 		}
 

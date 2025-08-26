@@ -82,7 +82,9 @@ namespace Snowship.NJob
 					// Check if the resources for the job are available in the world totals, if not, skip
 					bool resourcesAvailable = true;
 					foreach (ResourceAmount resourceAmount in job.RequiredResources) {
-						resourcesAvailable &= resourceAmount.Resource.GetAvailableAmount() >= resourceAmount.Amount;
+						int amountOnColonist = colonist.Inventory.ContainsResource(resourceAmount.Resource)?.Amount ?? 0;
+						int unreservedContainerTotalAmount = resourceAmount.Resource.GetUnreservedContainerTotalAmount();
+						resourcesAvailable &= (amountOnColonist + unreservedContainerTotalAmount) >= resourceAmount.Amount;
 						if (!resourcesAvailable) {
 							break;
 						}
@@ -137,7 +139,7 @@ namespace Snowship.NJob
 						continue;
 					}
 
-					colonist.Jobs.SetJob(jobCostEntry.Job);
+					colonist.Jobs.AssignJob(jobCostEntry.Job);
 					break;
 				}
 			}

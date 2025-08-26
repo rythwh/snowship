@@ -15,9 +15,10 @@ namespace Snowship.NJob
 	{
 		private Container Container { get; set; }
 
-		public CollectResourcesJob(Container container, List<ResourceAmount> requiredResources) : base(container.tile) {
+		public CollectResourcesJob(Container container, List<ResourceAmount> requiredResources, IJob parentJob) : base(container.tile) {
 			Container = container;
 			RequiredResources.AddRange(requiredResources);
+			ParentJob = parentJob;
 
 			Description = "Collecting resources.";
 		}

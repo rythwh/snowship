@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Snowship.NMap.Tile;
 using Snowship.NHuman;
 using Snowship.NJob;
@@ -15,9 +16,9 @@ namespace Snowship.NColonist
 		private readonly Human human;
 
 		public IJob ActiveJob { get; private set; }
-		public readonly Queue<IJob> Backlog = new();
+		private readonly List<QueuedJob> backlog = new();
 
-		private List<ContainerPickup> currentContainerPickups;
+		[CanBeNull] private List<ContainerPickup> currentContainerPickups;
 
 		public event Action<IJob> OnJobChanged;
 
@@ -38,25 +39,66 @@ namespace Snowship.NColonist
 			HumanArrivedAtJob();
 		}
 
-		private void HumanArrivedAtJob() {
-			ActiveJob.ChangeJobState(EJobState.Started);
+		public void ForceJob(IJob job) {
+			AssignJob(job, true);
 		}
 
-		public void SetJob(IJob job, bool reserveRequiredResources = true) {
+		public void AssignJob(IJob job, bool skipBacklog = false) {
+			// Return any current job if one exists
 			ReturnJob();
 
-			if (reserveRequiredResources) {
-				if (ReserveRequiredResources(job)) {
-					foreach (ContainerPickup containerPickup in currentContainerPickups) {
-						Backlog.Enqueue(new CollectResourcesJob(containerPickup.container, containerPickup.resourcesToPickup));
-					}
-					Backlog.Enqueue(job);
-					// TODO need to SetJob to the CollectResourcesJob somewhere around here
-				} else {
+			if (job != null) {
+				// Create any CollectResource jobs and add them to the backlog
+				if (!CreateCollectResourceJobs(job)) {
+					return;
+				}
+
+				if (skipBacklog) {
+					StartJob(job);
 					return;
 				}
 			}
 
+			// If there are jobs in the backlog, start the first one, otherwise start the job directly
+			if (backlog.Count > 0) {
+				if (job != null && backlog.Find(qj => qj.Job == job) == null) {
+					backlog.Add(new QueuedJob(job, job));
+				}
+
+				IJob backlogJob = backlog[0].Job;
+				backlog.RemoveAt(0);
+				StartJob(backlogJob);
+			} else {
+				StartJob(job);
+			}
+		}
+
+		private bool CreateCollectResourceJobs(IJob job) {
+
+			if (job.RequiredResources == null || job.RequiredResources.Count == 0) {
+				return true;
+			}
+
+			bool reservedAllResources = ReserveRequiredResources(job);
+			if (reservedAllResources) {
+				if (currentContainerPickups != null) {
+					foreach (ContainerPickup containerPickup in currentContainerPickups) {
+						CollectResourcesJob collectResourcesJob = new(containerPickup.container, containerPickup.resourcesToPickup, job);
+						EnqueueJob(collectResourcesJob, job);
+					}
+				}
+				if (currentContainerPickups == null || currentContainerPickups.Count == 0) {
+					EnqueueJob(job); // Only necessary if there are collect resource jobs to do before the job itself
+				}
+			}
+			return reservedAllResources;
+		}
+
+		private void EnqueueJob(IJob job, IJob parentJob = null) {
+			backlog.Add(new QueuedJob(parentJob ?? job, job));
+		}
+
+		private void StartJob(IJob job) {
 			ActiveJob = job;
 
 			if (ActiveJob != null) {
@@ -75,8 +117,16 @@ namespace Snowship.NColonist
 			OnJobChanged?.Invoke(ActiveJob);
 		}
 
+		private void HumanArrivedAtJob() {
+			ActiveJob.ChangeJobState(EJobState.Started);
+		}
+
 		private bool ReserveRequiredResources(IJob job) {
 			List<ResourceAmount> requiredResources = new();
+
+			if (job.RequiredResources == null || job.RequiredResources.Count == 0) {
+				return true;
+			}
 
 			// Clone RequiredResources so they can be modified to keep track of how much we still need to reserve
 			foreach (ResourceAmount resourceAmount in job.RequiredResources) {
@@ -85,7 +135,7 @@ namespace Snowship.NColonist
 
 			List<ResourceAmount> resourcesToReserve = new();
 
-			// Make a shallow copy of requiredResources with ToList() so ew can remove empty entries within the loop
+			// Make a shallow copy of requiredResources with ToList() so we can remove empty entries within the loop
 			foreach (ResourceAmount requiredResourceAmount in requiredResources.ToList()) {
 				ResourceAmount foundResourceAmount = human.Inventory.ContainsResource(requiredResourceAmount.Resource);
 				if (foundResourceAmount == null) {
@@ -102,9 +152,17 @@ namespace Snowship.NColonist
 			}
 			human.Inventory.ReserveResources(resourcesToReserve, human);
 
+			// Return early if the Worker had all the required resources in their inventory
+			if (requiredResources.Count == 0) {
+				return true;
+			}
+
+			// Find containers that have any remaining required resources
 			List<ContainerPickup> containerPickups = job.CalculateWorkerResourcePickups(human, requiredResources);
-			foreach (ContainerPickup containerPickup in containerPickups) {
-				containerPickup.container.Inventory.ReserveResources(containerPickup.resourcesToPickup, human);
+			if (containerPickups != null) {
+				foreach (ContainerPickup containerPickup in containerPickups) {
+					containerPickup.container.Inventory.ReserveResources(containerPickup.resourcesToPickup, human);
+				}
 			}
 
 			currentContainerPickups = containerPickups;
@@ -114,6 +172,10 @@ namespace Snowship.NColonist
 		}
 
 		public void ReturnJob() {
+			if (ActiveJob == null) {
+				return;
+			}
+
 			// Release any reserved resources
 			human.Inventory.ReleaseReservedResources(human);
 			if (currentContainerPickups != null) {
@@ -124,8 +186,11 @@ namespace Snowship.NColonist
 				currentContainerPickups = null;
 			}
 
-			if (ActiveJob == null) {
-				return;
+			// Remove related jobs from the backlog
+			foreach (QueuedJob queuedJob in backlog.ToList()) {
+				if (queuedJob.ParentJob == ActiveJob.ParentJob || queuedJob.ParentJob == ActiveJob) {
+					backlog.Remove(queuedJob);
+				}
 			}
 
 			// If the job is not returnable, it will simply be closed
@@ -143,6 +208,9 @@ namespace Snowship.NColonist
 				return false;
 			}
 			if (ActiveJob != null) {
+				return false;
+			}
+			if (backlog.Count > 0) {
 				return false;
 			}
 			if (human is Colonist { playerMoved: true }) {

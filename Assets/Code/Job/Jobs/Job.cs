@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Snowship.NMap.Tile;
 using Snowship.NColonist;
 using Snowship.NHuman;
@@ -22,6 +23,7 @@ namespace Snowship.NJob
 		public Sprite Icon => Definition.Icon;
 		public IGroupItem Group => Definition.Group;
 		public IGroupItem SubGroup => Definition.SubGroup;
+		public IJob ParentJob { get; protected set; }
 
 		// Job Instance Properties
 		public Tile Tile { get; private set; }
@@ -234,6 +236,7 @@ namespace Snowship.NJob
 			return true;
 		}
 
+		[CanBeNull]
 		public List<ContainerPickup> CalculateWorkerResourcePickups(Human worker, List<ResourceAmount> resourcesToPickup) {
 			List<Container> sortedContainersByDistance = Container.GetContainersInRegion(worker.Tile.region)
 				.OrderBy(container => PathManager.RegionBlockDistance(
@@ -282,7 +285,7 @@ namespace Snowship.NJob
 		public void Close() {
 			Object.Destroy(JobPreviewObject.gameObject);
 			GameManager.Get<JobManager>().RemoveJob(this);
-			Worker.Jobs.SetJob(null);
+			Worker.Jobs.AssignJob(null);
 		}
 	}
 }

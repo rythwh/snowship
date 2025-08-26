@@ -18,6 +18,7 @@ namespace Snowship.NJob
 		Sprite Icon { get; }
 		string Description { get; }
 		List<ResourceAmount> RequiredResources { get; }
+		IJob ParentJob { get; }
 		IGroupItem Group { get; }
 		IGroupItem SubGroup { get; }
 		Human Worker { get; }

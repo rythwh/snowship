@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Snowship.NHuman;
 using Snowship.NResource;
 using UnityEngine;
@@ -181,6 +182,7 @@ public class Inventory
 		return foundResourceAmount;
 	}
 
+	[CanBeNull]
 	public ResourceAmount ContainsResource(Resource resource) {
 		return resources.Find(r => r.Resource == resource);
 	}

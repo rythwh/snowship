@@ -50,7 +50,7 @@ namespace Snowship.NJob
 			if (container == null) {
 				List<ResourceAmount> currentFood = Worker.Inventory.GetResourcesByClass(Resource.ResourceClassEnum.Food).ToList();
 				if (currentFood.Count > 0) {
-					colonist.Jobs.SetJob(new EatJob(Worker.Tile));
+					colonist.Jobs.ForceJob(new EatJob(Worker.Tile));
 				}
 			} else {
 				alreadyCheckedContainers.Add(container);
@@ -76,7 +76,7 @@ namespace Snowship.NJob
 			Worker.Inventory.TakeReservedResources(Worker);
 
 			if (nutritionTarget <= 0) {
-				colonist.Jobs.SetJob(new EatJob(Worker.Tile));
+				colonist.Jobs.ForceJob(new EatJob(Worker.Tile));
 			} else {
 				Container nextContainerToCheck = Container
 					.GetContainersInRegion(Worker.Tile.region)
@@ -84,11 +84,11 @@ namespace Snowship.NJob
 					.OrderBy(c => PathManager.RegionBlockDistance(Worker.Tile.regionBlock, c.tile.regionBlock, true, true, false))
 					.FirstOrDefault();
 				if (nextContainerToCheck == null) {
-					colonist.Jobs.SetJob(new CollectFoodJob(colonist.Tile, null, alreadyCheckedContainers, nutritionTarget));
+					colonist.Jobs.ForceJob(new CollectFoodJob(colonist.Tile, null, alreadyCheckedContainers, nutritionTarget));
 					return;
 				}
 				alreadyCheckedContainers.Add(nextContainerToCheck);
-				colonist.Jobs.SetJob(new CollectFoodJob(nextContainerToCheck.tile, nextContainerToCheck, alreadyCheckedContainers, nutritionTarget));
+				colonist.Jobs.ForceJob(new CollectFoodJob(nextContainerToCheck.tile, nextContainerToCheck, alreadyCheckedContainers, nutritionTarget));
 			}
 		}
 	}
