@@ -1,4 +1,5 @@
-﻿public interface IManager {
+﻿public interface IManager
+{
 	public void OnCreate() {
 	}
 

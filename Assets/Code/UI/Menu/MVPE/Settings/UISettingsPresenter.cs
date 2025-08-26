@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using JetBrains.Annotations;
-using Snowship.NPersistence;
 using Snowship.NSettings;
 using Snowship.NUtilities;
 using UnityEngine;
@@ -11,13 +10,16 @@ namespace Snowship.NUI
 
 	[UsedImplicitly]
 	public class UISettingsPresenter : UIPresenter<UISettingsView> {
-		private readonly SettingsState settings = GameManager.Get<SettingsManager>().SettingsState;
-		private readonly SettingsState newSettings = new SettingsState();
+
+		private SettingsManager SettingsM => GameManager.Get<SettingsManager>();
 
 		public UISettingsPresenter(UISettingsView view) : base(view) {
 		}
 
 		public override void OnCreate() {
+
+			SettingsM.OnSettingsChanged += UpdateButtonsForChanges;
+
 			View.OnCancelButtonClicked += OnCancelButtonClicked;
 			View.OnApplyButtonClicked += OnApplyButtonClicked;
 			View.OnAcceptButtonClicked += OnAcceptButtonClicked;
@@ -30,10 +32,13 @@ namespace Snowship.NUI
 			SetFullscreenToggle();
 			SetUIScaleToggle();
 
-			Debug.Log(settings.ToString());
+			Debug.Log(SettingsM.Settings.ToString());
 		}
 
 		public override void OnClose() {
+
+			SettingsM.OnSettingsChanged -= UpdateButtonsForChanges;
+
 			View.OnCancelButtonClicked -= OnCancelButtonClicked;
 			View.OnApplyButtonClicked -= OnApplyButtonClicked;
 			View.OnAcceptButtonClicked -= OnAcceptButtonClicked;
@@ -48,11 +53,11 @@ namespace Snowship.NUI
 		}
 
 		private void OnApplyButtonClicked() {
-			settings.ApplySettings();
+			SettingsM.ApplySettings(SettingsM.UnappliedSettings);
 		}
 
 		private void OnAcceptButtonClicked() {
-			settings.ApplySettings();
+			SettingsM.ApplySettings(SettingsM.UnappliedSettings);
 			GameManager.Get<UIManager>().GoBack(this);
 		}
 
@@ -60,37 +65,37 @@ namespace Snowship.NUI
 			View.SetResolutionSlider(
 				0,
 				Screen.resolutions.Length - 1,
-				Screen.resolutions.ToList().IndexOf(settings.Resolution)
+				Screen.resolutions.ToList().IndexOf(SettingsM.Settings.Resolution)
 			);
 		}
 
 		private void SetFullscreenToggle() {
-			View.SetFullscreenToggle(settings.Fullscreen);
+			View.SetFullscreenToggle(SettingsM.Settings.Fullscreen);
 		}
 
 		private void SetUIScaleToggle() {
-			View.SetUIScaleToggle(settings.ScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize);
+			View.SetUIScaleToggle(SettingsM.Settings.ScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize);
 		}
 
 		private void OnResolutionSliderChanged(float sliderValue) {
 			Resolution resolution = Screen.resolutions[Mathf.FloorToInt(sliderValue)];
-			newSettings.SetResolution(resolution);
-			View.SetResolutionText(resolution.ToString());
+			SettingsM.UnappliedSettings.SetResolution(resolution);
+			View.SetResolutionText($"{resolution.width} x {resolution.height} @ {(int)resolution.refreshRateRatio.value}Hz");
 			UpdateButtonsForChanges();
 		}
 
 		private void OnFullscreenToggled(bool isOn) {
-			newSettings.SetFullscreen(isOn);
+			SettingsM.UnappliedSettings.SetFullscreen(isOn);
 			UpdateButtonsForChanges();
 		}
 
 		private void OnUIScaleToggled(bool isOn) {
-			newSettings.SetScaleMode(isOn ? CanvasScaler.ScaleMode.ScaleWithScreenSize : CanvasScaler.ScaleMode.ConstantPixelSize);
+			SettingsM.UnappliedSettings.SetScaleMode(isOn ? CanvasScaler.ScaleMode.ScaleWithScreenSize : CanvasScaler.ScaleMode.ConstantPixelSize);
 			UpdateButtonsForChanges();
 		}
 
 		private void UpdateButtonsForChanges() {
-			bool changesExist = !settings.Equals(newSettings);
+			bool changesExist = !SettingsM.Settings.Equals(SettingsM.UnappliedSettings);
 			if (changesExist) {
 				View.SetButtonColours(
 					ColourUtilities.GetColour(ColourUtilities.EColour.LightRed),

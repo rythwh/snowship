@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Snowship.NPersistence {
 
 	[SuppressMessage("ReSharper", "ParameterHidesMember")]
-	[JsonObject]
 	public class SettingsState {
 
 		public Resolution Resolution { get; private set; }
@@ -22,10 +19,10 @@ namespace Snowship.NPersistence {
 			ScaleMode
 		}
 
-		public SettingsState() {
+		public void SetDefaults() {
 			SetResolution(Screen.currentResolution);
-			Fullscreen = true;
-			ScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+			SetFullscreen(true);
+			SetScaleMode(CanvasScaler.ScaleMode.ConstantPixelSize);
 		}
 
 		public void SetResolution(Resolution resolution) {
@@ -40,38 +37,19 @@ namespace Snowship.NPersistence {
 			ScaleMode = scaleMode;
 		}
 
-		public void ApplySettings() {
-			Screen.SetResolution(
-				Resolution.width,
-				Resolution.height,
-				Fullscreen ? FullScreenMode.ExclusiveFullScreen : FullScreenMode.Windowed,
-				Resolution.refreshRateRatio
-			);
-
-			GameManager.SharedReferences.Canvas.GetComponent<CanvasScaler>().uiScaleMode = ScaleMode;
-		}
-
-		public void LoadSetting(Setting setting, string value) {
-			stringToSettingFunctions[setting](this, value);
-		}
-
-		public void SaveSetting(Setting setting, StreamWriter file) {
-			file.WriteLine("<" + setting + ">" + settingToStringFunctions[setting](this));
-		}
-
-		private static readonly Dictionary<Setting, Func<SettingsState, string>> settingToStringFunctions = new Dictionary<Setting, Func<SettingsState, string>> {
+		public static readonly Dictionary<Setting, Func<SettingsState, string>> SettingToStringFunctions = new Dictionary<Setting, Func<SettingsState, string>> {
 			{ Setting.Resolution, settingsState => $"{settingsState.Resolution.width},{settingsState.Resolution.height},{settingsState.Resolution.refreshRateRatio.value}" },
 			{ Setting.Fullscreen, settingsState => settingsState.Fullscreen.ToString() },
 			{ Setting.ScaleMode, settingsState => settingsState.ScaleMode.ToString() }
 		};
 
-		private static readonly Dictionary<Setting, Action<SettingsState, string>> stringToSettingFunctions = new Dictionary<Setting, Action<SettingsState, string>> {
+		public static readonly Dictionary<Setting, Action<SettingsState, string>> StringToSettingFunctions = new Dictionary<Setting, Action<SettingsState, string>> {
 			{
 				Setting.Resolution, delegate(SettingsState settingsState, string value) {
 					string[] split = value.Split(',');
 					int width = int.Parse(split[0]);
 					int height = int.Parse(split[1]);
-					double refreshRate = double.Parse(split[2]);
+					int refreshRate = (int)double.Parse(split[2]);
 
 					for (int i = Screen.resolutions.Length - 1; i >= 0; i--) {
 						Resolution resolution = Screen.resolutions[i];
