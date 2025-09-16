@@ -7,6 +7,16 @@
       "dependencies": {},
       "hash": "809d23edae0df58fd0f61b4b6f67855c59d1b2fb"
     },
+    "com.rywh.ryui": {
+      "version": "https://github.com/rythwh/RyUI.git?path=Packages/RyUI",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.cysharp.unitask": "2.5.3",
+        "com.unity.addressables": "2.2.2"
+      },
+      "hash": "23565d8328e4a2e2ebd976add59de9daa610b727"
+    },
     "com.unity.2d.pixel-perfect": {
       "version": "5.1.0",
       "depth": 0,
@@ -119,15 +129,6 @@
       "source": "registry",
       "dependencies": {
         "com.unity.ext.nunit": "1.0.6"
-      },
-      "url": "https://packages.unity.com"
-    },
-    "com.unity.ide.visualstudio": {
-      "version": "2.0.23",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.test-framework": "1.1.9"
       },
       "url": "https://packages.unity.com"
     },
