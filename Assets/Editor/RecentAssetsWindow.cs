@@ -3,18 +3,16 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Codice.Client.Common.WebApi.Responses;
 
 // ReSharper disable InvertIf
 
 public class RecentAssetsWindow : EditorWindow
 {
-	private List<string> recentAssets = new List<string>();
-	private HashSet<string> starredAssets = new HashSet<string>();
+	private List<string> recentAssets = new();
+	private HashSet<string> starredAssets = new();
 	private const string PrefsKey = "RecentAssetsHistory";
 	private const string StarredPrefsKey = "StarredAssets";
 	private Vector2 scrollPos;
-	private int currentIndex = -1;
 
 	[MenuItem("Window/Recent Assets Tracker")]
 	public static void ShowWindow() {
@@ -55,7 +53,6 @@ public class RecentAssetsWindow : EditorWindow
 		if (GUILayout.Button("Clear")) {
 			recentAssets.Clear();
 			starredAssets.Clear();
-			currentIndex = -1;
 			SaveHistory();
 			SaveStarred();
 		}
@@ -79,7 +76,7 @@ public class RecentAssetsWindow : EditorWindow
 	}
 
 	private void CreateStarButton(string assetPath, bool isStarred, bool assetExists) {
-		GUIStyle starStyle = new GUIStyle(assetExists || isStarred ? EditorStyles.iconButton : GUIStyle.none) {
+		GUIStyle starStyle = new(assetExists || isStarred ? EditorStyles.iconButton : GUIStyle.none) {
 			normal = {
 				textColor = isStarred
 					? Color.yellow
@@ -101,10 +98,10 @@ public class RecentAssetsWindow : EditorWindow
 
 	private void CreateOpenButton(Object asset, bool assetExists) {
 		Texture icon = assetExists ? EditorGUIUtility.IconContent("d_ScaleTool").image : null;
-		GUIStyle style = new GUIStyle(assetExists ? EditorStyles.iconButton : EditorStyles.label) {
+		GUIStyle style = new(assetExists ? EditorStyles.iconButton : EditorStyles.label) {
 			fixedWidth = 20,
 			fixedHeight = 20,
-			alignment = TextAnchor.MiddleCenter,
+			alignment = TextAnchor.MiddleCenter
 		};
 		if (GUILayout.Button(icon, style)) {
 			AssetDatabase.OpenAsset(asset);
@@ -113,10 +110,10 @@ public class RecentAssetsWindow : EditorWindow
 
 	private void CreateAssetIcon(string assetPath) {
 		Texture icon = AssetDatabase.GetCachedIcon(assetPath);
-		GUIStyle style = new GUIStyle(EditorStyles.label) {
+		GUIStyle style = new(EditorStyles.label) {
 			fixedWidth = 16,
 			fixedHeight = 16,
-			alignment = TextAnchor.MiddleCenter,
+			alignment = TextAnchor.MiddleCenter
 		};
 		GUILayout.Label(icon, style);
 	}
@@ -125,7 +122,7 @@ public class RecentAssetsWindow : EditorWindow
 
 		string fileName = Path.GetFileName(assetPath);
 
-		GUIStyle buttonStyle = new GUIStyle(EditorStyles.label) {
+		GUIStyle buttonStyle = new(EditorStyles.label) {
 			alignment = TextAnchor.MiddleLeft,
 			stretchWidth = false,
 			normal = new GUIStyleState {
@@ -159,14 +156,14 @@ public class RecentAssetsWindow : EditorWindow
 
 		string displayString = string.Join(" / ", splitPath);
 
-		GUIStyle pathStyle = new GUIStyle(EditorStyles.label) {
+		GUIStyle pathStyle = new(EditorStyles.label) {
 			fontSize = 10,
 			alignment = TextAnchor.MiddleLeft,
 			stretchWidth = false,
 			normal = new GUIStyleState {
-				textColor = colour,
+				textColor = colour
 			},
-			padding = new RectOffset(0, 0, 2, 0),
+			padding = new RectOffset(0, 0, 2, 0)
 		};
 
 		GUILayout.Label(displayString, pathStyle);
@@ -203,10 +200,8 @@ public class RecentAssetsWindow : EditorWindow
 			recentAssets.Remove(path);
 		}
 		recentAssets.Add(path);
-		currentIndex = recentAssets.Count - 1;
 		if (recentAssets.Count > 20) {
 			recentAssets.RemoveAt(0);
-			currentIndex--;
 		}
 		SaveHistory();
 		Repaint();
@@ -223,7 +218,6 @@ public class RecentAssetsWindow : EditorWindow
 		}
 		Selection.activeObject = obj;
 		EditorGUIUtility.PingObject(obj);
-		currentIndex = index;
 	}
 
 	private void ToggleStar(string path, bool assetExists) {
@@ -243,7 +237,6 @@ public class RecentAssetsWindow : EditorWindow
 			return;
 		}
 		recentAssets = data.Split('|').ToList();
-		currentIndex = recentAssets.Count - 1;
 	}
 
 	private void SaveHistory() {
