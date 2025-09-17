@@ -155,6 +155,7 @@ public class RecentAssetsWindow : EditorWindow
 			"Assets" or "Packages" => splitPath.Skip(1).ToArray(),
 			_ => splitPath
 		};
+		splitPath = splitPath.Take(splitPath.Length - 1).ToArray();
 
 		string displayString = string.Join(" / ", splitPath);
 
