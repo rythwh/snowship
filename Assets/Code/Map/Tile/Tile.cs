@@ -8,7 +8,7 @@ using Snowship.NResource;
 using Snowship.NTime;
 using UnityEngine;
 
-namespace Snowship.NMap.Tile
+namespace Snowship.NMap.NTile
 {
 	public class Tile {
 
@@ -146,7 +146,7 @@ namespace Snowship.NMap.Tile
 						}
 						region.SetVisible(anyVisible, true, false);
 					} else {
-						ChangeRegion(new Region(tileType, GameManager.Get<MapManager>().Map.regions[GameManager.Get<MapManager>().Map.regions.Count - 1].id + 1), false, false);
+						ChangeRegion(new Region(tileType), false, false);
 					}
 				} else { // Type is not walkable, old type was walkable (e.g. was ground, now stone)
 					ChangeRegion(null, false, false);
@@ -221,8 +221,8 @@ namespace Snowship.NMap.Tile
 							}
 						}
 						foreach (List<Tile> nonWalkableTileGroup in nonWalkableTileGroups) {
-							Map.Region groupRegion = new Map.Region(nonWalkableTileGroup[0].tileType, map.currentRegionID);
-							map.currentRegionID += 1;
+							Map.Region groupRegion = new Map.Region(nonWalkableTileGroup[0].tileType, map.largestCurrentRegionId);
+							map.largestCurrentRegionId += 1;
 							foreach (Tile tile in nonWalkableTileGroup) {
 								tile.ChangeRegion(groupRegion, false, false);
 							}
@@ -241,8 +241,8 @@ namespace Snowship.NMap.Tile
 					}
 					if (similarRegions.Count == 0) {
 						region.tiles.Remove(this);
-						ChangeRegion(new Map.Region(tileType, map.currentRegionID), false, false);
-						map.currentRegionID += 1;
+						ChangeRegion(new Map.Region(tileType, map.largestCurrentRegionId), false, false);
+						map.largestCurrentRegionId += 1;
 					} else if (similarRegions.Count == 1) {
 						region.tiles.Remove(this);
 						ChangeRegion(similarRegions[0], false, false);

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NCamera;
 using Snowship.NColony;
 using Snowship.NMap;
@@ -104,7 +104,7 @@ namespace Snowship.NColonist {
 						}
 					}
 				}
-				Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[UnityEngine.Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
+				Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
 
 				Colonist colonist = new Colonist(colonistSpawnTile, 1);
 				colonists.Add(colonist);

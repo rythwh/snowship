@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NHuman;
 using Snowship.NJob;
 using Snowship.NLife;

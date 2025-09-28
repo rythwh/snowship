@@ -3,14 +3,14 @@ using System.Collections.Generic;
 namespace Snowship.NMap.Models.Geography
 {
 	public class River {
-		public Tile.Tile startTile;
-		public Tile.Tile centreTile;
-		public Tile.Tile endTile;
-		public List<Tile.Tile> tiles = new List<Tile.Tile>();
+		public NTile.Tile startTile;
+		public NTile.Tile centreTile;
+		public NTile.Tile endTile;
+		public List<NTile.Tile> tiles = new List<NTile.Tile>();
 		public int expandRadius;
 		public bool ignoreStone;
 
-		public River(Tile.Tile startTile, Tile.Tile centreTile, Tile.Tile endTile, int expandRadius, bool ignoreStone, Map map, bool performPathfinding) {
+		public River(NTile.Tile startTile, NTile.Tile centreTile, NTile.Tile endTile, int expandRadius, bool ignoreStone, Map map, bool performPathfinding) {
 			this.startTile = startTile;
 			this.centreTile = centreTile;
 			this.endTile = endTile;

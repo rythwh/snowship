@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Snowship.NMap.Tile
+namespace Snowship.NMap.NTile
 {
 	public class TileManager : IManager
 	{

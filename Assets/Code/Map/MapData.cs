@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NPlanet;
 using UnityEngine;
 
@@ -48,7 +48,7 @@ namespace Snowship.NMap
 			Vector2 planetTilePosition
 		) {
 			this.mapSeed = mapSeed;
-			UnityEngine.Random.InitState(mapSeed);
+			Random.InitState(mapSeed);
 
 			this.mapSize = mapSize;
 			this.actualMap = actualMap;
@@ -70,7 +70,19 @@ namespace Snowship.NMap
 			equatorOffset = ((planetTilePosition.y - (mapSize / 2f)) * 2) / mapSize;
 
 			if (planetMapData != null) {
-				mapRegenerationCode = planetMapData.mapSeed + "~" + planetMapData.mapSize + "~" + planetMapData.temperatureRange + "~" + planetMapData.planetDistance + "~" + planetMapData.primaryWindDirection + "~" + planetTilePosition.x + "~" + planetTilePosition.y + "~" + mapSize + "~" + mapSeed;
+				// ReSharper disable once UseStringInterpolation
+				mapRegenerationCode = string.Format(
+					"{0}~{1}~{2}~{3}~{4}~{5}~{6}~{7}~{8}",
+					planetMapData.mapSeed,
+					planetMapData.mapSize,
+					planetMapData.temperatureRange,
+					planetMapData.planetDistance,
+					planetMapData.primaryWindDirection,
+					planetTilePosition.x,
+					planetTilePosition.y,
+					mapSize,
+					mapSeed
+				);
 			}
 		}
 	}

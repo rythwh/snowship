@@ -2,21 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NCamera;
 using Snowship.NColonist;
 using Snowship.NLife;
 using Snowship.NMap.Models.Geography;
 using Snowship.NMap.Models.Structure;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NResource;
 using Snowship.NState;
 using Snowship.NTime;
 using Snowship.NUI;
+using Snowship.Persistence;
 using UnityEngine;
 
 namespace Snowship.NMap
 {
-	public class Map {
+	public partial class Map {
 
 		private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
 
@@ -33,13 +35,10 @@ namespace Snowship.NMap
 			CreateMap().Forget();
 		}
 
-		public Map() {
-		}
-
-		public List<Tile.Tile> tiles = new List<Tile.Tile>();
-		public List<List<Tile.Tile>> sortedTiles = new List<List<Tile.Tile>>();
-		public List<Tile.Tile> edgeTiles = new List<Tile.Tile>();
-		public Dictionary<int, List<Tile.Tile>> sortedEdgeTiles = new Dictionary<int, List<Tile.Tile>>();
+		public List<Tile> tiles = new List<Tile>();
+		public List<List<Tile>> sortedTiles = new List<List<Tile>>();
+		public List<Tile> edgeTiles = new List<Tile>();
+		public Dictionary<int, List<Tile>> sortedEdgeTiles = new Dictionary<int, List<Tile>>();
 
 		public async UniTask CreateMap() {
 
@@ -215,14 +214,14 @@ namespace Snowship.NMap
 
 		void CreateTiles() {
 			for (int y = 0; y < MapData.mapSize; y++) {
-				List<Tile.Tile> innerTiles = new List<Tile.Tile>();
+				List<Tile> innerTiles = new List<Tile>();
 				for (int x = 0; x < MapData.mapSize; x++) {
 
 					float height = UnityEngine.Random.Range(0f, 1f);
 
 					Vector2 position = new Vector2(x, y);
 
-					Tile.Tile tile = new Tile.Tile(this, position, height);
+					Tile tile = new Tile(this, position, height);
 
 					innerTiles.Add(tile);
 					tiles.Add(tile);
@@ -313,7 +312,7 @@ namespace Snowship.NMap
 				lastSize = size;
 			}
 
-			foreach (Tile.Tile tile in tiles) {
+			foreach (Tile tile in tiles) {
 				tile.SetTileHeight(tile.height);
 			}
 		}
@@ -322,47 +321,52 @@ namespace Snowship.NMap
 			for (int i = 0; i < 3; i++) { // 3
 				List<float> averageTileHeights = new List<float>();
 
-				foreach (Tile.Tile tile in tiles) {
+				foreach (Tile tile in tiles) {
 					float averageHeight = tile.height;
 					float numValidTiles = 1;
-					for (int t = 0; t < tile.surroundingTiles.Count; t++) {
-						Tile.Tile nTile = tile.surroundingTiles[t];
-						float multiplicationValue = 1f; // Reduces the weight of horizontal tiles by 50% to help prevent visible edges/corners on the map
-						if (nTile != null) {
-							if (i > 3) {
-								numValidTiles += 1f;
-							} else {
-								numValidTiles += 0.5f;
-								multiplicationValue = 0.5f;
-							}
-							averageHeight += nTile.height * multiplicationValue;
+					for (int nTileIndex = 0; nTileIndex < tile.surroundingTiles.Count; nTileIndex++) {
+						Tile nTile = tile.surroundingTiles[nTileIndex];
+						if (nTile == null) {
+							continue;
 						}
+						float weight = 1f;
+						if (nTileIndex > 3) { // If nTile is diagonal to tile
+							numValidTiles += 1f;
+						} else {
+							numValidTiles += 0.5f;
+							weight = 0.5f; // Reduces the weight of horizontal tiles by 50% to help prevent visible edges/corners on the map
+						}
+						averageHeight += nTile.height * weight;
 					}
 					averageHeight /= numValidTiles;
 					averageTileHeights.Add(averageHeight);
 				}
 
+				// Apply after calculating averages to prevent processing over new values in previous step
 				for (int k = 0; k < tiles.Count; k++) {
 					tiles[k].height = averageTileHeights[k];
-					tiles[k].SetTileTypeByHeight();
 				}
+			}
+
+			foreach (Tile tile in tiles) {
+				tile.SetTileTypeByHeight();
 			}
 		}
 
 		void PreventEdgeTouching() {
-			foreach (Tile.Tile tile in tiles) {
+			foreach (Tile tile in tiles) {
 				float edgeDistance = (MapData.mapSize - (Vector2.Distance(tile.obj.transform.position, new Vector2(MapData.mapSize / 2f, MapData.mapSize / 2f)))) / MapData.mapSize;
 				tile.SetTileHeight(tile.height * Mathf.Clamp(-Mathf.Pow(edgeDistance - 1.5f, 10) + 1, 0f, 1f));
 			}
 		}
 
-		public List<Region> regions = new List<Region>();
-		public int currentRegionID = 0;
+		public HashSet<Region> regions = new();
+		public int largestCurrentRegionId = 0;
 
 		void SmoothHeightWithSurroundingPlanetTiles() {
 			for (int i = 0; i < MapData.surroundingPlanetTileHeightDirections.Count; i++) {
 				if (MapData.surroundingPlanetTileHeightDirections[i] != 0) {
-					foreach (Tile.Tile tile in tiles) {
+					foreach (Tile tile in tiles) {
 						float closestEdgeDistance = sortedEdgeTiles[i].Min(edgeTile => Vector2.Distance(edgeTile.obj.transform.position, tile.obj.transform.position)) / (MapData.mapSize);
 						float heightMultiplier = MapData.surroundingPlanetTileHeightDirections[i] * Mathf.Pow(closestEdgeDistance - 1f, 10f) + 1f;
 						float newHeight = Mathf.Clamp(tile.height * heightMultiplier, 0f, 1f);
@@ -387,10 +391,10 @@ namespace Snowship.NMap
 		}
 
 		private void EstablishInitialRegions(bool splitByTileType) {
-			foreach (Tile.Tile tile in tiles) { // Go through all tiles
+			foreach (Tile tile in tiles) { // Go through all tiles
 				List<Region> foundRegions = new List<Region>(); // For each tile, store a list of the regions around them
 				for (int i = 0; i < tile.surroundingTiles.Count; i++) { // Go through the tiles around each tile
-					Tile.Tile nTile = tile.surroundingTiles[i];
+					Tile nTile = tile.surroundingTiles[i];
 					if (nTile != null && (splitByTileType ? tile.tileType == nTile.tileType : (tile.walkable == nTile.walkable)) && (i == 2 || i == 3 /*|| i == 5 || i == 6 */)) { // Uncomment indexes 5 and 6 to enable 8-connectivity connected-component labeling -- If the tiles have the same type
 						if (nTile.region != null && !foundRegions.Contains((Region)nTile.region)) { // If the tiles have a region and it hasn't already been looked at
 							foundRegions.Add(nTile.region); // Add the surrounding tile's region to the regions found around the original tile
@@ -398,20 +402,20 @@ namespace Snowship.NMap
 					}
 				}
 				if (foundRegions.Count <= 0) { // If there weren't any tiles with the same region/tiletype found around them, make a new region for this tile
-					tile.ChangeRegion(new Region(tile.tileType, currentRegionID), false, false);
-					currentRegionID += 1;
+					tile.ChangeRegion(new Region(tile.tileType), false, false);
+					largestCurrentRegionId += 1;
 				} else if (foundRegions.Count == 1) { // If there was a single region found around them, give them that region
 					tile.ChangeRegion(foundRegions[0], false, false);
 				} else if (foundRegions.Count > 1) { // If there was more than one around found around them, give them the region with the lowest ID
-					tile.ChangeRegion(FindLowestRegion(foundRegions), false, false);
+					tile.ChangeRegion(FindLargestRegion(foundRegions), false, false);
 				}
 			}
 		}
 
 		private void FindConnectedRegions(bool splitByTileType) {
 			foreach (Region region in regions) {
-				foreach (Tile.Tile tile in region.tiles) {
-					foreach (Tile.Tile nTile in tile.horizontalSurroundingTiles) {
+				foreach (Tile tile in region.tiles) {
+					foreach (Tile nTile in tile.horizontalSurroundingTiles) {
 						if (nTile != null && nTile.region != null && nTile.region != region && !region.connectedRegions.Contains((Region)nTile.region) && (splitByTileType ? tile.tileType == nTile.tileType : (tile.walkable == nTile.walkable))) {
 							region.connectedRegions.Add(nTile.region);
 						}
@@ -424,16 +428,16 @@ namespace Snowship.NMap
 			while (regions.Where<Region>(region => region.connectedRegions.Count > 0).ToList().Count > 0) { // While there are regions that have connected regions
 				foreach (Region region in regions) { // Go through each region
 					if (region.connectedRegions.Count > 0) { // If this region has connected regions
-						Region lowestRegion = FindLowestRegion(region.connectedRegions); // Find the lowest ID region from the connected regions
+						Region lowestRegion = FindLargestRegion(region.connectedRegions); // Find the lowest ID region from the connected regions
 						if (region != lowestRegion) { // If this region is not the lowest region
-							foreach (Tile.Tile tile in region.tiles) { // Set each tile's region in this region to the lowest region
+							foreach (Tile tile in region.tiles) { // Set each tile's region in this region to the lowest region
 								tile.ChangeRegion(lowestRegion, false, false);
 							}
 							region.tiles.Clear(); // Clear the tiles from this region
 						}
 						foreach (Region connectedRegion in region.connectedRegions) { // Set each tile's region in the connected regions that aren't the lowest region to the lowest region
 							if (connectedRegion != lowestRegion) {
-								foreach (Tile.Tile tile in connectedRegion.tiles) {
+								foreach (Tile tile in connectedRegion.tiles) {
 									tile.ChangeRegion(lowestRegion, false, false);
 								}
 								connectedRegion.tiles.Clear();
@@ -459,8 +463,8 @@ namespace Snowship.NMap
 			int regionIndex = 0;
 			for (int sectionY = 0; sectionY < MapData.mapSize; sectionY += size) {
 				for (int sectionX = 0; sectionX < MapData.mapSize; sectionX += size) {
-					RegionBlock regionBlock = new RegionBlock(TileType.GetTileTypeByEnum(TileType.TypeEnum.Grass), regionIndex);
-					RegionBlock squareRegionBlock = new RegionBlock(TileType.GetTileTypeByEnum(TileType.TypeEnum.Grass), regionIndex);
+					RegionBlock regionBlock = new RegionBlock(TileType.GetTileTypeByEnum(TileType.TypeEnum.Grass));
+					RegionBlock squareRegionBlock = new RegionBlock(TileType.GetTileTypeByEnum(TileType.TypeEnum.Grass));
 					for (int y = sectionY; (y < sectionY + size && y < MapData.mapSize); y++) {
 						for (int x = sectionX; (x < sectionX + size && x < MapData.mapSize); x++) {
 							regionBlock.tiles.Add(sortedTiles[y][x]);
@@ -474,8 +478,8 @@ namespace Snowship.NMap
 				}
 			}
 			foreach (RegionBlock squareRegionBlock in squareRegionBlocks) {
-				foreach (Tile.Tile tile in squareRegionBlock.tiles) {
-					foreach (Tile.Tile nTile in tile.surroundingTiles) {
+				foreach (Tile tile in squareRegionBlock.tiles) {
+					foreach (Tile nTile in tile.surroundingTiles) {
 						if (nTile != null && nTile.squareRegionBlock != tile.squareRegionBlock && nTile.squareRegionBlock != null && !squareRegionBlock.surroundingRegionBlocks.Contains((RegionBlock)nTile.squareRegionBlock)) {
 							squareRegionBlock.surroundingRegionBlocks.Add(nTile.squareRegionBlock);
 						}
@@ -490,9 +494,9 @@ namespace Snowship.NMap
 			foreach (RegionBlock regionBlock in regionBlocks) {
 				if (regionBlock.tiles.Find(tile => !tile.walkable) != null) {
 					removeRegionBlocks.Add(regionBlock);
-					List<Tile.Tile> unwalkableTiles = new List<Tile.Tile>();
-					List<Tile.Tile> walkableTiles = new List<Tile.Tile>();
-					foreach (Tile.Tile tile in regionBlock.tiles) {
+					List<Tile> unwalkableTiles = new List<Tile>();
+					List<Tile> walkableTiles = new List<Tile>();
+					foreach (Tile tile in regionBlock.tiles) {
 						if (tile.walkable) {
 							walkableTiles.Add(tile);
 						} else {
@@ -500,19 +504,19 @@ namespace Snowship.NMap
 						}
 					}
 					regionBlock.tiles.Clear();
-					foreach (Tile.Tile unwalkableTile in unwalkableTiles) {
+					foreach (Tile unwalkableTile in unwalkableTiles) {
 						if (unwalkableTile.regionBlock == null) {
-							RegionBlock unwalkableRegionBlock = new RegionBlock(unwalkableTile.tileType, regionIndex);
+							RegionBlock unwalkableRegionBlock = new RegionBlock(unwalkableTile.tileType);
 							regionIndex += 1;
-							Tile.Tile currentTile = unwalkableTile;
-							List<Tile.Tile> frontier = new List<Tile.Tile>() { currentTile };
-							List<Tile.Tile> checkedTiles = new List<Tile.Tile>() { currentTile };
+							Tile currentTile = unwalkableTile;
+							List<Tile> frontier = new List<Tile>() { currentTile };
+							List<Tile> checkedTiles = new List<Tile>() { currentTile };
 							while (frontier.Count > 0) {
 								currentTile = frontier[0];
 								frontier.RemoveAt(0);
 								unwalkableRegionBlock.tiles.Add(currentTile);
 								currentTile.regionBlock = unwalkableRegionBlock;
-								foreach (Tile.Tile nTile in currentTile.horizontalSurroundingTiles) {
+								foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
 									if (nTile != null && !nTile.walkable && !checkedTiles.Contains(nTile) && unwalkableTiles.Contains(nTile) && nTile.regionBlock == null) {
 										frontier.Add(nTile);
 									}
@@ -522,19 +526,19 @@ namespace Snowship.NMap
 							newRegionBlocks.Add(unwalkableRegionBlock);
 						}
 					}
-					foreach (Tile.Tile walkableTile in walkableTiles) {
+					foreach (Tile walkableTile in walkableTiles) {
 						if (walkableTile.regionBlock == null) {
-							RegionBlock walkableRegionBlock = new RegionBlock(walkableTile.tileType, regionIndex);
+							RegionBlock walkableRegionBlock = new RegionBlock(walkableTile.tileType);
 							regionIndex += 1;
-							Tile.Tile currentTile = walkableTile;
-							List<Tile.Tile> frontier = new List<Tile.Tile>() { currentTile };
-							List<Tile.Tile> checkedTiles = new List<Tile.Tile>() { currentTile };
+							Tile currentTile = walkableTile;
+							List<Tile> frontier = new List<Tile>() { currentTile };
+							List<Tile> checkedTiles = new List<Tile>() { currentTile };
 							while (frontier.Count > 0) {
 								currentTile = frontier[0];
 								frontier.RemoveAt(0);
 								walkableRegionBlock.tiles.Add(currentTile);
 								currentTile.regionBlock = walkableRegionBlock;
-								foreach (Tile.Tile nTile in currentTile.horizontalSurroundingTiles) {
+								foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
 									if (nTile != null && nTile.walkable && !checkedTiles.Contains(nTile) && walkableTiles.Contains(nTile) && nTile.regionBlock == null) {
 										frontier.Add(nTile);
 									}
@@ -545,7 +549,7 @@ namespace Snowship.NMap
 						}
 					}
 				} else {
-					foreach (Tile.Tile tile in regionBlock.tiles) {
+					foreach (Tile tile in regionBlock.tiles) {
 						tile.regionBlock = regionBlock;
 					}
 				}
@@ -556,13 +560,13 @@ namespace Snowship.NMap
 			removeRegionBlocks.Clear();
 			regionBlocks.AddRange(newRegionBlocks);
 			foreach (RegionBlock regionBlock in regionBlocks) {
-				foreach (Tile.Tile tile in regionBlock.tiles) {
-					foreach (Tile.Tile nTile in tile.horizontalSurroundingTiles) {
+				foreach (Tile tile in regionBlock.tiles) {
+					foreach (Tile nTile in tile.horizontalSurroundingTiles) {
 						if (nTile != null && nTile.regionBlock != tile.regionBlock && nTile.regionBlock != null && !regionBlock.horizontalSurroundingRegionBlocks.Contains((RegionBlock)nTile.regionBlock)) {
 							regionBlock.horizontalSurroundingRegionBlocks.Add(nTile.regionBlock);
 						}
 					}
-					foreach (Tile.Tile nTile in tile.surroundingTiles) {
+					foreach (Tile nTile in tile.surroundingTiles) {
 						if (nTile != null && nTile.regionBlock != tile.regionBlock && nTile.regionBlock != null && !regionBlock.surroundingRegionBlocks.Contains((RegionBlock)nTile.regionBlock)) {
 							regionBlock.surroundingRegionBlocks.Add(nTile.regionBlock);
 						}
@@ -573,55 +577,67 @@ namespace Snowship.NMap
 			}
 		}
 
-		private Region FindLowestRegion(List<Region> searchRegions) {
-			Region lowestRegion = searchRegions[0];
+		private Region FindLargestRegion(List<Region> searchRegions) {
+			if (searchRegions is { Count: <= 0 }) {
+				return null;
+			}
+			Region largestRegion = searchRegions[0];
 			foreach (Region region in searchRegions) {
-				if (region.id < lowestRegion.id) {
-					lowestRegion = region;
+				if (region.tiles.Count > largestRegion.tiles.Count) {
+					largestRegion = region;
 				}
 			}
-			return lowestRegion;
+			return largestRegion;
 		}
 
 		private void RemoveEmptyRegions() {
-			for (int i = 0; i < regions.Count; i++) {
-				if (regions[i].tiles.Count <= 0) {
-					regions.RemoveAt(i);
-					i -= 1;
-				}
-			}
-
-			for (int i = 0; i < regions.Count; i++) {
-				regions[i].id = i;
-			}
-		}
-
-		private void RemoveNonWalkableRegions() {
-			List<Region> removeRegions = new List<Region>();
+			List<Region> regionsToRemove = null;
 			foreach (Region region in regions) {
-				if (!region.tileType.walkable) {
-					foreach (Tile.Tile tile in region.tiles) {
-						tile.ChangeRegion(null, false, false);
-					}
-					removeRegions.Add(region);
+				if (region.tiles.Count > 0) {
+					continue;
 				}
+				regionsToRemove ??= new List<Region>();
+				regionsToRemove.Add(region);
 			}
-			foreach (Region region in removeRegions) {
+			if (regionsToRemove == null) {
+				return;
+			}
+			foreach (Region region in regionsToRemove) {
 				regions.Remove(region);
 			}
 		}
 
-		public void RecalculateRegionsAtTile(Tile.Tile tile) {
+		private void RemoveNonWalkableRegions() {
+			List<Region> regionsToRemove = null;
+			foreach (Region region in regions) {
+				if (region.tileType.walkable) {
+					continue;
+				}
+				foreach (Tile tile in region.tiles) {
+					tile.ChangeRegion(null, false, false);
+				}
+				regionsToRemove ??= new List<Region>();
+				regionsToRemove.Add(region);
+			}
+			if (regionsToRemove == null) {
+				return;
+			}
+			foreach (Region region in regionsToRemove) {
+				regions.Remove(region);
+			}
+		}
+
+		public void RecalculateRegionsAtTile(Tile tile) {
 			if (!tile.walkable) {
-				List<Tile.Tile> orderedSurroundingTiles = new List<Tile.Tile>() {
+				List<Tile> orderedSurroundingTiles = new List<Tile>() {
 					tile.surroundingTiles[0], tile.surroundingTiles[4], tile.surroundingTiles[1], tile.surroundingTiles[5],
 					tile.surroundingTiles[2], tile.surroundingTiles[6], tile.surroundingTiles[3], tile.surroundingTiles[7]
 				};
-				List<List<Tile.Tile>> separateTileGroups = new List<List<Tile.Tile>>();
+				List<List<Tile>> separateTileGroups = new List<List<Tile>>();
 				int groupIndex = 0;
 				for (int i = 0; i < orderedSurroundingTiles.Count; i++) {
 					if (groupIndex == separateTileGroups.Count) {
-						separateTileGroups.Add(new List<Tile.Tile>());
+						separateTileGroups.Add(new List<Tile>());
 					}
 					if (orderedSurroundingTiles[i] != null && orderedSurroundingTiles[i].walkable) {
 						separateTileGroups[groupIndex].Add(orderedSurroundingTiles[i]);
@@ -637,18 +653,18 @@ namespace Snowship.NMap
 						}
 					}
 				}
-				List<Tile.Tile> horizontalGroups = new List<Tile.Tile>();
-				foreach (List<Tile.Tile> tileGroup in separateTileGroups) {
-					List<Tile.Tile> horizontalTilesInGroup = tileGroup.Where(groupTile => tile.horizontalSurroundingTiles.Contains(groupTile)).ToList();
+				List<Tile> horizontalGroups = new List<Tile>();
+				foreach (List<Tile> tileGroup in separateTileGroups) {
+					List<Tile> horizontalTilesInGroup = tileGroup.Where(groupTile => tile.horizontalSurroundingTiles.Contains(groupTile)).ToList();
 					if (horizontalTilesInGroup.Count > 0) {
 						horizontalGroups.Add(horizontalTilesInGroup[0]);
 					}
 				}
 				if (horizontalGroups.Count > 1) {
-					List<Tile.Tile> removeTiles = new List<Tile.Tile>();
-					foreach (Tile.Tile startTile in horizontalGroups) {
+					List<Tile> removeTiles = new List<Tile>();
+					foreach (Tile startTile in horizontalGroups) {
 						if (!removeTiles.Contains(startTile)) {
-							foreach (Tile.Tile endTile in horizontalGroups) {
+							foreach (Tile endTile in horizontalGroups) {
 								if (!removeTiles.Contains(endTile) && startTile != endTile) {
 									if (PathManager.PathExists(startTile, endTile, true, MapData.mapSize, PathManager.WalkableSetting.Walkable, PathManager.DirectionSetting.Horizontal)) {
 										removeTiles.Add(endTile);
@@ -657,7 +673,7 @@ namespace Snowship.NMap
 							}
 						}
 					}
-					foreach (Tile.Tile removeTile in removeTiles) {
+					foreach (Tile removeTile in removeTiles) {
 						horizontalGroups.Remove(removeTile);
 					}
 					if (horizontalGroups.Count > 1) {
@@ -677,8 +693,8 @@ namespace Snowship.NMap
 				if (tileTypeGroupsToRemove.Contains(region.tileType.groupType)) {
 					if (region.tiles.Count < removeRegionsBelowSize) {
 						/* --- This code is essentially copied from FindConnectedRegions() */
-						foreach (Tile.Tile tile in region.tiles) {
-							foreach (Tile.Tile nTile in tile.horizontalSurroundingTiles) {
+						foreach (Tile tile in region.tiles) {
+							foreach (Tile nTile in tile.horizontalSurroundingTiles) {
 								if (nTile != null && nTile.region != null && nTile.region != region && !region.connectedRegions.Contains((Region)nTile.region)) {
 									region.connectedRegions.Add(nTile.region);
 								}
@@ -686,8 +702,8 @@ namespace Snowship.NMap
 						}
 						/* --- This code is essentially copied from MergeConnectedRegions() */
 						if (region.connectedRegions.Count > 0) {
-							Region lowestRegion = FindLowestRegion(region.connectedRegions);
-							foreach (Tile.Tile tile in region.tiles) { // Set each tile's region in this region to the lowest region
+							Region lowestRegion = FindLargestRegion(region.connectedRegions);
+							foreach (Tile tile in region.tiles) { // Set each tile's region in this region to the lowest region
 								tile.ChangeRegion(lowestRegion, true, false);
 							}
 							region.tiles.Clear(); // Clear the tiles from this region
@@ -701,23 +717,20 @@ namespace Snowship.NMap
 		public List<River> rivers = new List<River>();
 		public List<River> largeRivers = new List<River>();
 
-		public Dictionary<Region, Tile.Tile> drainageBasins = new Dictionary<Region, Tile.Tile>();
-		public int drainageBasinID = 0;
+		public Dictionary<Region, Tile> drainageBasins = new Dictionary<Region, Tile>();
 
 		public void DetermineDrainageBasins() {
 			drainageBasins.Clear();
-			drainageBasinID = 0;
 
-			List<Tile.Tile> tilesByHeight = tiles.OrderBy(tile => tile.height).ToList();
-			foreach (Tile.Tile tile in tilesByHeight) {
+			List<Tile> tilesByHeight = tiles.OrderBy(tile => tile.height).ToList();
+			foreach (Tile tile in tilesByHeight) {
 				if (tile.tileType.groupType != TileTypeGroup.TypeEnum.Stone && tile.drainageBasin == null) {
-					Region drainageBasin = new Region(null, drainageBasinID);
-					drainageBasinID += 1;
+					Region drainageBasin = new Region(null);
 
-					Tile.Tile currentTile = tile;
+					Tile currentTile = tile;
 
-					List<Tile.Tile> checkedTiles = new List<Tile.Tile> { currentTile };
-					List<Tile.Tile> frontier = new List<Tile.Tile>() { currentTile };
+					List<Tile> checkedTiles = new List<Tile> { currentTile };
+					List<Tile> frontier = new List<Tile>() { currentTile };
 
 					while (frontier.Count > 0) {
 						currentTile = frontier[0];
@@ -726,7 +739,7 @@ namespace Snowship.NMap
 						drainageBasin.tiles.Add(currentTile);
 						currentTile.drainageBasin = drainageBasin;
 
-						foreach (Tile.Tile nTile in currentTile.horizontalSurroundingTiles) {
+						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
 							if (nTile != null && !checkedTiles.Contains(nTile) && nTile.tileType.groupType != TileTypeGroup.TypeEnum.Stone && nTile.drainageBasin == null) {
 								if (nTile.height * 1.2f >= currentTile.height) {
 									frontier.Add(nTile);
@@ -746,16 +759,16 @@ namespace Snowship.NMap
 				int riverEndRiverIndex = MapData.surroundingPlanetTileRivers.OrderByDescending(i => i).ToList()[0];
 				int riverEndListIndex = MapData.surroundingPlanetTileRivers.IndexOf(riverEndRiverIndex);
 
-				List<Tile.Tile> validEndTiles = sortedEdgeTiles[riverEndListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverEndListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverEndListIndex][sortedEdgeTiles[riverEndListIndex].Count - 1].obj.transform.position) >= 10).ToList();
-				Tile.Tile riverEndTile = validEndTiles[UnityEngine.Random.Range(0, validEndTiles.Count)];
+				List<Tile> validEndTiles = sortedEdgeTiles[riverEndListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverEndListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverEndListIndex][sortedEdgeTiles[riverEndListIndex].Count - 1].obj.transform.position) >= 10).ToList();
+				Tile riverEndTile = validEndTiles[UnityEngine.Random.Range(0, validEndTiles.Count)];
 
 				int riverStartListIndex = 0;
 				foreach (int riverStartRiverIndex in MapData.surroundingPlanetTileRivers) {
 					if (riverStartRiverIndex != -1 && riverStartRiverIndex != riverEndRiverIndex) {
 						int expandRadius = UnityEngine.Random.Range(1, 3) * Mathf.CeilToInt(MapData.mapSize / 100f);
-						List<Tile.Tile> validStartTiles = sortedEdgeTiles[riverStartListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][sortedEdgeTiles[riverStartListIndex].Count - 1].obj.transform.position) >= 10).ToList();
-						Tile.Tile riverStartTile = validStartTiles[UnityEngine.Random.Range(0, validStartTiles.Count)];
-						List<Tile.Tile> possibleCentreTiles = tiles.Where(t => Vector2.Distance(new Vector2(MapData.mapSize / 2f, MapData.mapSize / 2f), t.obj.transform.position) < MapData.mapSize / 5f).ToList();
+						List<Tile> validStartTiles = sortedEdgeTiles[riverStartListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, sortedEdgeTiles[riverStartListIndex][sortedEdgeTiles[riverStartListIndex].Count - 1].obj.transform.position) >= 10).ToList();
+						Tile riverStartTile = validStartTiles[UnityEngine.Random.Range(0, validStartTiles.Count)];
+						List<Tile> possibleCentreTiles = tiles.Where(t => Vector2.Distance(new Vector2(MapData.mapSize / 2f, MapData.mapSize / 2f), t.obj.transform.position) < MapData.mapSize / 5f).ToList();
 						River river = new River(riverStartTile, possibleCentreTiles[UnityEngine.Random.Range(0, possibleCentreTiles.Count)], riverEndTile, expandRadius, true, this, true);
 						if (river.tiles.Count > 0) {
 							largeRivers.Add(river);
@@ -770,11 +783,11 @@ namespace Snowship.NMap
 
 		void CreateRivers() {
 			rivers.Clear();
-			Dictionary<Tile.Tile, Tile.Tile> riverStartTiles = new Dictionary<Tile.Tile, Tile.Tile>();
-			foreach (KeyValuePair<Region, Tile.Tile> kvp in drainageBasins) {
+			Dictionary<Tile, Tile> riverStartTiles = new Dictionary<Tile, Tile>();
+			foreach (KeyValuePair<Region, Tile> kvp in drainageBasins) {
 				Region drainageBasin = kvp.Key;
 				if (drainageBasin.tiles.Find(o => o.tileType.groupType == TileTypeGroup.TypeEnum.Water) != null && drainageBasin.tiles.Find(o => o.horizontalSurroundingTiles.Find(o2 => o2 != null && o2.tileType.groupType == TileTypeGroup.TypeEnum.Stone) != null) != null) {
-					foreach (Tile.Tile tile in drainageBasin.tiles) {
+					foreach (Tile tile in drainageBasin.tiles) {
 						if (tile.walkable && tile.tileType.groupType != TileTypeGroup.TypeEnum.Water && tile.horizontalSurroundingTiles.Find(o => o != null && o.tileType.groupType == TileTypeGroup.TypeEnum.Stone) != null) {
 							riverStartTiles.Add(tile, kvp.Value);
 						}
@@ -782,15 +795,15 @@ namespace Snowship.NMap
 				}
 			}
 			for (int i = 0; i < MapData.mapSize / 10f && i < riverStartTiles.Count; i++) {
-				Tile.Tile riverStartTile = Enumerable.ToList(riverStartTiles.Keys)[UnityEngine.Random.Range(0, riverStartTiles.Count)];
-				Tile.Tile riverEndTile = riverStartTiles[riverStartTile];
-				List<Tile.Tile> removeTiles = new List<Tile.Tile>();
-				foreach (KeyValuePair<Tile.Tile, Tile.Tile> kvp in riverStartTiles) {
+				Tile riverStartTile = Enumerable.ToList(riverStartTiles.Keys)[UnityEngine.Random.Range(0, riverStartTiles.Count)];
+				Tile riverEndTile = riverStartTiles[riverStartTile];
+				List<Tile> removeTiles = new List<Tile>();
+				foreach (KeyValuePair<Tile, Tile> kvp in riverStartTiles) {
 					if (Vector2.Distance(kvp.Key.obj.transform.position, riverStartTile.obj.transform.position) < 5f) {
 						removeTiles.Add(kvp.Key);
 					}
 				}
-				foreach (Tile.Tile removeTile in removeTiles) {
+				foreach (Tile removeTile in removeTiles) {
 					riverStartTiles.Remove(removeTile);
 				}
 				removeTiles.Clear();
@@ -804,13 +817,13 @@ namespace Snowship.NMap
 			}
 		}
 
-		public List<Tile.Tile> RiverPathfinding(Tile.Tile riverStartTile, Tile.Tile riverEndTile, int expandRadius, bool ignoreStone) {
+		public List<Tile> RiverPathfinding(Tile riverStartTile, Tile riverEndTile, int expandRadius, bool ignoreStone) {
 			PathManager.PathfindingTile currentTile = new PathManager.PathfindingTile(riverStartTile, null, 0);
 
 			List<PathManager.PathfindingTile> checkedTiles = new List<PathManager.PathfindingTile>() { currentTile };
 			List<PathManager.PathfindingTile> frontier = new List<PathManager.PathfindingTile>() { currentTile };
 
-			List<Tile.Tile> river = new List<Tile.Tile>();
+			List<Tile> river = new List<Tile>();
 
 			while (frontier.Count > 0) {
 				currentTile = frontier[0];
@@ -825,7 +838,7 @@ namespace Snowship.NMap
 					break;
 				}
 
-				foreach (Tile.Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
+				foreach (Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
 					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (ignoreStone || nTile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
 						if (rivers.Find(otherRiver => otherRiver.tiles.Find(riverTile => nTile == riverTile) != null) != null) {
 							frontier.Clear();
@@ -848,15 +861,15 @@ namespace Snowship.NMap
 
 			if (expandRadius > 0) {
 				float expandedExpandRadius = expandRadius * UnityEngine.Random.Range(2f, 4f);
-				List<Tile.Tile> riverAdditions = new List<Tile.Tile>();
+				List<Tile> riverAdditions = new List<Tile>();
 				riverAdditions.AddRange(river);
-				foreach (Tile.Tile riverTile in river) {
+				foreach (Tile riverTile in river) {
 					riverTile.SetTileHeight(CalculateLargeRiverTileHeight(expandRadius, 0));
 
-					List<Tile.Tile> expandFrontier = new List<Tile.Tile>() { riverTile };
-					List<Tile.Tile> checkedExpandTiles = new List<Tile.Tile>() { riverTile };
+					List<Tile> expandFrontier = new List<Tile>() { riverTile };
+					List<Tile> checkedExpandTiles = new List<Tile>() { riverTile };
 					while (expandFrontier.Count > 0) {
-						Tile.Tile expandTile = expandFrontier[0];
+						Tile expandTile = expandFrontier[0];
 						expandFrontier.RemoveAt(0);
 						float distanceExpandTileRiverTile = Vector2.Distance(expandTile.obj.transform.position, riverTile.obj.transform.position);
 						float newRiverHeight = CalculateLargeRiverTileHeight(expandRadius, distanceExpandTileRiverTile);
@@ -869,7 +882,7 @@ namespace Snowship.NMap
 						} else if (!riverAdditions.Contains(expandTile) && expandTile.height > newRiverBankHeight) {
 							expandTile.SetTileHeight(newRiverBankHeight);
 						}
-						foreach (Tile.Tile nTile in expandTile.surroundingTiles) {
+						foreach (Tile nTile in expandTile.surroundingTiles) {
 							if (nTile != null && !checkedExpandTiles.Contains(nTile) && (ignoreStone || nTile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
 								if (Vector2.Distance(nTile.obj.transform.position, riverTile.obj.transform.position) <= expandedExpandRadius) {
 									expandFrontier.Add(nTile);
@@ -897,15 +910,15 @@ namespace Snowship.NMap
 			return Mathf.Clamp(height, 0f, 1f);
 		}
 
-		public KeyValuePair<Tile.Tile, River> RiversContainTile(Tile.Tile tile, bool includeLargeRivers) {
+		public KeyValuePair<Tile, River> RiversContainTile(Tile tile, bool includeLargeRivers) {
 			foreach (River river in includeLargeRivers ? rivers.Concat<River>(largeRivers) : rivers) {
-				foreach (Tile.Tile riverTile in river.tiles) {
+				foreach (Tile riverTile in river.tiles) {
 					if (riverTile == tile) {
-						return new KeyValuePair<Tile.Tile, River>(riverTile, river);
+						return new KeyValuePair<Tile, River>(riverTile, river);
 					}
 				}
 			}
-			return new KeyValuePair<Tile.Tile, River>(null, null);
+			return new KeyValuePair<Tile, River>(null, null);
 		}
 
 		public float TemperatureFromMapLatitude(float yPos, float temperatureRange, float temperatureOffset, int mapSize) {
@@ -913,7 +926,7 @@ namespace Snowship.NMap
 		}
 
 		public void CalculateTemperature() {
-			foreach (Tile.Tile tile in tiles) {
+			foreach (Tile tile in tiles) {
 				if (MapData.planetTemperature) {
 					tile.temperature = TemperatureFromMapLatitude(tile.position.y, MapData.temperatureRange, MapData.temperatureOffset, MapData.mapSize);
 				} else {
@@ -930,11 +943,11 @@ namespace Snowship.NMap
 			for (int i = 0; i < numPasses; i++) {
 				List<float> averageTileTemperatures = new List<float>();
 
-				foreach (Tile.Tile tile in tiles) {
+				foreach (Tile tile in tiles) {
 					float averageTemperature = tile.temperature;
 					int numValidTiles = 1;
 					for (int t = 0; t < tile.surroundingTiles.Count; t++) {
-						Tile.Tile nTile = tile.surroundingTiles[t];
+						Tile nTile = tile.surroundingTiles[t];
 						if (nTile != null) {
 							numValidTiles += 1;
 							averageTemperature += nTile.temperature;
@@ -979,8 +992,8 @@ namespace Snowship.NMap
 
 					for (int y = (yStartAtTop ? MapData.mapSize - 1 : 0); (yStartAtTop ? y >= 0 : y < MapData.mapSize); y += (yStartAtTop ? -1 : 1)) {
 						for (int x = (xStartAtRight ? MapData.mapSize - 1 : 0); (xStartAtRight ? x >= 0 : x < MapData.mapSize); x += (xStartAtRight ? -1 : 1)) {
-							Tile.Tile tile = sortedTiles[y][x];
-							Tile.Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
+							Tile tile = sortedTiles[y][x];
+							Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
 							SetTilePrecipitation(tile, previousTile, MapData.planetTemperature);
 						}
 					}
@@ -992,15 +1005,15 @@ namespace Snowship.NMap
 						for (int x = (left ? k : 0); (left ? x >= 0 : x <= k); x += (left ? -1 : 1)) {
 							int y = k - x;
 							if (y < MapData.mapSize && x < MapData.mapSize) {
-								Tile.Tile tile = sortedTiles[y][x];
-								Tile.Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
+								Tile tile = sortedTiles[y][x];
+								Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
 								SetTilePrecipitation(tile, previousTile, MapData.planetTemperature);
 							}
 						}
 					}
 				}
 				List<float> singleDirectionPrecipitations = new List<float>();
-				foreach (Tile.Tile tile in tiles) {
+				foreach (Tile tile in tiles) {
 					singleDirectionPrecipitations.Add(tile.GetPrecipitation());
 					tile.SetPrecipitation(0);
 				}
@@ -1019,7 +1032,7 @@ namespace Snowship.NMap
 			}
 
 			for (int t = 0; t < tiles.Count; t++) {
-				Tile.Tile tile = tiles[t];
+				Tile tile = tiles[t];
 				tile.SetPrecipitation(0);
 				for (int i = windDirectionMin; i < (windDirectionMax + 1); i++) {
 					tile.SetPrecipitation(tile.GetPrecipitation() + (directionPrecipitations[i][t] * windStrengthMap[primaryWindDirection][i]));
@@ -1029,7 +1042,7 @@ namespace Snowship.NMap
 
 			AverageTilePrecipitations();
 
-			foreach (Tile.Tile tile in tiles) {
+			foreach (Tile tile in tiles) {
 				if (Mathf.RoundToInt(MapData.averagePrecipitation) != -1) {
 					tile.SetPrecipitation((tile.GetPrecipitation() + MapData.averagePrecipitation) / 2f);
 				}
@@ -1037,7 +1050,7 @@ namespace Snowship.NMap
 			}
 		}
 
-		private void SetTilePrecipitation(Tile.Tile tile, Tile.Tile previousTile, bool planet) {
+		private void SetTilePrecipitation(Tile tile, Tile previousTile, bool planet) {
 			if (planet) {
 				if (previousTile != null) {
 					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
@@ -1094,11 +1107,11 @@ namespace Snowship.NMap
 			for (int i = 0; i < numPasses; i++) {
 				List<float> averageTilePrecipitations = new List<float>();
 
-				foreach (Tile.Tile tile in tiles) {
+				foreach (Tile tile in tiles) {
 					float averagePrecipitation = tile.GetPrecipitation();
 					int numValidTiles = 1;
 					for (int t = 0; t < tile.surroundingTiles.Count; t++) {
-						Tile.Tile nTile = tile.surroundingTiles[t];
+						Tile nTile = tile.surroundingTiles[t];
 						if (nTile != null) {
 							numValidTiles += 1;
 							averagePrecipitation += nTile.GetPrecipitation();
@@ -1127,7 +1140,7 @@ namespace Snowship.NMap
 			}
 			*/
 
-			foreach (Tile.Tile tile in tiles) {
+			foreach (Tile tile in tiles) {
 				foreach (Biome biome in Biome.biomes) {
 					foreach (Biome.Range range in biome.ranges) {
 						if (range.IsInRange(tile.GetPrecipitation(), tile.temperature)) {
@@ -1159,12 +1172,12 @@ namespace Snowship.NMap
 			sortedEdgeTiles.Clear();
 
 			int sideNum = -1;
-			List<Tile.Tile> tilesOnThisEdge = null;
+			List<Tile> tilesOnThisEdge = null;
 			for (int i = 0; i <= MapData.mapSize; i++) {
 				i %= MapData.mapSize;
 				if (i == 0) {
 					sideNum += 1;
-					sortedEdgeTiles.Add(sideNum, new List<Tile.Tile>());
+					sortedEdgeTiles.Add(sideNum, new List<Tile>());
 					tilesOnThisEdge = sortedEdgeTiles[sideNum];
 				}
 				if (sideNum == 0) {
@@ -1183,20 +1196,20 @@ namespace Snowship.NMap
 
 		public void SetRoofs() {
 			float roofHeightMultiplier = 1.25f;
-			foreach (Tile.Tile tile in tiles) {
+			foreach (Tile tile in tiles) {
 				tile.SetRoof(tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone && tile.height >= MapData.terrainTypeHeights[TileTypeGroup.TypeEnum.Stone] * roofHeightMultiplier);
 			}
 		}
 
 		private void SetCoastalWater() {
-			foreach (Tile.Tile tile in tiles) {
+			foreach (Tile tile in tiles) {
 				tile.CoastalWater = tile.tileType.groupType == TileTypeGroup.TypeEnum.Water && tile.surroundingTiles.Count(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) > 0;
 			}
 		}
 
 		public void SetResourceVeins() {
 
-			List<Tile.Tile> stoneTiles = new List<Tile.Tile>();
+			List<Tile> stoneTiles = new List<Tile>();
 			foreach (RegionBlock regionBlock in regionBlocks) {
 				if (regionBlock.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 					stoneTiles.AddRange(regionBlock.tiles);
@@ -1208,10 +1221,10 @@ namespace Snowship.NMap
 				}
 			}
 
-			List<Tile.Tile> coastTiles = new List<Tile.Tile>();
+			List<Tile> coastTiles = new List<Tile>();
 			foreach (RegionBlock regionBlock in regionBlocks) {
 				if (regionBlock.tileType.groupType == TileTypeGroup.TypeEnum.Water) {
-					foreach (Tile.Tile tile in regionBlock.tiles) {
+					foreach (Tile tile in regionBlock.tiles) {
 						if (tile.surroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) != null) {
 							coastTiles.Add(tile);
 						}
@@ -1225,18 +1238,18 @@ namespace Snowship.NMap
 			}
 		}
 
-		void PlaceResourceVeins(ResourceVein resourceVeinData, List<Tile.Tile> mediumTiles) {
-			List<Tile.Tile> previousVeinStartTiles = new List<Tile.Tile>();
+		void PlaceResourceVeins(ResourceVein resourceVeinData, List<Tile> mediumTiles) {
+			List<Tile> previousVeinStartTiles = new List<Tile>();
 			for (int i = 0; i < Mathf.CeilToInt(MapData.mapSize / (float)resourceVeinData.numVeinsByMapSize); i++) {
-				List<Tile.Tile> validVeinStartTiles = mediumTiles.Where(tile => !resourceVeinData.tileTypes.ContainsValue(tile.tileType.type) && resourceVeinData.tileTypes.ContainsKey(tile.tileType.groupType) && ResourceVein.resourceVeinValidTileFunctions[resourceVeinData.resourceType](tile)).ToList();
-				foreach (Tile.Tile previousVeinStartTile in previousVeinStartTiles) {
-					List<Tile.Tile> removeTiles = new List<Tile.Tile>();
-					foreach (Tile.Tile validVeinStartTile in validVeinStartTiles) {
+				List<Tile> validVeinStartTiles = mediumTiles.Where(tile => !resourceVeinData.tileTypes.ContainsValue(tile.tileType.type) && resourceVeinData.tileTypes.ContainsKey(tile.tileType.groupType) && ResourceVein.resourceVeinValidTileFunctions[resourceVeinData.resourceType](tile)).ToList();
+				foreach (Tile previousVeinStartTile in previousVeinStartTiles) {
+					List<Tile> removeTiles = new List<Tile>();
+					foreach (Tile validVeinStartTile in validVeinStartTiles) {
 						if (Vector2.Distance(validVeinStartTile.obj.transform.position, previousVeinStartTile.obj.transform.position) < resourceVeinData.veinDistance) {
 							removeTiles.Add(validVeinStartTile);
 						}
 					}
-					foreach (Tile.Tile removeTile in removeTiles) {
+					foreach (Tile removeTile in removeTiles) {
 						validVeinStartTiles.Remove(removeTile);
 					}
 				}
@@ -1244,12 +1257,12 @@ namespace Snowship.NMap
 
 					int veinSizeMax = resourceVeinData.veinSize + UnityEngine.Random.Range(-resourceVeinData.veinSizeRange, resourceVeinData.veinSizeRange);
 
-					Tile.Tile veinStartTile = validVeinStartTiles[UnityEngine.Random.Range(0, validVeinStartTiles.Count)];
+					Tile veinStartTile = validVeinStartTiles[UnityEngine.Random.Range(0, validVeinStartTiles.Count)];
 					previousVeinStartTiles.Add(veinStartTile);
 
-					List<Tile.Tile> frontier = new List<Tile.Tile>() { veinStartTile };
-					List<Tile.Tile> checkedTiles = new List<Tile.Tile>();
-					Tile.Tile currentTile = veinStartTile;
+					List<Tile> frontier = new List<Tile>() { veinStartTile };
+					List<Tile> checkedTiles = new List<Tile>();
+					Tile currentTile = veinStartTile;
 
 					int veinSize = 0;
 
@@ -1260,7 +1273,7 @@ namespace Snowship.NMap
 
 						currentTile.SetTileType(TileType.GetTileTypeByEnum(resourceVeinData.tileTypes[currentTile.tileType.groupType]), false, true, false);
 
-						foreach (Tile.Tile nTile in currentTile.horizontalSurroundingTiles) {
+						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
 							if (nTile != null && !checkedTiles.Contains(nTile) && !resourceVeinData.tileTypes.Values.Contains(nTile.tileType.type)) {
 								if (resourceVeinData.tileTypes.ContainsKey(nTile.tileType.groupType) && ResourceVein.resourceVeinValidTileFunctions[resourceVeinData.resourceType](nTile)) {
 									frontier.Add(nTile);
@@ -1321,7 +1334,7 @@ namespace Snowship.NMap
 		public int BitSum(
 			List<TileType.TypeEnum> compareTileTypes,
 			List<ObjectPrefab.ObjectEnum> compareObjectTypes,
-			List<Tile.Tile> tilesToSum,
+			List<Tile> tilesToSum,
 			bool includeMapEdge
 		) {
 			//if (compareObjectTypes == null) {
@@ -1336,8 +1349,8 @@ namespace Snowship.NMap
 					) {
 						bool ignoreTile = false;
 						if (diagonalCheckMap.ContainsKey(i)) {
-							List<Tile.Tile> surroundingHorizontalTiles = new List<Tile.Tile>() { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
-							List<Tile.Tile> similarTiles = surroundingHorizontalTiles.Where(tile =>
+							List<Tile> surroundingHorizontalTiles = new List<Tile>() { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
+							List<Tile> similarTiles = surroundingHorizontalTiles.Where(tile =>
 								tile != null
 								&& (compareTileTypes.Contains(tile.tileType.type)
 									/*|| compareObjectTypes.Intersect(tile.objectInstances.Values.Select(obj => obj.prefab.type)).ToList().Count > 0*/)
@@ -1357,7 +1370,7 @@ namespace Snowship.NMap
 						if (i <= 3) {
 							sum += Mathf.RoundToInt(Mathf.Pow(2, i));
 						} else {
-							List<Tile.Tile> surroundingHorizontalTiles = new List<Tile.Tile>() { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
+							List<Tile> surroundingHorizontalTiles = new List<Tile>() { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
 							if (surroundingHorizontalTiles.Find(tile => tile != null && !compareTileTypes.Contains(tile.tileType.type)) == null) {
 								sum += Mathf.RoundToInt(Mathf.Pow(2, i));
 							}
@@ -1368,9 +1381,9 @@ namespace Snowship.NMap
 			return sum;
 		}
 
-		void BitmaskTile(Tile.Tile tile, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, List<TileType.TypeEnum> customCompareTileTypes, bool includeMapEdge) {
+		void BitmaskTile(Tile tile, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, List<TileType.TypeEnum> customCompareTileTypes, bool includeMapEdge) {
 			int sum = 0;
-			List<Tile.Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles;
+			List<Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles;
 			if (customBitSumInputs) {
 				sum = BitSum(customCompareTileTypes, null, surroundingTilesToUse, includeMapEdge);
 			} else {
@@ -1415,8 +1428,8 @@ namespace Snowship.NMap
 			}
 		}
 
-		public void Bitmasking(List<Tile.Tile> tilesToBitmask, bool careAboutColonistVisibility, bool recalculateLighting) {
-			foreach (Tile.Tile tile in tilesToBitmask) {
+		public void Bitmasking(List<Tile> tilesToBitmask, bool careAboutColonistVisibility, bool recalculateLighting) {
+			foreach (Tile tile in tilesToBitmask) {
 				if (tile != null) {
 					if (!careAboutColonistVisibility || ColonistM.IsTileVisibleToAnyColonist(tile)) {
 						tile.SetVisible(true); // "true" on "recalculateBitmasking" would cause stack overflow
@@ -1489,7 +1502,7 @@ namespace Snowship.NMap
 			foreach (RegionBlock visibleRegionBlock in visibleRegionBlocks) {
 				if (forceUpdate || !Mathf.Approximately(visibleRegionBlock.lastBrightnessUpdate, time)) {
 					visibleRegionBlock.lastBrightnessUpdate = time;
-					foreach (Tile.Tile tile in visibleRegionBlock.tiles) {
+					foreach (Tile tile in visibleRegionBlock.tiles) {
 						tile.SetColour(newColour, Mathf.FloorToInt(time));
 					}
 				}
@@ -1522,22 +1535,22 @@ namespace Snowship.NMap
 			return new Color(r, g, b, 1f);
 		}
 
-		public bool TileCanShadowTiles(Tile.Tile tile) {
+		public bool TileCanShadowTiles(Tile tile) {
 			return tile.surroundingTiles.Any(nTile => nTile != null && !nTile.blocksLight) && (tile.blocksLight || tile.HasRoof());
 		}
 
-		public bool TileCanBeShadowed(Tile.Tile tile) {
+		public bool TileCanBeShadowed(Tile tile) {
 			return !tile.blocksLight || (!tile.blocksLight && tile.HasRoof());
 		}
 
-		public void RecalculateLighting(List<Tile.Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate = false) {
-			List<Tile.Tile> shadowSourceTiles = DetermineShadowSourceTiles(tilesToRecalculate);
+		public void RecalculateLighting(List<Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate = false) {
+			List<Tile> shadowSourceTiles = DetermineShadowSourceTiles(tilesToRecalculate);
 			DetermineShadowTiles(shadowSourceTiles, setBrightnessAtEnd, forceBrightnessUpdate);
 		}
 
-		public List<Tile.Tile> DetermineShadowSourceTiles(List<Tile.Tile> tilesToRecalculate) {
-			List<Tile.Tile> shadowSourceTiles = new List<Tile.Tile>();
-			foreach (Tile.Tile tile in tilesToRecalculate) {
+		public List<Tile> DetermineShadowSourceTiles(List<Tile> tilesToRecalculate) {
+			List<Tile> shadowSourceTiles = new List<Tile>();
+			foreach (Tile tile in tilesToRecalculate) {
 				if (tile != null && TileCanShadowTiles(tile)) {
 					shadowSourceTiles.Add(tile);
 				}
@@ -1546,7 +1559,7 @@ namespace Snowship.NMap
 		}
 
 		private static readonly float distanceIncreaseAmount = 0.1f; // 0.1f
-		private void DetermineShadowTiles(List<Tile.Tile> shadowSourceTiles, bool setBrightnessAtEnd, bool forceBrightnessUpdate) {
+		private void DetermineShadowTiles(List<Tile> shadowSourceTiles, bool setBrightnessAtEnd, bool forceBrightnessUpdate) {
 			if (!shadowDirectionsCalculated) {
 				DetermineShadowDirectionsAtHour(GameManager.Get<MapManager>().Map.MapData.equatorOffset);
 			}
@@ -1555,17 +1568,17 @@ namespace Snowship.NMap
 				float maxShadowDistanceAtHour = hourDirection.magnitude * 5f + (Mathf.Pow(h - 12, 2) / 6f);
 				float shadowedBrightnessAtHour = Mathf.Clamp(1 - (0.6f * CalculateBrightnessLevelAtHour(h)) + 0.3f, 0, 1);
 
-				foreach (Tile.Tile shadowSourceTile in shadowSourceTiles) {
+				foreach (Tile shadowSourceTile in shadowSourceTiles) {
 					Vector2 shadowSourceTilePosition = shadowSourceTile.obj.transform.position;
 					bool shadowedAnyTile = false;
 
-					List<Tile.Tile> shadowTiles = new List<Tile.Tile>();
+					List<Tile> shadowTiles = new List<Tile>();
 					for (float distance = 0; distance <= maxShadowDistanceAtHour; distance += distanceIncreaseAmount) {
 						Vector2 nextTilePosition = shadowSourceTilePosition + (hourDirection * distance);
 						if (nextTilePosition.x < 0 || nextTilePosition.x >= MapData.mapSize || nextTilePosition.y < 0 || nextTilePosition.y >= MapData.mapSize) {
 							break;
 						}
-						Tile.Tile tileToShadow = GetTileFromPosition(nextTilePosition);
+						Tile tileToShadow = GetTileFromPosition(nextTilePosition);
 						if (shadowTiles.Contains(tileToShadow)) {
 							distance += distanceIncreaseAmount;
 							continue;
@@ -1586,7 +1599,7 @@ namespace Snowship.NMap
 									if (tileToShadow.blockingShadowsFrom.ContainsKey(h)) {
 										tileToShadow.blockingShadowsFrom[h].Add(shadowSourceTile);
 									} else {
-										tileToShadow.blockingShadowsFrom.Add(h, new List<Tile.Tile>() { shadowSourceTile });
+										tileToShadow.blockingShadowsFrom.Add(h, new List<Tile>() { shadowSourceTile });
 									}
 									tileToShadow.blockingShadowsFrom[h] = tileToShadow.blockingShadowsFrom[h].Distinct().ToList();
 									break;
@@ -1599,7 +1612,7 @@ namespace Snowship.NMap
 									tileToShadow.shadowsFrom[h].Add(shadowSourceTile, newBrightness);
 								}
 							} else {
-								tileToShadow.shadowsFrom.Add(h, new Dictionary<Tile.Tile, float>() { { shadowSourceTile, newBrightness } });
+								tileToShadow.shadowsFrom.Add(h, new Dictionary<Tile, float>() { { shadowSourceTile, newBrightness } });
 							}
 						}
 					}
@@ -1616,11 +1629,11 @@ namespace Snowship.NMap
 			}
 		}
 
-		public void RemoveTileBrightnessEffect(Tile.Tile tile) {
-			List<Tile.Tile> tilesToRecalculateShadowsFor = new List<Tile.Tile>();
+		public void RemoveTileBrightnessEffect(Tile tile) {
+			List<Tile> tilesToRecalculateShadowsFor = new List<Tile>();
 			for (int h = 0; h < 24; h++) {
 				if (tile.shadowsTo.ContainsKey(h)) {
-					foreach (Tile.Tile nTile in tile.shadowsTo[h]) {
+					foreach (Tile nTile in tile.shadowsTo[h]) {
 						float darkestBrightnessAtHour = 1f;
 						if (nTile.shadowsFrom.ContainsKey(h)) {
 							nTile.shadowsFrom[h].Remove(tile);
@@ -1650,15 +1663,15 @@ namespace Snowship.NMap
 			RecalculateLighting(tilesToRecalculateShadowsFor.Distinct().ToList(), true);
 		}
 
-		public Tile.Tile GetTileFromPosition(Vector2 position) {
+		public Tile GetTileFromPosition(Vector2 position) {
 			return GetTileFromPosition(position.x, position.y);
 		}
 
-		public Tile.Tile GetTileFromPosition(float x, float y) {
+		public Tile GetTileFromPosition(float x, float y) {
 			return GetTileFromPosition(Mathf.FloorToInt(x), Mathf.FloorToInt(y));
 		}
 
-		public Tile.Tile GetTileFromPosition(int x, int y) {
+		public Tile GetTileFromPosition(int x, int y) {
 			return sortedTiles[Mathf.Clamp(y, 0, MapData.mapSize - 1)][Mathf.Clamp(x, 0, MapData.mapSize - 1)];
 		}
 

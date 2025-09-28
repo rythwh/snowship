@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Snowship.NMap;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NCaravan;
 using Snowship.NColonist;
 using Snowship.NColony;

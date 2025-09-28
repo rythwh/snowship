@@ -5,7 +5,7 @@ using Snowship.Selectable;
 using Snowship.NTime;
 using System.Collections.Generic;
 using Snowship.NMap.Models.Geography;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship;
 using Snowship.NCamera;
 using Snowship.NCaravan;
@@ -20,12 +20,12 @@ using Snowship.NResource;
 using Snowship.NSettings;
 using Snowship.NState;
 using Snowship.NUI;
+using Snowship.Persistence;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour {
 
 	public static readonly (int increment, string text) GameVersion = (3, "2025.1");
-	public static readonly (int increment, string text) SaveVersion = (3, "2025.1");
 
 	public static SharedReferences SharedReferences { get; private set; }
 
@@ -67,6 +67,7 @@ public class GameManager : MonoBehaviour {
 		Create<SelectionManager>();
 		Create<DebugManager>();
 		Create<StateManager>();
+		Create<PersistenceManager>();
 	}
 
 	private void SpecialManagerSetups() {

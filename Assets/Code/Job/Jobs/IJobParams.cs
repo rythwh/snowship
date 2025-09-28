@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using UnityEngine;
 
 namespace Snowship.NJob

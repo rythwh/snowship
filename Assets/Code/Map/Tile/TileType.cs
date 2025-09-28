@@ -6,7 +6,7 @@ using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
 
-namespace Snowship.NMap.Tile
+namespace Snowship.NMap.NTile
 {
 	public class TileType {
 

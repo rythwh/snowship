@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NColony;
 using Snowship.NHuman;
 using Snowship.NMap;

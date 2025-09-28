@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using Snowship.Selectable;

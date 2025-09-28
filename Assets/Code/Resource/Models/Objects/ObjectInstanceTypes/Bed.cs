@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NHuman;
 
 namespace Snowship.NResource

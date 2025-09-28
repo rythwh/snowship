@@ -1,7 +1,7 @@
-﻿using Snowship.NMap.Tile;
+﻿using Snowship.NMap.NTile;
 using Snowship.NJob;
 using Snowship.NResource;
-using static Snowship.NMap.Tile.TileManager;
+using static Snowship.NMap.NTile.TileManager;
 
 namespace Snowship.Selectable
 {

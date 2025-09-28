@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Snowship.NUtilities;
 
-namespace Snowship.NMap.Tile
+namespace Snowship.NMap.NTile
 {
 	public class TileTypeGroup {
 

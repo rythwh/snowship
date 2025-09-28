@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Snowship.NMap.Models.Geography;
 using Snowship.NMap.Models.Structure;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Cysharp.Threading.Tasks;
 using Snowship.NCamera;
 using Snowship.NCaravan;

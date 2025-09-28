@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NUtilities;
 using UnityEngine;
 

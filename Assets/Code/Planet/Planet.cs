@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Snowship.NMap;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NPersistence;
 
 namespace Snowship.NPlanet {
@@ -35,9 +35,6 @@ namespace Snowship.NPlanet {
 
 			lastSaveDateTime = PersistenceUtilities.GenerateSaveDateTimeString();
 			lastSaveTimeChunk = PersistenceUtilities.GenerateDateTimeString();
-		}
-
-		protected Planet() {
 		}
 
 		public void SetDirectory(string directory) {

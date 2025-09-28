@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Snowship.NMap.Models.Structure;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NCamera;
 using Snowship.NColonist;
 using Snowship.NColony;

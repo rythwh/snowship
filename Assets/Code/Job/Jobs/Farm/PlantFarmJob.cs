@@ -1,5 +1,5 @@
 ﻿using System;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NUtilities;
 
 namespace Snowship.NJob

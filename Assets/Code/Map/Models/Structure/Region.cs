@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 
 namespace Snowship.NMap.Models.Structure
 {
-	public class Region {
-
+	public class Region
+	{
 		public TileType tileType;
-		public List<Tile.Tile> tiles = new List<Tile.Tile>();
-		public int id;
+		public List<Tile> tiles = new List<Tile>();
 
 		public List<Region> connectedRegions = new List<Region>();
 
@@ -16,16 +15,15 @@ namespace Snowship.NMap.Models.Structure
 
 		private MapManager MapManager => GameManager.Get<MapManager>();
 
-		public Region(TileType regionTileType, int regionID) {
+		public Region(TileType regionTileType) {
 			tileType = regionTileType;
-			id = regionID;
 		}
 
 		public void SetVisible(bool visible, bool retile, bool recalculateLighting) {
 			Visible = visible;
 
-			List<Tile.Tile> tilesToModify = new List<Tile.Tile>();
-			foreach (Tile.Tile tile in tiles) {
+			List<Tile> tilesToModify = new List<Tile>();
+			foreach (Tile tile in tiles) {
 				tile.SetVisible(Visible);
 
 				tilesToModify.Add(tile);

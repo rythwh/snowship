@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using Snowship.NPersistence;
 using Snowship.NResource;
 using UnityEngine;
@@ -58,9 +58,9 @@ namespace Snowship.NMap.Models.Geography
 			this.veinSizeRange = veinSizeRange;
 		}
 
-		public static readonly Dictionary<EResource, Func<Tile.Tile, bool>> resourceVeinValidTileFunctions = new Dictionary<EResource, Func<Tile.Tile, bool>>() {
+		public static readonly Dictionary<EResource, Func<Tile, bool>> resourceVeinValidTileFunctions = new Dictionary<EResource, Func<Tile, bool>>() {
 			{
-				EResource.Clay, delegate(Tile.Tile tile) {
+				EResource.Clay, delegate(Tile tile) {
 					if (((tile.tileType.groupType == TileTypeGroup.TypeEnum.Water && tile.horizontalSurroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) != null) || (tile.tileType.groupType != TileTypeGroup.TypeEnum.Water)) && (tile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
 						if (tile.temperature >= -30) {
 							return true;
@@ -69,49 +69,49 @@ namespace Snowship.NMap.Models.Geography
 					return false;
 				}
 			}, {
-				EResource.Coal, delegate(Tile.Tile tile) {
+				EResource.Coal, delegate(Tile tile) {
 					if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						return true;
 					}
 					return false;
 				}
 			}, {
-				EResource.GoldOre, delegate(Tile.Tile tile) {
+				EResource.GoldOre, delegate(Tile tile) {
 					if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						return true;
 					}
 					return false;
 				}
 			}, {
-				EResource.SilverOre, delegate(Tile.Tile tile) {
+				EResource.SilverOre, delegate(Tile tile) {
 					if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						return true;
 					}
 					return false;
 				}
 			}, {
-				EResource.BronzeOre, delegate(Tile.Tile tile) {
+				EResource.BronzeOre, delegate(Tile tile) {
 					if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						return true;
 					}
 					return false;
 				}
 			}, {
-				EResource.IronOre, delegate(Tile.Tile tile) {
+				EResource.IronOre, delegate(Tile tile) {
 					if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						return true;
 					}
 					return false;
 				}
 			}, {
-				EResource.CopperOre, delegate(Tile.Tile tile) {
+				EResource.CopperOre, delegate(Tile tile) {
 					if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						return true;
 					}
 					return false;
 				}
 			}, {
-				EResource.Chalk, delegate(Tile.Tile tile) {
+				EResource.Chalk, delegate(Tile tile) {
 					if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
 						return true;
 					}

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Snowship.NMap.Tile;
+using Snowship.NMap.NTile;
 using UnityEngine;
 
 namespace Snowship.NMap.Models.Structure
@@ -12,7 +12,7 @@ namespace Snowship.NMap.Models.Structure
 
 		public float lastBrightnessUpdate;
 
-		public RegionBlock(TileType regionTileType, int regionID) : base(regionTileType, regionID) {
+		public RegionBlock(TileType regionTileType) : base(regionTileType) {
 			lastBrightnessUpdate = -1;
 		}
 	}
