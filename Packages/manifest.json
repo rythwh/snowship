@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.annulusgames.lit-motion": "https://github.com/annulusgames/LitMotion.git?path=src/LitMotion/Assets/LitMotion",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.rywh.ryui": "https://github.com/rythwh/RyUI.git?path=Packages/RyUI",
     "com.unity.2d.pixel-perfect": "5.1.0",

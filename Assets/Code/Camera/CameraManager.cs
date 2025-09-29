@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
+using LitMotion;
 using Snowship.NInput;
 using Snowship.NMap;
 using Snowship.NState;
@@ -87,15 +88,15 @@ namespace Snowship.NCamera {
 				zoomTaskHandle.Forget();
 			}
 
-			zoomTaskHandle = camera.DOOrthoSize(newZoom, ZoomTweenDuration)
-				.SetEase(Ease.OutCubic)
-				.Play()
-				.OnComplete(() => OnCameraZoomChanged?.Invoke(newZoom))
-				.AsyncWaitForCompletion()
-				.AsUniTask();
+			zoomTaskHandle = LMotion
+				.Create(camera.orthographicSize, newZoom, ZoomTweenDuration)
+				.WithEase(Ease.OutCubic)
+				.WithOnComplete(() => OnCameraZoomChanged?.Invoke(newZoom))
+				.Bind(x => camera.orthographicSize = x)
+				.ToUniTask(CancellationToken.None);
 		}
 
-		// TODO Might not be needed anymore, can maybe use to determine which regions are in view?
+		// TODO Use this to improve performance on visible region blocks
 		public RectInt CalculateCameraWorldRect() {
 			Vector2Int bottomLeftCorner = Vector2Int.FloorToInt(camera.ViewportToWorldPoint(new Vector3(0, 0, 0)));
 			Vector2Int topRightCorner = Vector2Int.CeilToInt(camera.ViewportToWorldPoint(new Vector3(1, 1, 1)));

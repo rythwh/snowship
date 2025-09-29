@@ -26,16 +26,18 @@ namespace Snowship.NState {
 				return;
 			}
 
-			state ??= states[newState];
+			if (state == null) {
+				state = states[newState];
+			} else {
+				if (state.Type == newState) {
+					Debug.LogWarning($"Trying to transition to the state we're already in: {state.Type} -> {newState}");
+					return;
+				}
 
-			if (state.Type == newState) {
-				Debug.LogWarning($"Trying to transition to the state we're already in: {state.Type} -> {newState}");
-				return;
-			}
-
-			if (!state.ValidNextStates.Contains(newState)) {
-				Debug.LogWarning($"Trying to transition to a illegal next state: {state.Type} -> {newState}.");
-				return;
+				if (!state.ValidNextStates.Contains(newState)) {
+					Debug.LogWarning($"Trying to transition to a illegal next state: {state.Type} -> {newState}.");
+					return;
+				}
 			}
 
 			EState previousState = state.Type;
@@ -54,8 +56,10 @@ namespace Snowship.NState {
 					throw new ArgumentOutOfRangeException(nameof(transitionUIAction), transitionUIAction, null);
 			}
 
-			foreach (Func<UniTask> action in state.ActionsOnTransition) {
-				await action();
+			if (state.ActionsOnTransition != null) {
+				foreach (Func<UniTask> action in state.ActionsOnTransition) {
+					await action();
+				}
 			}
 
 			OnStateChanged?.Invoke((previousState, state.Type));
