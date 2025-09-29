@@ -4,7 +4,6 @@ using System.Linq;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
 using Snowship.NCamera;
-using Snowship.NColony;
 using Snowship.NInput;
 using Snowship.NJob;
 using Snowship.NState;

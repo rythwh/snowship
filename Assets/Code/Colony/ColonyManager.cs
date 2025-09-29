@@ -12,10 +12,9 @@ namespace Snowship.NColony {
 		private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
 		private PlanetManager PlanetM => GameManager.Get<PlanetManager>();
 
-		public void CreateColony(CreateColonyData data) {
+		public async UniTask CreateColony(CreateColonyData data) {
 
 			MapData mapData = new MapData(
-				PlanetM.planet.MapData,
 				data.Seed,
 				data.Size,
 				true,
@@ -29,13 +28,13 @@ namespace Snowship.NColony {
 				data.PlanetTile.isRiver,
 				data.PlanetTile.surroundingPlanetTileRivers,
 				false,
-				PlanetM.planet.primaryWindDirection,
+				PlanetM.planet.MapData.primaryWindDirection,
 				data.PlanetTile.tile.position
 			);
 
 			colony = new Colony(data.Name);
 
-			MapM.Initialize(mapData, MapInitializeType.NewMap).Forget();
+			await MapM.CreateMap(mapData, MapInitializeType.NewMap);
 		}
 
 		public void SetupNewColony() {

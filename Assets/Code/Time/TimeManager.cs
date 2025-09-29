@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using Snowship.NColony;
 using Snowship.NInput;
 using Snowship.NMap;
 using Snowship.NState;

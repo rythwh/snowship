@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Snowship.NMap.NTile;
-using Snowship.NColony;
 using Snowship.NMap;
 using Snowship.NTime;
 using UnityEngine;

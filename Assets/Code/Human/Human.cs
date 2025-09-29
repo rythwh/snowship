@@ -5,7 +5,6 @@ using Snowship.NMap.Models.Structure;
 using Snowship.NMap.NTile;
 using Snowship.NCamera;
 using Snowship.NColonist;
-using Snowship.NColony;
 using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NProfession;

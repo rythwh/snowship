@@ -1,7 +1,5 @@
 ﻿
 
-using Snowship.NPersistence;
-
 public class UniverseManager : IManager {
 
 	public Universe universe = null;

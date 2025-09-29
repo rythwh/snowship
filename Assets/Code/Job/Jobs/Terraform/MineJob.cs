@@ -1,6 +1,5 @@
 ﻿using System;
 using Snowship.NMap.NTile;
-using Snowship.NColony;
 using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NUtilities;

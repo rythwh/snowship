@@ -1,7 +1,6 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using Snowship.NColony;
 using Snowship.NInput;
 using Snowship.NMap;
 using Snowship.NState;

@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Snowship.NColonist;
-using Snowship.NColony;
 using Snowship.NMap.Models.Geography;
 using Snowship.NMap.Models.Structure;
 using Snowship.NResource;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Snowship.NMap.NTile;
 using Snowship.NColonist;
-using Snowship.NColony;
 using Snowship.NMap;
 using Snowship.NResource;
 using UnityEngine;

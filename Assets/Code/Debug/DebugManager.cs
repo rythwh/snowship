@@ -1216,9 +1216,9 @@ public class DebugManager : IManager
 			Commands.viewdrainagebasins,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (KeyValuePair<Region, Tile> kvp in GameManager.Get<MapManager>().Map.drainageBasins) {
+					foreach (DrainageBasin drainageBasin in GameManager.Get<MapManager>().Map.drainageBasins) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
-						foreach (Tile tile in kvp.Key.tiles) {
+						foreach (Tile tile in drainageBasin.Tiles) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
 							tile.sr.color = colour;
 						}
@@ -1375,19 +1375,20 @@ public class DebugManager : IManager
 				}
 			}
 		);
-		commandFunctions.Add(
-			Commands.viewshadowstarttiles,
-			delegate(List<string> parameters) {
-				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.DetermineShadowSourceTiles(GameManager.Get<MapManager>().Map.tiles)) {
-						tile.SetVisible(true);
-						tile.sr.color = Color.red;
-					}
-				} else {
-					Output("ERROR: Invalid number of parameters specified.");
-				}
-			}
-		);
+		// TODO Fix this by moving context-specific debug commands to be within their own context (with asmdefs)
+		// commandFunctions.Add(
+		// 	Commands.viewshadowstarttiles,
+		// 	delegate(List<string> parameters) {
+		// 		if (parameters.Count == 0) {
+		// 			foreach (Tile tile in GameManager.Get<MapManager>().Map.DetermineShadowSourceTiles(GameManager.Get<MapManager>().Map.tiles)) {
+		// 				tile.SetVisible(true);
+		// 				tile.sr.color = Color.red;
+		// 			}
+		// 		} else {
+		// 			Output("ERROR: Invalid number of parameters specified.");
+		// 		}
+		// 	}
+		// );
 		commandFunctions.Add(
 			Commands.viewshadowsfrom,
 			delegate(List<string> parameters) {

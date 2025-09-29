@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using Snowship.NMap;
-using Snowship.NMap.NTile;
-using Snowship.NPersistence;
 
 namespace Snowship.NPlanet {
 	public class Planet : Map {
@@ -11,30 +9,11 @@ namespace Snowship.NPlanet {
 		public string lastSaveTimeChunk;
 
 		public string name;
-		public List<PlanetTile> planetTiles;
+		public List<PlanetTile> planetTiles = new();
 
 		public string regenerationCode;
 
-		public Planet(string name, MapData mapData) : base(mapData) {
-
-			this.name = name;
-
-			planetTiles = new List<PlanetTile>();
-			foreach (Tile tile in tiles) {
-				planetTiles.Add(new PlanetTile(this, tile));
-			}
-
-			regenerationCode = string.Format(
-				"{0}{1}{2}{3}{4}",
-				mapData.mapSeed.ToString().PadLeft(20, '0'),
-				mapData.mapSize.ToString().PadLeft(3, '0'),
-				mapData.planetDistance.ToString().PadLeft(2, '0'),
-				mapData.temperatureRange.ToString().PadLeft(3, '0'),
-				mapData.primaryWindDirection.ToString().PadLeft(2, '0')
-			);
-
-			lastSaveDateTime = PersistenceUtilities.GenerateSaveDateTimeString();
-			lastSaveTimeChunk = PersistenceUtilities.GenerateDateTimeString();
+		public Planet(MapData mapData) : base(mapData) {
 		}
 
 		public void SetDirectory(string directory) {

@@ -27,7 +27,7 @@ namespace Snowship.NPlanet {
 			// Setup PlanetTile-specific Information
 			equatorOffset = ((tile.position.y - (planet.MapData.mapSize / 2f)) * 2) / planet.MapData.mapSize;
 
-			River river = planet.RiversContainTile(tile, true).Value;
+			River river = River.GetRiverContainingTile(tile, planet.rivers, planet.largeRivers);
 			isRiver = river != null;
 
 			foreach (Tile sTile in tile.horizontalSurroundingTiles) {

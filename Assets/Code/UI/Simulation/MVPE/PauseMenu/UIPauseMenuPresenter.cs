@@ -1,7 +1,6 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
-using Snowship.NColony;
 using Snowship.NInput;
 
 using Snowship.NState;

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Snowship.NColonist;
 using Snowship.NMap.NTile;
 using Snowship.NHuman;
 using Snowship.NResource;

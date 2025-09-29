@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using Snowship.NMap.NTile;
-using Snowship.NColony;
 using Snowship.NJob;
-using Snowship.NMap;
 using Snowship.NTime;
 using UnityEngine;
 
@@ -56,7 +54,7 @@ namespace Snowship.NResource
 
 		public float CalculateGrowthRate() {
 			float growthRate = GameManager.Get<TimeManager>().Time.DeltaTime;
-			growthRate *= Mathf.Max(GameManager.Get<MapManager>().Map.CalculateBrightnessLevelAtHour(GameManager.Get<TimeManager>().Time.TileBrightnessTime), tile.lightSourceBrightness);
+			growthRate *= tile.brightness;
 			growthRate *= precipitationGrowthMultiplier;
 			growthRate *= temperatureGrowthMultipler;
 			growthRate = Mathf.Clamp(growthRate, 0, 1);

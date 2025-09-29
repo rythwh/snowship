@@ -1,6 +1,7 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
 using Snowship.NUI;
+using UnityEngine;
 
 namespace Snowship.NState {
 	public partial class StateManager : IManager {
@@ -12,12 +13,15 @@ namespace Snowship.NState {
 
 		public event Action<(EState previousState, EState newState)> OnStateChanged;
 
-		public void OnCreate() {
-			TransitionToState(EState.Boot).Forget();
-			TransitionToState(EState.MainMenu).Forget();
+		public async void OnCreate() {
+			await TransitionToState(EState.Boot);
+			await TransitionToState(EState.MainMenu);
 		}
 
 		public async UniTask TransitionToState(EState newState, ETransitionUIAction transitionUIAction = ETransitionUIAction.Close) {
+
+			Debug.Log($"{state?.Type} -> {newState} ({transitionUIAction})");
+
 			if (StateChangeLocked) {
 				return;
 			}
@@ -25,10 +29,12 @@ namespace Snowship.NState {
 			state ??= states[newState];
 
 			if (state.Type == newState) {
+				Debug.LogWarning($"Trying to transition to the state we're already in: {state.Type} -> {newState}");
 				return;
 			}
 
 			if (!state.ValidNextStates.Contains(newState)) {
+				Debug.LogWarning($"Trying to transition to a illegal next state: {state.Type} -> {newState}.");
 				return;
 			}
 

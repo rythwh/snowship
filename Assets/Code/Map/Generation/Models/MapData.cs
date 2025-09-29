@@ -27,10 +27,10 @@ namespace Snowship.NMap
 
 		public int primaryWindDirection = -1;
 
-		public string mapRegenerationCode = string.Empty;
+		public float roofHeightThreshold;
+		const float roofHeightMultiplier = 1.25f;
 
 		public MapData(
-			MapData planetMapData,
 			int mapSeed,
 			int mapSize,
 			bool actualMap,
@@ -69,21 +69,7 @@ namespace Snowship.NMap
 
 			equatorOffset = ((planetTilePosition.y - (mapSize / 2f)) * 2) / mapSize;
 
-			if (planetMapData != null) {
-				// ReSharper disable once UseStringInterpolation
-				mapRegenerationCode = string.Format(
-					"{0}~{1}~{2}~{3}~{4}~{5}~{6}~{7}~{8}",
-					planetMapData.mapSeed,
-					planetMapData.mapSize,
-					planetMapData.temperatureRange,
-					planetMapData.planetDistance,
-					planetMapData.primaryWindDirection,
-					planetTilePosition.x,
-					planetTilePosition.y,
-					mapSize,
-					mapSeed
-				);
-			}
+			roofHeightThreshold = terrainTypeHeights[TileTypeGroup.TypeEnum.Stone] * roofHeightMultiplier;
 		}
 	}
 }

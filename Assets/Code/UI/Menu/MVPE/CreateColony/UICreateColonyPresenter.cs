@@ -1,8 +1,6 @@
-﻿using Cysharp.Threading.Tasks;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Snowship.NColony;
 using Snowship.NPlanet;
-using Snowship.NState;
 using Snowship.NUtilities;
 using UnityEngine;
 
@@ -129,11 +127,8 @@ namespace Snowship.NUI
 			View.SetPlanetTileData(planetTile, planetTileValid);
 		}
 
-		private void OnCreateColonyButtonClicked() {
-			// TODO This should be handled in the ColonyManager itself
-			GameManager.Get<ColonyManager>().CreateColony(createColonyData);
-
-			GameManager.Get<StateManager>().TransitionToState(EState.LoadToSimulation).Forget();
+		private async void OnCreateColonyButtonClicked() {
+			await GameManager.Get<ColonyManager>().CreateColony(createColonyData);
 		}
 
 		// private void OnColonyTileClicked(PersistenceColony persistenceColony) {

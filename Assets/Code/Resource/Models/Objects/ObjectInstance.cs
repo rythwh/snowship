@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Snowship.NMap.NTile;
-using Snowship.NColony;
 using Snowship.NJob;
 using Snowship.NMap;
 using Snowship.NUtilities;
