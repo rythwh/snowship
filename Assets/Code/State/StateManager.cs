@@ -4,16 +4,20 @@ using Snowship.NUI;
 using UnityEngine;
 
 namespace Snowship.NState {
-	public partial class StateManager : IManager {
+	public partial class StateManager : Manager {
 		private State<EState> state;
 
-		public EState State => state.Type;
+		public EState? State => state?.Type;
 
 		public bool StateChangeLocked { get; private set; }
 
 		public event Action<(EState previousState, EState newState)> OnStateChanged;
 
-		public async void OnCreate() {
+		public override void OnCreate() {
+			SetInitialState();
+		}
+
+		private async void SetInitialState() {
 			await TransitionToState(EState.Boot);
 			await TransitionToState(EState.MainMenu);
 		}

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Snowship.NMap.NTile;
-using Cysharp.Threading.Tasks;
 using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NUI;
@@ -11,7 +10,7 @@ using UnityEngine;
 
 namespace Snowship.NCaravan {
 
-	public class CaravanManager : IManager, IDisposable {
+	public class CaravanManager : Manager, IDisposable {
 
 		public List<Caravan> caravans = new List<Caravan>();
 		private readonly List<Caravan> removeCaravans = new List<Caravan>();
@@ -22,7 +21,7 @@ namespace Snowship.NCaravan {
 
 		public Caravan selectedCaravan;
 
-		public void OnCreate() {
+		public override void OnCreate() {
 			GameManager.Get<TimeManager>().OnTimeChanged += OnTimeChanged;
 		}
 
@@ -30,7 +29,7 @@ namespace Snowship.NCaravan {
 			GameManager.Get<TimeManager>().OnTimeChanged -= OnTimeChanged;
 		}
 
-		public void OnUpdate() {
+		public override void OnUpdate() {
 			foreach (Caravan caravan in caravans) {
 				if (!caravan.Update()) {
 					removeCaravans.Add(caravan);
@@ -136,11 +135,10 @@ namespace Snowship.NCaravan {
 				selectedTradingPost = tradingPosts[UnityEngine.Random.Range(0, tradingPosts.Count)];
 			}
 
-			Tile targetTile = null;
+			Tile targetTile;
 			if (selectedTradingPost != null) {
 				targetTile = selectedTradingPost.zeroPointTile;
-			}
-			else {
+			} else {
 				List<Tile> validTargetTiles = targetSpawnTile.region.tiles.Where(tile => tile.walkable && !tile.tileType.classes[TileType.ClassEnum.LiquidWater]).ToList();
 				targetTile = validTargetTiles[UnityEngine.Random.Range(0, validTargetTiles.Count)];
 			}
@@ -154,10 +152,11 @@ namespace Snowship.NCaravan {
 			// GameManager.Get<UIManagerOld>().SetCaravanElements();
 		}
 
-		public void SetSelectedCaravan(Caravan selectedCaravan) {
+		// TODO Convert to an event, with OnCaravanSelected?
+		public async void SetSelectedCaravan(Caravan selectedCaravan) {
 			this.selectedCaravan = selectedCaravan;
 
-			GameManager.Get<UIManager>().OpenViewAsync<UITradeMenu>().Forget();
+			await GameManager.Get<UIManager>().OpenViewAsync<UITradeMenu>();
 		}
 	}
 }

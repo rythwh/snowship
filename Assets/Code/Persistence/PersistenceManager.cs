@@ -7,7 +7,7 @@ using Path = System.IO.Path;
 
 namespace Snowship.Persistence
 {
-	public class PersistenceManager : IManager
+	public class PersistenceManager : Manager
 	{
 		private readonly List<ISaveRootProvider> providers = new List<ISaveRootProvider>();
 

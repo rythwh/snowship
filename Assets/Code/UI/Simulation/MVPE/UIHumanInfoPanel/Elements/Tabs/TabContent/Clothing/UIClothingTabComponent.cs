@@ -49,9 +49,9 @@ namespace Snowship.NUI.UITab
 			humanBody.SetBodySectionSprite(BodySection.Skin, skinSprite);
 		}
 
-		public UIClothingButtonElement CreateClothingButton(BodySection bodySection, Clothing clothing) {
+		public async UniTask<UIClothingButtonElement> CreateClothingButton(BodySection bodySection, Clothing clothing) {
 			UIClothingButtonElement clothingButton = new(bodySection, clothing);
-			clothingButton.Open(clothingButtonsListVerticalLayoutGroup.transform).Forget();
+			await clothingButton.OpenAsync(clothingButtonsListVerticalLayoutGroup.transform);
 			clothingButtonElements.Add(clothingButton);
 			return clothingButton;
 		}
@@ -76,17 +76,17 @@ namespace Snowship.NUI.UITab
 			SetClothingSelectionPanelActive(false);
 		}
 
-		public UIClothingElement CreateAvailableClothingElement(Clothing clothing) {
-			return CreateClothingElement(clothing, true);
+		public async UniTask<UIClothingElement> CreateAvailableClothingElement(Clothing clothing) {
+			return await CreateClothingElement(clothing, true);
 		}
 
-		public UIClothingElement CreateTakenClothingElement(Clothing clothing) {
-			return CreateClothingElement(clothing, false);
+		public async UniTask<UIClothingElement> CreateTakenClothingElement(Clothing clothing) {
+			return await CreateClothingElement(clothing, false);
 		}
 
-		private UIClothingElement CreateClothingElement(Clothing clothing, bool available) {
+		private async UniTask<UIClothingElement> CreateClothingElement(Clothing clothing, bool available) {
 			UIClothingElement clothingElement = new(clothing);
-			clothingElement.Open((available ? clothesAvailableGridLayoutGroup : clothesTakenGridLayoutGroup).transform).Forget();
+			await clothingElement.OpenAsync((available ? clothesAvailableGridLayoutGroup : clothesTakenGridLayoutGroup).transform);
 			clothingElements.Add(clothingElement);
 			return clothingElement;
 		}

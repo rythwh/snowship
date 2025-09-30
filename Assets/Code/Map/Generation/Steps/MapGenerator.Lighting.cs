@@ -6,16 +6,16 @@ namespace Snowship.NMap.Generation
 	public partial class MapGenerator
 	{
 		// TODO Convert to more conventional caching system like brightness/colour below
-		internal static readonly Dictionary<int, Vector2> cachedShadowDirectionsAtTime = new Dictionary<int, Vector2>();
-		internal static bool shadowDirectionsCalculated { get; private set; } = false;
+		internal static readonly Dictionary<int, Vector2> CachedShadowDirectionsAtTime = new Dictionary<int, Vector2>();
+		internal static bool ShadowDirectionsCalculated { get; private set; } = false;
 
 		internal static void DetermineShadowDirectionsAtHour(float equatorOffset) {
 			for (int h = 0; h < 24; h++) {
 				float hShadow = 2f * ((h - 12f) / 24f) * (1f - Mathf.Pow(equatorOffset, 2f));
 				float vShadow = Mathf.Pow(2f * ((h - 12f) / 24f), 2f) * equatorOffset + equatorOffset / 2f;
-				cachedShadowDirectionsAtTime.Add(h, new Vector2(hShadow, vShadow) * 5f);
+				CachedShadowDirectionsAtTime.Add(h, new Vector2(hShadow, vShadow) * 5f);
 			}
-			shadowDirectionsCalculated = true;
+			ShadowDirectionsCalculated = true;
 		}
 
 		private static readonly Dictionary<int, float> cachedBrightnessLevelByTime = new Dictionary<int, float>();

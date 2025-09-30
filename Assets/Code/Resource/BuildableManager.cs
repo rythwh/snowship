@@ -1,6 +1,6 @@
 ﻿namespace Snowship.NResource
 {
-	public class BuildableManager : IManager
+	public class BuildableManager : Manager
 	{
 	}
 }

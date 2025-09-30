@@ -17,7 +17,7 @@ namespace Snowship.NUI
 		public UICreatePlanetPresenter(UICreatePlanetView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override async void OnCreate() {
 
 			View.OnBackButtonClicked += OnBackButtonClicked;
 
@@ -41,7 +41,7 @@ namespace Snowship.NUI
 			SetWindDirectionSlider();
 
 			CreatePlanetViewModule();
-			CreatePlanetPreview().Forget();
+			await CreatePlanetPreview();
 
 			Debug.Log(createPlanetData.ToString());
 		}
@@ -156,18 +156,18 @@ namespace Snowship.NUI
 			View.SetWindDirectionText($"{CreatePlanetData.GetWindCardinalDirectionByIndex(createPlanetData.WindDirectionIndex)}");
 		}
 
-		private void OnRefreshPlanetButtonClicked() {
+		private async void OnRefreshPlanetButtonClicked() {
 			Debug.Log(createPlanetData.ToString());
-			CreatePlanetPreview().Forget();
+			await CreatePlanetPreview();
 		}
 
 		private void OnRandomizePlanetButtonClicked() {
 			RandomizePlanetSettings();
 		}
 
-		private void OnCreatePlanetButtonClicked() {
+		private async void OnCreatePlanetButtonClicked() {
 			// pPlanet.CreatePlanet(GameManager.Get<PlanetManager>().planet);
-			GameManager.Get<UIManager>().OpenViewAsync<UICreateColony>(this, false).Forget();
+			await GameManager.Get<UIManager>().OpenViewAsync<UICreateColony>(this, false);
 		}
 
 		private void OnPlanetTileClicked(PlanetTile planetTile) {
@@ -188,10 +188,10 @@ namespace Snowship.NUI
 			);
 		}
 
-		private void RandomizePlanetSettings() {
+		private async void RandomizePlanetSettings() {
 			createPlanetData.Seed = CreatePlanetData.GenerateRandomPlanetSeed();
 			View.SetPlanetSeedInputField($"{createPlanetData.Seed}");
-			CreatePlanetPreview().Forget();
+			await CreatePlanetPreview();
 		}
 	}
 }

@@ -46,9 +46,9 @@ namespace Snowship.NUI
 			debugInputField.SetTextWithoutNotify(string.Empty);
 		}
 
-		public void OutputToConsole(string text) {
+		public async UniTask OutputToConsole(string text) {
 			UIDebugConsoleOutputTextbox outputTextbox = new(text);
-			outputTextbox.Open(debugConsoleVerticalLayoutGroup.transform).Forget();
+			await outputTextbox.OpenAsync(debugConsoleVerticalLayoutGroup.transform);
 			outputTextboxes.Add(outputTextbox);
 		}
 

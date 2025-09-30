@@ -25,7 +25,7 @@ using Random = UnityEngine.Random;
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 [SuppressMessage("ReSharper", "ConvertIfStatementToConditionalTernaryExpression")]
-public class DebugManager : IManager
+public class DebugManager : Manager
 {
 	private bool debugEnabled = false;
 
@@ -36,23 +36,23 @@ public class DebugManager : IManager
 	public event Action<string> OnConsoleOutputProduced;
 	public event Action OnConsoleClearRequested;
 
-	public void OnCreate() {
+	public override void OnCreate() {
 
 		GameManager.Get<InputManager>().InputSystemActions.Simulation.DebugMenu.performed += OnDebugMenuButtonPerformed;
 
 		CreateCommandFunctions();
 	}
 
-	private void OnDebugMenuButtonPerformed(InputAction.CallbackContext callbackContext) {
+	private async void OnDebugMenuButtonPerformed(InputAction.CallbackContext callbackContext) {
 		debugEnabled = !debugEnabled;
 		if (debugEnabled) {
-			GameManager.Get<UIManager>().OpenViewAsync<UIDebugConsole>().Forget();
+			await GameManager.Get<UIManager>().OpenViewAsync<UIDebugConsole>();
 		} else {
 			GameManager.Get<UIManager>().CloseView<UIDebugConsole>();
 		}
 	}
 
-	public void OnUpdate() {
+	public override void OnUpdate() {
 		if (debugEnabled) {
 			if (selectTileMouseToggle) {
 				SelectTileMouseUpdate();

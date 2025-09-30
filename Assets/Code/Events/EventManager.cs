@@ -1,5 +1,5 @@
 ﻿namespace Snowship {
-	public class EventManager : IManager {
+	public class EventManager : Manager {
 
 	}
 }

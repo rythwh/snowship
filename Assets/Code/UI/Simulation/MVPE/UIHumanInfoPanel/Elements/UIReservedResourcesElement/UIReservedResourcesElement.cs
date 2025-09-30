@@ -15,17 +15,17 @@ namespace Snowship.NUI
 			reserver = reservedResources.human;
 		}
 
-		protected override void OnCreate() {
+		protected override async void OnCreate() {
 			base.OnCreate();
 
-			reserverBodyElement = Component.SetReserverBodyElement(reserver);
+			reserverBodyElement = await Component.SetReserverBodyElement(reserver);
 			reserver.OnClothingChanged += reserverBodyElement.SetClothingOnBodySection;
 
 			Component.SetReserverNameText(reserver.Name);
 
 			Component.SetReservedCountText(ReservedResources.resources.Count.ToString());
 			foreach (ResourceAmount resourceAmount in ReservedResources.resources) {
-				Component.AddResourceAmountElement(resourceAmount);
+				await Component.AddResourceAmountElement(resourceAmount);
 			}
 		}
 

@@ -68,7 +68,7 @@ namespace Snowship.NUI
 			sellingResourceGroupText.SetText($"Selling {caravan.resourceGroup.name}");
 		}
 
-		public void CreateTradeResourceElements(List<TradeResourceAmount> tradeResourceAmounts) {
+		public async UniTask CreateTradeResourceElements(List<TradeResourceAmount> tradeResourceAmounts) {
 
 			// Remove any old-existing elements
 			foreach (UITradeResourceElement tradeResourceElement in tradeResourceElements) {
@@ -79,7 +79,7 @@ namespace Snowship.NUI
 			// Create new elements
 			foreach (TradeResourceAmount tradeResourceAmount in tradeResourceAmounts) {
 				UITradeResourceElement tradeResourceElement = new(tradeResourceAmount);
-				tradeResourceElement.Open(tradeResourcesLayoutGroup.transform).Forget();
+				await tradeResourceElement.OpenAsync(tradeResourcesLayoutGroup.transform);
 				tradeResourceElement.OnTradeResourceElementShouldBeRemoved += OnTradeResourceElementShouldBeRemoved;
 				tradeResourceElements.Add(tradeResourceElement);
 			}
@@ -89,7 +89,7 @@ namespace Snowship.NUI
 			removedTradeResourceElements.Add(tradeResourceElement);
 		}
 
-		public void AddTradeResourceElementIfMissing(
+		public async UniTask AddTradeResourceElementIfMissing(
 			Resource resource,
 			int caravanAmount,
 			int colonyAmount,
@@ -102,11 +102,11 @@ namespace Snowship.NUI
 			UITradeResourceElement tradeResourceElement = new(
 				new TradeResourceAmount(resource, caravanAmount, colonyAmount, caravan)
 			);
-			tradeResourceElement.Open(tradeResourcesLayoutGroup.transform).Forget();
+			await tradeResourceElement.OpenAsync(tradeResourcesLayoutGroup.transform);
 			tradeResourceElements.Add(tradeResourceElement);
 		}
 
-		public void CreateConfirmedTradeResourceElements(
+		public async UniTask CreateConfirmedTradeResourceElements(
 			IOrderedEnumerable<ConfirmedTradeResourceAmount> colonyConfirmedTradeResourceAmounts,
 			IOrderedEnumerable<ConfirmedTradeResourceAmount> caravanConfirmedTradeResourceAmounts
 		) {
@@ -119,13 +119,13 @@ namespace Snowship.NUI
 			// Create new elements
 			foreach (ConfirmedTradeResourceAmount confirmedTradeResourceAmount in colonyConfirmedTradeResourceAmounts) {
 				UIConfirmedTradeResourceElement confirmedTradeResourceElement = new(confirmedTradeResourceAmount);
-				confirmedTradeResourceElement.Open(confirmedTradeResourcesLayoutGroup.transform).Forget();
+				await confirmedTradeResourceElement.OpenAsync(confirmedTradeResourcesLayoutGroup.transform);
 				confirmedTradeResourceElements.Add(confirmedTradeResourceElement);
 			}
 
 			foreach (ConfirmedTradeResourceAmount confirmedTradeResourceAmount in caravanConfirmedTradeResourceAmounts) {
 				UIConfirmedTradeResourceElement confirmedTradeResourceElement = new(confirmedTradeResourceAmount);
-				confirmedTradeResourceElement.Open(confirmedTradeResourcesLayoutGroup.transform).Forget();
+				await confirmedTradeResourceElement.OpenAsync(confirmedTradeResourcesLayoutGroup.transform);
 				confirmedTradeResourceElements.Add(confirmedTradeResourceElement);
 			}
 		}

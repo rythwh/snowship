@@ -11,7 +11,6 @@ namespace Snowship.NUI
 		where TView : IUIView
 		where TPresenter : IUIPresenter
 	{
-
 		public virtual bool Closeable { get; protected set; } = true;
 
 		private string AddressableKey() {
@@ -30,9 +29,18 @@ namespace Snowship.NUI
 		}
 
 		protected async UniTask<GameObject> GetViewPrefab() {
-			AsyncOperationHandle<GameObject> viewPrefabOperationHandle = Addressables.LoadAssetAsync<GameObject>(AddressableKey());
+
+			string addressableKey = AddressableKey();
+
+			if (UIManager.CachedComponents.TryGetValue(addressableKey, out GameObject viewPrefabGameObject)) {
+				return viewPrefabGameObject;
+			}
+
+			AsyncOperationHandle<GameObject> viewPrefabOperationHandle = Addressables.LoadAssetAsync<GameObject>(addressableKey);
 			viewPrefabOperationHandle.ReleaseHandleOnCompletion();
-			return await viewPrefabOperationHandle;
+			viewPrefabGameObject = await viewPrefabOperationHandle;
+			UIManager.CachedComponents.Add(addressableKey, viewPrefabGameObject);
+			return viewPrefabGameObject;
 		}
 
 		private TPresenter CreatePresenter(TView view) {

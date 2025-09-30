@@ -14,11 +14,11 @@ namespace Snowship.NUI.UITab
 			this.human = human;
 		}
 
-		protected override void OnCreate() {
+		protected override async void OnCreate() {
 			base.OnCreate();
 
 			foreach ((BodySection bodySection, Clothing clothing) in human.clothes) {
-				UIClothingButtonElement clothingButton = Component.CreateClothingButton(bodySection, clothing);
+				UIClothingButtonElement clothingButton = await Component.CreateClothingButton(bodySection, clothing);
 				clothingButton.OnButtonClicked += OnClothingButtonClicked;
 			}
 
@@ -33,7 +33,7 @@ namespace Snowship.NUI.UITab
 			human.OnClothingChanged -= Component.OnHumanClothingChanged;
 		}
 
-		private void OnClothingButtonClicked(BodySection bodySection) {
+		private async void OnClothingButtonClicked(BodySection bodySection) {
 
 			Component.SetClothingSelectionPanelActive(true);
 			Component.SetClothesAvailableTitleTextPanelActive(false);
@@ -50,10 +50,10 @@ namespace Snowship.NUI.UITab
 				UIClothingElement clothingElement = null;
 
 				if (clothing.GetAvailableAmount() > 0) {
-					clothingElement = Component.CreateAvailableClothingElement(clothing);
+					clothingElement = await Component.CreateAvailableClothingElement(clothing);
 					Component.SetClothesAvailableTitleTextPanelActive(true);
 				} else if (human.clothes[bodySection] == null || clothing.name != human.clothes[bodySection].name) {
-					clothingElement = Component.CreateTakenClothingElement(clothing);
+					clothingElement = await Component.CreateTakenClothingElement(clothing);
 					Component.SetClothesTakenTitleTextPanelActive(true);
 				}
 

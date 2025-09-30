@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -47,20 +46,20 @@ namespace Snowship.NUI
 			View.OnExitButtonClicked -= OnExitButtonClicked;
 		}
 
-		private void OnNewButtonClicked() {
-			GameManager.Get<UIManager>().OpenViewAsync<UICreatePlanet>(this, false).Forget();
+		private async void OnNewButtonClicked() {
+			await GameManager.Get<UIManager>().OpenViewAsync<UICreatePlanet>(this, false);
 		}
 
-		private void OnContinueButtonClicked() {
-			// GameManager.Get<PersistenceManager>().ContinueFromMostRecentSave().Forget();
+		private async void OnContinueButtonClicked() {
+			// GameManager.Get<PersistenceManager>().ContinueFromMostRecentSave();
 		}
 
-		private void OnLoadButtonClicked() {
-			GameManager.Get<UIManager>().OpenViewAsync<UILoadColony>(this, false).Forget();
+		private async void OnLoadButtonClicked() {
+			await GameManager.Get<UIManager>().OpenViewAsync<UILoadColony>(this, false);
 		}
 
-		private void OnSettingsButtonClicked() {
-			GameManager.Get<UIManager>().OpenViewAsync<UISettings>(this, false).Forget();
+		private async void OnSettingsButtonClicked() {
+			await GameManager.Get<UIManager>().OpenViewAsync<UISettings>(this, false);
 		}
 
 		private void OnExitButtonClicked() {

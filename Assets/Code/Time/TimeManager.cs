@@ -8,14 +8,14 @@ using UnityEngine.InputSystem;
 
 namespace Snowship.NTime {
 
-	public class TimeManager : IManager {
+	public class TimeManager : Manager {
 
 		public SimulationDateTime Time { get; } = new SimulationDateTime();
 		private float timer = 0;
 
 		public event Action<SimulationDateTime> OnTimeChanged;
 
-		public void OnGameSetupComplete() {
+		public override void OnGameSetupComplete() {
 			GameManager.Get<StateManager>().OnStateChanged += OnStateChanged;
 
 			OnTimeChanged?.Invoke(Time);
@@ -36,7 +36,7 @@ namespace Snowship.NTime {
 			}
 		}
 
-		public void OnUpdate() {
+		public override void OnUpdate() {
 			UpdateTime();
 		}
 

@@ -32,10 +32,14 @@ namespace Snowship.NUI.UITab
 			inventoryResourceAmountElements.Clear();
 		}
 
-		public void OnInventoryResourceAmountAdded(ResourceAmount resourceAmount) {
+		public async UniTask OnInventoryResourceAmountAddedAwaitable(ResourceAmount resourceAmount) {
 			UIResourceAmountElement resourceAmountElement = new(resourceAmount);
-			resourceAmountElement.Open(inventoryListGridLayoutGroup.transform).Forget();
+			await resourceAmountElement.OpenAsync(inventoryListGridLayoutGroup.transform);
 			inventoryResourceAmountElements.Add(resourceAmountElement);
+		}
+
+		public async void OnInventoryResourceAmountAdded(ResourceAmount resourceAmount) {
+			await OnInventoryResourceAmountAddedAwaitable(resourceAmount);
 		}
 
 		public void OnInventoryResourceAmountRemoved(ResourceAmount resourceAmount) {
@@ -44,9 +48,9 @@ namespace Snowship.NUI.UITab
 			resourceAmountElementToRemove.Close();
 		}
 
-		public void OnInventoryReservedResourcesAdded(ReservedResources reservedResources) {
+		public async void OnInventoryReservedResourcesAdded(ReservedResources reservedResources) {
 			UIReservedResourcesElement reservedResourcesElement = new(reservedResources);
-			reservedResourcesElement.Open(inventoryListGridLayoutGroup.transform).Forget();
+			await reservedResourcesElement.OpenAsync(inventoryListGridLayoutGroup.transform);
 			reservedResourcesElements.Add(reservedResourcesElement);
 		}
 

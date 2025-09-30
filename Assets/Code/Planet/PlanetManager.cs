@@ -3,7 +3,7 @@ using Snowship.NMap;
 using Snowship.NMap.Generation;
 
 namespace Snowship.NPlanet {
-	public class PlanetManager : IManager {
+	public class PlanetManager : Manager {
 
 		public Planet planet;
 		public PlanetTile selectedPlanetTile;

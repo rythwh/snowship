@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using Snowship.NResource;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -48,7 +49,7 @@ namespace Snowship.NUI
 			Component.SetChildElementsActive(active);
 		}
 
-		public UIActionItemButtonElement AddVariation(ObjectPrefab prefab, Variation variation) {
+		public UniTask<UIActionItemButtonElement> AddVariation(ObjectPrefab prefab, Variation variation) {
 			hasVariations = true;
 			return Component.AddVariation(prefab, variation);
 		}

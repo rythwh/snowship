@@ -5,7 +5,7 @@ using Snowship.NMap.Generation;
 
 namespace Snowship.NMap
 {
-	public class MapManager : IManager
+	public class MapManager : Manager
 	{
 		public Map Map { get; private set; }
 

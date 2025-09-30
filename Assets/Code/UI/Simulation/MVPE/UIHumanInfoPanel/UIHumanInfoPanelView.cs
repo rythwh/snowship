@@ -30,9 +30,9 @@ namespace Snowship.NUI
 		[SerializeField] private Transform tabButtonParent;
 
 		public async UniTask CreateTab(IUITabElement tab, UITabButton button, string buttonText) {
-			await tab.Open(tabParent);
+			await tab.OpenAsync(tabParent);
 			tab.SetActive(false);
-			await button.Open(tabButtonParent);
+			await button.OpenAsync(tabButtonParent);
 			button.SetText(buttonText);
 		}
 

@@ -1,14 +1,25 @@
-﻿public interface IManager
+﻿public abstract class Manager : IManager
 {
-	public void OnCreate() {
+	public bool Created { get; internal set; } = false;
+	public bool PostGameSetupCompleted { get; internal set; } = false;
+
+	public virtual void OnCreate() {
 	}
 
-	public void OnGameSetupComplete() {
+	public virtual void OnGameSetupComplete() {
 	}
 
-	public void OnUpdate() {
+	public virtual void OnUpdate() {
 	}
 
-	void OnClose() {
+	public virtual void OnClose() {
 	}
+}
+
+public interface IManager
+{
+	void OnCreate();
+	void OnGameSetupComplete();
+	void OnUpdate();
+	void OnClose();
 }

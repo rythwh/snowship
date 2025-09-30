@@ -14,11 +14,11 @@ namespace Snowship.NUI.UITab
 			this.human = human;
 		}
 
-		protected override void OnCreate() {
+		protected override async void OnCreate() {
 			base.OnCreate();
 
 			foreach (ResourceAmount resourceAmount in human.Inventory.resources) {
-				Component.OnInventoryResourceAmountAdded(resourceAmount);
+				await Component.OnInventoryResourceAmountAddedAwaitable(resourceAmount);
 			}
 
 			Component.OnEmptyInventoryButtonClicked += OnEmptyInventoryButtonClicked;

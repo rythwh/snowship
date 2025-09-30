@@ -51,15 +51,15 @@ namespace Snowship.NUI.UITab
 			skillElements.Clear();
 		}
 
-		public void AddNeedElement(NeedInstance need) {
+		public async UniTask AddNeedElement(NeedInstance need) {
 			UINeedElement needElement = new(need);
-			needElement.Open(needsListVerticalLayoutGroup.transform).Forget();
+			await needElement.OpenAsync(needsListVerticalLayoutGroup.transform);
 			needElements.Add(needElement);
 		}
 
-		public void AddSkillElement(SkillInstance skill) {
+		public async UniTask AddSkillElement(SkillInstance skill) {
 			UISkillElement skillElement = new(skill);
-			skillElement.Open(skillsListVerticalLayoutGroup.transform).Forget();
+			await skillElement.OpenAsync(skillsListVerticalLayoutGroup.transform);
 			skillElements.Add(skillElement);
 		}
 
@@ -67,9 +67,9 @@ namespace Snowship.NUI.UITab
 			moodPanel.SetActive(active);
 		}
 
-		public void AddMoodElement(MoodModifierInstance mood) {
+		public async UniTask AddMoodElement(MoodModifierInstance mood) {
 			UIMoodElement moodElement = new(mood);
-			moodElement.Open(moodListVerticalLayoutGroup.transform).Forget();
+			await moodElement.OpenAsync(moodListVerticalLayoutGroup.transform);
 			moodElements.Add(moodElement);
 		}
 
@@ -89,8 +89,8 @@ namespace Snowship.NUI.UITab
 			};
 		}
 
-		public void OnMoodAdded(MoodModifierInstance mood) {
-			AddMoodElement(mood);
+		public async void OnMoodAdded(MoodModifierInstance mood) {
+			await AddMoodElement(mood);
 		}
 
 		public void OnMoodRemoved(MoodModifierInstance mood) {

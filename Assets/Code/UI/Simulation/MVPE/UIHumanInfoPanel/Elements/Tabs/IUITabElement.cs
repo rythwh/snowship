@@ -6,7 +6,7 @@ namespace Snowship.NUI.UITab
 	public interface IUITabElement
 	{
 		void SetActive(bool active);
-		UniTask Open(Transform parent);
+		UniTask OpenAsync(Transform parent);
 		void Close();
 	}
 }

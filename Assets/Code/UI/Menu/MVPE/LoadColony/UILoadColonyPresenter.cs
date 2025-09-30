@@ -1,5 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 using Snowship.NPlanet;
 
@@ -52,8 +51,8 @@ namespace Snowship.NUI
 			GameManager.Get<UIManager>().CloseView(this);
 		}
 
-		private void OnCreateColonyButtonClicked() {
-			GameManager.Get<UIManager>().OpenViewAsync<UICreateColony>(this, false).Forget();
+		private async void OnCreateColonyButtonClicked() {
+			await GameManager.Get<UIManager>().OpenViewAsync<UICreateColony>(this, false);
 		}
 
 		/*private void OnColonyElementClicked(PersistenceColony colony) {
@@ -71,7 +70,7 @@ namespace Snowship.NUI
 
 			foreach (PersistenceColony colony in colonies) {
 				UILoadColonyElement loadColonyElement = new(colony);
-				loadColonyElement.Open(View.ColonyElementsParent).Forget();
+				loadColonyElement.Open(View.ColonyElementsParent);
 				loadColonyElement.OnLoadColonyElementClicked += OnColonyElementClicked;
 			}
 		}*/

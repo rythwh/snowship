@@ -10,7 +10,7 @@ using Time = UnityEngine.Time;
 
 namespace Snowship.NCamera {
 
-	public partial class CameraManager : IManager {
+	public partial class CameraManager : Manager {
 
 		public Camera camera;
 
@@ -24,9 +24,10 @@ namespace Snowship.NCamera {
 		private const float ZoomTweenDuration = 0.3f;
 
 		private UniTask zoomTaskHandle;
+		private CancellationTokenSource zoomCancellationTokenSource = new();
 		public event Action<float> OnCameraZoomChanged;
 
-		public void OnCreate() {
+		public override void OnCreate() {
 
 			camera = GameManager.SharedReferences.Camera;
 
@@ -46,7 +47,7 @@ namespace Snowship.NCamera {
 			SetCameraZoom(5);
 		}
 
-		public void OnUpdate() {
+		public override void OnUpdate() {
 			if (!Mathf.Approximately(moveVector.magnitude, 0)) {
 				MoveCamera();
 			}
@@ -84,8 +85,10 @@ namespace Snowship.NCamera {
 			float newZoom = currentZoom + (zoomAxis * CameraZoomSpeedMultiplier) * (camera.orthographicSize / CameraZoomSpeedDampener);
 			newZoom = Mathf.Clamp(newZoom, ZoomMin, ZoomMax);
 
-			if (!zoomTaskHandle.GetAwaiter().IsCompleted) {
-				zoomTaskHandle.Forget();
+			if (!zoomTaskHandle.GetAwaiter().IsCompleted && !zoomCancellationTokenSource.IsCancellationRequested) {
+				zoomCancellationTokenSource.Cancel();
+				zoomCancellationTokenSource.Dispose();
+				zoomCancellationTokenSource = new CancellationTokenSource();
 			}
 
 			zoomTaskHandle = LMotion
@@ -93,7 +96,7 @@ namespace Snowship.NCamera {
 				.WithEase(Ease.OutCubic)
 				.WithOnComplete(() => OnCameraZoomChanged?.Invoke(newZoom))
 				.Bind(x => camera.orthographicSize = x)
-				.ToUniTask(CancellationToken.None);
+				.ToUniTask(zoomCancellationTokenSource.Token);
 		}
 
 		// TODO Use this to improve performance on visible region blocks

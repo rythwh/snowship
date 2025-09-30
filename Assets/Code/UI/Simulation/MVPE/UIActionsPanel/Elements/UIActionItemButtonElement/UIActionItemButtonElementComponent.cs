@@ -56,12 +56,12 @@ namespace Snowship.NUI
 			selectedIndicator.SetActive(active);
 		}
 
-		public UIActionItemButtonElement AddVariation(ObjectPrefab prefab, Variation variation) {
+		public async UniTask<UIActionItemButtonElement> AddVariation(ObjectPrefab prefab, Variation variation) {
 			variationIndicatorImage.gameObject.SetActive(true);
 			buttonLayoutGroup.padding.right = 12;
 
 			UIActionItemButtonElement variationButton = new(variation.name, prefab.GetBaseSpriteForVariation(variation));
-			variationButton.Open(variationsLayoutGroup.transform).Forget();
+			await variationButton.OpenAsync(variationsLayoutGroup.transform);
 			return variationButton;
 		}
 	}

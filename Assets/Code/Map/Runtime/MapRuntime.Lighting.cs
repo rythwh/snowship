@@ -50,11 +50,11 @@ namespace Snowship.NMap
 
 		// TODO Convert to proper raycast system, or configure to use Unity's system (if it works for 2D?)
 		private void DetermineShadowTiles(List<Tile> shadowSourceTiles, bool setBrightnessAtEnd, bool forceBrightnessUpdate) {
-			if (!MapGenerator.shadowDirectionsCalculated) {
+			if (!MapGenerator.ShadowDirectionsCalculated) {
 				MapGenerator.DetermineShadowDirectionsAtHour(MapData.equatorOffset);
 			}
 			for (int h = 0; h < 24; h++) {
-				Vector2 hourDirection = MapGenerator.cachedShadowDirectionsAtTime[h];
+				Vector2 hourDirection = MapGenerator.CachedShadowDirectionsAtTime[h];
 				float maxShadowDistanceAtHour = hourDirection.magnitude * 5f + Mathf.Pow(h - 12, 2) / 6f;
 				float shadowedBrightnessAtHour = Mathf.Clamp(1 - 0.6f * MapGenerator.CalculateBrightnessLevelAtHour(h) + 0.3f, 0, 1);
 

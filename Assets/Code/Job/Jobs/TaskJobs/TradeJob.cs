@@ -1,5 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
-using Snowship.NCaravan;
+﻿using Snowship.NCaravan;
 using Snowship.NTime;
 using Snowship.NUI;
 using Snowship.NUtilities;
@@ -31,11 +30,11 @@ namespace Snowship.NJob
 			}
 		}
 
-		protected override void OnJobFinished() {
+		protected override async void OnJobFinished() {
 			base.OnJobFinished();
 
 			GameManager.Get<TimeManager>().TogglePause();
-			GameManager.Get<UIManager>().OpenViewAsync<UITradeMenu>().Forget();
+			await GameManager.Get<UIManager>().OpenViewAsync<UITradeMenu>();
 		}
 	}
 }

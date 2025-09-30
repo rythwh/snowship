@@ -23,13 +23,13 @@ namespace Snowship.NUI
 			inventory = human.Inventory;
 		}
 
-		public override void OnCreate() {
+		public override async void OnCreate() {
 
-			AddTabAsync<UIBiographyTab>("Biography").Forget();
-			AddTabAsync<UIInventoryTab>("Inventory").Forget();
-			AddTabAsync<UIClothingTab>("Clothing").Forget();
+			await AddTabAsync<UIBiographyTab>("Biography");
+			await AddTabAsync<UIInventoryTab>("Inventory");
+			await AddTabAsync<UIClothingTab>("Clothing");
 			if (human is Trader) {
-				AddTabAsync<UITradeTab>("Trade").Forget();
+				await AddTabAsync<UITradeTab>("Trade");
 			}
 
 			View.SetGeneralInformation(

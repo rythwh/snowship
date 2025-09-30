@@ -1,6 +1,6 @@
-﻿public class ShipManager : IManager {
+﻿public class ShipManager : Manager {
 
 	public class Ship {
-		
+
 	}
 }

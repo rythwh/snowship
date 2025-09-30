@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Snowship.NMap.Models.Structure;
 using Snowship.NMap.NTile;
 using Snowship.NColonist;
@@ -10,7 +11,7 @@ using UnityEngine;
 
 namespace Snowship.NJob
 {
-	public class JobManager : IManager
+	public class JobManager : Manager
 	{
 		public JobRegistry JobRegistry { get; private set; }
 		public HashSet<IJob> Jobs { get; } = new();
@@ -26,8 +27,9 @@ namespace Snowship.NJob
 		private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
 		private ResourceManager ResourceM => GameManager.Get<ResourceManager>();
 
-		public void OnCreate() {
+		public override void OnCreate() {
 			JobRegistry = new JobRegistry();
+			JobRegistry.CreateJobRegistry();
 			TimeM.OnTimeChanged += OnTimeChanged;
 		}
 

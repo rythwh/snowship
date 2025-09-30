@@ -16,7 +16,7 @@ using Snowship.NUtilities;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class ResourceManager : IManager, IDisposable
+public class ResourceManager : Manager, IDisposable
 {
 	public GameObject tilePrefab;
 	public GameObject objectPrefab;
@@ -41,7 +41,7 @@ public class ResourceManager : IManager, IDisposable
 	private ColonyManager ColonyM => GameManager.Get<ColonyManager>();
 	private CaravanManager CaravanM => GameManager.Get<CaravanManager>();
 
-	public void OnCreate() {
+	public override void OnCreate() {
 		SetResourceReferences();
 		CreateResources();
 		CreatePlantPrefabs();
@@ -49,7 +49,7 @@ public class ResourceManager : IManager, IDisposable
 		LoadLocationNames();
 	}
 
-	public void OnGameSetupComplete() {
+	public override void OnGameSetupComplete() {
 		TimeM.OnTimeChanged += OnTimeChanged;
 	}
 
@@ -74,7 +74,7 @@ public class ResourceManager : IManager, IDisposable
 		objectDataPanel = Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel");
 	}
 
-	public void OnUpdate() {
+	public override void OnUpdate() {
 		CalculateResourceTotals();
 
 		foreach (Farm farm in Farm.farms) {

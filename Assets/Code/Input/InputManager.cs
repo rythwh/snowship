@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine.EventSystems;
 
 namespace Snowship.NInput {
-	public class InputManager : IManager {
+	public class InputManager : Manager {
 
 		private InputSystemActions inputSystemActions;
 		public InputSystemActions InputSystemActions {
@@ -14,7 +14,7 @@ namespace Snowship.NInput {
 		public event Action<InputSystemActions> OnInputSystemEnabled;
 		public event Action<InputSystemActions> OnInputSystemDisabled;
 
-		public void OnCreate() {
+		public override void OnCreate() {
 			inputSystemActions = new InputSystemActions();
 
 			EnableInputSystem();

@@ -1,6 +1,6 @@
 ﻿
 
-public class UniverseManager : IManager {
+public class UniverseManager : Manager {
 
 	public Universe universe = null;
 

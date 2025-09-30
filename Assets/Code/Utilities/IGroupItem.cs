@@ -9,7 +9,7 @@ namespace Snowship.NUtilities
 		string Name { get; }
 		Sprite Icon { get; set; }
 
-		virtual async UniTaskVoid SetIcon(UniTask<Sprite> iconTask) {
+		virtual async UniTask SetIcon(UniTask<Sprite> iconTask) {
 			Icon = await iconTask;
 		}
 

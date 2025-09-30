@@ -1,5 +1,4 @@
 ﻿using System;
-using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NInput;
 
@@ -38,12 +37,12 @@ namespace Snowship.NUI
 			GameManager.Get<InputManager>().InputSystemActions.Simulation.Escape.performed -= OnEscapePerformed;
 		}
 
-		private void OnContinueButtonClicked() {
-			GameManager.Get<StateManager>().TransitionToState(EState.Simulation, ETransitionUIAction.Close).Forget();
+		private async void OnContinueButtonClicked() {
+			await GameManager.Get<StateManager>().TransitionToState(EState.Simulation, ETransitionUIAction.Close);
 		}
 
-		private void OnEscapePerformed(InputAction.CallbackContext callbackContext) {
-			GameManager.Get<StateManager>().TransitionToState(EState.Simulation, ETransitionUIAction.Close).Forget();
+		private async void OnEscapePerformed(InputAction.CallbackContext callbackContext) {
+			await GameManager.Get<StateManager>().TransitionToState(EState.Simulation, ETransitionUIAction.Close);
 		}
 
 		private async void OnSaveButtonClicked() {
@@ -56,12 +55,12 @@ namespace Snowship.NUI
 			}
 		}
 
-		private void OnSettingsButtonClicked() {
-			GameManager.Get<UIManager>().OpenViewAsync<UISettings>(this, false).Forget();
+		private async void OnSettingsButtonClicked() {
+			await GameManager.Get<UIManager>().OpenViewAsync<UISettings>(this, false);
 		}
 
-		private void OnExitToMenuButtonClicked() {
-			GameManager.Get<StateManager>().TransitionToState(EState.MainMenu, ETransitionUIAction.Close).Forget();
+		private async void OnExitToMenuButtonClicked() {
+			await GameManager.Get<StateManager>().TransitionToState(EState.MainMenu, ETransitionUIAction.Close);
 		}
 
 		private void OnExitToDesktopButtonClicked() {

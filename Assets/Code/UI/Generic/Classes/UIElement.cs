@@ -9,7 +9,7 @@ namespace Snowship.NUI {
 		protected TComponent Component { get; private set; }
 		private bool componentCreated = false;
 
-		public async UniTask Open(Transform parent) {
+		public async UniTask OpenAsync(Transform parent) {
 			await CreateComponent(parent);
 			OnCreate();
 		}
@@ -19,9 +19,15 @@ namespace Snowship.NUI {
 		}
 
 		private async UniTask CreateComponent(Transform parent) {
-			AsyncOperationHandle<GameObject> componentPrefabOperationHandle = Addressables.LoadAssetAsync<GameObject>(AddressableKey());
-			componentPrefabOperationHandle.ReleaseHandleOnCompletion();
-			GameObject componentPrefab = await componentPrefabOperationHandle;
+
+			string addressableKey = AddressableKey();
+
+			if (!UIManager.CachedComponents.TryGetValue(addressableKey, out GameObject componentPrefab)) {
+				AsyncOperationHandle<GameObject> componentPrefabOperationHandle = Addressables.LoadAssetAsync<GameObject>(addressableKey);
+				componentPrefabOperationHandle.ReleaseHandleOnCompletion();
+				componentPrefab = await componentPrefabOperationHandle;
+				UIManager.CachedComponents.Add(addressableKey, componentPrefab);
+			}
 
 			Component = Object.Instantiate(componentPrefab, parent, false).GetComponent<TComponent>();
 			Component.OnCreate();

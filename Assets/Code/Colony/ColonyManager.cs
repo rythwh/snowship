@@ -4,7 +4,7 @@ using Snowship.NColonist;
 using Snowship.NPlanet;
 
 namespace Snowship.NColony {
-	public class ColonyManager : IManager {
+	public class ColonyManager : Manager {
 
 		public Colony colony;
 

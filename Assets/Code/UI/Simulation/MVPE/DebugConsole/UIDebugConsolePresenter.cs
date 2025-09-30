@@ -31,8 +31,8 @@ namespace Snowship.NUI
 			GameManager.Get<DebugManager>().ParseCommandInput(text);
 		}
 
-		private void OnDebugOutputReceived(string text) {
-			View.OutputToConsole(text);
+		private async void OnDebugOutputReceived(string text) {
+			await View.OutputToConsole(text);
 			View.SelectDebugInputField();
 		}
 

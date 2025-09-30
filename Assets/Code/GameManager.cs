@@ -4,6 +4,7 @@ using Snowship.NProfession;
 using Snowship.Selectable;
 using Snowship.NTime;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Snowship.NMap.Models.Geography;
 using Snowship.NMap.NTile;
 using Snowship;
@@ -29,8 +30,8 @@ public class GameManager : MonoBehaviour {
 
 	public static SharedReferences SharedReferences { get; private set; }
 
-	private static readonly Dictionary<Type, IManager> managersMap = new();
-	private static readonly List<IManager> managers = new();
+	private static readonly Dictionary<Type, Manager> managersMap = new();
+	private static readonly List<Manager> managers = new();
 
 	public void Awake() {
 
@@ -39,8 +40,9 @@ public class GameManager : MonoBehaviour {
 		// Awakes
 		CreateManagers();
 
-		foreach (IManager manager in managers) {
+		foreach (Manager manager in managers) {
 			manager.OnCreate();
+			manager.Created = true;
 		}
 
 		SpecialManagerSetups();
@@ -87,19 +89,26 @@ public class GameManager : MonoBehaviour {
 		// Get<UIManagerOld>().SetupUI();
 	}
 
-	public void Start() {
-		foreach (IManager manager in managers) {
+	public async void Start() {
+
+		await UniTask.WaitUntil(() => managers.TrueForAll(manager => manager.Created));
+
+		foreach (Manager manager in managers) {
 			manager.OnGameSetupComplete();
+			manager.PostGameSetupCompleted = true;
 		}
 	}
 
-	public void Update() {
+	public async void Update() {
+
+		await UniTask.WaitUntil(() => managers.TrueForAll(manager => manager.PostGameSetupCompleted));
+
 		foreach (IManager manager in managers) {
 			manager.OnUpdate();
 		}
 	}
 
-	private static void Create<TManager>() where TManager : class, IManager, new() {
+	private static void Create<TManager>() where TManager : Manager, new() {
 		TManager manager = new();
 		managersMap.Add(typeof(TManager), manager);
 		managers.Add(manager);

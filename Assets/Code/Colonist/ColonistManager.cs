@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Snowship.NColonist {
 
-	public class ColonistManager : IManager
+	public class ColonistManager : Manager
 	{
 		public IReadOnlyList<Colonist> Colonists => colonists;
 
@@ -29,7 +29,7 @@ namespace Snowship.NColonist {
 			}
 		}
 
-		public void OnUpdate() {
+		public override void OnUpdate() {
 			UpdateColonists();
 		}
 

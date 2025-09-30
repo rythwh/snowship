@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NCaravan;
 using Snowship.NResource;
@@ -16,25 +17,25 @@ namespace Snowship.NUI
 		public UITradeMenuPresenter(UITradeMenuView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override async void OnCreate() {
 			Caravan caravan = GameManager.Get<CaravanManager>().selectedCaravan;
 
 			View.SetCaravanInformation(caravan);
 
-			CreateTradeResourceElements(caravan);
-			CreateConfirmedTradeResourceElements(caravan);
+			await CreateTradeResourceElements(caravan);
+			await CreateConfirmedTradeResourceElements(caravan);
 
 			View.OnConfirmTradeButtonClicked += ConfirmTrade;
 			View.OnCloseButtonClicked += Close;
 		}
 
-		private void CreateTradeResourceElements(Caravan caravan) {
+		private async UniTask CreateTradeResourceElements(Caravan caravan) {
 			tradeResourceAmounts = caravan.GenerateTradeResourceAmounts();
-			View.CreateTradeResourceElements(tradeResourceAmounts);
+			await View.CreateTradeResourceElements(tradeResourceAmounts);
 		}
 
-		private void CreateConfirmedTradeResourceElements(Caravan caravan) {
-			View.CreateConfirmedTradeResourceElements(
+		private async UniTask CreateConfirmedTradeResourceElements(Caravan caravan) {
+			await View.CreateConfirmedTradeResourceElements(
 				caravan.confirmedResourcesToTrade
 					.Where(ctra => ctra.tradeAmount > 0)
 					.OrderByDescending(ctra => ctra.tradeAmount),

@@ -28,7 +28,7 @@ namespace Snowship.NUI
 		/*private void CreateSaveElements() {
 			foreach (PSave.PersistenceSave save in pSave.GetPersistenceSaves()) {
 				UILoadSaveElement loadSaveElement = new(save);
-				loadSaveElement.Open(View.GetSaveElementsParentTransform()).Forget();
+				loadSaveElement.Open(View.GetSaveElementsParentTransform());
 				loadSaveElement.OnLoadSaveElementClicked += OnSaveElementClicked;
 			}
 		}*/

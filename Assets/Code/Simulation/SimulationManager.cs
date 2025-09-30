@@ -1,5 +1,5 @@
 ﻿namespace Code.Simulation {
-	public class SimulationManager : IManager {
+	public class SimulationManager : Manager {
 
 
 

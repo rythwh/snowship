@@ -14,17 +14,17 @@ namespace Snowship.NUI.UITab
 			this.human = human;
 		}
 
-		protected override void OnCreate() {
+		protected override async void OnCreate() {
 			base.OnCreate();
 
 			foreach (NeedInstance need in human.Needs.AsList().OrderByDescending(need => need.GetValue())) {
-				Component.AddNeedElement(need);
+				await Component.AddNeedElement(need);
 			}
 			foreach (MoodModifierInstance mood in human.Moods.MoodModifiers) {
-				Component.AddMoodElement(mood);
+				await Component.AddMoodElement(mood);
 			}
 			foreach (SkillInstance skill in human.Skills.AsList()) {
-				Component.AddSkillElement(skill);
+				await Component.AddSkillElement(skill);
 			}
 
 			human.Moods.OnMoodAdded += OnMoodAdded;

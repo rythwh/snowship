@@ -2,7 +2,7 @@
 
 namespace Snowship.NLife
 {
-	public class LifeManager : IManager
+	public class LifeManager : Manager
 	{
 		public List<Life> life = new();
 	}

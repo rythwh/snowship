@@ -61,7 +61,7 @@ namespace Snowship.NUI
 		public async UniTask<UIActionGroupButtonElement> AddChildGroupButton(string groupName, Sprite groupIcon) {
 			UIActionGroupButtonElement childButton = new(groupName, groupIcon);
 			await UniTask.WaitUntil(() => Component);
-			await childButton.Open(Component.SubGroupsLayoutGroup.transform);
+			await childButton.OpenAsync(Component.SubGroupsLayoutGroup.transform);
 			childButtons.Add(childButton);
 			return childButton;
 		}
@@ -69,7 +69,7 @@ namespace Snowship.NUI
 		public async UniTask<UIActionItemButtonElement> AddChildItemButton(string itemName, Sprite itemIcon) {
 			UIActionItemButtonElement childButton = new(itemName, itemIcon);
 			await UniTask.WaitUntil(() => Component);
-			await childButton.Open(Component.SubGroupsLayoutGroup.transform);
+			await childButton.OpenAsync(Component.SubGroupsLayoutGroup.transform);
 			childButtons.Add(childButton);
 			return childButton;
 		}

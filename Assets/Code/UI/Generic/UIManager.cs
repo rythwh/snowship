@@ -3,13 +3,15 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Snowship.NUI {
-	public class UIManager : IUIManager
+	public class UIManager : Manager, IUIManager
 	{
 		private Transform canvas;
 
 		private readonly List<IUIGroup> parentGroups = new List<IUIGroup>();
 
-		public void OnCreate() {
+		internal static readonly Dictionary<string, GameObject> CachedComponents = new();
+
+		public override void OnCreate() {
 			canvas = GameManager.SharedReferences.Canvas;
 		}
 

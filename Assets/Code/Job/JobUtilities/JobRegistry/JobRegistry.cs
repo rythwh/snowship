@@ -15,7 +15,7 @@ namespace Snowship.NJob
 		private readonly Dictionary<Type, object> jobDefinitionTypeToDefinitionMap = new();
 		private readonly Dictionary<string, object> jobNameToDefinitionMap = new();
 
-		public JobRegistry() {
+		internal void CreateJobRegistry() {
 			List<Type> jobTypes = Assembly
 				.GetExecutingAssembly()
 				.GetTypes()

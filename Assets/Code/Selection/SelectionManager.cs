@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 
 namespace Snowship.Selectable
 {
-	public class SelectionManager : IManager
+	public class SelectionManager : Manager
 	{
 		private readonly Stack<ISelectable> selectables = new();
 
@@ -35,7 +35,7 @@ namespace Snowship.Selectable
 		private Map map;
 		private Camera camera;
 
-		public void OnCreate() {
+		public override void OnCreate() {
 
 			InputManager inputManager = GameManager.Get<InputManager>();
 
@@ -164,7 +164,7 @@ namespace Snowship.Selectable
 			UpdateSelectedJobPreview();
 		}
 
-		public void OnUpdate() {
+		public override void OnUpdate() {
 			UpdateSelectedJobPreview();
 			if (selecting) {
 				UpdateSelectionArea();

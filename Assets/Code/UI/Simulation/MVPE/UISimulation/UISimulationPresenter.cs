@@ -20,25 +20,25 @@ namespace Snowship.NUI
 		public UISimulationPresenter(UISimulationView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override async void OnCreate() {
 			InputM.InputSystemActions.Simulation.Escape.performed += OnEscapePerformed;
 
 			View.SetDisclaimerText($"Lumi Games (Snowship {GameManager.GameVersion.text})");
 
-			SetupChildUIs().Forget();
+			await SetupChildUIs();
 
-			HumanM.OnHumanSelected += human => OnHumanSelected(human).Forget();
+			HumanM.OnHumanSelected += async human => await OnHumanSelected(human);
 		}
 
 		public override void OnClose() {
 			InputM.InputSystemActions.Simulation.Escape.performed -= OnEscapePerformed;
 		}
 
-		private void OnEscapePerformed(InputAction.CallbackContext callbackContext) {
+		private async void OnEscapePerformed(InputAction.CallbackContext callbackContext) {
 			// TODO Once setup, de-select items from SelectionManager in a FIFO format, and if none remain, then open the PauseMenu
 			if (UIM.OpenViewCount() > 0) {
 			} else {
-				StateM.TransitionToState(EState.PauseMenu, ETransitionUIAction.Hide).Forget();
+				await StateM.TransitionToState(EState.PauseMenu, ETransitionUIAction.Hide);
 			}
 		}
 
@@ -47,7 +47,7 @@ namespace Snowship.NUI
 			await UIM.OpenViewAsync<UIActionsPanel>(this);
 		}
 
-		private async UniTaskVoid OnHumanSelected(Human selectedHuman) {
+		private async UniTask OnHumanSelected(Human selectedHuman) {
 			if (selectedHuman == null) {
 				Debug.Log("Close UIHumanInfoPanel");
 				UIM.CloseView<UIHumanInfoPanel>();

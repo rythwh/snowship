@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace Snowship.NHuman
 {
-	public class HumanManager : IManager
+	public class HumanManager : Manager
 	{
 		private readonly List<string> maleNames = new();
 		private readonly List<string> femaleNames = new();
@@ -45,7 +45,7 @@ namespace Snowship.NHuman
 
 		public Human selectedHuman;
 
-		public void OnUpdate() {
+		public override void OnUpdate() {
 			if (MapM.MapState == MapState.Generated) {
 				SetSelectedHumanFromClick();
 			}

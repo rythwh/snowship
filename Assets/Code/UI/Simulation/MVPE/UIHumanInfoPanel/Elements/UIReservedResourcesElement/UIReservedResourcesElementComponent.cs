@@ -17,9 +17,9 @@ namespace Snowship.NUI
 
 		private readonly List<UIResourceAmountElement> resourceAmountElements = new();
 
-		public UIHumanBodyElement SetReserverBodyElement(Human human) {
+		public async UniTask<UIHumanBodyElement> SetReserverBodyElement(Human human) {
 			UIHumanBodyElement humanBodyElement = new(human);
-			humanBodyElement.Open(colonistBodyElementLocation).Forget();
+			await humanBodyElement.OpenAsync(colonistBodyElementLocation);
 			return humanBodyElement;
 		}
 
@@ -40,9 +40,9 @@ namespace Snowship.NUI
 			reservedCountText.SetText(count);
 		}
 
-		public void AddResourceAmountElement(ResourceAmount resourceAmount) {
+		public async UniTask AddResourceAmountElement(ResourceAmount resourceAmount) {
 			UIResourceAmountElement resourceAmountElement = new(resourceAmount);
-			resourceAmountElement.Open(reservedResourcesListVerticalLayoutGroup.transform).Forget();
+			await resourceAmountElement.OpenAsync(reservedResourcesListVerticalLayoutGroup.transform);
 			resourceAmountElements.Add(resourceAmountElement);
 		}
 	}

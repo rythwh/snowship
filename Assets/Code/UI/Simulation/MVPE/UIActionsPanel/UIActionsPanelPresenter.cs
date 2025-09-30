@@ -18,32 +18,32 @@ namespace Snowship.NUI
 		public UIActionsPanelPresenter(UIActionsPanelView view) : base(view) {
 		}
 
-		public override void OnCreate() {
-			CreateButtons();
+		public override async void OnCreate() {
+			await CreateButtons();
 		}
 
 		public override void OnClose() {
 		}
 
-		private void CreateButtons() {
+		private async UniTask CreateButtons() {
 			foreach (UIActionButtonData buttonData in View.ButtonsData.buttons) {
 				UIActionGroupButtonElement button = new(buttonData.buttonName, buttonData.buttonSprite);
-				button.Open(View.ButtonsLayoutGroup.transform).Forget();
+				await button.OpenAsync(View.ButtonsLayoutGroup.transform);
 				button.OnButtonClicked += () => SetButtonChildrenActive(button);
 				childButtons.Add(button);
 
 				switch (buttonData.buttonName) {
 					case "Build":
-						CreateBuildButtons(button);
+						await CreateBuildButtons(button);
 						break;
 					case "Terraform":
-						CreateTerraformButtons(button);
+						await CreateTerraformButtons(button);
 						break;
 					case "Farm":
-						//CreateFarmButtons(button);
+						await CreateFarmButtons(button);
 						break;
 					case "Remove":
-						CreateRemoveButtons(button);
+						await CreateRemoveButtons(button);
 						break;
 				}
 			}
@@ -55,11 +55,11 @@ namespace Snowship.NUI
 			}
 		}
 
-		private void CreateGroupButtons(ITreeButton parentButton, IGroupItem baseGroupItem, Action<ITreeButton, IGroupItem> handleLastChildrenAction) {
-			CreateGroupButtons(parentButton, new List<IGroupItem> { baseGroupItem }, handleLastChildrenAction).Forget();
+		private async UniTask CreateGroupButtons(ITreeButton parentButton, IGroupItem baseGroupItem, Action<ITreeButton, IGroupItem> handleLastChildrenAction) {
+			await CreateGroupButtons(parentButton, new List<IGroupItem> { baseGroupItem }, handleLastChildrenAction);
 		}
 
-		private async UniTaskVoid CreateGroupButtons(ITreeButton parentButton, List<IGroupItem> baseGroupItems, Action<ITreeButton, IGroupItem> handleLastChildrenAction) {
+		private async UniTask CreateGroupButtons(ITreeButton parentButton, List<IGroupItem> baseGroupItems, Action<ITreeButton, IGroupItem> handleLastChildrenAction) {
 
 			foreach (IGroupItem group in baseGroupItems) {
 
@@ -94,16 +94,16 @@ namespace Snowship.NUI
 
 		// Build Buttons
 
-		private void CreateBuildButtons(ITreeButton button) {
+		private async UniTask CreateBuildButtons(ITreeButton button) {
 			List<IGroupItem> groups = ObjectPrefabGroup.GetObjectPrefabGroups()
 				.Where(group => group.type is not (ObjectPrefabGroup.ObjectGroupEnum.None or ObjectPrefabGroup.ObjectGroupEnum.Command or ObjectPrefabGroup.ObjectGroupEnum.Farm or ObjectPrefabGroup.ObjectGroupEnum.Terraform))
 				.Cast<IGroupItem>()
 				.ToList();
 
-			CreateGroupButtons(button, groups, SetupIndividualBuildButton).Forget();
+			await CreateGroupButtons(button, groups, SetupIndividualBuildButton);
 		}
 
-		private void SetupIndividualBuildButton(ITreeButton button, IGroupItem item) {
+		private async void SetupIndividualBuildButton(ITreeButton button, IGroupItem item) {
 
 			if (button is not UIActionItemButtonElement prefabButton) {
 				return;
@@ -114,7 +114,7 @@ namespace Snowship.NUI
 
 			if (prefab.variations.Count > 0) {
 				foreach (Variation variation in prefab.variations) {
-					UIActionItemButtonElement variationButton = prefabButton.AddVariation(prefab, variation);
+					UIActionItemButtonElement variationButton = await prefabButton.AddVariation(prefab, variation);
 					variationButton.OnButtonClicked += () => prefabButton.SetVariation(prefab, variation, variationButton);
 				}
 				prefabButton.SetVariation(prefab, prefab.variations.First(), null);
@@ -126,10 +126,10 @@ namespace Snowship.NUI
 
 		// Terraform Buttons
 
-		private void CreateTerraformButtons(ITreeButton button) {
+		private async UniTask CreateTerraformButtons(ITreeButton button) {
 			JobGroup group = GameManager.Get<JobManager>().JobRegistry.GetJobGroup("Terraform");
 
-			CreateGroupButtons(button, group, SetupIndividualTerraformButton);
+			await CreateGroupButtons(button, group, SetupIndividualTerraformButton);
 		}
 
 		private void SetupIndividualTerraformButton(ITreeButton button, IGroupItem item) {
@@ -145,10 +145,10 @@ namespace Snowship.NUI
 
 		// Farm Buttons
 
-		private void CreateFarmButtons(ITreeButton button) {
+		private async UniTask CreateFarmButtons(ITreeButton button) {
 			JobGroup group = GameManager.Get<JobManager>().JobRegistry.GetJobGroup("Farm");
 
-			CreateGroupButtons(button, group, SetupIndividualFarmButton);
+			await CreateGroupButtons(button, group, SetupIndividualFarmButton);
 		}
 
 		private void SetupIndividualFarmButton(ITreeButton button, IGroupItem item) {
@@ -164,10 +164,10 @@ namespace Snowship.NUI
 
 		// Remove Buttons
 
-		private void CreateRemoveButtons(ITreeButton button) {
+		private async UniTask CreateRemoveButtons(ITreeButton button) {
 			JobGroup group = GameManager.Get<JobManager>().JobRegistry.GetJobGroup("Remove");
 
-			CreateGroupButtons(button, group, SetupIndividualRemoveButton);
+			await CreateGroupButtons(button, group, SetupIndividualRemoveButton);
 		}
 
 		private void SetupIndividualRemoveButton(ITreeButton button, IGroupItem item) {

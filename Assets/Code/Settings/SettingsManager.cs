@@ -5,14 +5,14 @@ using UnityEngine.UI;
 
 namespace Snowship.NSettings
 {
-	public class SettingsManager : IManager
+	public class SettingsManager : Manager
 	{
 		public SettingsState Settings { get; } = new();
 		public SettingsState UnappliedSettings { get; } = new();
 
 		public event Action OnSettingsChanged;
 
-		public void OnCreate() {
+		public override void OnCreate() {
 			LoadSettings();
 			ApplySettings(Settings);
 		}

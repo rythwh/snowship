@@ -2,7 +2,7 @@
 
 namespace Snowship.NMap.NTile
 {
-	public class TileManager : IManager
+	public class TileManager : Manager
 	{
 		public static readonly Dictionary<int, List<List<int>>> nonWalkableSurroundingTilesComparatorMap = new Dictionary<int, List<List<int>>> {
 			{ 0, new List<List<int>> { new List<int> { 4, 1, 5, 2 }, new List<int> { 7, 3, 6, 2 } } },
