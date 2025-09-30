@@ -50,7 +50,7 @@ namespace Snowship.NHuman
 				SetSelectedHumanFromClick();
 			}
 			if (Input.GetKey(KeyCode.F) && selectedHuman != null) {
-				CameraM.SetCameraPosition(selectedHuman.obj.transform.position);
+				CameraM.SetCameraPosition(selectedHuman.obj.transform.position, false);
 			}
 		}
 

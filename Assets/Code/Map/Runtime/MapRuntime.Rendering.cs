@@ -57,52 +57,44 @@ namespace Snowship.NMap
 			List<Tile> tilesToSum,
 			bool includeMapEdge
 		) {
-			//if (compareObjectTypes == null) {
-			//	compareObjectTypes = new List<ResourceManager.ObjectEnum>();
-			//}
+			compareObjectTypes ??= new List<ObjectPrefab.ObjectEnum>();
 
 			int sum = 0;
 			for (int i = 0; i < tilesToSum.Count; i++) {
 				if (tilesToSum[i] != null) {
-					if (compareTileTypes.Contains(tilesToSum[i].tileType.type)
-						//|| compareObjectTypes.Intersect(tilesToSum[i].objectInstances.Values.Select(obj => obj.prefab.type)).ToList().Count > 0
-					) {
-						bool ignoreTile = false;
-						if (diagonalCheckMap.ContainsKey(i)) {
-							List<Tile> surroundingHorizontalTiles = new List<Tile> { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
-							List<Tile> similarTiles = surroundingHorizontalTiles.Where(tile =>
-										tile != null
-										&& compareTileTypes.Contains(tile.tileType.type)
-									/*|| compareObjectTypes.Intersect(tile.objectInstances.Values.Select(obj => obj.prefab.type)).ToList().Count > 0*/
-								)
-								.ToList();
-							if (similarTiles.Count < 2) {
-								ignoreTile = true;
-							}
-						}
-						if (!ignoreTile) {
-							sum += Mathf.RoundToInt(Mathf.Pow(2, i));
+					if (!compareTileTypes.Contains(tilesToSum[i].tileType.type) && compareObjectTypes.Intersect(tilesToSum[i].objectInstances.Values.Select(obj => obj.prefab.type)).ToList().Count <= 0) {
+						continue;
+					}
+					bool ignoreTile = false;
+					if (diagonalCheckMap.ContainsKey(i)) {
+						List<Tile> surroundingHorizontalTiles = new List<Tile> { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
+						List<Tile> similarTiles = surroundingHorizontalTiles
+							.Where(tile => tile != null)
+							.Where(tile => compareTileTypes.Contains(tile.tileType.type) || compareObjectTypes.Intersect(tile.objectInstances.Values.Select(obj => obj.prefab.type)).ToList().Count > 0)
+							.ToList();
+						if (similarTiles.Count < 2) {
+							ignoreTile = true;
 						}
 					}
+					if (!ignoreTile) {
+						sum += Mathf.RoundToInt(Mathf.Pow(2, i));
+					}
 				} else if (includeMapEdge) {
-					if (tilesToSum.Find(tile => tile != null && tilesToSum.IndexOf(tile) <= 3 && !compareTileTypes.Contains(tile.tileType.type)) == null) {
+					if (tilesToSum.Find(tile => tile != null && tilesToSum.IndexOf(tile) <= 3 && !compareTileTypes.Contains(tile.tileType.type)) == null || i <= 3) {
 						sum += Mathf.RoundToInt(Mathf.Pow(2, i));
 					} else {
-						if (i <= 3) {
+						List<Tile> surroundingHorizontalTiles = new List<Tile> { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
+						if (surroundingHorizontalTiles.Find(tile => tile != null && !compareTileTypes.Contains(tile.tileType.type)) == null) {
 							sum += Mathf.RoundToInt(Mathf.Pow(2, i));
-						} else {
-							List<Tile> surroundingHorizontalTiles = new List<Tile> { tilesToSum[diagonalCheckMap[i][0]], tilesToSum[diagonalCheckMap[i][1]] };
-							if (surroundingHorizontalTiles.Find(tile => tile != null && !compareTileTypes.Contains(tile.tileType.type)) == null) {
-								sum += Mathf.RoundToInt(Mathf.Pow(2, i));
-							}
 						}
 					}
 				}
 			}
+
 			return sum;
 		}
 
-		private void BitmaskTile(Tile tile, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, List<TileType.TypeEnum> customCompareTileTypes, bool includeMapEdge) {
+		private void RedrawTile(Tile tile, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, List<TileType.TypeEnum> customCompareTileTypes, bool includeMapEdge) {
 			int sum = 0;
 			List<Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles;
 			if (customBitSumInputs) {
@@ -149,13 +141,13 @@ namespace Snowship.NMap
 			}
 		}
 
-		public void Bitmasking(List<Tile> tilesToBitmask, bool careAboutColonistVisibility, bool recalculateLighting) {
+		public void RedrawTiles(List<Tile> tilesToBitmask, bool careAboutColonistVisibility, bool recalculateLighting) {
 			foreach (Tile tile in tilesToBitmask) {
 				if (tile != null) {
 					if (!careAboutColonistVisibility || ColonistM.IsTileVisibleToAnyColonist(tile)) {
 						tile.SetVisible(true); // "true" on "recalculateBitmasking" would cause stack overflow
 						if (tile.tileType.bitmasking) {
-							BitmaskTile(tile, true, false, null, true);
+							RedrawTile(tile, true, false, null, true);
 						} else {
 							if (!tile.tileType.baseSprites.Contains(tile.sr.sprite)) {
 								tile.sr.sprite = tile.tileType.baseSprites[Random.Range(0, tile.tileType.baseSprites.Count)];
@@ -177,7 +169,7 @@ namespace Snowship.NMap
 				List<TileType.TypeEnum> compareTileTypes = new List<TileType.TypeEnum>();
 				compareTileTypes.AddRange(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList());
 				compareTileTypes.AddRange(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tt => tt.type).ToList());
-				BitmaskTile(river.startTile, false, true, compareTileTypes, false /*river.expandRadius > 0*/);
+				RedrawTile(river.startTile, false, true, compareTileTypes, false /*river.expandRadius > 0*/);
 			}
 		}
 	}

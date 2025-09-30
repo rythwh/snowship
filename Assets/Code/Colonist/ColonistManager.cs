@@ -110,7 +110,7 @@ namespace Snowship.NColonist {
 				colonists.Add(colonist);
 			}
 
-			MapM.Map.Bitmasking(MapM.Map.tiles, true, true);
+			MapM.Map.RedrawTiles(MapM.Map.tiles, true, true);
 			MapM.Map.SetTileBrightness(TimeM.Time.TileBrightnessTime, true);
 		}
 

@@ -14,8 +14,8 @@ namespace Snowship.NMap.Generation
 		private Random random;
 		public ref Random Random => ref random;
 
-		public string StateTitle { get; private set; }
-		public string SubStateTitle { get; private set; }
+		private string StateTitle { get; set; }
+		private string SubStateTitle { get; set; }
 
 		public MapGenContext(Map map, MapData data, int seed) {
 			Map = map;
@@ -23,7 +23,7 @@ namespace Snowship.NMap.Generation
 			Random = new Random((uint)Math.Abs(seed == 0 ? 1 : seed));
 		}
 
-		public async UniTask SetNewState([CanBeNull] string state, [CanBeNull] string substate) {
+		public void SetNewState([CanBeNull] string state, [CanBeNull] string substate) {
 			if (state != null) {
 				StateTitle = state;
 			}
@@ -31,7 +31,6 @@ namespace Snowship.NMap.Generation
 				SubStateTitle = substate;
 			}
 			UIEvents.UpdateLoadingScreenText(StateTitle, SubStateTitle);
-			await UniTask.NextFrame();
 		}
 	}
 }

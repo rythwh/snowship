@@ -33,7 +33,7 @@ namespace Snowship.NMap.Models.Structure
 			tilesToModify = tilesToModify.Distinct().ToList();
 
 			if (retile) {
-				MapManager.Map.Bitmasking(tilesToModify, true, false);
+				MapManager.Map.RedrawTiles(tilesToModify, true, false);
 			}
 
 			if (recalculateLighting) {

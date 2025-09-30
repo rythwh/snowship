@@ -15,6 +15,8 @@ namespace Snowship.NCamera {
 		public Camera camera;
 
 		private const float CameraMoveSpeedMultiplier = 1.25f;
+		private UniTask moveTaskHandle;
+		private CancellationTokenSource moveCancellationTokenSource = new();
 		public event Action<Vector2> OnCameraPositionChanged;
 
 		private const float CameraZoomSpeedMultiplier = 2.5f;
@@ -43,8 +45,8 @@ namespace Snowship.NCamera {
 			}
 
 			int mapSize = GameManager.Get<MapManager>().Map.MapData.mapSize;
-			SetCameraPosition(Vector2.one * mapSize / 2f);
-			SetCameraZoom(5);
+			SetCameraPosition(Vector2.one * mapSize / 2f, false);
+			SetCameraZoom(ZoomMax);
 		}
 
 		public override void OnUpdate() {
@@ -53,19 +55,36 @@ namespace Snowship.NCamera {
 			}
 		}
 
-		public Vector2 GetCameraPosition() {
-			return camera.transform.position;
-		}
+		public void SetCameraPosition(Vector2 position, bool animate = true) {
+			if (animate) {
+				if (!moveCancellationTokenSource.IsCancellationRequested) {
+					moveCancellationTokenSource.Cancel();
+					moveCancellationTokenSource.Dispose();
+					moveCancellationTokenSource = new CancellationTokenSource();
+				}
 
-		public void SetCameraPosition(Vector2 position) {
-			camera.transform.position = position;
+				moveTaskHandle = LMotion
+					.Create(camera.transform.position, (Vector3)position, 2)
+					.WithEase(Ease.InOutCubic)
+					.WithOnComplete(() => OnCameraPositionChanged?.Invoke(position))
+					.Bind(x => camera.transform.position = x)
+					.ToUniTask(moveCancellationTokenSource.Token);
+			} else {
+				camera.transform.position = position;
+				OnCameraPositionChanged?.Invoke(position);
+			}
 		}
 
 		public void SetCameraZoom(float zoom) {
 			camera.orthographicSize = zoom;
+			OnCameraZoomChanged?.Invoke(zoom);
 		}
 
 		private void MoveCamera() {
+
+			if (!moveCancellationTokenSource.IsCancellationRequested) {
+				moveCancellationTokenSource.Cancel();
+			}
 
 			camera.transform.Translate(moveVector * (CameraMoveSpeedMultiplier * camera.orthographicSize * Time.deltaTime));
 			camera.transform.position = new Vector2(

@@ -1121,7 +1121,7 @@ public class DebugManager : Manager
 					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						tile.sr.color = Color.white;
 					}
-					GameManager.Get<MapManager>().Map.Bitmasking(GameManager.Get<MapManager>().Map.tiles, true, true);
+					GameManager.Get<MapManager>().Map.RedrawTiles(GameManager.Get<MapManager>().Map.tiles, true, true);
 					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 				} else {
 					Output("ERROR: Invalid number of parameters specified.");
@@ -1200,7 +1200,7 @@ public class DebugManager : Manager
 			Commands.viewresourceveins,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<MapManager>().Map.Bitmasking(GameManager.Get<MapManager>().Map.tiles, false, true);
+					GameManager.Get<MapManager>().Map.RedrawTiles(GameManager.Get<MapManager>().Map.tiles, false, true);
 					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
 						if (tile.tileType.resourceRanges.Find(rr => ResourceVein.resourceVeinValidTileFunctions.ContainsKey(rr.resource.type)) == null) {
 							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;

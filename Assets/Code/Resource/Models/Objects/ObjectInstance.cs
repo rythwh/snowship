@@ -100,7 +100,7 @@ namespace Snowship.NResource
 			}
 			bitmaskingTiles = bitmaskingTiles.Distinct().ToList();
 			GameManager.Get<ResourceManager>().Bitmask(bitmaskingTiles);
-			GameManager.Get<MapManager>().Map.Bitmasking(bitmaskingTiles, true, true);
+			GameManager.Get<MapManager>().Map.RedrawTiles(bitmaskingTiles, true, true);
 			foreach (Tile tile in additionalTiles) {
 				SetColour(tile.sr.color);
 			}

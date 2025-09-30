@@ -97,7 +97,7 @@ namespace Snowship.NMap.NTile
 			blocksLight = tileType.blocksLight;
 
 			if (bitmask) {
-				map.Bitmasking(new List<Tile>() { this }.Concat(surroundingTiles).ToList(), true, !redetermineRegion); // Lighting automatically recalculated in RedetermineRegion()
+				map.RedrawTiles(new List<Tile>() { this }.Concat(surroundingTiles).ToList(), true, !redetermineRegion); // Lighting automatically recalculated in RedetermineRegion()
 			}
 
 			if (plant != null && !tileType.classes[TileType.ClassEnum.Plantable]) {

@@ -77,7 +77,7 @@ namespace Snowship.NMap.Generation
 						frontier.RemoveAt(0);
 						checkedTiles.Add(currentTile);
 
-						currentTile.SetTileType(TileType.GetTileTypeByEnum(resourceVeinData.tileTypes[currentTile.tileType.groupType]), false, true, false);
+						currentTile.SetTileType(TileType.GetTileTypeByEnum(resourceVeinData.tileTypes[currentTile.tileType.groupType]), false, false, false);
 
 						foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
 							if (nTile != null && !checkedTiles.Contains(nTile) && !resourceVeinData.tileTypes.Values.Contains(nTile.tileType.type)) {
