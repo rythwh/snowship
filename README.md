@@ -1,4 +1,4 @@
-![Snowship](./Assets/Resources/UI/Images/SnowshipBannerGitHub.png)
+![Snowship](./NonIncludedResources/UI/Logos/SnowshipBannerGitHub.png)
 
 # README #
 
