@@ -1,5 +1,4 @@
 ﻿using System;
-using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NUI;
 using Random = Unity.Mathematics.Random;

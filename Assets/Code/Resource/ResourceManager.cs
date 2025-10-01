@@ -21,6 +21,7 @@ public class ResourceManager : Manager, IDisposable
 	public GameObject tilePrefab;
 	public GameObject objectPrefab;
 	public GameObject humanPrefab;
+	public GameObject selectionIndicator;
 	public Sprite selectionCornersSprite;
 	public Sprite whiteSquareSprite;
 	public Sprite clearSquareSprite;
@@ -65,6 +66,7 @@ public class ResourceManager : Manager, IDisposable
 		tilePrefab = Resources.Load<GameObject>(@"Prefabs/Tile");
 		objectPrefab = Resources.Load<GameObject>(@"Prefabs/Object");
 		humanPrefab = Resources.Load<GameObject>(@"Prefabs/Human");
+		selectionIndicator = Resources.Load<GameObject>(@"Prefabs/SelectionIndicator");
 		selectionCornersSprite = Resources.Load<Sprite>(@"UI/selectionCorners");
 		whiteSquareSprite = Resources.Load<Sprite>(@"UI/white-square");
 		clearSquareSprite = Resources.Load<Sprite>(@"UI/clear-square");

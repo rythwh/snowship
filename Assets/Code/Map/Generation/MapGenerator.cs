@@ -1,8 +1,6 @@
-﻿using System.Drawing;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using Snowship.NState;
 using Snowship.NTime;
-using Snowship.NUI;
 
 namespace Snowship.NMap.Generation
 {

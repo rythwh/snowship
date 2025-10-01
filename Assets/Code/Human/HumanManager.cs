@@ -3,36 +3,36 @@ using System.Collections.Generic;
 using System.Linq;
 using Snowship.NCamera;
 using Snowship.NColonist;
-using Snowship.NColony;
 using Snowship.NInput;
 using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NUtilities;
 using UnityEngine;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 namespace Snowship.NHuman
 {
 	public class HumanManager : Manager
 	{
-		private readonly List<string> maleNames = new();
-		private readonly List<string> femaleNames = new();
+		public readonly List<Human> humans = new();
 
-		public List<List<Sprite>> humanMoveSprites = new();
+		private readonly Dictionary<Life.Gender, string[]> names = new();
 
+		public readonly List<List<Sprite>> humanMoveSprites = new();
+
+		public Human selectedHuman;
+		private GameObject selectionIndicator;
 		public event Action<Human> OnHumanSelected;
 
 		private CameraManager CameraM => GameManager.Get<CameraManager>();
 		private InputManager InputM => GameManager.Get<InputManager>();
-		private ColonyManager ColonyM => GameManager.Get<ColonyManager>();
 		private ResourceManager ResourceM => GameManager.Get<ResourceManager>();
 		private MapManager MapM => GameManager.Get<MapManager>();
 
 		public void CreateNames() {
-			foreach (string name in Resources.Load<TextAsset>(@"Data/names-male").text.Split(' ').ToList()) {
-				maleNames.Add(name.ToLower());
-			}
-			foreach (string name in Resources.Load<TextAsset>(@"Data/names-female").text.Split(' ').ToList()) {
-				femaleNames.Add(name.ToLower());
+			foreach (Life.Gender gender in Enum.GetValues(typeof(Life.Gender))) {
+				names.Add(gender, Resources.Load<TextAsset>($"Data/names-{gender.ToString().ToLower()}").text.Split(' '));
 			}
 		}
 
@@ -42,8 +42,6 @@ namespace Snowship.NHuman
 				humanMoveSprites.Add(innerHumanMoveSprites);
 			}
 		}
-
-		public Human selectedHuman;
 
 		public override void OnUpdate() {
 			if (MapM.MapState == MapState.Generated) {
@@ -55,31 +53,45 @@ namespace Snowship.NHuman
 		}
 
 		public string GetName(Life.Gender gender) {
-			string chosenName = "NAME";
-			List<string> names = gender == Life.Gender.Male ? maleNames : femaleNames;
-			List<string> validNames = names.Where(name => humans.Find(human => human.Name.ToLower() == name.ToLower()) == null).ToList();
-			if (validNames.Count > 0) {
-				chosenName = validNames[UnityEngine.Random.Range(0, validNames.Count)];
-			} else {
-				chosenName = names[UnityEngine.Random.Range(0, names.Count)];
-			}
-			string tempName = chosenName.Take(1).ToList()[0].ToString().ToUpper();
-			foreach (char character in chosenName.Skip(1)) {
-				tempName += character;
-			}
-			chosenName = tempName;
+			string[] genderNames = names[gender];
+			string[] validNames = genderNames.Where(name => humans.All(human => !string.Equals(human.Name, name, StringComparison.CurrentCultureIgnoreCase))).ToArray();
+
+			string chosenName = validNames.Length > 0
+				? validNames[Random.Range(0, validNames.Length)]
+				: genderNames[Random.Range(0, genderNames.Length)];
+			chosenName = char.ToUpper(chosenName[0]) + chosenName[1..].ToLower();
 			return chosenName;
 		}
-
-		public List<Human> humans = new();
 
 		private void SetSelectedHumanFromClick() {
 			if (Input.GetMouseButtonDown(0) && !InputM.IsPointerOverUI()) {
 				Vector2 mousePosition = CameraM.camera.ScreenToWorldPoint(Input.mousePosition);
-				Human newSelectedHuman = humans.Find(human => Vector2.Distance(human.obj.transform.position, mousePosition) < 0.5f);
-				if (newSelectedHuman != null) {
-					SetSelectedHuman(newSelectedHuman);
-				} else if (selectedHuman != null && selectedHuman is Colonist colonist) {
+				List<Human> validHumans = humans.Where(human => Vector2.Distance(human.obj.transform.position, mousePosition) < 0.5f).ToList();
+				Human humanToSelect = null;
+				switch (validHumans.Count) {
+					case 1:
+						humanToSelect = validHumans.First();
+						break;
+					case > 1: {
+						bool previousHumanIsSelected = false;
+						foreach (Human human in validHumans) {
+							if (previousHumanIsSelected) {
+								humanToSelect = human;
+								break;
+							}
+							if (human == selectedHuman) {
+								previousHumanIsSelected = true;
+							}
+						}
+						if (!previousHumanIsSelected) {
+							humanToSelect = validHumans.FirstOrDefault();
+						}
+						break;
+					}
+				}
+				if (humanToSelect != null) {
+					SetSelectedHuman(humanToSelect);
+				} else if (selectedHuman is Colonist colonist) {
 					colonist.PlayerMoveToTile(MapM.Map.GetTileFromPosition(mousePosition));
 				}
 			}
@@ -89,6 +101,7 @@ namespace Snowship.NHuman
 		}
 
 		public void SetSelectedHuman(Human human) {
+
 			selectedHuman = human;
 
 			SetSelectedHumanIndicator();
@@ -96,22 +109,24 @@ namespace Snowship.NHuman
 			OnHumanSelected?.Invoke(selectedHuman);
 		}
 
-		private GameObject selectedHumanIndicator;
-
 		private void SetSelectedHumanIndicator() {
-			if (selectedHumanIndicator != null) {
-				MonoBehaviour.Destroy(selectedHumanIndicator);
-			}
-			if (selectedHuman != null) {
-				selectedHumanIndicator = MonoBehaviour.Instantiate(ResourceM.tilePrefab, selectedHuman.obj.transform, false);
-				selectedHumanIndicator.name = "SelectedHumanIndicator";
-				selectedHumanIndicator.transform.localScale = new Vector2(1f, 1f) * 1.2f;
 
-				SpriteRenderer sCISR = selectedHumanIndicator.GetComponent<SpriteRenderer>();
-				sCISR.sprite = ResourceM.selectionCornersSprite;
-				sCISR.sortingOrder = (int)SortingOrder.UI; // Selected Colonist Indicator Sprite
-				sCISR.color = new Color(1f, 1f, 1f, 0.75f);
+			if (selectedHuman == null) {
+				selectionIndicator.SetActive(false);
+				selectionIndicator.transform.SetParent(null);
+				return;
 			}
+
+			if (selectionIndicator == null) {
+				selectionIndicator = Object.Instantiate(ResourceM.selectionIndicator, selectedHuman.obj.transform, false);
+				selectionIndicator.name = "SelectedHumanIndicator";
+				selectionIndicator.GetComponent<SpriteRenderer>().sortingOrder = (int)SortingOrder.UI;
+			} else {
+				selectionIndicator.transform.SetParent(selectedHuman.obj.transform);
+			}
+
+			selectionIndicator.transform.localPosition = Vector3.zero;
+			selectionIndicator.SetActive(true);
 		}
 	}
 }
