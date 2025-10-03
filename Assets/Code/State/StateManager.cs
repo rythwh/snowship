@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
+using Snowship.NColony;
+using Snowship.NMap.NTile;
+using Snowship.NPlanet;
 using Snowship.NUI;
 using UnityEngine;
 
@@ -20,6 +25,21 @@ namespace Snowship.NState {
 		private async void SetInitialState() {
 			await TransitionToState(EState.Boot);
 			await TransitionToState(EState.MainMenu);
+
+			#if UNITY_EDITOR
+			if (PlayerPrefs.GetInt("DebugSettings/Quick Start", 0) == 0) {
+				return;
+			}
+			Planet planet = await GameManager.Get<PlanetManager>().CreatePlanet(new CreatePlanetData());
+
+			const string colonyName = "Lumia";
+			int seed = UnityEngine.Random.Range(0, int.MaxValue);
+			const int size = 100;
+			List<PlanetTile> filteredPlanetTiles = planet.planetTiles.Where(pt => pt.tile.tileType.classes[TileType.ClassEnum.Dirt]).ToList();
+			PlanetTile planetTile = filteredPlanetTiles.ElementAt(UnityEngine.Random.Range(0, filteredPlanetTiles.Count));
+
+			await GameManager.Get<ColonyManager>().CreateColony(new CreateColonyData(colonyName, seed, size, planetTile));
+			#endif
 		}
 
 		public async UniTask TransitionToState(EState newState, ETransitionUIAction transitionUIAction = ETransitionUIAction.Close) {

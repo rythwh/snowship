@@ -1,5 +1,4 @@
 ﻿using System;
-using Cysharp.Threading.Tasks;
 using Snowship.NPersistence;
 using UnityEngine;
 using UnityEngine.UI;

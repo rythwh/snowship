@@ -7,13 +7,13 @@ using UnityEngine.UI;
 
 public class FontReplacer : EditorWindow {
 	private const string EditorPrefsKey = "Utilities.FontReplacer";
-	private const string MenuItemName = "Utilities/Replace Fonts...";
+	private const string MenuItemName = "Tools/Snowship/Replace Fonts";
 
 	private Font _src;
 	private Font _dest;
 	private bool _includePrefabs;
 
-	[MenuItem(MenuItemName)]
+	[MenuItem(MenuItemName, false, priority: 4000)]
 	public static void DisplayWindow() {
 		var window = GetWindow<FontReplacer>(true, "Replace Fonts");
 		var position = window.position;
