@@ -3,74 +3,67 @@ using System.Collections.Generic;
 using Snowship.NMap.NTile;
 using Snowship.NMap;
 using Snowship.NTime;
-using Snowship.NUtilities;
-using Snowship.Selectable;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Snowship.NLife
 {
-	public class Life : ISelectable
+	public abstract class Life
 	{
+		public int Id { get; }
+
+		// Properties
+		public string Name { get; protected set; }
+		public Vector2 Position { get; protected set; }
+		internal Vector2 PreviousPosition { get; private set; }
+		public Tile Tile { get; protected set; }
+		public bool Visible;
 		public float Health { get; protected set; }
+		public Gender Gender { get; protected set; }
+		public bool IsDead { get; protected set; } = false;
+		private LifeData data;
 
-		public GameObject obj;
-
-		// ReSharper disable once InconsistentNaming
-		private Tile _tile;
-		public Tile Tile {
-			get => _tile;
-			private set {
-				if (_tile == value) {
-					return;
-				}
-				_tile = value;
-				OnTileChanged?.Invoke(this, _tile);
-			}
-		}
-
-		public List<Sprite> moveSprites = new();
-		private static readonly int[] moveSpriteIndices = { 1, 2, 0, 3, 1, 0, 0, 1 };
+		// Pathing
 		private float moveTimer;
-		public List<Tile> path = new();
+		private List<Tile> path = new();
 		protected float MoveSpeedMultiplier = 1f;
-		public Vector2 previousPosition;
 		private float moveSpeedRampingMultiplier;
+		public bool IsMoving => path.Count > 0;
+		public Tile NextTile => IsMoving ? path[0] : null;
 
-		public Gender gender;
+		// Events
+		public event Action<string> NameChanged;
+		public event Action<Vector2> PositionChanged;
+		public event Action<Tile> TileChanged;
+		public event Action<bool> VisibilityChanged;
+		public event Action<float> HealthChanged;
+		public event Action Died;
 
-		public bool dead = false;
+		// Managers
+		private MapManager MapM => GameManager.Get<MapManager>();
+		private TimeManager TimeM => GameManager.Get<TimeManager>();
 
-		public bool visible;
+		protected Life(int id, Tile spawnTile, LifeData data) {
+			Id = id;
+			SetTile(spawnTile);
+			Name = data.Name;
+			Position = spawnTile.PositionWorld;
+			Health = 1;
+			Gender = GetRandomGender();
 
-		public enum Gender { Male, Female };
-
-		public event Action<Life, Tile> OnTileChanged;
-		public event Action<float> OnHealthChanged;
-		public event Action<Life> OnDied;
-
-		protected Life(Tile spawnTile, float startingHealth) {
-			_tile = spawnTile;
-			Health = startingHealth;
-
-			OnTileChanged += OnTileChangedInvoked;
-
-			gender = GetRandomGender();
-
-			obj = Object.Instantiate(GameManager.Get<ResourceManager>().tilePrefab, Tile.obj.transform.position, Quaternion.identity);
-			obj.GetComponent<SpriteRenderer>().sortingOrder = (int)SortingOrder.Life; // Life Sprite
-
-			previousPosition = obj.transform.position;
-
-			GameManager.Get<LifeManager>().life.Add(this);
+			PreviousPosition = Position;
 		}
 
-		protected Life() {
-			OnTileChanged += OnTileChangedInvoked;
+		protected void SetName(string name) {
+			Name = name;
+			NameChanged?.Invoke(Name);
 		}
 
-		private void OnTileChangedInvoked(Life life, Tile tile) {
-			SetColour(Tile.sr.color);
+		private void SetTile(Tile tile) {
+			if (Tile == tile) {
+				return;
+			}
+			Tile = tile;
+			TileChanged?.Invoke(Tile);
 			SetVisible(Tile.visible);
 		}
 
@@ -78,105 +71,77 @@ namespace Snowship.NLife
 			return (Gender)UnityEngine.Random.Range(0, Enum.GetNames(typeof(Gender)).Length);
 		}
 
-		public virtual void Update() {
-			MoveToTile(null, false);
-			SetMoveSprite();
+		private void SetVisible(bool visible) {
+			Visible = visible;
+			VisibilityChanged?.Invoke(Visible);
 		}
 
-		public bool MoveToTile(Tile tile, bool allowEndTileNonWalkable) {
-			if (Tile == tile) {
+		public virtual void Update() {
+			MoveToTile(null, false);
+		}
+
+		public bool MoveToTile(Tile endTile, bool allowEndTileNonWalkable) {
+			if (Tile == endTile) {
 				return true;
 			}
-			if (tile != null) {
-				path = PathManager.FindPathToTile(Tile, tile, allowEndTileNonWalkable);
+			if (endTile != null) {
+				path = PathManager.FindPathToTile(Tile, endTile, allowEndTileNonWalkable);
 				if (path.Count == 0) {
 					return false;
 				}
 				moveTimer = 0;
-				previousPosition = obj.transform.position;
+				PreviousPosition = Position;
 			}
 			if (path.Count > 0) {
 
-				obj.transform.position = Vector2.Lerp(previousPosition, path[0].obj.transform.position, moveTimer);
-				Tile = GameManager.Get<MapManager>().Map.GetTileFromPosition(obj.transform.position);
+				Position = Vector2.Lerp(PreviousPosition, path[0].obj.transform.position, moveTimer);
+				SetTile(MapM.Map.GetTileFromPosition(Position));
 
 				if (moveTimer >= 1f) {
-					previousPosition = obj.transform.position;
-					obj.transform.position = Tile.obj.transform.position;
+					PreviousPosition = Position;
+					Position = Tile.obj.transform.position;
 					moveTimer = 0;
 					path.RemoveAt(0);
 				} else {
-					moveSpeedRampingMultiplier = Mathf.Clamp01(moveSpeedRampingMultiplier + GameManager.Get<TimeManager>().Time.DeltaTime);
-					moveTimer += 2 * GameManager.Get<TimeManager>().Time.DeltaTime * Tile.walkSpeed * MoveSpeedMultiplier * moveSpeedRampingMultiplier;
+					moveSpeedRampingMultiplier = Mathf.Clamp01(moveSpeedRampingMultiplier + TimeM.Time.DeltaTime);
+					moveTimer += 2 * TimeM.Time.DeltaTime * Tile.walkSpeed * MoveSpeedMultiplier * moveSpeedRampingMultiplier;
 				}
 			} else {
 				path.Clear();
-				if (!Mathf.Approximately(Vector2.Distance(obj.transform.position, Tile.obj.transform.position), 0f)) {
+				if (!Mathf.Approximately(Vector2.Distance(Position, Tile.obj.transform.position), 0f)) {
 					path.Add(Tile);
 					moveTimer = 0;
 				}
 				moveSpeedRampingMultiplier = 0;
 			}
+			if (Position != PreviousPosition) {
+				PositionChanged?.Invoke(Position);
+			}
 			return true;
 		}
 
-		public int CalculateMoveSpriteIndex() {
-			int moveSpriteIndex = 0;
-			if (path.Count > 0) {
-				Tile previousTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(previousPosition);
-				if (previousTile != path[0]) {
-					moveSpriteIndex = previousTile.surroundingTiles.IndexOf(path[0]);
-					if (moveSpriteIndex == -1) {
-						moveSpriteIndex = 0;
-					}
-					moveSpriteIndex = moveSpriteIndices[moveSpriteIndex];
-				}
-			}
-			return moveSpriteIndex;
-		}
-
-		private void SetMoveSprite() {
-			obj.GetComponent<SpriteRenderer>().sprite = moveSprites[CalculateMoveSpriteIndex()];
-		}
-
-		public virtual void SetColour(Color newColour) {
-			obj.GetComponent<SpriteRenderer>().color = new Color(newColour.r, newColour.g, newColour.b, 1f);
-		}
-
 		public void ChangeHealthValue(float amount) {
-			dead = false;
+			IsDead = false;
 			Health += amount;
-			if (Health > 1f) {
-				Health = 1f;
-			} else if (Health <= 0f) {
-				Health = 0f;
-				dead = true;
+			switch (Health) {
+				case > 1:
+					Health = 1f;
+					break;
+				case <= 0:
+					Health = 0f;
+					IsDead = true;
+					break;
 			}
-			OnHealthChanged?.Invoke(Health);
+			HealthChanged?.Invoke(Health);
 		}
 
 		public virtual void Die() {
-			// TODO Implement death (instance still exists but will be in a death-state)
-			OnDied?.Invoke(this);
+			// TODO Implement death (instance still exists but will be in a dead-state)
+			Died?.Invoke();
 		}
 
 		public virtual void Remove() {
-			Object.Destroy(obj);
-			GameManager.Get<LifeManager>().life.Remove(this);
-		}
-
-		public void SetVisible(bool visible) {
-			this.visible = visible;
-
-			obj.SetActive(visible);
-		}
-
-		void ISelectable.Select() {
-
-		}
-
-		void ISelectable.Deselect() {
-
+			GameManager.Get<LifeManager>().Life.Remove(this);
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Snowship.NUI
 {
@@ -9,8 +10,9 @@ namespace Snowship.NUI
 		public UILoadingScreenPresenter(UILoadingScreenView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 			UIEvents.OnLoadingScreenTextChanged += UpdateLoadingStateText;
+			return UniTask.CompletedTask;
 		}
 
 		public override void OnClose() {

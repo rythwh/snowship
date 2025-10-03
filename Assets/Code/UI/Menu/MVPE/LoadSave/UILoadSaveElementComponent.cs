@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,8 +15,9 @@ namespace Snowship.NUI
 
 		public event Action OnLoadSaveElementComponentButtonClicked;
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 			elementButton.onClick.AddListener(() => OnLoadSaveElementComponentButtonClicked?.Invoke());
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

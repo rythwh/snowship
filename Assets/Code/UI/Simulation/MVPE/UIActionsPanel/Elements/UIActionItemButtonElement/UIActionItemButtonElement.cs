@@ -22,15 +22,15 @@ namespace Snowship.NUI
 			this.itemIcon = itemIcon;
 		}
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			Component.SetItemName(itemName);
 			Component.SetItemIcon(itemIcon);
 
 			Component.OnButtonClicked += OnComponentButtonClicked;
 
 			SetChildElementsActive(ChildElementsActiveState);
+
+			return UniTask.CompletedTask;
 		}
 
 		private void OnComponentButtonClicked(PointerEventData eventData) {

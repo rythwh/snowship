@@ -14,27 +14,26 @@ namespace Snowship.NUI
 	public class UIHumanInfoPanelPresenter : UIPresenter<UIHumanInfoPanelView, UIHumanInfoPanelParameters>
 	{
 		private readonly Human human;
+		private readonly HumanView humanView;
 		private readonly Inventory inventory;
+		private int OpenedTabIndex;
 
 		private readonly List<(IUITabElement tab, UITabButton button)> tabAndButtonGroups = new();
 
+		public event Action<int> OnTabIndexOpened;
+
 		public UIHumanInfoPanelPresenter(UIHumanInfoPanelView view, UIHumanInfoPanelParameters parameters) : base(view, parameters) {
 			human = Parameters.Human;
+			humanView = Parameters.HumanView;
+			OpenedTabIndex = Parameters.OpenedTabIndex;
 			inventory = human.Inventory;
 		}
 
-		public override async void OnCreate() {
-
-			await AddTabAsync<UIBiographyTab>("Biography");
-			await AddTabAsync<UIInventoryTab>("Inventory");
-			await AddTabAsync<UIClothingTab>("Clothing");
-			if (human is Trader) {
-				await AddTabAsync<UITradeTab>("Trade");
-			}
+		public override async UniTask OnCreate() {
 
 			View.SetGeneralInformation(
-				human.moveSprites[0],
-				$"{human.Name} ({human.gender.ToString()[0]})",
+				humanView.moveSprites[0],
+				$"{human.Name} ({human.Gender.ToString()[0]})",
 				$"{human.Title} of {human.OriginLocation.Name}"
 			);
 
@@ -43,7 +42,7 @@ namespace Snowship.NUI
 
 			View.SetupHealthSlider((0, 1), human.Health, true);
 			View.OnHealthChanged(human.Health);
-			human.OnHealthChanged += View.OnHealthChanged;
+			human.HealthChanged += View.OnHealthChanged;
 
 			View.SetupMoodSlider((0, 100), human.Moods.EffectiveMood, true);
 			View.OnMoodChanged(human.Moods.EffectiveMood, human.Moods.MoodModifiersSum);
@@ -52,6 +51,25 @@ namespace Snowship.NUI
 			View.SetupInventorySliders(inventory);
 
 			inventory.OnInventoryChanged += View.OnInventoryChanged;
+
+			await CreateTabs();
+		}
+
+		private async UniTask CreateTabs() {
+			// TODO Should make tabs from some type of registry, or data on the actual "human" object(?)
+			IUITabElement biographyTab = await AddTabAsync<UIBiographyTab>("Biography");
+			await AddTabAsync<UIInventoryTab>("Inventory");
+			await AddTabAsync<UIClothingTab>("Clothing");
+			if (human is Trader) {
+				await AddTabAsync<UITradeTab>("Trade");
+			}
+
+			// Open last opened tab
+			if (tabAndButtonGroups.Count <= OpenedTabIndex) {
+				OpenedTabIndex = 0;
+			}
+			IUITabElement tab = tabAndButtonGroups[OpenedTabIndex].tab;
+			OpenTab(tab);
 		}
 
 		public override void OnClose() {
@@ -59,7 +77,7 @@ namespace Snowship.NUI
 
 			human.Jobs.OnJobChanged -= OnJobChanged;
 
-			human.OnHealthChanged -= View.OnHealthChanged;
+			human.HealthChanged -= View.OnHealthChanged;
 
 			human.Moods.OnMoodChanged -= View.OnMoodChanged;
 
@@ -73,8 +91,8 @@ namespace Snowship.NUI
 			RemoveTab<UITradeTab>();
 		}
 
-		private async UniTask AddTabAsync<TTab>(string buttonText) where TTab : class, IUITabElement {
-			IUITabElement tab = Activator.CreateInstance(typeof(TTab), human) as IUITabElement;
+		private async UniTask<IUITabElement> AddTabAsync<TTab>(string buttonText) where TTab : class, IUITabElement {
+			IUITabElement tab = Activator.CreateInstance(typeof(TTab), human, humanView) as IUITabElement;
 			UITabButton button = new UITabButton();
 
 			tabAndButtonGroups.Add((tab, button));
@@ -82,13 +100,22 @@ namespace Snowship.NUI
 			button.ButtonClicked += () => OpenTab(tab);
 
 			await View.CreateTab(tab, button, buttonText);
+
+			return tab;
 		}
 
 		private void OpenTab(IUITabElement tab) {
-			foreach ((IUITabElement tab, UITabButton button) group in tabAndButtonGroups) {
+			for (int i = 0; i < tabAndButtonGroups.Count; i++) {
+				(IUITabElement tab, UITabButton button) group = tabAndButtonGroups[i];
+
 				bool isActiveTab = group.tab == tab;
+
 				group.tab.SetActive(isActiveTab);
 				group.button.ShowConnector(isActiveTab);
+
+				if (isActiveTab) {
+					OnTabIndexOpened?.Invoke(i);
+				}
 			}
 		}
 

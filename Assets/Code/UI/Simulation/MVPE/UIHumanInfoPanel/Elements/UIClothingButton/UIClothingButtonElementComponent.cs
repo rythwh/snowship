@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,8 +15,9 @@ namespace Snowship.NUI
 
 		public event Action OnButtonClicked;
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 			button.onClick.AddListener(() => OnButtonClicked?.Invoke());
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
 using Snowship.NCaravan;
@@ -48,6 +49,8 @@ public class ResourceManager : Manager, IDisposable
 		CreatePlantPrefabs();
 		CreateObjectPrefabs();
 		LoadLocationNames();
+
+		Inventory.AnyInventoryChanged += OnAnyInventoryChanged;
 	}
 
 	public override void OnGameSetupComplete() {
@@ -77,8 +80,6 @@ public class ResourceManager : Manager, IDisposable
 	}
 
 	public override void OnUpdate() {
-		CalculateResourceTotals();
-
 		foreach (Farm farm in Farm.farms) {
 			farm.Update();
 		}
@@ -452,6 +453,10 @@ public class ResourceManager : Manager, IDisposable
 		CreateResourceJob job = new(craftingObject, resource);
 		JobM.AddJob(job);
 		return job;
+	}
+
+	private void OnAnyInventoryChanged() {
+		CalculateResourceTotals();
 	}
 
 	public void CalculateResourceTotals() {

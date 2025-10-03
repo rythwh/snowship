@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using Snowship.NCamera;
 using Snowship.NColony;
@@ -13,6 +14,8 @@ namespace Snowship.NMap
 		private ColonyManager ColonyM => GameManager.Get<ColonyManager>();
 
 		public MapState MapState = MapState.Nothing;
+
+		public event Action<Map> OnMapCreated;
 
 		public async UniTask CreateMap(MapData mapData, MapInitializeType mapInitializeType) {
 
@@ -34,6 +37,8 @@ namespace Snowship.NMap
 
 			CameraM.OnCameraPositionChanged += Map.OnCameraPositionChanged;
 			CameraM.OnCameraZoomChanged += Map.OnCameraZoomChanged;
+
+			OnMapCreated?.Invoke(Map);
 		}
 	}
 }

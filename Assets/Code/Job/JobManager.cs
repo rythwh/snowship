@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Snowship.NMap.Models.Structure;
 using Snowship.NMap.NTile;
 using Snowship.NColonist;
@@ -60,7 +61,7 @@ namespace Snowship.NJob
 				HashSet<RegionBlock> checkedRegionBlocks = new();
 				HashSet<IJobDefinition> checkedJobTypes = new();
 
-				foreach (IJob job in Jobs.OrderBy(j => Vector2.Distance(j.Tile.position, colonist.Tile.position))) {
+				foreach (IJob job in Jobs.OrderBy(j => Vector2.Distance(j.Tile.PositionGrid, colonist.Tile.PositionGrid))) {
 
 					// Check that the job is able to be assigned to a colonist
 					if (!job.CanBeAssigned()) {
@@ -99,7 +100,7 @@ namespace Snowship.NJob
 
 					float cost = 0;
 					//cost += PathManager.RegionBlockDistance(colonist.Tile.regionBlock, job.Tile.regionBlock, true, true, !job.Tile.walkable);
-					cost += Vector2.Distance(colonist.Tile.position, job.Tile.position);
+					cost += Vector2.Distance(colonist.Tile.PositionGrid, job.Tile.PositionGrid);
 					cost -= colonist.Skills.GetSkillFromJobType(job.Name)?.CalculateTotalSkillLevel() * 5f ?? 0;
 					// TODO Check the job type's priority according to the colonist's assigned priorities
 

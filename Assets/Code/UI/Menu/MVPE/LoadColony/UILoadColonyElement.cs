@@ -12,7 +12,7 @@ namespace Snowship.NUI
 			this.colony = colony;
 		}
 
-		protected override void OnCreate() {
+		protected override async UniTask OnCreate() {
 			base.OnCreate();
 
 			Component.OnLoadColonyElementComponentButtonClicked += OnLoadColonyElementComponentButtonClicked;

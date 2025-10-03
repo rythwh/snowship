@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace Snowship.NUI
 		public UIMainMenuPresenter(UIMainMenuView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 
 			View.OnNewButtonClicked += OnNewButtonClicked;
 			View.OnContinueButtonClicked += OnContinueButtonClicked;
@@ -36,6 +37,8 @@ namespace Snowship.NUI
 
 			List<Sprite> backgroundImages = Resources.LoadAll<Sprite>(@"UI/Backgrounds/SingleMap").ToList();
 			View.SetBackground(backgroundImages[Random.Range(0, backgroundImages.Count)]);
+
+			return UniTask.CompletedTask;
 		}
 
 		public override void OnClose() {
@@ -50,7 +53,7 @@ namespace Snowship.NUI
 			await GameManager.Get<UIManager>().OpenViewAsync<UICreatePlanet>(this, false);
 		}
 
-		private async void OnContinueButtonClicked() {
+		private void OnContinueButtonClicked() {
 			// GameManager.Get<PersistenceManager>().ContinueFromMostRecentSave();
 		}
 

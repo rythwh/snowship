@@ -142,6 +142,8 @@ namespace Snowship.NMap
 		}
 
 		public void RedrawTiles(List<Tile> tilesToBitmask, bool careAboutColonistVisibility, bool recalculateLighting) {
+			// TODO Optimise use of ColonistM.IsTileVisibleToAnyColonist, use Region instead
+			//List<Region> uniqueRegions = tilesToBitmask.Select(t => t.region).Distinct().ToList();
 			foreach (Tile tile in tilesToBitmask) {
 				if (tile != null) {
 					if (!careAboutColonistVisibility || ColonistM.IsTileVisibleToAnyColonist(tile)) {

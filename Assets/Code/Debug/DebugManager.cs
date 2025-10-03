@@ -230,7 +230,7 @@ public class DebugManager : Manager
 	private float holdHour = 12;
 
 	private void ToggleSunCycleUpdate() {
-		GameManager.Get<MapManager>().Map.SetTileBrightness(holdHour, true);
+		GameManager.Get<MapManager>().Map.UpdateGlobalLighting(holdHour, true);
 	}
 
 	private int viewRiverAtIndex = 0;
@@ -266,7 +266,7 @@ public class DebugManager : Manager
 			Commands.selecthuman,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 1) {
-					Human selectedHuman = GameManager.Get<HumanManager>().humans.Find(human => human.Name == parameters[0]);
+					Human selectedHuman = GameManager.Get<HumanManager>().GetHumans().ToList().Find(human => human.Name == parameters[0]);
 					if (selectedHuman != null) {
 						GameManager.Get<HumanManager>().SetSelectedHuman(selectedHuman);
 						if (GameManager.Get<HumanManager>().selectedHuman == selectedHuman) {
@@ -285,12 +285,12 @@ public class DebugManager : Manager
 			delegate(List<string> parameters) {
 				if (parameters.Count == 1) {
 					if (int.TryParse(parameters[0], out int numberToSpawn)) {
-						int oldNumColonists = ColonistM.Colonists.Count;
+						int oldNumColonists = ColonistM.ColonistCount;
 						GameManager.Get<ColonistManager>().SpawnColonists(numberToSpawn);
-						if (oldNumColonists + numberToSpawn == ColonistM.Colonists.Count) {
+						if (oldNumColonists + numberToSpawn == ColonistM.ColonistCount) {
 							Output($"SUCCESS: Spawned {numberToSpawn} colonists.");
 						} else {
-							Output($"ERROR: Unable to spawn colonists. Spawned {ColonistM.Colonists.Count - oldNumColonists} colonists.");
+							Output($"ERROR: Unable to spawn colonists. Spawned {ColonistM.ColonistCount - oldNumColonists} colonists.");
 						}
 					} else {
 						Output("ERROR: Invalid number of colonists.");
@@ -682,18 +682,18 @@ public class DebugManager : Manager
 						if (propertyInfo != null) {
 							object value = propertyInfo.GetValue(tile, null);
 							if (value != null) {
-								Output($"{tile.position}: \"{value}\"");
+								Output($"{tile.PositionGrid}: \"{value}\"");
 							} else {
-								Output($"ERROR: Value is null on propertyInfo for {tile.position}.");
+								Output($"ERROR: Value is null on propertyInfo for {tile.PositionGrid}.");
 							}
 						} else {
 							FieldInfo fieldInfo = type.GetField(parameters[0]);
 							if (fieldInfo != null) {
 								object value = fieldInfo.GetValue(tile);
 								if (value != null) {
-									Output($"{tile.position}: \"{value}\"");
+									Output($"{tile.PositionGrid}: \"{value}\"");
 								} else {
-									Output($"ERROR: Value is null on fieldInfo for {tile.position}.");
+									Output($"ERROR: Value is null on fieldInfo for {tile.PositionGrid}.");
 								}
 							} else {
 								Output($"ERROR: propertyInfo/fieldInfo is null on type for ({parameters[0]}).");
@@ -971,7 +971,7 @@ public class DebugManager : Manager
 							if (selectedTiles.Count > 0) {
 								foreach (Tile tile in selectedTiles) {
 									tile.SetPlant(false, new Plant(plantPrefab, tile, small, true, null));
-									GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+									GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 									if (tile.plant != null) {
 										counter += 1;
 									}
@@ -1075,7 +1075,7 @@ public class DebugManager : Manager
 						if (time is >= 0 and < 24) {
 							holdHour = time;
 							GameManager.Get<TimeManager>().SetTime(time);
-							GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+							GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 						} else {
 							Output("ERROR: Time out of range.");
 						}
@@ -1122,7 +1122,7 @@ public class DebugManager : Manager
 						tile.sr.color = Color.white;
 					}
 					GameManager.Get<MapManager>().Map.RedrawTiles(GameManager.Get<MapManager>().Map.tiles, true, true);
-					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 				} else {
 					Output("ERROR: Invalid number of parameters specified.");
 				}
@@ -1393,7 +1393,7 @@ public class DebugManager : Manager
 			Commands.viewshadowsfrom,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						foreach (Tile tile in selectedTiles) {
 							foreach (KeyValuePair<int, Dictionary<Tile, float>> shadowsFromKVP in tile.shadowsFrom) {
@@ -1406,7 +1406,7 @@ public class DebugManager : Manager
 						Output("No tiles are currently selected.");
 					}
 				} else if (parameters.Count == 1) {
-					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
@@ -1433,7 +1433,7 @@ public class DebugManager : Manager
 			Commands.viewshadowsto,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						foreach (Tile tile in selectedTiles) {
 							foreach (KeyValuePair<int, List<Tile>> shadowsToKVP in tile.shadowsTo) {
@@ -1446,7 +1446,7 @@ public class DebugManager : Manager
 						Output("No tiles are currently selected.");
 					}
 				} else if (parameters.Count == 1) {
-					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
@@ -1473,7 +1473,7 @@ public class DebugManager : Manager
 			Commands.viewblockingfrom,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						foreach (Tile tile in selectedTiles) {
 							foreach (KeyValuePair<int, List<Tile>> blockingShadowsFromKVP in tile.blockingShadowsFrom) {
@@ -1486,7 +1486,7 @@ public class DebugManager : Manager
 						Output("No tiles are currently selected.");
 					}
 				} else if (parameters.Count == 1) {
-					GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {

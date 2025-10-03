@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
 using Snowship.NCamera;
@@ -210,12 +211,12 @@ namespace Snowship.Selectable
 			}
 
 			Vector2Int smallerPosition = new(
-				Mathf.FloorToInt(Mathf.Min(firstTile.position.x, secondTile.position.x)),
-				Mathf.FloorToInt(Mathf.Min(firstTile.position.y, secondTile.position.y))
+				Mathf.FloorToInt(Mathf.Min(firstTile.PositionGrid.x, secondTile.PositionGrid.x)),
+				Mathf.FloorToInt(Mathf.Min(firstTile.PositionGrid.y, secondTile.PositionGrid.y))
 			);
 			Vector2Int largerPosition = new(
-				Mathf.FloorToInt(Mathf.Max(firstTile.position.x, secondTile.position.x)),
-				Mathf.FloorToInt(Mathf.Max(firstTile.position.y, secondTile.position.y))
+				Mathf.FloorToInt(Mathf.Max(firstTile.PositionGrid.x, secondTile.PositionGrid.x)),
+				Mathf.FloorToInt(Mathf.Max(firstTile.PositionGrid.y, secondTile.PositionGrid.y))
 			);
 
 			HashSet<Tile> selection = new();

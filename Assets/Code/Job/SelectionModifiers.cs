@@ -71,7 +71,7 @@ namespace Snowship.NJob
 				SelectionModifiersEnum.CloseToSupport, delegate(Tile tile, Tile posTile, ObjectPrefab prefab, Variation variation) {
 					for (int y = -5; y < 5; y++) {
 						for (int x = -5; x < 5; x++) {
-							Tile supportTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(posTile.position.x + x, posTile.position.y + y));
+							Tile supportTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(posTile.PositionGrid.x + x, posTile.PositionGrid.y + y));
 							if (!supportTile.buildable && !supportTile.walkable) {
 								return true;
 							}

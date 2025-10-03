@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NTime;
 
 namespace Snowship.NUI
@@ -10,9 +11,11 @@ namespace Snowship.NUI
 		public UIDateTimePresenter(UIDateTimeView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 			GameManager.Get<TimeManager>().OnTimeChanged += OnTimeChanged;
 			OnTimeChanged(GameManager.Get<TimeManager>().Time);
+
+			return UniTask.CompletedTask;
 		}
 
 		public override void OnClose() {

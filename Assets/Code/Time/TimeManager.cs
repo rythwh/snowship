@@ -88,7 +88,7 @@ namespace Snowship.NTime {
 			Time.Minute += 1;
 			timer = 0;
 			if (Time.Minute % 10 == 0) {
-				GameManager.Get<MapManager>().Map.SetTileBrightness(Time.TileBrightnessTime, false);
+				GameManager.Get<MapManager>().Map.UpdateGlobalLighting(Time.TileBrightnessTime, false);
 			}
 			if (Time.Minute >= 60) {
 				Time.Hour += 1;

@@ -78,8 +78,8 @@ public class GameManager : MonoBehaviour {
 		Biome.InitializeBiomes();
 		ResourceVein.InitializeResourceVeins();
 
-		Get<HumanManager>().CreateNames();
-		Get<HumanManager>().CreateHumanSprites();
+		Get<HumanManager>().LoadNames();
+		Get<HumanManager>().LoadSprites();
 
 		SkillPrefab.CreateColonistSkills(); // TODO (Solution: Use string references which can be converted to the correct Prefab obj when needed) Skills must currently be ahead of professions to determine skill-profession relationship
 		ProfessionPrefab.CreateProfessionPrefabs();

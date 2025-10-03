@@ -5,7 +5,6 @@ using JetBrains.Annotations;
 using Snowship.NMap.NTile;
 using Snowship.NHuman;
 using Snowship.NJob;
-using Snowship.NLife;
 using Snowship.NResource;
 using UnityEngine;
 
@@ -25,10 +24,10 @@ namespace Snowship.NColonist
 		public JobComponent(Human human) {
 			this.human = human;
 
-			human.OnTileChanged += OnHumanTileChanged;
+			human.TileChanged += OnHumanTileChanged;
 		}
 
-		private void OnHumanTileChanged(Life life, Tile tile) {
+		private void OnHumanTileChanged(Tile tile) {
 			if (ActiveJob == null) {
 				return;
 			}
@@ -108,7 +107,7 @@ namespace Snowship.NColonist
 				} else {
 					bool pathValid = ActiveJob.Worker.MoveToTile(ActiveJob.Tile, !ActiveJob.Tile.walkable);
 					if (!pathValid) {
-						Debug.LogWarning($"Path invalid when trying to move {ActiveJob.Worker.Name} {ActiveJob.Worker.Tile.position} to Job {ActiveJob.Definition.Name} at {ActiveJob.Tile.position}");
+						Debug.LogWarning($"Path invalid when trying to move {ActiveJob.Worker.Name} {ActiveJob.Worker.Tile.PositionGrid} to Job {ActiveJob.Definition.Name} at {ActiveJob.Tile.PositionGrid}");
 						ReturnJob();
 					}
 				}
@@ -204,7 +203,7 @@ namespace Snowship.NColonist
 		}
 
 		public bool CanTakeNewJob() {
-			if (human.dead) {
+			if (human.IsDead) {
 				return false;
 			}
 			if (ActiveJob != null) {

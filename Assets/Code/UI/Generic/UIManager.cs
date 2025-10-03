@@ -53,7 +53,7 @@ namespace Snowship.NUI {
 				ui.presenter,
 				parentGroup
 			);
-			group.OnCreate();
+			await group.OnCreate();
 
 			parentGroup?.SetViewActive(showParent);
 

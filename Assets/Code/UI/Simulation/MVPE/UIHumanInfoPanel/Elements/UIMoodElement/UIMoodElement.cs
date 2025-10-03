@@ -1,4 +1,5 @@
-﻿using Snowship.NColonist;
+﻿using Cysharp.Threading.Tasks;
+using Snowship.NColonist;
 
 namespace Snowship.NUI
 {
@@ -10,14 +11,14 @@ namespace Snowship.NUI
 			Mood = mood;
 		}
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			Mood.OnTimerChanged += OnMoodTimerChanged;
 
 			Component.SetMoodNameText(Mood.Prefab.name);
 			Component.SetMoodEffectAmountText(Mood.Prefab.effectAmount);
 			OnMoodTimerChanged(Mood.Timer);
+
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

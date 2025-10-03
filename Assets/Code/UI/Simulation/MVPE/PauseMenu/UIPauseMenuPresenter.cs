@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NInput;
 
@@ -16,7 +17,7 @@ namespace Snowship.NUI
 		public UIPauseMenuPresenter(UIPauseMenuView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 
 			View.OnContinueButtonClicked += OnContinueButtonClicked;
 			View.OnSaveButtonClicked += OnSaveButtonClicked;
@@ -25,6 +26,8 @@ namespace Snowship.NUI
 			View.OnExitToDesktopButtonClicked += OnExitToDesktopButtonClicked;
 
 			GameManager.Get<InputManager>().InputSystemActions.Simulation.Escape.performed += OnEscapePerformed;
+
+			return UniTask.CompletedTask;
 		}
 
 		public override void OnClose() {
@@ -45,7 +48,7 @@ namespace Snowship.NUI
 			await GameManager.Get<StateManager>().TransitionToState(EState.Simulation, ETransitionUIAction.Close);
 		}
 
-		private async void OnSaveButtonClicked() {
+		private void OnSaveButtonClicked() {
 			try {
 				// await GameManager.Get<PersistenceManager>().CreateSave(GameManager.Get<ColonyManager>().colony);
 				View.SetSaveButtonImageColour(ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen));

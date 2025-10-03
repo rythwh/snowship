@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NCaravan;
 using Snowship.NHuman;
 using Snowship.NJob;
@@ -9,15 +10,16 @@ namespace Snowship.NUI.UITab
 	public class UITradeTab : UITabElement<UITradeTabComponent>
 	{
 		private readonly Human human;
+		private readonly HumanView humanView;
 
-		public UITradeTab(Human human) {
+		public UITradeTab(Human human, HumanView humanView) {
 			this.human = human;
+			this.humanView = humanView;
 		}
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			Component.TradeButtonClicked += OnTradeButtonClicked;
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

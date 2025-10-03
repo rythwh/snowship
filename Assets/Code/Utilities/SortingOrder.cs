@@ -7,6 +7,7 @@
 		Job = 5000,
 		Life = 10000,
 		Selection = 20000,
+		WorldSpaceUI = 25000,
 		UI = 30000
 	}
 }

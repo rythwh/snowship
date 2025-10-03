@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 
 
 namespace Snowship.NUI
@@ -13,11 +14,13 @@ namespace Snowship.NUI
 		public UILoadSavePresenter(UILoadSaveView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 			View.OnBackButtonClicked += OnBackButtonClicked;
 			// View.OnLoadSaveButtonClicked += OnLoadSaveButtonClicked;
 
 			// CreateSaveElements();
+
+			return UniTask.CompletedTask;
 		}
 
 		public override void OnClose() {

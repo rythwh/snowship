@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Snowship.NCamera;
-using Snowship.NLife;
 using Snowship.NMap.Generation;
 using Snowship.NMap.Models.Structure;
 using Snowship.NMap.NTile;
@@ -12,7 +11,7 @@ namespace Snowship.NMap
 {
 	public partial class Map
 	{
-		internal void SetTileBrightness(float time, bool forceUpdate) {
+		internal void UpdateGlobalLighting(float time, bool forceUpdate) {
 			Color newColour = MapGenerator.GetTileColourAtHour(time);
 			foreach (RegionBlock visibleRegionBlock in visibleRegionBlocks) {
 				if (!forceUpdate && Mathf.Approximately(visibleRegionBlock.lastBrightnessUpdate, time)) {
@@ -24,10 +23,7 @@ namespace Snowship.NMap
 				}
 			}
 
-			// TODO Remove hard dependency
-			foreach (Life life in GameManager.Get<LifeManager>().life) {
-				life.SetColour(life.Tile.sr.color);
-			}
+			LightingUpdated?.Invoke();
 			GameManager.Get<CameraManager>().camera.backgroundColor = newColour * 0.5f;
 		}
 
@@ -92,7 +88,7 @@ namespace Snowship.NMap
 							}
 							shadowTiles.Add(tileToShadow);
 						} else {
-							if (shadowedAnyTile || Vector2.Distance(tileToShadow.position, shadowSourceTile.position) > maxShadowDistanceAtHour) {
+							if (shadowedAnyTile || Vector2.Distance(tileToShadow.PositionGrid, shadowSourceTile.PositionGrid) > maxShadowDistanceAtHour) {
 								if (tileToShadow.blockingShadowsFrom.ContainsKey(h)) {
 									tileToShadow.blockingShadowsFrom[h].Add(shadowSourceTile);
 								} else {
@@ -120,7 +116,7 @@ namespace Snowship.NMap
 				}
 			}
 			if (setBrightnessAtEnd) {
-				SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, forceBrightnessUpdate);
+				UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, forceBrightnessUpdate);
 			}
 		}
 

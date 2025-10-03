@@ -4,6 +4,7 @@ using Snowship.NMap.Models.Geography;
 using Snowship.NMap.Models.Structure;
 using Snowship.NResource;
 using Snowship.NTime;
+using Snowship.NUtilities;
 using UnityEngine;
 
 namespace Snowship.NMap.NTile
@@ -15,7 +16,8 @@ namespace Snowship.NMap.NTile
 		public GameObject obj;
 		public SpriteRenderer sr;
 
-		public readonly Vector2 position;
+		public Vector2Int PositionGrid { get; }
+		public Vector2 PositionWorld => obj.transform.position;
 
 		public List<Tile> horizontalSurroundingTiles = new List<Tile>();
 		public List<Tile> diagonalSurroundingTiles = new List<Tile>();
@@ -63,16 +65,21 @@ namespace Snowship.NMap.NTile
 
 		public bool visible;
 
-		public Tile(Map map, Vector2 position, float height) {
+		public Tile(Map map, Vector2Int positionGrid, float height) {
 			this.map = map;
 
-			this.position = position;
+			this.PositionGrid = positionGrid;
 
-			obj = MonoBehaviour.Instantiate(GameManager.Get<ResourceManager>().tilePrefab, new Vector2(position.x + 0.5f, position.y + 0.5f), Quaternion.identity);
+			obj = MonoBehaviour.Instantiate(
+				GameManager.Get<ResourceManager>().tilePrefab,
+				new Vector2(positionGrid.x + 0.5f, positionGrid.y + 0.5f),
+				Quaternion.identity
+			);
 			obj.transform.SetParent(GameManager.SharedReferences.TileParent, true);
-			obj.name = "Tile: " + position;
+			obj.name = $"Tile-{positionGrid}";
 
 			sr = obj.GetComponent<SpriteRenderer>();
+			sr.sortingOrder = (int)SortingOrder.Tile + (Mathf.RoundToInt(positionGrid.y) * 2);
 
 			SetTileHeight(height);
 

@@ -92,7 +92,7 @@ namespace Snowship.NUI
 			averageTemperatureText.text = $"{Mathf.RoundToInt(planetTile.tile.temperature)}°C";
 			averagePrecipitationText.text = $"{Mathf.RoundToInt(planetTile.tile.GetPrecipitation() * 100f)}%";
 			altitudeText.text = planetTile.altitude;
-			positionText.text = $"({Mathf.FloorToInt(planetTile.tile.position.x)}, {Mathf.FloorToInt(planetTile.tile.position.y)})";
+			positionText.text = $"({Mathf.FloorToInt(planetTile.tile.PositionGrid.x)}, {Mathf.FloorToInt(planetTile.tile.PositionGrid.y)})";
 		}
 
 		public void SetSaveColonyButtonInteractable(bool interactable) {

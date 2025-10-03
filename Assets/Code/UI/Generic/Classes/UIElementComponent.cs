@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace Snowship.NUI {
 	public abstract class UIElementComponent : MonoBehaviour
@@ -6,7 +7,8 @@ namespace Snowship.NUI {
 		private static RectTransform rectTransform = null;
 		protected RectTransform RectTransform => rectTransform == null ? rectTransform = GetComponent<RectTransform>() : rectTransform;
 
-		public virtual void OnCreate() {
+		public virtual UniTask OnCreate() {
+			return UniTask.CompletedTask;
 		}
 
 		protected virtual void OnClose() {

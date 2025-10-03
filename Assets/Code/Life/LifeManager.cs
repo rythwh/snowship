@@ -1,9 +1,28 @@
 ﻿using System.Collections.Generic;
+using Snowship.NMap;
 
 namespace Snowship.NLife
 {
 	public class LifeManager : Manager
 	{
-		public List<Life> life = new();
+		public readonly Dictionary<Life, LifeView<Life>> Life = new();
+
+		private MapManager MapM => GameManager.Get<MapManager>();
+
+		public override void OnGameSetupComplete() {
+			base.OnGameSetupComplete();
+
+			MapM.OnMapCreated += OnMapCreated;
+		}
+
+		private void OnMapCreated(Map map) {
+			MapM.Map.LightingUpdated += OnMapLightingUpdated;
+		}
+
+		private void OnMapLightingUpdated() {
+			foreach (LifeView<Life> lifeView in Life.Values) {
+				lifeView.ApplyTileColour();
+			}
+		}
 	}
 }

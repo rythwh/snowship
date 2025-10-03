@@ -12,6 +12,8 @@ namespace Snowship.NUI
 	[UsedImplicitly]
 	public class UISimulationPresenter : UIPresenter<UISimulationView>
 	{
+		private int openedHumanTabIndex = 0;
+
 		private InputManager InputM => GameManager.Get<InputManager>();
 		private UIManager UIM => GameManager.Get<UIManager>();
 		private HumanManager HumanM => GameManager.Get<HumanManager>();
@@ -20,7 +22,7 @@ namespace Snowship.NUI
 		public UISimulationPresenter(UISimulationView view) : base(view) {
 		}
 
-		public override async void OnCreate() {
+		public override async UniTask OnCreate() {
 			InputM.InputSystemActions.Simulation.Escape.performed += OnEscapePerformed;
 
 			View.SetDisclaimerText($"Lumi Games (Snowship {GameManager.GameVersion.text})");
@@ -48,14 +50,26 @@ namespace Snowship.NUI
 		}
 
 		private async UniTask OnHumanSelected(Human selectedHuman) {
+			// Close existing info panel if new human is null
 			if (selectedHuman == null) {
 				Debug.Log("Close UIHumanInfoPanel");
 				UIM.CloseView<UIHumanInfoPanel>();
 				return;
 			}
-			UIHumanInfoPanelParameters parameters = new(selectedHuman);
-			await UIM.ReopenView<UIHumanInfoPanel>(this, parameters);
+
+			// Open (or re-open if selecting new human) info panel
+			UIHumanInfoPanelParameters parameters = new(
+				selectedHuman,
+				HumanM.GetHumanView(selectedHuman),
+				openedHumanTabIndex
+			);
+			if (await UIM.ReopenView<UIHumanInfoPanel>(this, parameters) is UIHumanInfoPanelPresenter presenter) {
+				presenter.OnTabIndexOpened += OnHumanTabIndexOpened;
+			}
 		}
 
+		private void OnHumanTabIndexOpened(int index) {
+			openedHumanTabIndex = index;
+		}
 	}
 }

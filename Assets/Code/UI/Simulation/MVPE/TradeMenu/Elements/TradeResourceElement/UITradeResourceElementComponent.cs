@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,7 +35,7 @@ namespace Snowship.NUI
 		public event Action<bool> OnBuyIncreaseButtonClicked;
 		public event Action<bool> OnSellIncreaseButtonClicked;
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 			tradeAmountInputField.onEndEdit.AddListener(amountString => OnTradeAmountChanged?.Invoke(amountString));
 			clearButton.onClick.AddListener(() => OnClearButtonClicked?.Invoke());
 
@@ -43,6 +44,8 @@ namespace Snowship.NUI
 
 			sellOneButton.onClick.AddListener(() => OnSellIncreaseButtonClicked?.Invoke(false));
 			sellAllButton.onClick.AddListener(() => OnSellIncreaseButtonClicked?.Invoke(true));
+
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

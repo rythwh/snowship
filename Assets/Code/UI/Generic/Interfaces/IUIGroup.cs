@@ -1,4 +1,6 @@
-﻿namespace Snowship.NUI
+﻿using Cysharp.Threading.Tasks;
+
+namespace Snowship.NUI
 {
 	public interface IUIGroup {
 		IUIView View { get; }
@@ -6,7 +8,7 @@
 		IUIConfig Config { get; }
 		IUIGroup Parent { get; }
 		bool IsActive { get; }
-		void OnCreate();
+		UniTask OnCreate();
 		void SetViewActive(bool active);
 		public void AddChild(IUIGroup child);
 		public void RemoveChild(IUIGroup child);

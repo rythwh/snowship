@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NSettings;
 using Snowship.NUtilities;
@@ -16,7 +17,7 @@ namespace Snowship.NUI
 		public UISettingsPresenter(UISettingsView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 
 			SettingsM.OnSettingsChanged += UpdateButtonsForChanges;
 
@@ -33,6 +34,8 @@ namespace Snowship.NUI
 			SetUIScaleToggle();
 
 			Debug.Log(SettingsM.Settings.ToString());
+
+			return UniTask.CompletedTask;
 		}
 
 		public override void OnClose() {

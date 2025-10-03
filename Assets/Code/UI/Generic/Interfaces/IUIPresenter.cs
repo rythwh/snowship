@@ -1,7 +1,9 @@
-﻿namespace Snowship.NUI
+﻿using Cysharp.Threading.Tasks;
+
+namespace Snowship.NUI
 {
 	public interface IUIPresenter {
-		void OnCreate();
+		UniTask OnCreate();
 		void OnPostCreate();
 		void OnClose();
 	}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NHuman;
 using Snowship.NMap.NTile;
 using Snowship.NMap;
 using Snowship.NResource;
@@ -9,9 +10,8 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Snowship.NCaravan {
-	public class Caravan : IInventory, IDisposable
+	public class Caravan : IInventoriable, IDisposable
 	{
-
 		public List<Trader> traders = new List<Trader>();
 		public int numTraders;
 		public CaravanType caravanType;
@@ -40,6 +40,8 @@ namespace Snowship.NCaravan {
 		private const int MaxMinimumCaravanAmount = 15;
 
 		private readonly List<Trader> removeTraders = new List<Trader>();
+
+		private HumanManager HumanM => GameManager.Get<HumanManager>();
 
 		public Caravan() {
 			Inventory = new Inventory(this, int.MaxValue, int.MaxValue);
@@ -83,7 +85,7 @@ namespace Snowship.NCaravan {
 		}
 
 		private void SpawnTrader(Tile spawnTile) {
-			Trader trader = new Trader(spawnTile, 1f, this);
+			Trader trader = HumanM.CreateHuman<Trader, TraderViewModule>(spawnTile, new HumanData());
 			traders.Add(trader);
 
 			List<Tile> targetTiles = new List<Tile> { targetTile };

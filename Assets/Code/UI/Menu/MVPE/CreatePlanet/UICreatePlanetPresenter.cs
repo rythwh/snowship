@@ -17,7 +17,7 @@ namespace Snowship.NUI
 		public UICreatePlanetPresenter(UICreatePlanetView view) : base(view) {
 		}
 
-		public override async void OnCreate() {
+		public override async UniTask OnCreate() {
 
 			View.OnBackButtonClicked += OnBackButtonClicked;
 

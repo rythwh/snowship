@@ -28,13 +28,14 @@ namespace Snowship.NUI.UITab
 		private readonly List<UIMoodElement> moodElements = new();
 		private readonly List<UISkillElement> skillElements = new();
 
-		public override void OnCreate() {
-			base.OnCreate();
+		public override UniTask OnCreate() {
 
 			moodViewButton.onClick.AddListener(() => SetMoodPanelActive(true));
 			moodPanelCloseButton.onClick.AddListener(() => SetMoodPanelActive(false));
 
 			SetMoodPanelActive(false);
+
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

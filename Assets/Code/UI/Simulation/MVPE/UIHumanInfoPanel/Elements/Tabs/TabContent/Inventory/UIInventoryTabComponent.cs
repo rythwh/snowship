@@ -17,10 +17,9 @@ namespace Snowship.NUI.UITab
 		private readonly List<UIReservedResourcesElement> reservedResourcesElements = new();
 		private readonly List<UIResourceAmountElement> inventoryResourceAmountElements = new();
 
-		public override void OnCreate() {
-			base.OnCreate();
-
+		public override UniTask OnCreate() {
 			emptyInventoryButton.onClick.AddListener(() => OnEmptyInventoryButtonClicked?.Invoke());
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

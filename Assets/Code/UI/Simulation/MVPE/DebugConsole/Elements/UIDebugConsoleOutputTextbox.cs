@@ -1,4 +1,6 @@
-﻿namespace Snowship.NUI
+﻿using Cysharp.Threading.Tasks;
+
+namespace Snowship.NUI
 {
 	public class UIDebugConsoleOutputTextbox : UIElement<UIDebugConsoleOutputTextboxComponent> {
 		private readonly string text;
@@ -7,10 +9,9 @@
 			this.text = text;
 		}
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			Component.OutputToConsole(text);
+			return UniTask.CompletedTask;
 		}
 	}
 }

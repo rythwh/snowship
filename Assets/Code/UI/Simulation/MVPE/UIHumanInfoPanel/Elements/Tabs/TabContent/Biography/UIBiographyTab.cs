@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NColonist;
 using Snowship.NHuman;
@@ -9,13 +10,15 @@ namespace Snowship.NUI.UITab
 	public class UIBiographyTab : UITabElement<UIBiographyTabComponent>
 	{
 		private readonly Human human;
+		private readonly HumanView humanView;
 
-		public UIBiographyTab(Human human) {
+		public UIBiographyTab(Human human, HumanView humanView) {
 			this.human = human;
+			this.humanView = humanView;
 		}
 
-		protected override async void OnCreate() {
-			base.OnCreate();
+		protected override async UniTask OnCreate() {
+			await base.OnCreate();
 
 			foreach (NeedInstance need in human.Needs.AsList().OrderByDescending(need => need.GetValue())) {
 				await Component.AddNeedElement(need);

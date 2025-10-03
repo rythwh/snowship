@@ -53,7 +53,7 @@ namespace Snowship.NUI
 				GameObject planetTileGameObject;
 				if (instantiateNewPlanetTiles) {
 					planetTileGameObject = Object.Instantiate(planetTilePrefab, planetGridRectTransform, false);
-					planetTileGameObject.name = $"PlanetTile {planetTile.tile.position}";
+					planetTileGameObject.name = $"PlanetTile {planetTile.tile.PositionGrid}";
 					planetTileGameObject.GetComponent<Button>().onClick.AddListener(() => OnPlanetTileClicked?.Invoke(planetTile));
 				} else {
 					planetTileGameObject = planetTileGameObjects[i];

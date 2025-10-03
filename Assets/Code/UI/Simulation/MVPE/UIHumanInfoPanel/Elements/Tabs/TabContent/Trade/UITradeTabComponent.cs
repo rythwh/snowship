@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,10 +11,9 @@ namespace Snowship.NUI.UITab
 
 		public event Action TradeButtonClicked;
 
-		public override void OnCreate() {
-			base.OnCreate();
-
+		public override UniTask OnCreate() {
 			tradeButton.onClick.AddListener(OnTradeButtonClicked);
+			return UniTask.CompletedTask;
 		}
 
 		public void OnTradeButtonClicked() {

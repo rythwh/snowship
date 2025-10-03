@@ -26,11 +26,13 @@ namespace Snowship.NUI
 
 		public event Action<PointerEventData> OnButtonClicked;
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 			variationIndicatorImage.gameObject.SetActive(false);
 			buttonLayoutGroup.padding.right = 2;
 
 			button.OnClick += OnClick;
+
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

@@ -25,10 +25,9 @@ namespace Snowship.NUI.UITab
 		private readonly List<UIClothingButtonElement> clothingButtonElements = new();
 		private readonly List<UIClothingElement> clothingElements = new();
 
-		public override void OnCreate() {
-			base.OnCreate();
-
+		public override UniTask OnCreate() {
 			clothingSelectionPanelBackButton.onClick.AddListener(() => SetClothingSelectionPanelActive(false));
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

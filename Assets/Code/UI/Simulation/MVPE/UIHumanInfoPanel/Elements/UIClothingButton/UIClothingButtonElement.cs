@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using Cysharp.Threading.Tasks;
 using Snowship.NHuman;
 using Snowship.NResource;
 
@@ -17,13 +18,13 @@ namespace Snowship.NUI
 			this.clothing = clothing;
 		}
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			Component.SetTypeText(BodySection.ToString());
 			SetClothing(clothing);
 
 			Component.OnButtonClicked += OnComponentButtonClicked;
+
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

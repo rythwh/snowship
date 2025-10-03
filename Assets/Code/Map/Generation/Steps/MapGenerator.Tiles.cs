@@ -13,7 +13,7 @@ namespace Snowship.NMap.Generation
 
 					float height = context.Random.NextFloat(0f, 1f);
 
-					Vector2 position = new Vector2(x, y);
+					Vector2Int position = new(x, y);
 
 					Tile tile = new Tile(context.Map, position, height);
 

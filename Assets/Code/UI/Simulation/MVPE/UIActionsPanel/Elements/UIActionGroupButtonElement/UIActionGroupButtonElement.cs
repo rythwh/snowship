@@ -21,15 +21,15 @@ namespace Snowship.NUI
 
 		}
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			Component.SetGroupName(groupName);
 			Component.SetGroupIcon(groupIcon);
 
 			Component.OnButtonClicked += OnComponentButtonClicked;
 
 			Component.SetChildElementsActive(ChildElementsActiveState);
+
+			return UniTask.CompletedTask;
 		}
 
 		private void OnComponentButtonClicked() {

@@ -19,7 +19,7 @@ namespace Snowship.NMap.Generation
 		private static void CalculateTemperature(MapGenContext context) {
 			foreach (Tile tile in context.Map.tiles) {
 				tile.temperature = context.Data.planetTemperature
-					? TemperatureFromMapLatitude(context, tile.position.y)
+					? TemperatureFromMapLatitude(context, tile.PositionGrid.y)
 					: context.Data.averageTemperature;
 				tile.temperature += -(50f * Mathf.Pow(tile.height - 0.5f, 3));
 			}

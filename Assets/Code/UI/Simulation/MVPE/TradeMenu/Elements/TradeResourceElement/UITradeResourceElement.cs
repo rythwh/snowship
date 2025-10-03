@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
@@ -15,9 +16,7 @@ namespace Snowship.NUI
 			this.tradeResourceAmount = tradeResourceAmount;
 		}
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			tradeResourceAmount.OnColonyAmountUpdated += Component.SetColonyAmount;
 			tradeResourceAmount.OnCaravanAmountUpdated += Component.SetCaravanAmount;
 
@@ -30,6 +29,8 @@ namespace Snowship.NUI
 			Component.SetResourceName(tradeResourceAmount.resource.name);
 			Component.SetResourcePrice($"{tradeResourceAmount.resource.price}");
 			Component.SetTradeAmountText($"{tradeResourceAmount.GetTradeAmount()}");
+
+			return UniTask.CompletedTask;
 		}
 
 		public void OnTradeAmountChanged(string amountString) {

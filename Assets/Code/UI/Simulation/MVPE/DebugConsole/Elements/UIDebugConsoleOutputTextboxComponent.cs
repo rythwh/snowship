@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using Cysharp.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,12 +16,11 @@ namespace Snowship.NUI
 		[SerializeField] private LayoutElement layoutElement;
 		[SerializeField] private RectTransform rectTransform;
 
-		public override void OnCreate() {
-
+		public override UniTask OnCreate() {
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {
-
 		}
 
 		public void OutputToConsole(string outputString) {

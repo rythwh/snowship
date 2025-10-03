@@ -1,4 +1,5 @@
-﻿using Snowship.NResource;
+﻿using Cysharp.Threading.Tasks;
+using Snowship.NResource;
 using Snowship.NUI;
 
 public class UIConfirmedTradeResourceElement : UIElement<UIConfirmedTradeResourceElementComponent> {
@@ -9,9 +10,8 @@ public class UIConfirmedTradeResourceElement : UIElement<UIConfirmedTradeResourc
 		this.resourceAmount = resourceAmount;
 	}
 
-	protected override void OnCreate() {
-		base.OnCreate();
-
+	protected override UniTask OnCreate() {
 		Component.SetResource(resourceAmount);
+		return UniTask.CompletedTask;
 	}
 }

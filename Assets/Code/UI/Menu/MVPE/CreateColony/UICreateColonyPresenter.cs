@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NColony;
 using Snowship.NPlanet;
 using Snowship.NUtilities;
@@ -15,7 +16,7 @@ namespace Snowship.NUI
 		public UICreateColonyPresenter(UICreateColonyView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 			View.OnBackButtonClicked += OnBackButtonClicked;
 
 			View.OnColonyNameChanged += OnColonyNameChanged;
@@ -33,6 +34,8 @@ namespace Snowship.NUI
 			CreatePlanetViewModule();
 			CreatePlanetPreview();
 			View.SetPlanetTileData(null, false);
+
+			return UniTask.CompletedTask;
 		}
 
 		public override void OnClose() {

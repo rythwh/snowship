@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NColonist;
 using Snowship.NHuman;
 using Snowship.NResource;
@@ -9,14 +10,14 @@ namespace Snowship.NUI.UITab
 	public class UIInventoryTab : UITabElement<UIInventoryTabComponent>
 	{
 		private readonly Human human;
+		private readonly HumanView humanView;
 
-		public UIInventoryTab(Human human) {
+		public UIInventoryTab(Human human, HumanView humanView) {
 			this.human = human;
+			this.humanView = humanView;
 		}
 
-		protected override async void OnCreate() {
-			base.OnCreate();
-
+		protected override async UniTask OnCreate() {
 			foreach (ResourceAmount resourceAmount in human.Inventory.resources) {
 				await Component.OnInventoryResourceAmountAddedAwaitable(resourceAmount);
 			}

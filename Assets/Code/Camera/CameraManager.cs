@@ -19,6 +19,8 @@ namespace Snowship.NCamera {
 		private CancellationTokenSource moveCancellationTokenSource = new();
 		public event Action<Vector2> OnCameraPositionChanged;
 
+		public float CurrentZoom => camera.orthographicSize;
+
 		private const float CameraZoomSpeedMultiplier = 2.5f;
 		private const float CameraZoomSpeedDampener = 5;
 		private const int ZoomMin = 3;
@@ -113,8 +115,7 @@ namespace Snowship.NCamera {
 			zoomTaskHandle = LMotion
 				.Create(camera.orthographicSize, newZoom, ZoomTweenDuration)
 				.WithEase(Ease.OutCubic)
-				.WithOnComplete(() => OnCameraZoomChanged?.Invoke(newZoom))
-				.Bind(x => camera.orthographicSize = x)
+				.Bind(SetCameraZoom)
 				.ToUniTask(zoomCancellationTokenSource.Token);
 		}
 

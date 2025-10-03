@@ -11,7 +11,7 @@ namespace Snowship.NUI {
 
 		public async UniTask OpenAsync(Transform parent) {
 			await CreateComponent(parent);
-			OnCreate();
+			await OnCreate();
 		}
 
 		private string AddressableKey() {
@@ -26,16 +26,17 @@ namespace Snowship.NUI {
 				AsyncOperationHandle<GameObject> componentPrefabOperationHandle = Addressables.LoadAssetAsync<GameObject>(addressableKey);
 				componentPrefabOperationHandle.ReleaseHandleOnCompletion();
 				componentPrefab = await componentPrefabOperationHandle;
+				Debug.Log($"Created element: {addressableKey}");
 				UIManager.CachedComponents.Add(addressableKey, componentPrefab);
 			}
 
 			Component = Object.Instantiate(componentPrefab, parent, false).GetComponent<TComponent>();
-			Component.OnCreate();
+			await Component.OnCreate();
 			componentCreated = true;
 		}
 
-		protected virtual void OnCreate() {
-
+		protected virtual UniTask OnCreate() {
+			return UniTask.CompletedTask;
 		}
 
 		protected virtual void OnClose() {

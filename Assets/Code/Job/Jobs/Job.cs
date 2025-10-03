@@ -98,7 +98,7 @@ namespace Snowship.NJob
 			OnWorkerAssigned?.Invoke(this, Worker);
 			ChangeJobState(worker == null ? EJobState.Returned : EJobState.Taken);
 			if (worker != null) {
-				Debug.Log($"Assigned {worker.Name} to job {Name} at {Tile.position}");
+				Debug.Log($"Assigned {worker.Name} to job {Name} at {Tile.PositionGrid}");
 			}
 		}
 

@@ -1,4 +1,5 @@
-﻿using Snowship.NHuman;
+﻿using Cysharp.Threading.Tasks;
+using Snowship.NHuman;
 using Snowship.NResource;
 
 namespace Snowship.NUI
@@ -15,9 +16,7 @@ namespace Snowship.NUI
 			reserver = reservedResources.human;
 		}
 
-		protected override async void OnCreate() {
-			base.OnCreate();
-
+		protected override async UniTask OnCreate() {
 			reserverBodyElement = await Component.SetReserverBodyElement(reserver);
 			reserver.OnClothingChanged += reserverBodyElement.SetClothingOnBodySection;
 

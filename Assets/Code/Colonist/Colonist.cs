@@ -16,29 +16,24 @@ namespace Snowship.NColonist {
 		public override string Title => "Colonist";
 		public override ILocation OriginLocation => GameManager.Get<ColonyManager>().colony;
 
-		public Colonist(Tile spawnTile, float startingHealth) : base(spawnTile, startingHealth) {
-			obj.transform.SetParent(GameManager.SharedReferences.LifeParent, false);
-		}
-
-		protected Colonist() {
-
+		public Colonist(int id, Tile spawnTile, HumanData data) : base(id, spawnTile, data) {
 		}
 
 		public override void Update() {
 
-			if (playerMoved && path.Count <= 0) {
+			if (playerMoved && !IsMoving) {
 				playerMoved = false;
 			}
 
 			base.Update();
 
-			if (dead) {
+			if (IsDead) {
 				return;
 			}
 
 			if (Jobs.ActiveJob == null) {
-				if (path.Count <= 0) {
-					Wander(null, 0);
+				if (!IsMoving) {
+					Wander();
 				} else {
 					WanderTimer = Random.Range(10f, 20f);
 				}
@@ -250,11 +245,6 @@ namespace Snowship.NColonist {
 			playerMoved = true;
 			Jobs.ReturnJob();
 			MoveToTile(tile, false);
-		}
-
-		public override void SetName(string name) {
-			base.SetName(name);
-			SetNameColour(ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen100));
 		}
 
 		public override void ChangeClothing(BodySection bodySection, Clothing clothing) {

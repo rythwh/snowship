@@ -148,7 +148,7 @@ namespace Snowship.NUI
 
 			planetTileSpriteImage.sprite = planetTile.sprite;
 			planetTileBiomeText.text = planetTile.tile.biome.name;
-			planetTilePositionText.text = $"({Mathf.FloorToInt(planetTile.tile.position.x)}, {Mathf.FloorToInt(planetTile.tile.position.y)})";
+			planetTilePositionText.text = $"({Mathf.FloorToInt(planetTile.tile.PositionGrid.x)}, {Mathf.FloorToInt(planetTile.tile.PositionGrid.y)})";
 		}
 
 		public void SetCreatePlanetButtonInteractable(bool interactable) {

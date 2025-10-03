@@ -13,7 +13,7 @@ namespace Snowship.NUI
 			this.save = save;
 		}
 
-		protected override void OnCreate() {
+		protected override async UniTask OnCreate() {
 			base.OnCreate();
 
 			if (save.loadable) {

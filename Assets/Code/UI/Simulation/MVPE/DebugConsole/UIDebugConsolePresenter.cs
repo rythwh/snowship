@@ -1,34 +1,40 @@
-﻿using JetBrains.Annotations;
+﻿using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Snowship.NUI
 {
 
 	[UsedImplicitly]
-	public class UIDebugConsolePresenter : UIPresenter<UIDebugConsoleView> {
+	public class UIDebugConsolePresenter : UIPresenter<UIDebugConsoleView>
+	{
+
+		private DebugManager DebugM => GameManager.Get<DebugManager>();
 
 		public UIDebugConsolePresenter(UIDebugConsoleView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 
-			GameManager.Get<DebugManager>().OnConsoleOutputProduced += OnDebugOutputReceived;
-			GameManager.Get<DebugManager>().OnConsoleClearRequested += ClearConsole;
+			DebugM.OnConsoleOutputProduced += OnDebugOutputReceived;
+			DebugM.OnConsoleClearRequested += ClearConsole;
 
 			View.SelectDebugInputField();
 
 			View.OnDebugCommandSent += OnDebugCommandSent;
+
+			return UniTask.CompletedTask;
 		}
 
 		public override void OnClose() {
 
-			GameManager.Get<DebugManager>().OnConsoleOutputProduced -= OnDebugOutputReceived;
-			GameManager.Get<DebugManager>().OnConsoleClearRequested -= ClearConsole;
+			DebugM.OnConsoleOutputProduced -= OnDebugOutputReceived;
+			DebugM.OnConsoleClearRequested -= ClearConsole;
 
 			View.OnDebugCommandSent -= OnDebugCommandSent;
 		}
 
 		private void OnDebugCommandSent(string text) {
-			GameManager.Get<DebugManager>().ParseCommandInput(text);
+			DebugM.ParseCommandInput(text);
 		}
 
 		private async void OnDebugOutputReceived(string text) {

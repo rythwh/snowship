@@ -42,7 +42,7 @@ namespace Snowship.NMap
 					checkedBlocks.Add(nBlock);
 				}
 			}
-			SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, false);
+			UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, false);
 		}
 	}
 }

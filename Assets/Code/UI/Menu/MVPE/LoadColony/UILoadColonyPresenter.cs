@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 
 using Snowship.NPlanet;
 
@@ -15,7 +16,7 @@ namespace Snowship.NUI
 		public UILoadColonyPresenter(UILoadColonyView view) : base(view) {
 		}
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 			View.OnBackButtonClicked += OnBackButtonClicked;
 			View.OnCreateColonyButtonClicked += OnCreateColonyButtonClicked;
 			// View.OnLoadColonyButtonClicked += OnLoadColonyButtonClicked;
@@ -23,6 +24,8 @@ namespace Snowship.NUI
 			// CreateColonyElements();
 
 			CreatePlanetViewModule();
+
+			return UniTask.CompletedTask;
 		}
 
 		public override void OnClose() {

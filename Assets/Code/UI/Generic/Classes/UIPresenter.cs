@@ -1,4 +1,6 @@
-﻿namespace Snowship.NUI
+﻿using Cysharp.Threading.Tasks;
+
+namespace Snowship.NUI
 {
 	public abstract class UIPresenter<TView> : IUIPresenter
 		where TView : UIView
@@ -9,7 +11,8 @@
 			View = view;
 		}
 
-		public virtual void OnCreate() {
+		public virtual UniTask OnCreate() {
+			return UniTask.CompletedTask;
 		}
 
 		public virtual void OnPostCreate() {

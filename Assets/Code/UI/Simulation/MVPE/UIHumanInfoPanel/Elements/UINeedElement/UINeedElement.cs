@@ -1,4 +1,5 @@
-﻿using Snowship.NColonist;
+﻿using Cysharp.Threading.Tasks;
+using Snowship.NColonist;
 
 namespace Snowship.NUI
 {
@@ -10,13 +11,13 @@ namespace Snowship.NUI
 			this.need = need;
 		}
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			need.OnValueChanged += OnNeedValueChanged;
 
 			Component.SetNeedNameText(need.prefab.name);
 			OnNeedValueChanged(need.GetValue(), need.GetRoundedValue());
+
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

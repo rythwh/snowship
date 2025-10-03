@@ -1,4 +1,5 @@
-﻿using Snowship.NColonist;
+﻿using Cysharp.Threading.Tasks;
+using Snowship.NColonist;
 using UnityEngine;
 using static Snowship.NUtilities.ColourUtilities;
 
@@ -12,9 +13,7 @@ namespace Snowship.NUI
 			this.skill = skill;
 		}
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			Component.SetSkillName(skill.prefab.name);
 			Component.SetSkillLevelText($"{skill.Level}.{Mathf.RoundToInt(skill.CurrentExperience / skill.NextLevelExperience * 100)}");
 
@@ -23,6 +22,8 @@ namespace Snowship.NUI
 
 			OnSkillLevelChanged(skill.Level);
 			OnSkillExperienceChanged(skill.CurrentExperience, skill.NextLevelExperience);
+
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

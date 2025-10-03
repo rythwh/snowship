@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 
 namespace Snowship.NUI.UITab
 {
@@ -6,10 +7,9 @@ namespace Snowship.NUI.UITab
 	{
 		public event Action ButtonClicked;
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			Component.ButtonClicked += OnButtonClicked;
+			return UniTask.CompletedTask;
 		}
 
 		private void OnButtonClicked() {

@@ -11,11 +11,12 @@ public class Inventory
 	public readonly List<ResourceAmount> resources = new();
 	public readonly List<ReservedResources> reservedResources = new();
 
-	public readonly IInventory parent;
+	public readonly IInventoriable parent;
 
 	public int maxWeight;
 	public int maxVolume;
 
+	public static event Action AnyInventoryChanged;
 	public event Action<Inventory> OnInventoryChanged;
 	public event Action<ResourceAmount> OnResourceAmountAdded;
 	public event Action<ResourceAmount> OnResourceAmountRemoved;
@@ -23,13 +24,12 @@ public class Inventory
 	public event Action<ReservedResources> OnReservedResourcesAdded;
 	public event Action<ReservedResources> OnReservedResourcesRemoved;
 
-	public Inventory(IInventory parent, int maxWeight, int maxVolume) {
+	public Inventory(IInventoriable parent, int maxWeight, int maxVolume) {
 		this.parent = parent;
 		this.maxWeight = maxWeight;
 		this.maxVolume = maxVolume;
-	}
 
-	protected Inventory() {
+		OnInventoryChanged += _ => AnyInventoryChanged?.Invoke();
 	}
 
 	public int UsedWeight() {

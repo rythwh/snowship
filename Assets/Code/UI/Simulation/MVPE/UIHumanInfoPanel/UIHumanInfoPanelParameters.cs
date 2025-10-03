@@ -2,12 +2,20 @@
 
 namespace Snowship.NUI
 {
-	public class UIHumanInfoPanelParameters : IUIParameters {
+	public class UIHumanInfoPanelParameters : IUIParameters
+	{
+		public readonly Human Human;
+		public readonly HumanView HumanView;
+		public readonly int OpenedTabIndex;
 
-		public Human Human { get; }
-
-		public UIHumanInfoPanelParameters(Human human) {
+		public UIHumanInfoPanelParameters(
+			Human human,
+			HumanView humanView,
+			int openedTabIndex
+		) {
 			Human = human;
+			HumanView = humanView;
+			OpenedTabIndex = openedTabIndex;
 		}
 
 	}

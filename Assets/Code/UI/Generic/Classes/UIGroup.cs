@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Snowship.NUI
@@ -34,11 +35,11 @@ namespace Snowship.NUI
 			Parent = parent;
 		}
 
-		public virtual void OnCreate() {
+		public virtual async UniTask OnCreate() {
 			Parent?.AddChild(this);
 
 			view.OnOpen();
-			presenter.OnCreate();
+			await presenter.OnCreate();
 		}
 
 		public void OnPostCreate() {

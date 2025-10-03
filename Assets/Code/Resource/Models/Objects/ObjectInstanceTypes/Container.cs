@@ -5,7 +5,7 @@ using Snowship.NMap.NTile;
 
 namespace Snowship.NResource
 {
-	public class Container : ObjectInstance, IInventory
+	public class Container : ObjectInstance, IInventoriable
 	{
 		public static readonly List<Container> containers = new();
 

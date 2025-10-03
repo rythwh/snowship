@@ -17,7 +17,7 @@ namespace Snowship.NUI
 		public UITradeMenuPresenter(UITradeMenuView view) : base(view) {
 		}
 
-		public override async void OnCreate() {
+		public override async UniTask OnCreate() {
 			Caravan caravan = GameManager.Get<CaravanManager>().selectedCaravan;
 
 			View.SetCaravanInformation(caravan);

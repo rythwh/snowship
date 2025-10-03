@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using Snowship.NResource;
 
 namespace Snowship.NUI
@@ -12,14 +13,14 @@ namespace Snowship.NUI
 			ResourceAmount = resourceAmount;
 		}
 
-		protected override void OnCreate() {
-			base.OnCreate();
-
+		protected override UniTask OnCreate() {
 			Component.SetResourceImage(ResourceAmount.Resource.image);
 			Component.SetResourceName(ResourceAmount.Resource.name);
 
 			ResourceAmount.OnAmountChanged += OnResourceAmountChanged;
 			OnResourceAmountChanged(ResourceAmount.Amount);
+
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

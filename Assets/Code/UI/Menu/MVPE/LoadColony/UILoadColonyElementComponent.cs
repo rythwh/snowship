@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,8 +14,10 @@ namespace Snowship.NUI
 
 		public event Action OnLoadColonyElementComponentButtonClicked;
 
-		public override void OnCreate() {
+		public override UniTask OnCreate() {
 			elementButton.onClick.AddListener(() => OnLoadColonyElementComponentButtonClicked?.Invoke());
+
+			return UniTask.CompletedTask;
 		}
 
 		protected override void OnClose() {

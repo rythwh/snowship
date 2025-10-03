@@ -29,7 +29,7 @@ namespace Snowship.NColony {
 				data.PlanetTile.surroundingPlanetTileRivers,
 				false,
 				PlanetM.planet.MapData.primaryWindDirection,
-				data.PlanetTile.tile.position
+				data.PlanetTile.tile.PositionGrid
 			);
 
 			colony = new Colony(data.Name);

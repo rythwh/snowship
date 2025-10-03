@@ -1,4 +1,6 @@
-﻿public abstract class Manager : IManager
+﻿using Cysharp.Threading.Tasks;
+
+public abstract class Manager : IManager
 {
 	public bool Created { get; internal set; } = false;
 	public bool PostGameSetupCompleted { get; internal set; } = false;

@@ -78,7 +78,7 @@ namespace Snowship.NJob
 					variation.plants[chosenPlantPrefab]
 				)
 			);
-			GameManager.Get<MapManager>().Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+			GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 		}
 	}
 }

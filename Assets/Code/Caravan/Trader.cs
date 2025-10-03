@@ -9,7 +9,6 @@ using Snowship.NUtilities;
 namespace Snowship.NCaravan {
 	public class Trader : Human
 	{
-
 		public Caravan caravan;
 
 		public Tile leaveTile;
@@ -19,18 +18,8 @@ namespace Snowship.NCaravan {
 		public override string Title { get; } = "Trader";
 		public override ILocation OriginLocation => caravan.location;
 
-		public Trader(Tile spawnTile, float startingHealth, Caravan caravan) : base(spawnTile, startingHealth) {
-			this.caravan = caravan;
-
+		public Trader(int id, Tile spawnTile, HumanData data) : base(id, spawnTile, data) {
 			MoveSpeedMultiplier = 0.5f;
-
-			obj.transform.SetParent(GameManager.SharedReferences.LifeParent, false);
-		}
-
-		public override void SetName(string name) {
-			base.SetName(name);
-
-			SetNameColour(ColourUtilities.GetColour(ColourUtilities.EColour.LightPurple100));
 		}
 
 		public override void Update() {
@@ -38,7 +27,7 @@ namespace Snowship.NCaravan {
 
 			if (tradingPosts is { Count: > 0 }) {
 				TradingPost tradingPost = tradingPosts[0];
-				if (path.Count <= 0) {
+				if (!IsMoving) {
 					MoveToTile(tradingPost.zeroPointTile, false);
 				}
 
@@ -73,8 +62,8 @@ namespace Snowship.NCaravan {
 					GameManager.Get<JobManager>().AddJob(job);
 				}
 			} else {
-				if (path.Count <= 0) {
-					Wander(caravan.targetTile, 4);
+				if (!IsMoving) {
+					Wander((caravan.targetTile.PositionGrid, 4));
 				} else {
 					WanderTimer = UnityEngine.Random.Range(10f, 20f);
 				}

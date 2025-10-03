@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Snowship.NColonist;
 using Snowship.NMap.Models.Geography;
@@ -31,6 +32,8 @@ namespace Snowship.NMap
 		public List<DrainageBasin> drainageBasins = new();
 		public List<River> rivers = new List<River>();
 		public List<River> largeRivers = new List<River>();
+
+		public event Action LightingUpdated;
 
 		public void OnCameraPositionChanged(Vector2 position) {
 			DetermineVisibleRegionBlocks();

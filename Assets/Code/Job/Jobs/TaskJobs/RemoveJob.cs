@@ -52,7 +52,7 @@ namespace Snowship.NJob
 						}
 						break;
 					}
-					case IInventory inventory: {
+					case IInventoriable inventory: {
 						List<ResourceAmount> nonReservedResourcesToRemove = new();
 						foreach (ResourceAmount resourceAmount in inventory.Inventory.resources) {
 							nonReservedResourcesToRemove.Add(new ResourceAmount(resourceAmount.Resource, resourceAmount.Amount));

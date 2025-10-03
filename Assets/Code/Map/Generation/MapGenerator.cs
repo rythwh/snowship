@@ -115,7 +115,7 @@ namespace Snowship.NMap.Generation
 				await UpdateProgress(context, "Lighting", "Calculating Lighting");
 				context.Map.RecalculateLighting(context.Map.tiles, false);
 				context.Map.DetermineVisibleRegionBlocks();
-				context.Map.SetTileBrightness(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+				context.Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
 			}
 
 			await UpdateProgress(context, "Finishing Touches", string.Empty, false);

@@ -18,7 +18,7 @@ namespace Snowship.NUI
 		public UIActionsPanelPresenter(UIActionsPanelView view) : base(view) {
 		}
 
-		public override async void OnCreate() {
+		public override async UniTask OnCreate() {
 			await CreateButtons();
 		}
 
