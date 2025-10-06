@@ -1149,16 +1149,14 @@ public class ResourceManager : Manager, IDisposable
 	}
 
 	public string GetRandomLocationName() {
-		List<string> filteredLocationNames = locationNames.Where(
-				ln =>
-					(UniverseM.universe == null || ln != UniverseM.universe.name)
-					&& (PlanetM.planet == null || ln != PlanetM.planet.name)
-					&& (ColonyM.colony == null || ln != ColonyM.colony.Name)
-					&& CaravanM.caravans.Find(c => c.location.Name == ln) == null
-			)
-			.ToList();
+		string[] filteredLocationNames = locationNames
+			.Where(name => universeM.universe == null || name != universeM.universe.name)
+			.Where(name => planetM.planet == null || name != planetM.planet.name)
+			.Where(name => colonyM.colony == null || name != colonyM.colony.Name)
+			.Where(name => caravanM.caravans.Find(c => c.location.Name == name) == null)
+			.ToArray();
 
-		return filteredLocationNames[Random.Range(0, filteredLocationNames.Count)];
+		return filteredLocationNames.RandomElement();
 	}
 
 	private int BitSumObjects(List<ObjectPrefab.ObjectEnum> compareObjectTypes, List<Tile> tileSurroundingTiles) {

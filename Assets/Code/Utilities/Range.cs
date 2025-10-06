@@ -20,7 +20,7 @@ namespace Snowship.NUtilities {
 		}
 
 		public int RandomExclusive() {
-			return UnityEngine.Random.Range(Min, Max);
+			return Random.Range(Min, Max);
 		}
 	}
 }

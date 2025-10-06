@@ -39,14 +39,14 @@ namespace Snowship.Selectable
 
 			InputManager inputManager = GameManager.Get<InputManager>();
 
-			inputManager.InputSystemActions.Simulation.Select.performed += OnSelectPerformed;
-			inputManager.InputSystemActions.Simulation.Select.canceled += OnSelectCanceled;
+			inputM.InputSystemActions.Simulation.Select.performed += OnSelectPerformed;
+			inputM.InputSystemActions.Simulation.Select.canceled += OnSelectCanceled;
 
-			inputManager.InputSystemActions.Simulation.Deselect.canceled += OnDeselectCanceled;
+			inputM.InputSystemActions.Simulation.Deselect.canceled += OnDeselectCanceled;
 
-			inputManager.InputSystemActions.Simulation.Rotate.performed += OnRotatePerformed;
+			inputM.InputSystemActions.Simulation.Rotate.performed += OnRotatePerformed;
 
-			GameManager.Get<StateManager>().OnStateChanged += OnStateChanged;
+			stateM.OnStateChanged += OnStateChanged;
 
 			selectedJobPreviewObject = GameManager.SharedReferences.SelectedJobPreview;
 		}
@@ -92,7 +92,7 @@ namespace Snowship.Selectable
 			ClearSelectedJob();
 
 			selectedJobType = typeof(TJob);
-			selectedJobDefinition = GameManager.Get<JobManager>().JobRegistry.GetJobDefinition(typeof(TJobDefinition)) as TJobDefinition;
+			selectedJobDefinition = jobM.JobRegistry.GetJobDefinition(typeof(TJobDefinition)) as TJobDefinition;
 			selectedJobParams = null;
 		}
 
@@ -141,9 +141,9 @@ namespace Snowship.Selectable
 			if (selectionArea is { Count: > 0 }) {
 				foreach (Tile tile in selectionArea) {
 					if (selectedJobParams == null) {
-						GameManager.Get<JobManager>().AddJob(Activator.CreateInstance(selectedJobType, tile) as IJob);
+						jobM.AddJob(Activator.CreateInstance(selectedJobType, tile) as IJob);
 					} else {
-						GameManager.Get<JobManager>().AddJob(Activator.CreateInstance(selectedJobType, tile, selectedJobParams) as IJob);
+						jobM.AddJob(Activator.CreateInstance(selectedJobType, tile, selectedJobParams) as IJob);
 					}
 				}
 				selectionArea.Clear();
@@ -180,7 +180,7 @@ namespace Snowship.Selectable
 
 			selectedJobPreviewObject.gameObject.SetActive(true);
 
-			selectedJobPreviewObject.sprite = GameManager.Get<JobManager>().GetJobSprite(selectedJobDefinition, selectedJobParams);
+			selectedJobPreviewObject.sprite = jobM.GetJobSprite(selectedJobDefinition, selectedJobParams);
 			Tile overTile = GetTileFromMouseScreenPosition(Input.mousePosition);
 			selectedJobPreviewObject.transform.position = overTile.obj.transform.position;
 			selectedJobPreviewObject.sortingOrder = selectedJobDefinition.Layer + overTile.sr.sortingOrder + (int)SortingOrder.Selection;
@@ -287,9 +287,9 @@ namespace Snowship.Selectable
 			}
 			foreach (Tile tile in selectionArea) {
 				if (!selectionIndicators.ContainsKey(tile)) {
-					GameObject selectionIndicator = Object.Instantiate(GameManager.Get<ResourceManager>().tilePrefab, tile.obj.transform, false);
+					GameObject selectionIndicator = Object.Instantiate(resourceM.tilePrefab, tile.obj.transform, false);
 					SpriteRenderer selectionIndicatorSpriteRenderer = selectionIndicator.GetComponent<SpriteRenderer>();
-					selectionIndicatorSpriteRenderer.sprite = GameManager.Get<JobManager>().GetJobSprite(selectedJobDefinition, selectedJobParams);
+					selectionIndicatorSpriteRenderer.sprite = jobM.GetJobSprite(selectedJobDefinition, selectedJobParams);
 					selectionIndicatorSpriteRenderer.sortingOrder = selectedJobDefinition.Layer + tile.sr.sortingOrder + (int)SortingOrder.Selection;
 					selectionIndicators.Add(tile, selectionIndicator);
 				}

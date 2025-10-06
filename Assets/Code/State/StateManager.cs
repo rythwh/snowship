@@ -5,11 +5,22 @@ using Cysharp.Threading.Tasks;
 using Snowship.NColony;
 using Snowship.NMap.NTile;
 using Snowship.NPlanet;
+using Snowship.NState.States;
 using Snowship.NUI;
 using UnityEngine;
+using VContainer;
+using VContainer.Unity;
 
 namespace Snowship.NState {
-	public partial class StateManager : Manager {
+	public partial class StateManager : IStartable
+	{
+		private readonly IObjectResolver resolver;
+		private readonly PlanetManager planetM;
+		private readonly ColonyManager colonyM;
+		private readonly UIManager uiM;
+
+		private Dictionary<EState, State<EState>> states = new();
+
 		private State<EState> state;
 
 		public EState? State => state?.Type;
@@ -18,7 +29,23 @@ namespace Snowship.NState {
 
 		public event Action<(EState previousState, EState newState)> OnStateChanged;
 
-		public override void OnCreate() {
+		public StateManager(IObjectResolver resolver, PlanetManager planetM, ColonyManager colonyM, UIManager uiM) {
+			this.resolver = resolver;
+			this.planetM = planetM;
+			this.colonyM = colonyM;
+			this.uiM = uiM;
+
+			states.Add(EState.Boot, new BootState());
+			states.Add(EState.MainMenu, new MainMenuState());
+			states.Add(EState.LoadToSimulation, new LoadToSimulationState());
+			states.Add(EState.Simulation, new SimulationState());
+			states.Add(EState.PauseMenu, new PauseMenuState());
+			states.Add(EState.Saving, new SavingState());
+			states.Add(EState.QuitToMenu, new QuitToMenuState());
+			states.Add(EState.QuitToDesktop, new QuitToDesktopState());
+		}
+
+		public void Start() {
 			SetInitialState();
 		}
 
@@ -30,15 +57,15 @@ namespace Snowship.NState {
 			if (PlayerPrefs.GetInt("DebugSettings/Quick Start", 0) == 0) {
 				return;
 			}
-			Planet planet = await GameManager.Get<PlanetManager>().CreatePlanet(new CreatePlanetData());
+			Planet planet = await planetM.CreatePlanet(new CreatePlanetData());
 
 			const string colonyName = "Lumia";
-			int seed = UnityEngine.Random.Range(0, int.MaxValue);
+			int seed = Random.Range(0, int.MaxValue);
 			const int size = 100;
 			List<PlanetTile> filteredPlanetTiles = planet.planetTiles.Where(pt => pt.tile.tileType.classes[TileType.ClassEnum.Dirt]).ToList();
-			PlanetTile planetTile = filteredPlanetTiles.ElementAt(UnityEngine.Random.Range(0, filteredPlanetTiles.Count));
+			PlanetTile planetTile = filteredPlanetTiles.ElementAt(Random.Range(0, filteredPlanetTiles.Count));
 
-			await GameManager.Get<ColonyManager>().CreateColony(new CreateColonyData(colonyName, seed, size, planetTile));
+			await colonyM.CreateColony(new CreateColonyData(colonyName, seed, size, planetTile));
 			#endif
 		}
 
@@ -71,18 +98,18 @@ namespace Snowship.NState {
 				case ETransitionUIAction.Nothing:
 					break;
 				case ETransitionUIAction.Hide:
-					GameManager.Get<UIManager>().ToggleAllViews();
+					uiM.ToggleAllViews();
 					break;
 				case ETransitionUIAction.Close:
-					GameManager.Get<UIManager>().CloseAllViews();
+					uiM.CloseAllViews();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(transitionUIAction), transitionUIAction, null);
 			}
 
 			if (state.ActionsOnTransition != null) {
-				foreach (Func<UniTask> action in state.ActionsOnTransition) {
-					await action();
+				foreach (Func<IObjectResolver, UniTask> action in state.ActionsOnTransition) {
+					await action(resolver);
 				}
 			}
 

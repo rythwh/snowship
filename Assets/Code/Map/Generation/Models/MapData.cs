@@ -48,8 +48,6 @@ namespace Snowship.NMap
 			Vector2 planetTilePosition
 		) {
 			this.mapSeed = mapSeed;
-			Random.InitState(mapSeed);
-
 			this.mapSize = mapSize;
 			this.actualMap = actualMap;
 

@@ -6,11 +6,16 @@ namespace Snowship.NHuman
 {
 	public class HumanData : LifeData
 	{
-		public Gender Gender { get; }
 		public List<(ESkill, float)> Skills { get; }
 
-		public HumanData() {
-			Name = GameManager.Get<HumanManager>().GetName(Gender);
+		public HumanData(
+			string name,
+			Gender gender,
+			List<(ESkill, float)> skills
+		)
+			: base(name, gender)
+		{
+			Skills = skills;
 		}
 	}
 }

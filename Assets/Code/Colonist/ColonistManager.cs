@@ -126,7 +126,15 @@ namespace Snowship.NColonist {
 				}
 				Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
 
-				HumanM.CreateHuman<Colonist, ColonistViewModule>(colonistSpawnTile, new HumanData());
+				// TODO Finish HumanData implementation and use it
+				Gender gender = Random.RandomElement<Gender>();
+				HumanData data = new HumanData(
+					humanM.GetName(gender),
+					gender,
+					new List<(ESkill, float)>()
+				);
+
+				humanM.CreateHuman<Colonist, ColonistViewModule>(colonistSpawnTile, data);
 			}
 
 			// MapM.Map.RedrawTiles(MapM.Map.tiles, true, true);

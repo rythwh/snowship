@@ -37,7 +37,7 @@ namespace Snowship.NPlanet {
 				planetMapDataValues.planetTilePosition
 			);
 
-			Planet planet = new Planet(planetData);
+			Planet planet = new Planet(planetData, new MapContext(resourceM.tilePrefab));
 			MapGenContext context = new MapGenContext(planet, planetData, planetData.mapSeed);
 			MapGenerator mapGenerator = new();
 			await mapGenerator.Run(context);

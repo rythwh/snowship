@@ -65,7 +65,7 @@ namespace Snowship.NCaravan {
 				if (!IsMoving) {
 					Wander((caravan.targetTile.PositionGrid, 4));
 				} else {
-					WanderTimer = UnityEngine.Random.Range(10f, 20f);
+					WanderTimer = Random.Range(10f, 20f);
 				}
 			}
 		}

@@ -23,10 +23,6 @@ namespace Snowship.NMap.Generation
 
 		private async UniTask CreateMap(MapGenContext context) {
 
-			if (context.Data.actualMap) {
-				await GameManager.Get<StateManager>().TransitionToState(EState.LoadToSimulation);
-			}
-
 			// Tiles
 
 			await UpdateProgress(context, "Tiles", "Creating Tiles");
@@ -115,7 +111,7 @@ namespace Snowship.NMap.Generation
 				await UpdateProgress(context, "Lighting", "Calculating Lighting");
 				context.Map.RecalculateLighting(context.Map.tiles, false);
 				context.Map.DetermineVisibleRegionBlocks();
-				context.Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+				context.Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.DecimalHour, true);
 			}
 
 			await UpdateProgress(context, "Finishing Touches", string.Empty, false);
@@ -124,10 +120,6 @@ namespace Snowship.NMap.Generation
 			context.Map.Created = true;
 
 			await UpdateProgress(context, "Map Generation Completed", "One moment please...");
-
-			if (context.Data.actualMap) {
-				await GameManager.Get<StateManager>().TransitionToState(EState.Simulation);
-			}
 		}
 
 		private async UniTask UpdateProgress(MapGenContext context, string state = null, string substate = null, bool redraw = true) {

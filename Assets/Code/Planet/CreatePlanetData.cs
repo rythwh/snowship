@@ -104,8 +104,8 @@ namespace Snowship.NPlanet {
 
 		private static string GenerateRandomPlanetName() {
 			const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-			string twoCharacters = new string(Enumerable.Repeat(chars, 2).Select(s => s[UnityEngine.Random.Range(0, chars.Length)]).ToArray());
-			return twoCharacters + UnityEngine.Random.Range(1000, 9999);
+			string twoCharacters = new string(Enumerable.Repeat(chars, 2).Select(s => s[Random.Range(0, chars.Length)]).ToArray());
+			return twoCharacters + Random.Range(1000, 9999);
 		}
 
 		private bool IsPlanetNameValid(string planetName) {
@@ -113,7 +113,7 @@ namespace Snowship.NPlanet {
 		}
 
 		public static int GenerateRandomPlanetSeed() {
-			return UnityEngine.Random.Range(0, int.MaxValue);
+			return Random.Range(0, int.MaxValue);
 		}
 
 		private static int GetPlanetSizeByIndex(int index) {

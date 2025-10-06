@@ -68,7 +68,7 @@ namespace Snowship.NLife
 		}
 
 		private static Gender GetRandomGender() {
-			return (Gender)UnityEngine.Random.Range(0, Enum.GetNames(typeof(Gender)).Length);
+			return (Gender)Random.Range(0, Enum.GetNames(typeof(Gender)).Length);
 		}
 
 		private void SetVisible(bool visible) {

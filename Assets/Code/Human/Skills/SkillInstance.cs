@@ -17,13 +17,13 @@ namespace Snowship.NColonist {
 			this.prefab = prefab;
 
 			if (randomStartingLevel) {
-				//level = UnityEngine.Random.Range((colonist.profession.primarySkill != null && colonist.profession.primarySkill.type == prefab.type ? Mathf.RoundToInt(colonist.profession.skillRandomMaxValues[prefab] / 2f) : 0), colonist.profession.skillRandomMaxValues[prefab]);
-				Level = UnityEngine.Random.Range(0, 7);
+				//level = Random.Range((colonist.profession.primarySkill != null && colonist.profession.primarySkill.type == prefab.type ? Mathf.RoundToInt(colonist.profession.skillRandomMaxValues[prefab] / 2f) : 0), colonist.profession.skillRandomMaxValues[prefab]);
+				Level = Random.Range(0, 7);
 			} else {
 				Level = startingLevel;
 			}
 
-			CurrentExperience = UnityEngine.Random.Range(0, 100);
+			CurrentExperience = Random.Range(0, 100);
 			NextLevelExperience = CalculateNextLevelExperience();
 		}
 

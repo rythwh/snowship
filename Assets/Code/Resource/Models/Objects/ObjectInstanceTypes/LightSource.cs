@@ -51,7 +51,7 @@ namespace Snowship.NResource
 					}
 				}
 			}
-			GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+			GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.DecimalHour, true);
 			litTiles.AddRange(newLitTiles);
 		}
 
@@ -61,7 +61,7 @@ namespace Snowship.NResource
 			}
 			litTiles.Clear();
 			tile.RemoveLightSourceBrightness(this);
-			GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+			GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.DecimalHour, true);
 		}
 	}
 }

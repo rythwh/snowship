@@ -19,7 +19,7 @@ namespace Snowship.NLife
 			MapM.Map.LightingUpdated += OnMapLightingUpdated;
 		}
 
-		private void OnMapLightingUpdated() {
+		private void OnMapLightingUpdated(Color _) {
 			foreach (LifeView<Life> lifeView in Life.Values) {
 				lifeView.ApplyTileColour();
 			}

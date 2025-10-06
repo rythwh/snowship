@@ -15,7 +15,7 @@ namespace Snowship.NTime {
 		// Extra
 		public int Hour12 => Mathf.FloorToInt(1 + (12 - (1 - Hour)) % 12);
 		public bool IsDay { get; set; }
-		public float TileBrightnessTime => (float)Math.Round(Hour + Minute / 60f, 2);
+		public float DecimalHour => (float)Math.Round(Hour + Minute / 60f, 2);
 
 		// Time Modifier
 		public bool Paused = true;

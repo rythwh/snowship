@@ -1,22 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Snowship.NUI;
+using VContainer;
 
 namespace Snowship.NState {
-	public class State<TStateEnum> where TStateEnum : Enum
+	public abstract class State<TStateEnum> where TStateEnum : Enum
 	{
-		public readonly TStateEnum Type;
-		public readonly List<TStateEnum> ValidNextStates;
-		public readonly List<Func<UniTask>> ActionsOnTransition;
-
-		public State(
-			TStateEnum type,
-			List<TStateEnum> validNextStates,
-			List<Func<UniTask>> actionsOnTransition
-		) {
-			Type = type;
-			ValidNextStates = validNextStates;
-			ActionsOnTransition = actionsOnTransition;
-		}
+		public abstract TStateEnum Type { get; }
+		public abstract TStateEnum[] ValidNextStates { get; }
+		public abstract Func<IObjectResolver, UniTask>[] ActionsOnTransition { get; }
 	}
 }

@@ -14,10 +14,11 @@ namespace Snowship.NCamera {
 
 		public Camera camera;
 
+		public Vector2 CurrentPosition => camera.transform.position;
 		private const float CameraMoveSpeedMultiplier = 1.25f;
 		private UniTask moveTaskHandle;
 		private CancellationTokenSource moveCancellationTokenSource = new();
-		public event Action<Vector2> OnCameraPositionChanged;
+		public event Action<Vector2, float> OnCameraPositionChanged;
 
 		public float CurrentZoom => camera.orthographicSize;
 
@@ -29,16 +30,22 @@ namespace Snowship.NCamera {
 
 		private UniTask zoomTaskHandle;
 		private CancellationTokenSource zoomCancellationTokenSource = new();
-		public event Action<float> OnCameraZoomChanged;
+		public event Action<float, Vector2> OnCameraZoomChanged;
 
 		public override void OnCreate() {
 
 			camera = GameManager.SharedReferences.Camera;
 
-			GameManager.Get<StateManager>().OnStateChanged += OnStateChanged;
+			stateM.OnStateChanged += OnStateChanged;
 
-			OnInputSystemEnabled(GameManager.Get<InputManager>().InputSystemActions);
-			GameManager.Get<InputManager>().OnInputSystemDisabled += OnInputSystemDisabled;
+			OnInputSystemEnabled(inputM.InputSystemActions);
+			inputM.OnInputSystemDisabled += OnInputSystemDisabled;
+
+			mapM.Map.LightingUpdated += OnLightingUpdated;
+		}
+
+		private void OnLightingUpdated(Color colour) {
+			camera.backgroundColor = colour;
 		}
 
 		private void OnStateChanged((EState previousState, EState newState) states) {
@@ -46,7 +53,7 @@ namespace Snowship.NCamera {
 				return;
 			}
 
-			int mapSize = GameManager.Get<MapManager>().Map.MapData.mapSize;
+			int mapSize = mapM.Map.MapData.mapSize;
 			SetCameraPosition(Vector2.one * mapSize / 2f, false);
 			SetCameraZoom(ZoomMax);
 		}
@@ -68,18 +75,18 @@ namespace Snowship.NCamera {
 				moveTaskHandle = LMotion
 					.Create(camera.transform.position, (Vector3)position, 2)
 					.WithEase(Ease.InOutCubic)
-					.WithOnComplete(() => OnCameraPositionChanged?.Invoke(position))
+					.WithOnComplete(() => OnCameraPositionChanged?.Invoke(CurrentPosition, CurrentZoom))
 					.Bind(x => camera.transform.position = x)
 					.ToUniTask(moveCancellationTokenSource.Token);
 			} else {
 				camera.transform.position = position;
-				OnCameraPositionChanged?.Invoke(position);
+				OnCameraPositionChanged?.Invoke(CurrentPosition, CurrentZoom);
 			}
 		}
 
 		public void SetCameraZoom(float zoom) {
 			camera.orthographicSize = zoom;
-			OnCameraZoomChanged?.Invoke(zoom);
+			OnCameraZoomChanged?.Invoke(CurrentZoom, CurrentPosition);
 		}
 
 		private void MoveCamera() {
@@ -90,10 +97,10 @@ namespace Snowship.NCamera {
 
 			camera.transform.Translate(moveVector * (CameraMoveSpeedMultiplier * camera.orthographicSize * Time.deltaTime));
 			camera.transform.position = new Vector2(
-				Mathf.Clamp(camera.transform.position.x, 0, GameManager.Get<MapManager>().Map.MapData.mapSize),
-				Mathf.Clamp(camera.transform.position.y, 0, GameManager.Get<MapManager>().Map.MapData.mapSize)
+				Mathf.Clamp(camera.transform.position.x, 0, mapM.Map.MapData.mapSize),
+				Mathf.Clamp(camera.transform.position.y, 0, mapM.Map.MapData.mapSize)
 			);
-			OnCameraPositionChanged?.Invoke(camera.transform.position);
+			OnCameraPositionChanged?.Invoke(CurrentPosition, CurrentZoom);
 		}
 
 		private void ZoomCamera() {

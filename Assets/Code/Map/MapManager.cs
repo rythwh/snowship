@@ -20,8 +20,9 @@ namespace Snowship.NMap
 		public async UniTask CreateMap(MapData mapData, MapInitializeType mapInitializeType) {
 
 			MapState = MapState.Generating;
+			await stateM.TransitionToState(EState.LoadToSimulation);
 
-			Map = new Map(mapData);
+			Map = new Map(mapData, new MapContext(resourceM.tilePrefab));
 			MapGenContext context = new(Map, mapData, mapData.mapSeed);
 
 			MapGenerator mapGenerator = new();
@@ -29,6 +30,12 @@ namespace Snowship.NMap
 
 			MapState = MapState.Generated;
 
+			InitializeMap(mapInitializeType);
+
+			await stateM.TransitionToState(EState.Simulation);
+		}
+
+		private void InitializeMap(MapInitializeType mapInitializeType) {
 			if (mapInitializeType == MapInitializeType.NewMap) {
 				ColonyM.SetupNewColony();
 			}

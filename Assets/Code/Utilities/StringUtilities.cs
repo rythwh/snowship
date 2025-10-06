@@ -20,7 +20,7 @@ namespace Snowship.NUtilities {
 
 		public static int ParseSeed(string seedString) {
 			if (string.IsNullOrEmpty(seedString)) {
-				seedString = UnityEngine.Random.Range(int.MinValue, int.MaxValue).ToString();
+				seedString = Random.Range(int.MinValue, int.MaxValue).ToString();
 			}
 
 			if (int.TryParse(seedString, out int seed)) {

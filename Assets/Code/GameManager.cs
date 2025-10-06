@@ -23,6 +23,21 @@ using Snowship.NState;
 using Snowship.NUI;
 using Snowship.Persistence;
 using UnityEngine;
+using VContainer;
+using VContainer.Unity;
+
+public sealed class ServiceLocatorBridge : IStartable
+{
+	private readonly IObjectResolver container;
+
+	public ServiceLocatorBridge(IObjectResolver container) {
+		this.container = container;
+	}
+
+	public void Start() {
+		GameManager.Initialize(container);
+	}
+}
 
 public class GameManager : MonoBehaviour {
 
@@ -32,6 +47,8 @@ public class GameManager : MonoBehaviour {
 
 	private static readonly Dictionary<Type, Manager> managersMap = new();
 	private static readonly List<Manager> managers = new();
+
+	private static IObjectResolver resolver;
 
 	public void Awake() {
 
@@ -46,6 +63,10 @@ public class GameManager : MonoBehaviour {
 		}
 
 		SpecialManagerSetups();
+	}
+
+	public static void Initialize(IObjectResolver container) {
+		resolver = container;
 	}
 
 	private void CreateManagers() {
@@ -115,6 +136,9 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public static TManager Get<TManager>() where TManager : class, IManager {
+		if (resolver != null && resolver.TryResolve(typeof(TManager), out object resolved)) {
+			return (TManager)resolved;
+		}
 		return managersMap[typeof(TManager)] as TManager;
 	}
 }

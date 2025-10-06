@@ -15,7 +15,12 @@ namespace Snowship.NMap.Generation
 
 					Vector2Int position = new(x, y);
 
-					Tile tile = new Tile(context.Map, position, height);
+					Tile tile = new Tile(
+						context.Map.MapContext.TilePrefab, // TODO This must be able to be done in a better way...
+						context.Map,
+						position,
+						height
+					);
 
 					innerTiles.Add(tile);
 					context.Map.tiles.Add(tile);
@@ -27,52 +32,39 @@ namespace Snowship.NMap.Generation
 		private void SetSurroundingTiles(MapGenContext context) {
 			for (int y = 0; y < context.Data.mapSize; y++) {
 				for (int x = 0; x < context.Data.mapSize; x++) {
-					/* Horizontal */
-					if (y + 1 < context.Data.mapSize) {
-						context.Map.sortedTiles[y][x].horizontalSurroundingTiles.Add(context.Map.sortedTiles[y + 1][x]);
-					} else {
-						context.Map.sortedTiles[y][x].horizontalSurroundingTiles.Add(null);
-					}
-					if (x + 1 < context.Data.mapSize) {
-						context.Map.sortedTiles[y][x].horizontalSurroundingTiles.Add(context.Map.sortedTiles[y][x + 1]);
-					} else {
-						context.Map.sortedTiles[y][x].horizontalSurroundingTiles.Add(null);
-					}
-					if (y - 1 >= 0) {
-						context.Map.sortedTiles[y][x].horizontalSurroundingTiles.Add(context.Map.sortedTiles[y - 1][x]);
-					} else {
-						context.Map.sortedTiles[y][x].horizontalSurroundingTiles.Add(null);
-					}
-					if (x - 1 >= 0) {
-						context.Map.sortedTiles[y][x].horizontalSurroundingTiles.Add(context.Map.sortedTiles[y][x - 1]);
-					} else {
-						context.Map.sortedTiles[y][x].horizontalSurroundingTiles.Add(null);
-					}
 
-					/* Diagonal */
+					List<Tile> horizontalTiles = context.Map.sortedTiles[y][x].SurroundingTiles[Tile.EGridConnectivity.FourWay];
+					List<Tile> surroundingTiles = context.Map.sortedTiles[y][x].SurroundingTiles[Tile.EGridConnectivity.EightWay];
+
+					// Horizontal
+					horizontalTiles.Add(y + 1 < context.Data.mapSize ? context.Map.sortedTiles[y + 1][x] : null);
+					horizontalTiles.Add(x + 1 < context.Data.mapSize ? context.Map.sortedTiles[y][x + 1] : null);
+					horizontalTiles.Add(y - 1 >= 0 ? context.Map.sortedTiles[y - 1][x] : null);
+					horizontalTiles.Add(x - 1 >= 0 ? context.Map.sortedTiles[y][x - 1] : null);
+
+					surroundingTiles.AddRange(horizontalTiles);
+
+					// Diagonal
 					if (x + 1 < context.Data.mapSize && y + 1 < context.Data.mapSize) {
-						context.Map.sortedTiles[y][x].diagonalSurroundingTiles.Add(context.Map.sortedTiles[y + 1][x + 1]);
+						surroundingTiles.Add(context.Map.sortedTiles[y + 1][x + 1]);
 					} else {
-						context.Map.sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
+						surroundingTiles.Add(null);
 					}
 					if (y - 1 >= 0 && x + 1 < context.Data.mapSize) {
-						context.Map.sortedTiles[y][x].diagonalSurroundingTiles.Add(context.Map.sortedTiles[y - 1][x + 1]);
+						surroundingTiles.Add(context.Map.sortedTiles[y - 1][x + 1]);
 					} else {
-						context.Map.sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
+						surroundingTiles.Add(null);
 					}
 					if (x - 1 >= 0 && y - 1 >= 0) {
-						context.Map.sortedTiles[y][x].diagonalSurroundingTiles.Add(context.Map.sortedTiles[y - 1][x - 1]);
+						surroundingTiles.Add(context.Map.sortedTiles[y - 1][x - 1]);
 					} else {
-						context.Map.sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
+						surroundingTiles.Add(null);
 					}
 					if (y + 1 < context.Data.mapSize && x - 1 >= 0) {
-						context.Map.sortedTiles[y][x].diagonalSurroundingTiles.Add(context.Map.sortedTiles[y + 1][x - 1]);
+						surroundingTiles.Add(context.Map.sortedTiles[y + 1][x - 1]);
 					} else {
-						context.Map.sortedTiles[y][x].diagonalSurroundingTiles.Add(null);
+						surroundingTiles.Add(null);
 					}
-
-					context.Map.sortedTiles[y][x].surroundingTiles.AddRange(context.Map.sortedTiles[y][x].horizontalSurroundingTiles);
-					context.Map.sortedTiles[y][x].surroundingTiles.AddRange(context.Map.sortedTiles[y][x].diagonalSurroundingTiles);
 				}
 			}
 		}

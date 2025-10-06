@@ -8,16 +8,19 @@ using UnityEngine;
 
 namespace Snowship.NMap
 {
-	public partial class Map {
+	public partial class Map
+	{
 
 		private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
 
 		public bool Created = false;
 
-		public MapData MapData;
+		public MapData MapData { get; }
+		public MapContext MapContext { get; }
 
-		public Map(MapData mapData) {
+		public Map(MapData mapData, MapContext mapContext) {
 			MapData = mapData;
+			MapContext = mapContext;
 		}
 
 		public List<Tile> tiles = new List<Tile>();
@@ -33,14 +36,14 @@ namespace Snowship.NMap
 		public List<River> rivers = new List<River>();
 		public List<River> largeRivers = new List<River>();
 
-		public event Action LightingUpdated;
+		public event Action<Color> LightingUpdated;
 
-		public void OnCameraPositionChanged(Vector2 position) {
 			DetermineVisibleRegionBlocks();
+		public void OnCameraPositionChanged(Vector2 position, float zoom) {
 		}
 
-		public void OnCameraZoomChanged(float zoom) {
 			DetermineVisibleRegionBlocks();
+		public void OnCameraZoomChanged(float zoom, Vector2 position) {
 		}
 
 		public Tile GetTileFromPosition(Vector2 position) {
@@ -56,7 +59,7 @@ namespace Snowship.NMap
 		}
 
 		public static int GetRandomMapSeed() {
-			return UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+			return Random.Range(int.MinValue, int.MaxValue);
 		}
 	}
 }

@@ -8,8 +8,6 @@ namespace Snowship.NHuman
 {
 	public class HumanView : LifeView<Human>
 	{
-		private ResourceManager ResourceM => GameManager.Get<ResourceManager>();
-
 		public override void Bind(Human model) {
 			base.Bind(model);
 
@@ -47,10 +45,12 @@ namespace Snowship.NHuman
 		}
 
 		private void OnClothingChanged(BodySection bodySection, Clothing clothing) {
-			transform
+			bool clothingValid = clothing != null && clothing.image != null;
+			SpriteRenderer clothingSectionSpriteRenderer = transform
 				.Find(bodySection.ToString())
-				.GetComponent<SpriteRenderer>()
-				.sprite = clothing.image == null ? ResourceM.clearSquareSprite : clothing.image;
+				.GetComponent<SpriteRenderer>();
+			clothingSectionSpriteRenderer.sprite = clothingValid ? clothing.image : null;
+			clothingSectionSpriteRenderer.color = clothingValid ? Color.white : Color.clear;
 		}
 
 		protected override void OnModelPositionChanged(Vector2 position) {

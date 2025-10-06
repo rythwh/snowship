@@ -193,5 +193,18 @@ namespace Snowship.NHuman
 
 			selectionIndicator.SetActive(true);
 		}
+
+		public void RemoveHuman(Human human) {
+
+			humans.Remove(human);
+			humansByType[human.GetType()].Remove(human);
+
+			HumanView humanView = humanToViewMap[human];
+			humanView.Unbind();
+			Object.Destroy(humanView.gameObject);
+			humanToViewMap.Remove(human);
+
+			OnHumanRemoved?.Invoke(human);
+		}
 	}
 }

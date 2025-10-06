@@ -11,6 +11,12 @@ namespace Snowship.NMap
 {
 	public partial class Map
 	{
+		internal void OnTimeChanged(SimulationDateTime time) {
+			if (time.Minute % 10 == 0) {
+				UpdateGlobalLighting(time.DecimalHour, false);
+			}
+		}
+
 		internal void UpdateGlobalLighting(float time, bool forceUpdate) {
 			Color newColour = MapGenerator.GetTileColourAtHour(time);
 			foreach (RegionBlock visibleRegionBlock in visibleRegionBlocks) {
@@ -19,12 +25,11 @@ namespace Snowship.NMap
 				}
 				visibleRegionBlock.lastBrightnessUpdate = time;
 				foreach (Tile tile in visibleRegionBlock.tiles) {
-					tile.SetColour(newColour, Mathf.FloorToInt(time));
+					tile.SetColour(newColour, time);
 				}
 			}
 
-			LightingUpdated?.Invoke();
-			GameManager.Get<CameraManager>().camera.backgroundColor = newColour * 0.5f;
+			LightingUpdated?.Invoke(newColour * 0.5f);
 		}
 
 		internal void RecalculateLighting(List<Tile> tilesToRecalculate, bool setBrightnessAtEnd, bool forceBrightnessUpdate = false) {
@@ -32,8 +37,8 @@ namespace Snowship.NMap
 			DetermineShadowTiles(shadowSourceTiles, setBrightnessAtEnd, forceBrightnessUpdate);
 		}
 
-		private static List<Tile> DetermineShadowSourceTiles(List<Tile> tilesToRecalculate) {
-			List<Tile> shadowSourceTiles = new List<Tile>();
+		private static List<Tile> DetermineShadowSourceTiles(IReadOnlyCollection<Tile> tilesToRecalculate) {
+			List<Tile> shadowSourceTiles = new();
 			foreach (Tile tile in tilesToRecalculate) {
 				if (tile != null && TileCanShadowTiles(tile)) {
 					shadowSourceTiles.Add(tile);
@@ -121,7 +126,7 @@ namespace Snowship.NMap
 		}
 
 		public void RemoveTileBrightnessEffect(Tile tile) {
-			List<Tile> tilesToRecalculateShadowsFor = new List<Tile>();
+			HashSet<Tile> tilesToRecalculateShadowsFor = new();
 			for (int h = 0; h < 24; h++) {
 				if (tile.shadowsTo.TryGetValue(h, out List<Tile> shadowedTiles)) {
 					foreach (Tile nTile in shadowedTiles) {
@@ -139,13 +144,22 @@ namespace Snowship.NMap
 					}
 				}
 				if (tile.shadowsFrom.ContainsKey(h)) {
-					tilesToRecalculateShadowsFor.AddRange(tile.shadowsFrom[h].Keys);
+					foreach (Tile shadowFromTile in tile.shadowsFrom[h].Keys) {
+						tilesToRecalculateShadowsFor.Add(shadowFromTile);
+					}
 				}
 				if (tile.blockingShadowsFrom.ContainsKey(h)) {
-					tilesToRecalculateShadowsFor.AddRange(tile.blockingShadowsFrom[h]);
+					foreach (Tile blockingShadowFromTile in tile.blockingShadowsFrom[h]) {
+						tilesToRecalculateShadowsFor.Add(blockingShadowFromTile);
+					}
 				}
 			}
-			tilesToRecalculateShadowsFor.AddRange(tile.surroundingTiles.Where(nTile => nTile != null));
+			foreach (Tile nTile in tile.surroundingTiles) {
+				if (nTile == null) {
+					continue;
+				}
+				tilesToRecalculateShadowsFor.Add(nTile);
+			}
 
 			tile.shadowsFrom.Clear();
 			tile.shadowsTo.Clear();

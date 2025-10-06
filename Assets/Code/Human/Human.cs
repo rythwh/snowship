@@ -33,7 +33,7 @@ namespace Snowship.NHuman
 		// Wandering
 		protected const int WanderTimerMin = 10;
 		protected const int WanderTimerMax = 20;
-		protected float WanderTimer = UnityEngine.Random.Range(WanderTimerMin, WanderTimerMax);
+		protected float WanderTimer = Random.Range(WanderTimerMin, WanderTimerMax);
 
 		// Body
 		internal Dictionary<BodySection, int> BodyTypeProperties;
@@ -71,8 +71,8 @@ namespace Snowship.NHuman
 
 		private static Dictionary<BodySection, int> SetBodyType(Gender gender) {
 			Dictionary<BodySection, int> bodyIndices = new() {
-				{ BodySection.Skin, UnityEngine.Random.Range(0, 3) },
-				{ BodySection.Hair, UnityEngine.Random.Range(0, 0) }
+				{ BodySection.Skin, Random.Range(0, 3) },
+				{ BodySection.Hair, Random.Range(0, 0) }
 			};
 			return bodyIndices;
 		}
@@ -113,9 +113,9 @@ namespace Snowship.NHuman
 					validWanderTiles = validWanderTiles.Where(t => Vector2.Distance(t.obj.transform.position, stayNear.position) <= stayNear.maxDistance).ToList();
 				}
 				if (validWanderTiles.Count > 0) {
-					MoveToTile(validWanderTiles[UnityEngine.Random.Range(0, validWanderTiles.Count)], false);
+					MoveToTile(validWanderTiles[Random.Range(0, validWanderTiles.Count)], false);
 				}
-				WanderTimer = UnityEngine.Random.Range(5, 10);
+				WanderTimer = Random.Range(5, 10);
 			} else {
 				WanderTimer -= 1 * GameManager.Get<TimeManager>().Time.DeltaTime;
 			}
@@ -125,7 +125,7 @@ namespace Snowship.NHuman
 			if (!careIfOvertileIsWalkable || !Tile.walkable) {
 				List<Tile> walkableSurroundingTiles = Tile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
 				if (walkableSurroundingTiles.Count > 0) {
-					MoveToTile(walkableSurroundingTiles[UnityEngine.Random.Range(0, walkableSurroundingTiles.Count)], false);
+					MoveToTile(walkableSurroundingTiles[Random.Range(0, walkableSurroundingTiles.Count)], false);
 				} else {
 					walkableSurroundingTiles.Clear();
 					List<Tile> potentialWalkableSurroundingTiles = new();

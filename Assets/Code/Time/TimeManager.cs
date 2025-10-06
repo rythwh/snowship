@@ -16,7 +16,7 @@ namespace Snowship.NTime {
 		public event Action<SimulationDateTime> OnTimeChanged;
 
 		public override void OnGameSetupComplete() {
-			GameManager.Get<StateManager>().OnStateChanged += OnStateChanged;
+			stateM.OnStateChanged += OnStateChanged;
 
 			OnTimeChanged?.Invoke(Time);
 		}
@@ -24,15 +24,15 @@ namespace Snowship.NTime {
 		[SuppressMessage("ReSharper", "InvertIf")]
 		private void OnStateChanged((EState previousState, EState newState) state) {
 			if (state is { previousState: EState.LoadToSimulation, newState: EState.Simulation }) {
-				GameManager.Get<InputManager>().InputSystemActions.Simulation.TimeSpeedUp.performed += TimeSpeedUp;
-				GameManager.Get<InputManager>().InputSystemActions.Simulation.TimeSlowDown.performed += TimeSlowDown;
-				GameManager.Get<InputManager>().InputSystemActions.Simulation.Pause.performed += TogglePause;
+				inputM.InputSystemActions.Simulation.TimeSpeedUp.performed += TimeSpeedUp;
+				inputM.InputSystemActions.Simulation.TimeSlowDown.performed += TimeSlowDown;
+				inputM.InputSystemActions.Simulation.Pause.performed += TogglePause;
 			}
 
 			if (state is { previousState: EState.Simulation, newState: EState.QuitToMenu }) {
-				GameManager.Get<InputManager>().InputSystemActions.Simulation.TimeSpeedUp.performed -= TimeSpeedUp;
-				GameManager.Get<InputManager>().InputSystemActions.Simulation.TimeSlowDown.performed -= TimeSlowDown;
-				GameManager.Get<InputManager>().InputSystemActions.Simulation.Pause.performed -= TogglePause;
+				inputM.InputSystemActions.Simulation.TimeSpeedUp.performed -= TimeSpeedUp;
+				inputM.InputSystemActions.Simulation.TimeSlowDown.performed -= TimeSlowDown;
+				inputM.InputSystemActions.Simulation.Pause.performed -= TogglePause;
 			}
 		}
 
@@ -49,11 +49,11 @@ namespace Snowship.NTime {
 		}
 
 		private void ChangeTimeModifier(int direction) {
-			if (GameManager.Get<StateManager>().State != EState.Simulation) {
+			if (stateM.State != EState.Simulation) {
 				return;
 			}
 
-			if (GameManager.Get<InputManager>().IsPlayerTyping()) {
+			if (inputM.IsPlayerTyping()) {
 				return;
 			}
 
@@ -74,7 +74,7 @@ namespace Snowship.NTime {
 
 		private bool UpdateTime() {
 
-			if (GameManager.Get<StateManager>().State != EState.Simulation) {
+			if (stateM.State != EState.Simulation) {
 				return false;
 			}
 
@@ -87,9 +87,6 @@ namespace Snowship.NTime {
 
 			Time.Minute += 1;
 			timer = 0;
-			if (Time.Minute % 10 == 0) {
-				GameManager.Get<MapManager>().Map.UpdateGlobalLighting(Time.TileBrightnessTime, false);
-			}
 			if (Time.Minute >= 60) {
 				Time.Hour += 1;
 				Time.Minute = 0;
@@ -121,11 +118,11 @@ namespace Snowship.NTime {
 
 		public void TogglePause() {
 
-			if (GameManager.Get<StateManager>().State != EState.Simulation) {
+			if (stateM.State != EState.Simulation) {
 				return;
 			}
 
-			if (GameManager.Get<InputManager>().IsPlayerTyping()) {
+			if (inputM.IsPlayerTyping()) {
 				return;
 			}
 

@@ -27,11 +27,11 @@ namespace Snowship.NCamera {
 
 		private void OnMoveCameraPerformed(InputAction.CallbackContext callbackContext) {
 
-			if (GameManager.Get<InputManager>().IsPlayerTyping()) {
+			if (inputM.IsPlayerTyping()) {
 				return;
 			}
 
-			if (GameManager.Get<StateManager>().State != EState.Simulation) {
+			if (stateM.State != EState.Simulation) {
 				return;
 			}
 
@@ -45,11 +45,11 @@ namespace Snowship.NCamera {
 
 		private void OnZoomCameraPerformed(InputAction.CallbackContext callbackContext) {
 
-			if (GameManager.Get<InputManager>().IsPointerOverUI()) {
+			if (inputM.IsPointerOverUI()) {
 				return;
 			}
 
-			if (GameManager.Get<StateManager>().State != EState.Simulation) {
+			if (stateM.State != EState.Simulation) {
 				return;
 			}
 

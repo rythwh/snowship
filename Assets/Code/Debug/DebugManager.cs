@@ -20,25 +20,54 @@ using Snowship.NUI;
 using Snowship.NUtilities;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer.Unity;
 using Random = UnityEngine.Random;
 
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 [SuppressMessage("ReSharper", "ConvertIfStatementToConditionalTernaryExpression")]
-public class DebugManager : Manager
+public class DebugManager : IStartable, ITickable
 {
-	private bool debugEnabled = false;
+	private readonly CaravanManager caravanM;
+	private readonly UIManager uiM;
+	private readonly ColonistManager colonistM;
+	private readonly InputManager inputM;
+	private readonly MapManager mapM;
+	private readonly HumanManager humanM;
+	private readonly TimeManager timeM;
+	private readonly ResourceManager resourceM;
+	private readonly CameraManager cameraM;
 
-	private CaravanManager CaravanM => GameManager.Get<CaravanManager>();
-	private UIManager UIM => GameManager.Get<UIManager>();
-	private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
+	private bool debugEnabled = false;
 
 	public event Action<string> OnConsoleOutputProduced;
 	public event Action OnConsoleClearRequested;
 
-	public override void OnCreate() {
+	public DebugManager(
+		CaravanManager caravanM,
+		UIManager uiM,
+		ColonistManager colonistM,
+		InputManager inputM,
+		MapManager mapM,
+		HumanManager humanM,
+		TimeManager timeM,
+		ResourceManager resourceM,
+		CameraManager cameraM
+	) {
+		this.caravanM = caravanM;
+		this.uiM = uiM;
+		this.colonistM = colonistM;
+		this.inputM = inputM;
+		this.mapM = mapM;
+		this.humanM = humanM;
+		this.timeM = timeM;
+		this.resourceM = resourceM;
+		this.cameraM = cameraM;
+	}
 
-		GameManager.Get<InputManager>().InputSystemActions.Simulation.DebugMenu.performed += OnDebugMenuButtonPerformed;
+	public void Start() {
+
+		inputM.InputSystemActions.Simulation.DebugMenu.performed += OnDebugMenuButtonPerformed;
 
 		CreateCommandFunctions();
 	}
@@ -46,13 +75,13 @@ public class DebugManager : Manager
 	private async void OnDebugMenuButtonPerformed(InputAction.CallbackContext callbackContext) {
 		debugEnabled = !debugEnabled;
 		if (debugEnabled) {
-			await GameManager.Get<UIManager>().OpenViewAsync<UIDebugConsole>();
+			await uiM.OpenViewAsync<UIDebugConsole>();
 		} else {
-			GameManager.Get<UIManager>().CloseView<UIDebugConsole>();
+			uiM.CloseView<UIDebugConsole>();
 		}
 	}
 
-	public override void OnUpdate() {
+	public void Tick() {
 		if (debugEnabled) {
 			if (selectTileMouseToggle) {
 				SelectTileMouseUpdate();
@@ -223,14 +252,13 @@ public class DebugManager : Manager
 
 	private void SelectTileMouseUpdate() {
 		selectedTiles.Clear();
-		// selectedTiles.Add(GameManager.Get<UIManagerOld>().mouseOverTile);
 	}
 
 	private bool toggleSunCycleToggle;
 	private float holdHour = 12;
 
 	private void ToggleSunCycleUpdate() {
-		GameManager.Get<MapManager>().Map.UpdateGlobalLighting(holdHour, true);
+		mapM.Map.UpdateGlobalLighting(holdHour, true);
 	}
 
 	private int viewRiverAtIndex = 0;
@@ -266,11 +294,11 @@ public class DebugManager : Manager
 			Commands.selecthuman,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 1) {
-					Human selectedHuman = GameManager.Get<HumanManager>().GetHumans().ToList().Find(human => human.Name == parameters[0]);
+					Human selectedHuman = humanM.GetHumans().ToList().Find(human => human.Name == parameters[0]);
 					if (selectedHuman != null) {
-						GameManager.Get<HumanManager>().SetSelectedHuman(selectedHuman);
-						if (GameManager.Get<HumanManager>().selectedHuman == selectedHuman) {
-							Output($"SUCCESS: Selected {GameManager.Get<HumanManager>().selectedHuman.Name}.");
+						humanM.SetSelectedHuman(selectedHuman);
+						if (humanM.selectedHuman == selectedHuman) {
+							Output($"SUCCESS: Selected {humanM.selectedHuman.Name}.");
 						}
 					} else {
 						Output($"ERROR: Invalid colonist name: {parameters[0]}");
@@ -285,12 +313,12 @@ public class DebugManager : Manager
 			delegate(List<string> parameters) {
 				if (parameters.Count == 1) {
 					if (int.TryParse(parameters[0], out int numberToSpawn)) {
-						int oldNumColonists = ColonistM.ColonistCount;
-						GameManager.Get<ColonistManager>().SpawnColonists(numberToSpawn);
-						if (oldNumColonists + numberToSpawn == ColonistM.ColonistCount) {
+						int oldNumColonists = colonistM.ColonistCount;
+						colonistM.SpawnColonists(numberToSpawn);
+						if (oldNumColonists + numberToSpawn == colonistM.ColonistCount) {
 							Output($"SUCCESS: Spawned {numberToSpawn} colonists.");
 						} else {
-							Output($"ERROR: Unable to spawn colonists. Spawned {ColonistM.ColonistCount - oldNumColonists} colonists.");
+							Output($"ERROR: Unable to spawn colonists. Spawned {colonistM.ColonistCount - oldNumColonists} colonists.");
 						}
 					} else {
 						Output("ERROR: Invalid number of colonists.");
@@ -313,14 +341,14 @@ public class DebugManager : Manager
 							return;
 						}
 						if (int.TryParse(parameters[2], out int maxNumTraders)) {
-							int oldNumCaravans = GameManager.Get<CaravanManager>().caravans.Count;
+							int oldNumCaravans = caravanM.caravans.Count;
 							for (int i = 0; i < numberToSpawn; i++) {
-								GameManager.Get<CaravanManager>().SpawnCaravan(caravanType, maxNumTraders);
+								caravanM.SpawnCaravan(caravanType);
 							}
-							if (oldNumCaravans + numberToSpawn == GameManager.Get<CaravanManager>().caravans.Count) {
+							if (oldNumCaravans + numberToSpawn == caravanM.caravans.Count) {
 								Output($"SUCCESS: Spawned {numberToSpawn} caravans.");
 							} else {
-								Output($"ERROR: Unable to spawn caravans. Spawned {GameManager.Get<CaravanManager>().caravans.Count - oldNumCaravans} caravans.");
+								Output($"ERROR: Unable to spawn caravans. Spawned {caravanM.caravans.Count - oldNumCaravans} caravans.");
 							}
 						} else {
 							Output("ERROR: Unable to parse maxNumTraders as int.");
@@ -339,15 +367,15 @@ public class DebugManager : Manager
 				if (parameters.Count == 1) {
 					if (float.TryParse(parameters[0], out float newHealth)) {
 						if (newHealth is >= 0 and <= 1) {
-							if (GameManager.Get<HumanManager>().selectedHuman != null) {
+							if (humanM.selectedHuman != null) {
 								FieldInfo field = typeof(Life).GetField("Health", BindingFlags.NonPublic | BindingFlags.Instance);
 								if (field != null) {
-									field.SetValue(GameManager.Get<HumanManager>().selectedHuman, 100);
+									field.SetValue(humanM.selectedHuman, 100);
 								}
-								if (Mathf.Approximately(GameManager.Get<HumanManager>().selectedHuman.Health, newHealth)) {
-									Output($"SUCCESS: {GameManager.Get<HumanManager>().selectedHuman.Name}'s health is now {GameManager.Get<HumanManager>().selectedHuman.Health}.");
+								if (Mathf.Approximately(humanM.selectedHuman.Health, newHealth)) {
+									Output($"SUCCESS: {humanM.selectedHuman.Name}'s health is now {humanM.selectedHuman.Health}.");
 								} else {
-									Output($"ERROR: Unable to change {GameManager.Get<HumanManager>().selectedHuman.Name}'s health.");
+									Output($"ERROR: Unable to change {humanM.selectedHuman.Name}'s health.");
 								}
 							} else {
 								Output("ERROR: No human selected.");
@@ -369,8 +397,8 @@ public class DebugManager : Manager
 				if (parameters.Count == 2) {
 					NeedPrefab needPrefab = NeedPrefab.needPrefabs.Find(need => need.name == parameters[0]);
 					if (needPrefab != null) {
-						if (GameManager.Get<HumanManager>().selectedHuman != null) {
-							Human human = GameManager.Get<HumanManager>().selectedHuman;
+						if (humanM.selectedHuman != null) {
+							Human human = humanM.selectedHuman;
 							NeedInstance needInstance = human.Needs.AsList().FirstOrDefault(need => need.prefab == needPrefab);
 							if (needInstance != null) {
 								if (float.TryParse(parameters[1], out float newNeedValue)) {
@@ -413,11 +441,11 @@ public class DebugManager : Manager
 						}
 					}
 					if (moodPrefab != null) {
-						if (GameManager.Get<HumanManager>().selectedHuman != null) {
-							if (GameManager.Get<HumanManager>().selectedHuman is Colonist) {
-								Colonist selectedColonist = (Colonist)GameManager.Get<HumanManager>().selectedHuman;
+						if (humanM.selectedHuman != null) {
+							if (humanM.selectedHuman is Colonist) {
+								Colonist selectedColonist = (Colonist)humanM.selectedHuman;
 								selectedColonist.Moods.AddMoodModifier(moodPrefab.type);
-								Output($"SUCCESS: Added {moodPrefab.name} to {GameManager.Get<HumanManager>().selectedHuman}.");
+								Output($"SUCCESS: Added {moodPrefab.name} to {humanM.selectedHuman}.");
 							} else {
 								Output("ERROR: Selected human is not a colonist.");
 							}
@@ -442,20 +470,20 @@ public class DebugManager : Manager
 				if (parameters.Count == 2) {
 					Resource resource = Resource.GetResources().Find(r => r.type.ToString() == parameters[0]);
 					if (resource != null) {
-						if (GameManager.Get<HumanManager>().selectedHuman != null /* || GameManager.Get<UIManagerOld>().selectedContainer != null*/) {
-							if (GameManager.Get<HumanManager>().selectedHuman != null) {
+						if (humanM.selectedHuman != null /* || UIManagerOld.selectedContainer != null*/) {
+							if (humanM.selectedHuman != null) {
 								if (int.TryParse(parameters[1], out int amount)) {
-									GameManager.Get<HumanManager>().selectedHuman.Inventory.ChangeResourceAmount(resource, amount, false);
-									Output($"SUCCESS: Added {amount} {resource.name} to {GameManager.Get<HumanManager>().selectedHuman}.");
+									humanM.selectedHuman.Inventory.ChangeResourceAmount(resource, amount, false);
+									Output($"SUCCESS: Added {amount} {resource.name} to {humanM.selectedHuman}.");
 								} else {
 									Output("ERROR: Unable to parse resource amount as int.");
 								}
 							} else {
 								Output("No colonist selected, skipping.");
 							}
-							/*if (GameManager.Get<UIManagerOld>().selectedContainer != null) {
+							/*if (UIManagerOld.selectedContainer != null) {
 								if (int.TryParse(parameters[1], out int amount)) {
-									GameManager.Get<UIManagerOld>().selectedContainer.Inventory.ChangeResourceAmount(resource, amount, false);
+									UIManagerOld.selectedContainer.Inventory.ChangeResourceAmount(resource, amount, false);
 									Output($"SUCCESS: Added {amount} {resource.name} to container.");
 								} else {
 									Output("ERROR: Unable to parse resource amount as int.");
@@ -465,7 +493,7 @@ public class DebugManager : Manager
 							}*/
 						} else {
 							if (int.TryParse(parameters[1], out int amount)) {
-								foreach (Colonist colonist in ColonistM.Colonists) {
+								foreach (Colonist colonist in colonistM.Colonists) {
 									colonist.Inventory.ChangeResourceAmount(resource, amount, false);
 								}
 								foreach (Container container in Container.containers) {
@@ -485,7 +513,7 @@ public class DebugManager : Manager
 							Resource resource = Resource.GetResources().Find(r => r.type.ToString() == parameters[0]);
 							if (resource != null) {
 								if (int.TryParse(parameters[1], out int amount)) {
-									foreach (Colonist colonist in ColonistM.Colonists) {
+									foreach (Colonist colonist in colonistM.Colonists) {
 										colonist.Inventory.ChangeResourceAmount(resource, amount, false);
 									}
 								} else {
@@ -504,7 +532,7 @@ public class DebugManager : Manager
 							Resource resource = Resource.GetResources().Find(r => r.type.ToString() == parameters[0]);
 							if (resource != null) {
 								if (int.TryParse(parameters[1], out int amount)) {
-									foreach (Colonist colonist in ColonistM.Colonists) {
+									foreach (Colonist colonist in colonistM.Colonists) {
 										colonist.Inventory.ChangeResourceAmount(resource, amount, false);
 									}
 								} else {
@@ -558,7 +586,7 @@ public class DebugManager : Manager
 				if (parameters.Count == 1) {
 					if (int.TryParse(parameters[0], out int index)) {
 						if (index >= 0 && index < Container.containers.Count) {
-							// GameManager.Get<UIManagerOld>().SetSelectedContainer(Container.containers[index]);
+							// UIManagerOld.SetSelectedContainer(Container.containers[index]);
 						} else {
 							Output("ERROR: Container index out of range.");
 						}
@@ -577,8 +605,8 @@ public class DebugManager : Manager
 				if (parameters.Count == 2) {
 					if (int.TryParse(parameters[0], out int startX)) {
 						if (int.TryParse(parameters[1], out int startY)) {
-							if (startX >= 0 && startY >= 0 && startX < GameManager.Get<MapManager>().Map.MapData.mapSize && startY < GameManager.Get<MapManager>().Map.MapData.mapSize) {
-								selectedTiles.Add(GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(startX, startY)));
+							if (startX >= 0 && startY >= 0 && startX < mapM.Map.MapData.mapSize && startY < mapM.Map.MapData.mapSize) {
+								selectedTiles.Add(mapM.Map.GetTileFromPosition(new Vector2(startX, startY)));
 							} else {
 								Output("ERROR: Positions out of range.");
 							}
@@ -587,10 +615,10 @@ public class DebugManager : Manager
 								string startYString = parameters[1].Split(',')[0];
 								string endYString = parameters[1].Split(',')[1];
 								if (int.TryParse(startYString, out startY) && int.TryParse(endYString, out int endY)) {
-									if (startX >= 0 && startY >= 0 && endY >= 0 && startX < GameManager.Get<MapManager>().Map.MapData.mapSize && startY < GameManager.Get<MapManager>().Map.MapData.mapSize && endY < GameManager.Get<MapManager>().Map.MapData.mapSize) {
+									if (startX >= 0 && startY >= 0 && endY >= 0 && startX < mapM.Map.MapData.mapSize && startY < mapM.Map.MapData.mapSize && endY < mapM.Map.MapData.mapSize) {
 										if (startY <= endY) {
 											for (int y = startY; y <= endY; y++) {
-												selectedTiles.Add(GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(startX, y)));
+												selectedTiles.Add(mapM.Map.GetTileFromPosition(new Vector2(startX, y)));
 											}
 										} else {
 											Output("ERROR: Starting y position is greater than ending y position.");
@@ -611,10 +639,10 @@ public class DebugManager : Manager
 							string endXString = parameters[0].Split(',')[1];
 							if (int.TryParse(startXString, out startX) && int.TryParse(endXString, out int endX)) {
 								if (int.TryParse(parameters[1], out int startY)) {
-									if (startX >= 0 && startY >= 0 && endX >= 0 && startX < GameManager.Get<MapManager>().Map.MapData.mapSize && startY < GameManager.Get<MapManager>().Map.MapData.mapSize && endX < GameManager.Get<MapManager>().Map.MapData.mapSize) {
+									if (startX >= 0 && startY >= 0 && endX >= 0 && startX < mapM.Map.MapData.mapSize && startY < mapM.Map.MapData.mapSize && endX < mapM.Map.MapData.mapSize) {
 										if (startX <= endX) {
 											for (int x = startX; x <= endX; x++) {
-												selectedTiles.Add(GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(x, startY)));
+												selectedTiles.Add(mapM.Map.GetTileFromPosition(new Vector2(x, startY)));
 											}
 										} else {
 											Output("ERROR: Starting x position is greater than ending x position.");
@@ -627,11 +655,11 @@ public class DebugManager : Manager
 										string startYString = parameters[1].Split(',')[0];
 										string endYString = parameters[1].Split(',')[1];
 										if (int.TryParse(startYString, out startY) && int.TryParse(endYString, out int endY)) {
-											if (startX >= 0 && startY >= 0 && endX >= 0 && endY >= 0 && startX < GameManager.Get<MapManager>().Map.MapData.mapSize && startY < GameManager.Get<MapManager>().Map.MapData.mapSize && endX < GameManager.Get<MapManager>().Map.MapData.mapSize && endY < GameManager.Get<MapManager>().Map.MapData.mapSize) {
+											if (startX >= 0 && startY >= 0 && endX >= 0 && endY >= 0 && startX < mapM.Map.MapData.mapSize && startY < mapM.Map.MapData.mapSize && endX < mapM.Map.MapData.mapSize && endY < mapM.Map.MapData.mapSize) {
 												if (startX <= endX && startY <= endY) {
 													for (int y = startY; y <= endY; y++) {
 														for (int x = startX; x <= endX; x++) {
-															selectedTiles.Add(GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(x, y)));
+															selectedTiles.Add(mapM.Map.GetTileFromPosition(new Vector2(x, y)));
 														}
 													}
 												} else {
@@ -813,9 +841,9 @@ public class DebugManager : Manager
 								bool previousWalkableState = tile.walkable;
 								tile.SetTileType(tileType, false, true, true);
 								if (!previousWalkableState && tile.walkable) {
-									GameManager.Get<MapManager>().Map.RemoveTileBrightnessEffect(tile);
+									mapM.Map.RemoveTileBrightnessEffect(tile);
 								} else if (previousWalkableState && !tile.walkable) {
-									GameManager.Get<MapManager>().Map.RecalculateLighting(new List<Tile> { tile }, true);
+									mapM.Map.RecalculateLighting(new List<Tile>() { tile }, timeM.Time.DecimalHour, true);
 								}
 								counter += 1;
 							}
@@ -902,7 +930,7 @@ public class DebugManager : Manager
 				} else {
 					Output("ERROR: Invalid number of parameters specified.");
 				}
-				GameManager.Get<MapManager>().Map.RemoveTileBrightnessEffect(null);
+				mapM.Map.RemoveTileBrightnessEffect(null);
 				Output($"Changed {counter} tile objects.");
 			}
 		);
@@ -971,7 +999,7 @@ public class DebugManager : Manager
 							if (selectedTiles.Count > 0) {
 								foreach (Tile tile in selectedTiles) {
 									tile.SetPlant(false, new Plant(plantPrefab, tile, small, true, null));
-									GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+									mapM.Map.UpdateGlobalLighting(timeM.Time.DecimalHour, true);
 									if (tile.plant != null) {
 										counter += 1;
 									}
@@ -1030,7 +1058,7 @@ public class DebugManager : Manager
 				if (parameters.Count == 2) {
 					if (int.TryParse(parameters[0], out int camX)) {
 						if (int.TryParse(parameters[1], out int camY)) {
-							GameManager.Get<CameraManager>().SetCameraPosition(new Vector2(camX, camY));
+							cameraM.SetCameraPosition(new Vector2(camX, camY));
 						} else {
 							Output("ERROR: Unable to parse camera y position as int.");
 						}
@@ -1047,7 +1075,7 @@ public class DebugManager : Manager
 			delegate(List<string> parameters) {
 				if (parameters.Count == 1) {
 					if (float.TryParse(parameters[0], out float camZoom)) {
-						GameManager.Get<CameraManager>().SetCameraZoom(camZoom);
+						cameraM.SetCameraZoom(camZoom);
 					} else {
 						Output("ERROR: Unable to parse camera zoom as float.");
 					}
@@ -1060,7 +1088,7 @@ public class DebugManager : Manager
 			Commands.togglesuncycle,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					holdHour = GameManager.Get<TimeManager>().Time.TileBrightnessTime;
+					holdHour = timeM.Time.DecimalHour;
 					toggleSunCycleToggle = !toggleSunCycleToggle;
 				} else {
 					Output("ERROR: Invalid number of parameters specified.");
@@ -1074,8 +1102,8 @@ public class DebugManager : Manager
 					if (float.TryParse(parameters[0], out float time)) {
 						if (time is >= 0 and < 24) {
 							holdHour = time;
-							GameManager.Get<TimeManager>().SetTime(time);
-							GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+							timeM.SetTime(time);
+							mapM.Map.UpdateGlobalLighting(timeM.Time.DecimalHour, true);
 						} else {
 							Output("ERROR: Time out of range.");
 						}
@@ -1091,7 +1119,7 @@ public class DebugManager : Manager
 			Commands.pause,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<TimeManager>().TogglePause();
+					timeM.TogglePause();
 				} else {
 					Output("ERROR: Invalid number of parameters specified.");
 				}
@@ -1105,7 +1133,7 @@ public class DebugManager : Manager
 						Output("No tiles are currently selected.");
 					} else {
 						foreach (Tile tile in selectedTiles) {
-							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							tile.sr.sprite = resourceM.whiteSquareSprite;
 							tile.sr.color = Color.blue;
 						}
 					}
@@ -1118,11 +1146,11 @@ public class DebugManager : Manager
 			Commands.viewnormal,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
+					foreach (Tile tile in mapM.Map.tiles) {
 						tile.sr.color = Color.white;
 					}
-					GameManager.Get<MapManager>().Map.RedrawTiles(GameManager.Get<MapManager>().Map.tiles, true, true);
-					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					mapM.Map.RedrawTiles(mapM.Map.tiles, true, true);
+					mapM.Map.UpdateGlobalLighting(timeM.Time.DecimalHour, true);
 				} else {
 					Output("ERROR: Invalid number of parameters specified.");
 				}
@@ -1132,10 +1160,10 @@ public class DebugManager : Manager
 			Commands.viewregions,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Region region in GameManager.Get<MapManager>().Map.regions) {
+					foreach (Region region in mapM.Map.regions) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 						foreach (Tile tile in region.tiles) {
-							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							tile.sr.sprite = resourceM.whiteSquareSprite;
 							tile.sr.color = colour;
 						}
 					}
@@ -1148,8 +1176,8 @@ public class DebugManager : Manager
 			Commands.viewheightmap,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
-						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+					foreach (Tile tile in mapM.Map.tiles) {
+						tile.sr.sprite = resourceM.whiteSquareSprite;
 						tile.sr.color = new Color(tile.height, tile.height, tile.height, 1f);
 					}
 				} else {
@@ -1161,8 +1189,8 @@ public class DebugManager : Manager
 			Commands.viewprecipitation,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
-						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+					foreach (Tile tile in mapM.Map.tiles) {
+						tile.sr.sprite = resourceM.whiteSquareSprite;
 						tile.sr.color = new Color(tile.GetPrecipitation(), tile.GetPrecipitation(), tile.GetPrecipitation(), 1f);
 					}
 				} else {
@@ -1174,8 +1202,8 @@ public class DebugManager : Manager
 			Commands.viewtemperature,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
-						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+					foreach (Tile tile in mapM.Map.tiles) {
+						tile.sr.sprite = resourceM.whiteSquareSprite;
 						tile.sr.color = new Color((tile.temperature + 50f) / 100f, (tile.temperature + 50f) / 100f, (tile.temperature + 50f) / 100f, 1f);
 					}
 				} else {
@@ -1187,8 +1215,8 @@ public class DebugManager : Manager
 			Commands.viewbiomes,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
-						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+					foreach (Tile tile in mapM.Map.tiles) {
+						tile.sr.sprite = resourceM.whiteSquareSprite;
 						tile.sr.color = tile.biome?.colour ?? Color.black;
 					}
 				} else {
@@ -1200,10 +1228,10 @@ public class DebugManager : Manager
 			Commands.viewresourceveins,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<MapManager>().Map.RedrawTiles(GameManager.Get<MapManager>().Map.tiles, false, true);
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
+					mapM.Map.RedrawTiles(mapM.Map.tiles, false, true);
+					foreach (Tile tile in mapM.Map.tiles) {
 						if (tile.tileType.resourceRanges.Find(rr => ResourceVein.resourceVeinValidTileFunctions.ContainsKey(rr.resource.type)) == null) {
-							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							tile.sr.sprite = resourceM.whiteSquareSprite;
 							tile.sr.color = Color.white;
 						}
 					}
@@ -1216,10 +1244,10 @@ public class DebugManager : Manager
 			Commands.viewdrainagebasins,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (DrainageBasin drainageBasin in GameManager.Get<MapManager>().Map.drainageBasins) {
+					foreach (DrainageBasin drainageBasin in mapM.Map.drainageBasins) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 						foreach (Tile tile in drainageBasin.Tiles) {
-							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							tile.sr.sprite = resourceM.whiteSquareSprite;
 							tile.sr.color = colour;
 						}
 					}
@@ -1232,10 +1260,10 @@ public class DebugManager : Manager
 			Commands.viewrivers,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (River river in GameManager.Get<MapManager>().Map.rivers) {
+					foreach (River river in mapM.Map.rivers) {
 						Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
 						foreach (Tile tile in river.tiles) {
-							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							tile.sr.sprite = resourceM.whiteSquareSprite;
 							tile.sr.color = riverColour;
 						}
 						river.tiles[0].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkRed);
@@ -1243,20 +1271,20 @@ public class DebugManager : Manager
 						river.tiles[^1].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkGreen);
 						river.startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
 					}
-					Output($"Showing {GameManager.Get<MapManager>().Map.rivers.Count} rivers.");
+					Output($"Showing {mapM.Map.rivers.Count} rivers.");
 				} else if (parameters.Count == 1) {
 					if (int.TryParse(parameters[0], out viewRiverAtIndex)) {
-						if (viewRiverAtIndex >= 0 && viewRiverAtIndex < GameManager.Get<MapManager>().Map.rivers.Count) {
+						if (viewRiverAtIndex >= 0 && viewRiverAtIndex < mapM.Map.rivers.Count) {
 							Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-							foreach (Tile tile in GameManager.Get<MapManager>().Map.rivers[viewRiverAtIndex].tiles) {
-								tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							foreach (Tile tile in mapM.Map.rivers[viewRiverAtIndex].tiles) {
+								tile.sr.sprite = resourceM.whiteSquareSprite;
 								tile.sr.color = riverColour;
 							}
-							GameManager.Get<MapManager>().Map.rivers[viewRiverAtIndex].tiles[0].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkRed);
-							GameManager.Get<MapManager>().Map.rivers[viewRiverAtIndex].endTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightRed);
-							GameManager.Get<MapManager>().Map.rivers[viewRiverAtIndex].tiles[^1].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkGreen);
-							GameManager.Get<MapManager>().Map.rivers[viewRiverAtIndex].startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
-							Output($"Showing river {viewRiverAtIndex + 1} of {GameManager.Get<MapManager>().Map.rivers.Count} rivers.");
+							mapM.Map.rivers[viewRiverAtIndex].tiles[0].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkRed);
+							mapM.Map.rivers[viewRiverAtIndex].endTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightRed);
+							mapM.Map.rivers[viewRiverAtIndex].tiles[^1].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkGreen);
+							mapM.Map.rivers[viewRiverAtIndex].startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
+							Output($"Showing river {viewRiverAtIndex + 1} of {mapM.Map.rivers.Count} rivers.");
 						} else {
 							Output("ERROR: River index out of range.");
 						}
@@ -1272,10 +1300,10 @@ public class DebugManager : Manager
 			Commands.viewlargerivers,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (River river in GameManager.Get<MapManager>().Map.largeRivers) {
+					foreach (River river in mapM.Map.largeRivers) {
 						Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
 						foreach (Tile tile in river.tiles) {
-							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							tile.sr.sprite = resourceM.whiteSquareSprite;
 							tile.sr.color = riverColour;
 						}
 						river.tiles[0].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkRed);
@@ -1284,21 +1312,21 @@ public class DebugManager : Manager
 						river.startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
 						river.centreTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightBlue);
 					}
-					Output($"Showing {GameManager.Get<MapManager>().Map.largeRivers.Count} large rivers.");
+					Output($"Showing {mapM.Map.largeRivers.Count} large rivers.");
 				} else if (parameters.Count == 1) {
 					if (int.TryParse(parameters[0], out viewRiverAtIndex)) {
-						if (viewRiverAtIndex >= 0 && viewRiverAtIndex < GameManager.Get<MapManager>().Map.largeRivers.Count) {
+						if (viewRiverAtIndex >= 0 && viewRiverAtIndex < mapM.Map.largeRivers.Count) {
 							Color riverColour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-							foreach (Tile tile in GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].tiles) {
-								tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							foreach (Tile tile in mapM.Map.largeRivers[viewRiverAtIndex].tiles) {
+								tile.sr.sprite = resourceM.whiteSquareSprite;
 								tile.sr.color = riverColour;
 							}
-							GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].tiles[0].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkRed);
-							GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].endTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightRed);
-							GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].tiles[^1].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkGreen);
-							GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
-							GameManager.Get<MapManager>().Map.largeRivers[viewRiverAtIndex].centreTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightBlue);
-							Output($"Showing river {viewRiverAtIndex + 1} of {GameManager.Get<MapManager>().Map.largeRivers.Count} large rivers.");
+							mapM.Map.largeRivers[viewRiverAtIndex].tiles[0].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkRed);
+							mapM.Map.largeRivers[viewRiverAtIndex].endTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightRed);
+							mapM.Map.largeRivers[viewRiverAtIndex].tiles[^1].sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.DarkGreen);
+							mapM.Map.largeRivers[viewRiverAtIndex].startTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen);
+							mapM.Map.largeRivers[viewRiverAtIndex].centreTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.LightBlue);
+							Output($"Showing river {viewRiverAtIndex + 1} of {mapM.Map.largeRivers.Count} large rivers.");
 						} else {
 							Output("ERROR: River index out of range.");
 						}
@@ -1314,8 +1342,8 @@ public class DebugManager : Manager
 			Commands.viewwalkspeed,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
-						tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+					foreach (Tile tile in mapM.Map.tiles) {
+						tile.sr.sprite = resourceM.whiteSquareSprite;
 						tile.sr.color = new Color(tile.walkSpeed, tile.walkSpeed, tile.walkSpeed, 1f);
 					}
 				} else {
@@ -1327,13 +1355,13 @@ public class DebugManager : Manager
 			Commands.viewregionblocks,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (RegionBlock region in GameManager.Get<MapManager>().Map.regionBlocks) {
+					foreach (RegionBlock region in mapM.Map.regionBlocks) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 						foreach (Tile tile in region.tiles) {
-							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							tile.sr.sprite = resourceM.whiteSquareSprite;
 							tile.sr.color = colour;
 						}
-						Tile averageTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(region.averagePosition);
+						Tile averageTile = mapM.Map.GetTileFromPosition(region.averagePosition);
 						averageTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.White);
 					}
 				} else {
@@ -1345,13 +1373,13 @@ public class DebugManager : Manager
 			Commands.viewsquareregionblocks,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (RegionBlock region in GameManager.Get<MapManager>().Map.squareRegionBlocks) {
+					foreach (RegionBlock region in mapM.Map.squareRegionBlocks) {
 						Color colour = new(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 						foreach (Tile tile in region.tiles) {
-							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							tile.sr.sprite = resourceM.whiteSquareSprite;
 							tile.sr.color = colour;
 						}
-						Tile averageTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(region.averagePosition);
+						Tile averageTile = mapM.Map.GetTileFromPosition(region.averagePosition);
 						averageTile.sr.color = ColourUtilities.GetColour(ColourUtilities.EColour.White);
 					}
 				} else {
@@ -1363,10 +1391,10 @@ public class DebugManager : Manager
 			Commands.viewlightblockingtiles,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
+					foreach (Tile tile in mapM.Map.tiles) {
 						tile.SetVisible(true);
 						if (tile.blocksLight) {
-							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							tile.sr.sprite = resourceM.whiteSquareSprite;
 							tile.sr.color = Color.red;
 						}
 					}
@@ -1380,7 +1408,7 @@ public class DebugManager : Manager
 		// 	Commands.viewshadowstarttiles,
 		// 	delegate(List<string> parameters) {
 		// 		if (parameters.Count == 0) {
-		// 			foreach (Tile tile in GameManager.Get<MapManager>().Map.DetermineShadowSourceTiles(GameManager.Get<MapManager>().Map.tiles)) {
+		// 			foreach (Tile tile in mapM.Map.DetermineShadowSourceTiles(mapM.Map.tiles)) {
 		// 				tile.SetVisible(true);
 		// 				tile.sr.color = Color.red;
 		// 			}
@@ -1393,7 +1421,7 @@ public class DebugManager : Manager
 			Commands.viewshadowsfrom,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					mapM.Map.UpdateGlobalLighting(timeM.Time.DecimalHour, true);
 					if (selectedTiles.Count > 0) {
 						foreach (Tile tile in selectedTiles) {
 							foreach (KeyValuePair<int, Dictionary<Tile, float>> shadowsFromKVP in tile.shadowsFrom) {
@@ -1406,7 +1434,7 @@ public class DebugManager : Manager
 						Output("No tiles are currently selected.");
 					}
 				} else if (parameters.Count == 1) {
-					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					mapM.Map.UpdateGlobalLighting(timeM.Time.DecimalHour, true);
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
@@ -1433,7 +1461,7 @@ public class DebugManager : Manager
 			Commands.viewshadowsto,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					mapM.Map.UpdateGlobalLighting(timeM.Time.DecimalHour, true);
 					if (selectedTiles.Count > 0) {
 						foreach (Tile tile in selectedTiles) {
 							foreach (KeyValuePair<int, List<Tile>> shadowsToKVP in tile.shadowsTo) {
@@ -1446,7 +1474,7 @@ public class DebugManager : Manager
 						Output("No tiles are currently selected.");
 					}
 				} else if (parameters.Count == 1) {
-					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					mapM.Map.UpdateGlobalLighting(timeM.Time.DecimalHour, true);
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
@@ -1473,7 +1501,7 @@ public class DebugManager : Manager
 			Commands.viewblockingfrom,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					mapM.Map.UpdateGlobalLighting(timeM.Time.DecimalHour, true);
 					if (selectedTiles.Count > 0) {
 						foreach (Tile tile in selectedTiles) {
 							foreach (KeyValuePair<int, List<Tile>> blockingShadowsFromKVP in tile.blockingShadowsFrom) {
@@ -1486,7 +1514,7 @@ public class DebugManager : Manager
 						Output("No tiles are currently selected.");
 					}
 				} else if (parameters.Count == 1) {
-					GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, true);
+					mapM.Map.UpdateGlobalLighting(timeM.Time.DecimalHour, true);
 					if (selectedTiles.Count > 0) {
 						if (int.TryParse(parameters[0], out int hour)) {
 							if (hour is >= 0 and <= 23) {
@@ -1513,10 +1541,10 @@ public class DebugManager : Manager
 			Commands.viewroofs,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
+					foreach (Tile tile in mapM.Map.tiles) {
 						tile.SetVisible(true);
 						if (tile.HasRoof()) {
-							tile.sr.sprite = GameManager.Get<ResourceManager>().whiteSquareSprite;
+							tile.sr.sprite = resourceM.whiteSquareSprite;
 							tile.sr.color = Color.red;
 						}
 					}
@@ -1529,7 +1557,7 @@ public class DebugManager : Manager
 			Commands.viewhidden,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Tile tile in GameManager.Get<MapManager>().Map.tiles) {
+					foreach (Tile tile in mapM.Map.tiles) {
 						tile.SetVisible(true);
 					}
 				} else {
@@ -1541,7 +1569,7 @@ public class DebugManager : Manager
 			Commands.listjobs,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Colonist colonist in ColonistM.Colonists) {
+					foreach (Colonist colonist in colonistM.Colonists) {
 						Output(colonist.Name);
 						// foreach (JobInstance job in JobManager.GetSortedJobs(colonist)) {
 						// 	Output($"\t{job.objectPrefab.jobType} {job.objectPrefab.type} {JobManager.CalculateJobCost(colonist, job, null)}");
@@ -1573,12 +1601,12 @@ public class DebugManager : Manager
 		commandFunctions.Add(
 			Commands.opentrademenu,
 			delegate(List<string> parameters) {
-				if (CaravanM.caravans.Count == 0) {
-					CaravanM.SpawnCaravan(CaravanType.Foot, Random.Range(1, 6));
+				if (caravanM.caravans.Count == 0) {
+					caravanM.SpawnCaravan(CaravanType.Foot);
 				}
-				Caravan caravan = CaravanM.caravans[0];
-				CaravanM.SetSelectedCaravan(caravan);
-				UIM.OpenViewAsync<UITradeMenu>().Forget();
+				Caravan caravan = caravanM.caravans[0];
+				caravanM.SetSelectedCaravan(caravan);
+				uiM.OpenViewAsync<UITradeMenu>().Forget();
 			}
 		);
 	}

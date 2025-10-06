@@ -92,13 +92,13 @@ namespace Snowship.NResource
 			if (guaranteedTree) {
 				List<Plant.PlantEnum> biomePlantEnums = biome.plantChances.Keys.Where(plantEnum => plantEnum != Plant.PlantEnum.DeadTree).ToList();
 				if (biomePlantEnums.Count > 0) {
-					return GetPlantPrefabByEnum(biomePlantEnums[UnityEngine.Random.Range(0, biomePlantEnums.Count)]);
+					return GetPlantPrefabByEnum(biomePlantEnums[Random.Range(0, biomePlantEnums.Count)]);
 				} else {
 					return null;
 				}
 			} else {
 				foreach (KeyValuePair<Plant.PlantEnum, float> plantChancesKVP in biome.plantChances) {
-					if (UnityEngine.Random.Range(0f, 1f) < biome.plantChances[plantChancesKVP.Key]) {
+					if (Random.Range(0f, 1f) < biome.plantChances[plantChancesKVP.Key]) {
 						return GetPlantPrefabByEnum(plantChancesKVP.Key);
 					}
 				}

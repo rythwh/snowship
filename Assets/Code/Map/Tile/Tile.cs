@@ -19,8 +19,15 @@ namespace Snowship.NMap.NTile
 		public Vector2Int PositionGrid { get; }
 		public Vector2 PositionWorld => obj.transform.position;
 
+		public enum EGridConnectivity
+		{
+			FourWay,
+			EightWay
+		}
+
+		public Dictionary<EGridConnectivity, List<Tile>> SurroundingTiles { get; } = new();
+
 		public List<Tile> horizontalSurroundingTiles = new List<Tile>();
-		public List<Tile> diagonalSurroundingTiles = new List<Tile>();
 		public List<Tile> surroundingTiles = new List<Tile>();
 
 		public float height;
@@ -65,13 +72,14 @@ namespace Snowship.NMap.NTile
 
 		public bool visible;
 
-		public Tile(Map map, Vector2Int positionGrid, float height) {
+		public Tile(GameObject tilePrefab, Map map, Vector2Int positionGrid, float height) {
 			this.map = map;
 
 			this.PositionGrid = positionGrid;
 
-			obj = MonoBehaviour.Instantiate(
-				GameManager.Get<ResourceManager>().tilePrefab,
+			// TODO Move somewhere else to allow creating a "headless" map
+			obj = Object.Instantiate(
+				tilePrefab,
 				new Vector2(positionGrid.x + 0.5f, positionGrid.y + 0.5f),
 				Quaternion.identity
 			);
@@ -447,7 +455,8 @@ namespace Snowship.NMap.NTile
 			}
 		}
 
-		public void SetColour(Color newColour, int hour) {
+		public void SetColour(Color newColour, float decimalHour) {
+			int hour = Mathf.FloorToInt(decimalHour);
 			float currentHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(hour) ? brightnessAtHour[hour] : 1f), lightSourceBrightness);
 			int nextHour = (hour == 23 ? 0 : hour + 1);
 			float nextHourBrightness = Mathf.Max((brightnessAtHour.ContainsKey(nextHour) ? brightnessAtHour[nextHour] : 1f), lightSourceBrightness);
@@ -457,7 +466,7 @@ namespace Snowship.NMap.NTile
 			} else {
 				sr.color = newColour;
 			}
-			float colourBrightnessMultiplier = Mathf.Lerp(currentHourBrightness, nextHourBrightness, GameManager.Get<TimeManager>().Time.TileBrightnessTime - hour);
+			float colourBrightnessMultiplier = Mathf.Lerp(currentHourBrightness, nextHourBrightness, decimalHour - hour);
 			sr.color = new Color(sr.color.r * colourBrightnessMultiplier, sr.color.g * colourBrightnessMultiplier, sr.color.b * colourBrightnessMultiplier, 1f);
 
 			if (plant != null) {
