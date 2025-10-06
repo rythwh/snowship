@@ -1,0 +1,58 @@
+﻿using Code.Simulation;
+using Snowship.NCamera;
+using Snowship.NCaravan;
+using Snowship.NColonist;
+using Snowship.NColony;
+using Snowship.NHuman;
+using Snowship.NInput;
+using Snowship.NJob;
+using Snowship.NLife;
+using Snowship.NLocation;
+using Snowship.NMap;
+using Snowship.NMap.NTile;
+using Snowship.NPlanet;
+using Snowship.NSettings;
+using Snowship.NState;
+using Snowship.NTime;
+using Snowship.NUI;
+using Snowship.Persistence;
+using Snowship.Selectable;
+using VContainer;
+using VContainer.Unity;
+
+namespace Snowship
+{
+	public class GameLifetimeScope : LifetimeScope
+	{
+		protected override void Configure(IContainerBuilder builder) {
+
+			builder.RegisterEntryPoint<ServiceLocatorBridge>(Lifetime.Singleton);
+
+			builder.Register<CameraManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<CaravanManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<ColonistManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<ColonyManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<DebugManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<HumanManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<InputManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<JobManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<LifeManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<MapManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<PersistenceManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<PlanetManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<ResourceManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<SelectionManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<SettingsManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<SimulationManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<StateManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<TileManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<TimeManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<UIManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.Register<UniverseManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+
+			builder.InstallLocation("LocationNames");
+
+			builder.RegisterComponentInHierarchy<SharedReferences>();
+		}
+	}
+}
