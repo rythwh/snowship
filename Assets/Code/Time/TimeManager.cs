@@ -15,6 +15,9 @@ namespace Snowship.NTime {
 
 		public event Action<SimulationDateTime> OnTimeChanged;
 
+		private StateManager stateM => GameManager.Get<StateManager>();
+		private InputManager inputM => GameManager.Get<InputManager>();
+
 		public override void OnGameSetupComplete() {
 			stateM.OnStateChanged += OnStateChanged;
 

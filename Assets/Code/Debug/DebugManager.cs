@@ -26,7 +26,7 @@ using Random = UnityEngine.Random;
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 [SuppressMessage("ReSharper", "ConvertIfStatementToConditionalTernaryExpression")]
-public class DebugManager : IStartable, ITickable
+public class DebugManager : Manager, IStartable, ITickable
 {
 	private readonly CaravanManager caravanM;
 	private readonly UIManager uiM;
@@ -343,7 +343,7 @@ public class DebugManager : IStartable, ITickable
 						if (int.TryParse(parameters[2], out int maxNumTraders)) {
 							int oldNumCaravans = caravanM.caravans.Count;
 							for (int i = 0; i < numberToSpawn; i++) {
-								caravanM.SpawnCaravan(caravanType);
+								caravanM.SpawnCaravan(caravanType, maxNumTraders);
 							}
 							if (oldNumCaravans + numberToSpawn == caravanM.caravans.Count) {
 								Output($"SUCCESS: Spawned {numberToSpawn} caravans.");
@@ -843,7 +843,7 @@ public class DebugManager : IStartable, ITickable
 								if (!previousWalkableState && tile.walkable) {
 									mapM.Map.RemoveTileBrightnessEffect(tile);
 								} else if (previousWalkableState && !tile.walkable) {
-									mapM.Map.RecalculateLighting(new List<Tile>() { tile }, timeM.Time.DecimalHour, true);
+									mapM.Map.RecalculateLighting(new List<Tile>() { tile }, true);
 								}
 								counter += 1;
 							}
@@ -1602,7 +1602,7 @@ public class DebugManager : IStartable, ITickable
 			Commands.opentrademenu,
 			delegate(List<string> parameters) {
 				if (caravanM.caravans.Count == 0) {
-					caravanM.SpawnCaravan(CaravanType.Foot);
+					caravanM.SpawnCaravan(CaravanType.Foot, Random.Range(4, 6));
 				}
 				Caravan caravan = caravanM.caravans[0];
 				caravanM.SetSelectedCaravan(caravan);

@@ -80,7 +80,7 @@ public static class PathManager {
 	}
 
 	public enum WalkableSetting { Walkable, NonWalkable, Both };
-	public enum DirectionSetting { Horizontal, Diagonal, Both };
+	public enum DirectionSetting { Horizontal, Both };
 
 	public static bool PathExists(Tile startTile, Tile endTile, bool breakTooLong, int breakAfterTiles, WalkableSetting walkableSetting, DirectionSetting directionSetting) {
 
@@ -106,7 +106,7 @@ public static class PathManager {
 				return true;
 			}
 
-			foreach (Tile nTile in (directionSetting == DirectionSetting.Horizontal ? currentTile.tile.horizontalSurroundingTiles : (directionSetting == DirectionSetting.Diagonal ? currentTile.tile.diagonalSurroundingTiles : currentTile.tile.surroundingTiles))) {
+			foreach (Tile nTile in (directionSetting == DirectionSetting.Horizontal ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
 				if (nTile != null && checkedTiles.Find(o => o.tile == nTile) == null && (walkableSetting == WalkableSetting.Walkable ? nTile.walkable : (walkableSetting != WalkableSetting.NonWalkable || !nTile.walkable))) {
 					PathfindingTile pTile = new PathfindingTile(nTile, null, Vector2.Distance(nTile.obj.transform.position, endTile.obj.transform.position));
 					frontier.Add(pTile);

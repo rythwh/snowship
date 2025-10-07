@@ -28,6 +28,7 @@ namespace Snowship.NHuman
 		public Human selectedHuman;
 		private GameObject selectionIndicator;
 		public event Action<Human> OnHumanSelected;
+		public event Action<Human> OnHumanRemoved;
 
 		private CameraManager CameraM => GameManager.Get<CameraManager>();
 		private InputManager InputM => GameManager.Get<InputManager>();

@@ -121,7 +121,7 @@ namespace Snowship.NMap
 				}
 			}
 			if (setBrightnessAtEnd) {
-				UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.TileBrightnessTime, forceBrightnessUpdate);
+				UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.DecimalHour, forceBrightnessUpdate);
 			}
 		}
 

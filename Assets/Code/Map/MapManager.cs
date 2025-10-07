@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using Snowship.NCamera;
 using Snowship.NColony;
 using Snowship.NMap.Generation;
+using Snowship.NState;
 
 namespace Snowship.NMap
 {
@@ -12,6 +13,8 @@ namespace Snowship.NMap
 
 		private CameraManager CameraM => GameManager.Get<CameraManager>();
 		private ColonyManager ColonyM => GameManager.Get<ColonyManager>();
+		private StateManager stateM => GameManager.Get<StateManager>();
+		private ResourceManager resourceM => GameManager.Get<ResourceManager>();
 
 		public MapState MapState = MapState.Nothing;
 

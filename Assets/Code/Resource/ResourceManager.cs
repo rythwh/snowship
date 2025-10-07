@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
 using Snowship.NCaravan;
@@ -1150,10 +1151,10 @@ public class ResourceManager : Manager, IDisposable
 
 	public string GetRandomLocationName() {
 		string[] filteredLocationNames = locationNames
-			.Where(name => universeM.universe == null || name != universeM.universe.name)
-			.Where(name => planetM.planet == null || name != planetM.planet.name)
-			.Where(name => colonyM.colony == null || name != colonyM.colony.Name)
-			.Where(name => caravanM.caravans.Find(c => c.location.Name == name) == null)
+			.Where(name => UniverseM.universe == null || name != UniverseM.universe.name)
+			.Where(name => PlanetM.planet == null || name != PlanetM.planet.name)
+			.Where(name => ColonyM.colony == null || name != ColonyM.colony.Name)
+			.Where(name => CaravanM.caravans.Find(c => c.location.Name == name) == null)
 			.ToArray();
 
 		return filteredLocationNames.RandomElement();

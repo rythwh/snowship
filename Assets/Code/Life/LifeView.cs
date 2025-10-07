@@ -83,7 +83,7 @@ namespace Snowship.NLife
 			OnModelVisibilityChanged(Model.Visible);
 			OnModelHealthChanged(Model.Health);
 
-			OnCameraZoomChanged(CameraM.CurrentZoom);
+			OnCameraZoomChanged(CameraM.CurrentZoom, CameraM.CurrentPosition);
 		}
 
 		protected virtual void OnBeforeUnbind() {
@@ -103,7 +103,7 @@ namespace Snowship.NLife
 			NameBox.OnNameColourChanged(colour);
 		}
 
-		protected void OnCameraZoomChanged(float zoom) {
+		protected void OnCameraZoomChanged(float zoom, Vector2 _) {
 			NameBox.OnCameraZoomChanged(zoom);
 		}
 

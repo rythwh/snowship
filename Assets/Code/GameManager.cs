@@ -26,7 +26,7 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-public sealed class ServiceLocatorBridge : IStartable
+public sealed class ServiceLocatorBridge : IInitializable
 {
 	private readonly IObjectResolver container;
 
@@ -34,12 +34,12 @@ public sealed class ServiceLocatorBridge : IStartable
 		this.container = container;
 	}
 
-	public void Start() {
+	public void Initialize() {
 		GameManager.Initialize(container);
 	}
 }
 
-public class GameManager : MonoBehaviour {
+public class GameManager : IStartable, IPostStartable, ITickable {
 
 	public static readonly (int increment, string text) GameVersion = (3, "2025.1");
 
@@ -50,9 +50,15 @@ public class GameManager : MonoBehaviour {
 
 	private static IObjectResolver resolver;
 
-	public void Awake() {
+	public GameManager(SharedReferences sharedReferences) {
+		SharedReferences = sharedReferences;
+	}
 
-		SharedReferences = GetComponent<SharedReferences>();
+	public static void Initialize(IObjectResolver container) {
+		resolver = container;
+	}
+
+	public void Start() {
 
 		// Awakes
 		CreateManagers();
@@ -63,10 +69,6 @@ public class GameManager : MonoBehaviour {
 		}
 
 		SpecialManagerSetups();
-	}
-
-	public static void Initialize(IObjectResolver container) {
-		resolver = container;
 	}
 
 	private void CreateManagers() {
@@ -88,8 +90,8 @@ public class GameManager : MonoBehaviour {
 		Create<UniverseManager>();
 		Create<UIManager>();
 		Create<SelectionManager>();
-		Create<DebugManager>();
-		Create<StateManager>();
+		// Create<DebugManager>();
+		// Create<StateManager>();
 		Create<PersistenceManager>();
 	}
 
@@ -110,7 +112,7 @@ public class GameManager : MonoBehaviour {
 		// Get<UIManagerOld>().SetupUI();
 	}
 
-	public async void Start() {
+	public async void PostStart() {
 
 		await UniTask.WaitUntil(() => managers.TrueForAll(manager => manager.Created));
 
@@ -120,7 +122,7 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	public async void Update() {
+	public async void Tick() {
 
 		await UniTask.WaitUntil(() => managers.TrueForAll(manager => manager.PostGameSetupCompleted));
 

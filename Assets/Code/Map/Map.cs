@@ -38,12 +38,12 @@ namespace Snowship.NMap
 
 		public event Action<Color> LightingUpdated;
 
-			DetermineVisibleRegionBlocks();
 		public void OnCameraPositionChanged(Vector2 position, float zoom) {
+			DetermineVisibleRegionBlocks();
 		}
 
-			DetermineVisibleRegionBlocks();
 		public void OnCameraZoomChanged(float zoom, Vector2 position) {
+			DetermineVisibleRegionBlocks();
 		}
 
 		public Tile GetTileFromPosition(Vector2 position) {

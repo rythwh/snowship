@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Snowship.NColonist;
 using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NMap.NTile;
 using Snowship.NMap;
 using Snowship.NResource;
@@ -85,7 +87,15 @@ namespace Snowship.NCaravan {
 		}
 
 		private void SpawnTrader(Tile spawnTile) {
-			Trader trader = HumanM.CreateHuman<Trader, TraderViewModule>(spawnTile, new HumanData());
+
+			Gender gender = Random.RandomElement<Gender>();
+			HumanData data = new HumanData(
+				HumanM.GetName(gender),
+				gender,
+				new List<(ESkill, float)>()
+			);
+
+			Trader trader = HumanM.CreateHuman<Trader, TraderViewModule>(spawnTile, data);
 			traders.Add(trader);
 
 			List<Tile> targetTiles = new List<Tile> { targetTile };

@@ -32,6 +32,10 @@ namespace Snowship.NCamera {
 		private CancellationTokenSource zoomCancellationTokenSource = new();
 		public event Action<float, Vector2> OnCameraZoomChanged;
 
+		private StateManager stateM => GameManager.Get<StateManager>();
+		private InputManager inputM => GameManager.Get<InputManager>();
+		private MapManager mapM => GameManager.Get<MapManager>();
+
 		public override void OnCreate() {
 
 			camera = GameManager.SharedReferences.Camera;
@@ -40,8 +44,6 @@ namespace Snowship.NCamera {
 
 			OnInputSystemEnabled(inputM.InputSystemActions);
 			inputM.OnInputSystemDisabled += OnInputSystemDisabled;
-
-			mapM.Map.LightingUpdated += OnLightingUpdated;
 		}
 
 		private void OnLightingUpdated(Color colour) {
@@ -56,6 +58,8 @@ namespace Snowship.NCamera {
 			int mapSize = mapM.Map.MapData.mapSize;
 			SetCameraPosition(Vector2.one * mapSize / 2f, false);
 			SetCameraZoom(ZoomMax);
+
+			mapM.Map.LightingUpdated += OnLightingUpdated;
 		}
 
 		public override void OnUpdate() {

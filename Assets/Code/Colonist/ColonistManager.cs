@@ -4,6 +4,7 @@ using Snowship.NMap.NTile;
 using Snowship.NCamera;
 using Snowship.NColony;
 using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NMap.Models.Structure;
 using Snowship.NResource;
@@ -129,12 +130,12 @@ namespace Snowship.NColonist {
 				// TODO Finish HumanData implementation and use it
 				Gender gender = Random.RandomElement<Gender>();
 				HumanData data = new HumanData(
-					humanM.GetName(gender),
+					HumanM.GetName(gender),
 					gender,
 					new List<(ESkill, float)>()
 				);
 
-				humanM.CreateHuman<Colonist, ColonistViewModule>(colonistSpawnTile, data);
+				HumanM.CreateHuman<Colonist, ColonistViewModule>(colonistSpawnTile, data);
 			}
 
 			// MapM.Map.RedrawTiles(MapM.Map.tiles, true, true);

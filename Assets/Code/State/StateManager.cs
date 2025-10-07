@@ -12,7 +12,7 @@ using VContainer;
 using VContainer.Unity;
 
 namespace Snowship.NState {
-	public partial class StateManager : IStartable
+	public partial class StateManager : Manager, IStartable
 	{
 		private readonly IObjectResolver resolver;
 		private readonly PlanetManager planetM;

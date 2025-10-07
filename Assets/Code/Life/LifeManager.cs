@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Snowship.NMap;
+using UnityEngine;
 
 namespace Snowship.NLife
 {

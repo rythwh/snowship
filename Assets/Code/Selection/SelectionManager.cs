@@ -35,9 +35,14 @@ namespace Snowship.Selectable
 		private Map map;
 		private Camera camera;
 
-		public override void OnCreate() {
+		private InputManager inputM => GameManager.Get<InputManager>();
+		private StateManager stateM => GameManager.Get<StateManager>();
+		private MapManager mapM => GameManager.Get<MapManager>();
+		private CameraManager cameraM => GameManager.Get<CameraManager>();
+		private JobManager jobM => GameManager.Get<JobManager>();
+		private ResourceManager resourceM => GameManager.Get<ResourceManager>();
 
-			InputManager inputManager = GameManager.Get<InputManager>();
+		public override void OnCreate() {
 
 			inputM.InputSystemActions.Simulation.Select.performed += OnSelectPerformed;
 			inputM.InputSystemActions.Simulation.Select.canceled += OnSelectCanceled;
@@ -53,8 +58,8 @@ namespace Snowship.Selectable
 
 		private void OnStateChanged((EState previousState, EState newState) state) {
 			if (state is { previousState: EState.LoadToSimulation, newState: EState.Simulation }) {
-				map = GameManager.Get<MapManager>().Map;
-				camera = GameManager.Get<CameraManager>().camera;
+				map = mapM.Map;
+				camera = cameraM.camera;
 			}
 		}
 

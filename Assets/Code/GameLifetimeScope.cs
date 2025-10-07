@@ -7,7 +7,6 @@ using Snowship.NHuman;
 using Snowship.NInput;
 using Snowship.NJob;
 using Snowship.NLife;
-using Snowship.NLocation;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
 using Snowship.NPlanet;
@@ -26,7 +25,8 @@ namespace Snowship
 	{
 		protected override void Configure(IContainerBuilder builder) {
 
-			builder.RegisterEntryPoint<ServiceLocatorBridge>(Lifetime.Singleton);
+			builder.RegisterEntryPoint<ServiceLocatorBridge>(Lifetime.Singleton).AsSelf();
+			builder.RegisterEntryPoint<GameManager>(Lifetime.Singleton).AsSelf();
 
 			builder.Register<CameraManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<CaravanManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
@@ -49,8 +49,6 @@ namespace Snowship
 			builder.Register<TimeManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<UIManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<UniverseManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-
-			builder.InstallLocation("LocationNames");
 
 			builder.RegisterComponentInHierarchy<SharedReferences>();
 		}

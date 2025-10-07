@@ -9,6 +9,8 @@ namespace Snowship.NPlanet {
 		public PlanetTile selectedPlanetTile;
 		private readonly PlanetMapDataValues planetMapDataValues = new PlanetMapDataValues();
 
+		private ResourceManager resourceM => GameManager.Get<ResourceManager>();
+
 		public void SetPlanet(Planet planet) {
 			this.planet = planet;
 		}
