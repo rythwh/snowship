@@ -18,8 +18,9 @@ namespace Snowship.NLife
 		private readonly int[] moveSpriteIndices = { 1, 2, 0, 3, 1, 0, 0, 1 };
 		protected int MoveSpriteIndex => CalculateMoveSpriteIndex();
 
-		private CameraManager CameraM => GameManager.Get<CameraManager>();
-		private MapManager MapM => GameManager.Get<MapManager>();
+		private ICameraEvents CameraEvents => GameManager.Get<ICameraEvents>();
+		private ICameraQuery CameraQuery => GameManager.Get<ICameraQuery>();
+		private IMapQuery MapQuery => GameManager.Get<IMapQuery>();
 
 		[SerializeField] protected SpriteRenderer BodySpriteRenderer;
 		[SerializeField] private WorldSpaceNameBox NameBox;
@@ -36,7 +37,7 @@ namespace Snowship.NLife
 			Model.HealthChanged += OnModelHealthChanged;
 			Model.Died += OnModelDied;
 
-			CameraM.OnCameraZoomChanged += OnCameraZoomChanged;
+			CameraEvents.OnCameraZoomChanged += OnCameraZoomChanged;
 
 			transform.SetParent(GameManager.SharedReferences.LifeParent, false);
 			transform.position = model.Position;
@@ -63,7 +64,7 @@ namespace Snowship.NLife
 			Model.HealthChanged -= OnModelHealthChanged;
 			Model.Died -= OnModelDied;
 
-			CameraM.OnCameraZoomChanged -= OnCameraZoomChanged;
+			CameraEvents.OnCameraZoomChanged -= OnCameraZoomChanged;
 
 			if (modules != null) {
 				foreach (LifeViewModule module in modules) {
@@ -83,7 +84,7 @@ namespace Snowship.NLife
 			OnModelVisibilityChanged(Model.Visible);
 			OnModelHealthChanged(Model.Health);
 
-			OnCameraZoomChanged(CameraM.CurrentZoom, CameraM.CurrentPosition);
+			OnCameraZoomChanged(CameraQuery.CurrentZoom, CameraQuery.CurrentPosition);
 		}
 
 		protected virtual void OnBeforeUnbind() {
@@ -145,7 +146,7 @@ namespace Snowship.NLife
 			if (!Model.IsMoving) {
 				return moveSpriteIndex;
 			}
-			Tile previousTile = MapM.Map.GetTileFromPosition(Model.PreviousPosition);
+			Tile previousTile = MapQuery.Map.GetTileFromPosition(Model.PreviousPosition);
 			if (previousTile == Model.NextTile) {
 				return moveSpriteIndex;
 			}

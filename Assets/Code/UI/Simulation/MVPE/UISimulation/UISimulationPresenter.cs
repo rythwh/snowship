@@ -16,7 +16,8 @@ namespace Snowship.NUI
 
 		private InputManager InputM => GameManager.Get<InputManager>();
 		private UIManager UIM => GameManager.Get<UIManager>();
-		private HumanManager HumanM => GameManager.Get<HumanManager>();
+		private IHumanEvents HumanEvents => GameManager.Get<IHumanEvents>();
+		private IHumanQuery HumanQuery => GameManager.Get<IHumanQuery>();
 		private StateManager StateM => GameManager.Get<StateManager>();
 
 		public UISimulationPresenter(UISimulationView view) : base(view) {
@@ -29,7 +30,7 @@ namespace Snowship.NUI
 
 			await SetupChildUIs();
 
-			HumanM.OnHumanSelected += async human => await OnHumanSelected(human);
+			HumanEvents.OnHumanSelected += async human => await OnHumanSelected(human);
 		}
 
 		public override void OnClose() {
@@ -60,7 +61,7 @@ namespace Snowship.NUI
 			// Open (or re-open if selecting new human) info panel
 			UIHumanInfoPanelParameters parameters = new(
 				selectedHuman,
-				HumanM.GetHumanView(selectedHuman),
+				HumanQuery.GetHumanView(selectedHuman),
 				openedHumanTabIndex
 			);
 			if (await UIM.ReopenView<UIHumanInfoPanel>(this, parameters) is UIHumanInfoPanelPresenter presenter) {

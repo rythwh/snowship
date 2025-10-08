@@ -9,7 +9,7 @@ namespace Snowship.NColonist {
 	public static class NeedUtilities {
 
 		private static TimeManager TimeM => GameManager.Get<TimeManager>();
-		private static ColonistManager ColonistM => GameManager.Get<ColonistManager>();
+		private static IColonistQuery ColonistQuery => GameManager.Get<IColonistQuery>();
 
 		// TODO Add "relatedNeeds" variable to JobPrefab and then find a way to delete this
 		public static readonly Dictionary<string, ENeed> jobToNeedMap = new Dictionary<string, ENeed> {
@@ -111,7 +111,7 @@ namespace Snowship.NColonist {
 
 				if (includeOtherColonists) {
 					int amountOnOtherColonists = 0;
-					foreach (Colonist otherColonist in ColonistM.Colonists) {
+					foreach (Colonist otherColonist in ColonistQuery.Colonists) {
 						if (colonist != otherColonist) {
 							int amountOnOtherColonist = 0;
 							foreach (ResourceAmount resourceAmount in otherColonist.Inventory.resources.Where(ra => ra.Resource.groupType == resourceGroup)) {

@@ -16,6 +16,7 @@ using Snowship.NTime;
 using Snowship.NUI;
 using Snowship.Persistence;
 using Snowship.Selectable;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -23,21 +24,32 @@ namespace Snowship
 {
 	public class GameLifetimeScope : LifetimeScope
 	{
+		[SerializeField] private SharedReferences sharedReferences;
+
 		protected override void Configure(IContainerBuilder builder) {
+
+			builder.RegisterInstance(sharedReferences);
 
 			builder.RegisterEntryPoint<ServiceLocatorBridge>(Lifetime.Singleton).AsSelf();
 			builder.RegisterEntryPoint<GameManager>(Lifetime.Singleton).AsSelf();
 
-			builder.Register<CameraManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			CameraServiceInstaller.Install(builder);
+
 			builder.Register<CaravanManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<ColonistManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<ColonyManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+
+			ColonistServiceInstaller.Install(builder);
+			ColonyServiceInstaller.Install(builder);
+
 			builder.Register<DebugManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<HumanManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+
+			HumanServiceInstaller.Install(builder);
+
 			builder.Register<InputManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<JobManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<LifeManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<MapManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+
+			MapServiceInstaller.Install(builder);
+
 			builder.Register<PersistenceManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<PlanetManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<ResourceManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
@@ -49,8 +61,6 @@ namespace Snowship
 			builder.Register<TimeManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<UIManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<UniverseManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-
-			builder.RegisterComponentInHierarchy<SharedReferences>();
 		}
 	}
 }

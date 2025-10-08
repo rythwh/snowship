@@ -59,7 +59,7 @@ namespace Snowship.NJob {
 		private GameObject selectedPrefabPreview;
 		public void SelectedPrefabPreview() {
 			Vector2 mousePosition = GameManager.Get<CameraManager>().camera.ScreenToWorldPoint(Input.mousePosition);
-			TileManager.Tile tile = GameManager.Get<MapManager>().Map.GetTileFromPosition(mousePosition);
+			TileManager.Tile tile = GameManager.Get<IMapQuery>().Map.GetTileFromPosition(mousePosition);
 			selectedPrefabPreview.transform.position = tile.obj.transform.position + (Vector3)selectedPrefab.prefab.anchorPositionOffset[rotationIndex];
 		}
 
@@ -119,7 +119,7 @@ namespace Snowship.NJob {
 			if (selectedPrefab != null) {
 				Vector2 mousePosition = GameManager.Get<CameraManager>().camera.ScreenToWorldPoint(Input.mousePosition);
 				if (Input.GetMouseButtonDown(0) && !GameManager.Get<UIManagerOld>().IsPointerOverUI()) {
-					firstTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(mousePosition);
+					firstTile = GameManager.Get<IMapQuery>().Map.GetTileFromPosition(mousePosition);
 				}
 				if (firstTile != null) {
 					if (stopSelection) {
@@ -127,7 +127,7 @@ namespace Snowship.NJob {
 						firstTile = null;
 						return;
 					}
-					TileManager.Tile secondTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(mousePosition);
+					TileManager.Tile secondTile = GameManager.Get<IMapQuery>().Map.GetTileFromPosition(mousePosition);
 					if (secondTile != null) {
 
 						enableSelectionPreview = false;
@@ -146,7 +146,7 @@ namespace Snowship.NJob {
 						for (float y = smallerY; y < maxY; y += (addedToSelectionArea ? selectedPrefab.prefab.dimensions[rotationIndex].y : 1)) {
 							for (float x = smallerX; x < maxX; x += (addedToSelectionArea ? selectedPrefab.prefab.dimensions[rotationIndex].x : 1)) {
 								addedToSelectionArea = true; // default = false // Try swapping x and y values when the object is rotated vertically (i.e. rotationIndex == 1 || 3).
-								TileManager.Tile tile = GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(x, y));
+								TileManager.Tile tile = GameManager.Get<IMapQuery>().Map.GetTileFromPosition(new Vector2(x, y));
 								bool addTile = true;
 								bool addOutlineTile = true;
 								if (selectedPrefab.prefab.selectionModifiers.Contains(SelectionModifiers.SelectionModifiersEnum.Outline)) {
@@ -156,8 +156,8 @@ namespace Snowship.NJob {
 									if (selectionModifier != SelectionModifiers.SelectionModifiersEnum.Outline) {
 										foreach (Vector2 multiTilePosition in selectedPrefab.prefab.multiTilePositions[rotationIndex]) {
 											Vector2 actualMultiTilePosition = tile.obj.transform.position + (Vector3)multiTilePosition;
-											if (actualMultiTilePosition.x >= 0 && actualMultiTilePosition.x < GameManager.Get<MapManager>().Map.mapData.mapSize && actualMultiTilePosition.y >= 0 && actualMultiTilePosition.y < GameManager.Get<MapManager>().Map.mapData.mapSize) {
-												TileManager.Tile posTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(actualMultiTilePosition);
+											if (actualMultiTilePosition.x >= 0 && actualMultiTilePosition.x < GameManager.Get<IMapQuery>().Map.mapData.mapSize && actualMultiTilePosition.y >= 0 && actualMultiTilePosition.y < GameManager.Get<IMapQuery>().Map.mapData.mapSize) {
+												TileManager.Tile posTile = GameManager.Get<IMapQuery>().Map.GetTileFromPosition(actualMultiTilePosition);
 												addTile = SelectionModifiers.selectionModifierFunctions[selectionModifier](tile, posTile, selectedPrefab.prefab, selectedPrefab.variation);
 												if (!addTile) {
 													break;

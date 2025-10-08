@@ -7,10 +7,14 @@ using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NUI;
 using UnityEngine;
+using VContainer.Unity;
 
 namespace Snowship.NCaravan {
 
-	public class CaravanManager : Manager, IDisposable {
+	public class CaravanManager : IStartable, ITickable, IDisposable {
+		private readonly TimeManager timeM;
+		private readonly IMapQuery mapQuery;
+		private readonly UIManager uiM;
 
 		public List<Caravan> caravans = new List<Caravan>();
 		private readonly List<Caravan> removeCaravans = new List<Caravan>();
@@ -21,15 +25,17 @@ namespace Snowship.NCaravan {
 
 		public Caravan selectedCaravan;
 
-		public override void OnCreate() {
-			GameManager.Get<TimeManager>().OnTimeChanged += OnTimeChanged;
+		public CaravanManager(TimeManager timeM, IMapQuery mapQuery, UIManager uiM) {
+			this.timeM = timeM;
+			this.mapQuery = mapQuery;
+			this.uiM = uiM;
 		}
 
-		public void Dispose() {
-			GameManager.Get<TimeManager>().OnTimeChanged -= OnTimeChanged;
+		public void Start() {
+			timeM.OnTimeChanged += OnTimeChanged;
 		}
 
-		public override void OnUpdate() {
+		public void Tick() {
 			foreach (Caravan caravan in caravans) {
 				if (!caravan.Update()) {
 					removeCaravans.Add(caravan);
@@ -53,6 +59,10 @@ namespace Snowship.NCaravan {
 			}
 		}
 
+		public void Dispose() {
+			timeM.OnTimeChanged -= OnTimeChanged;
+		}
+
 		private void OnTimeChanged(SimulationDateTime simulationDateTime) {
 			UpdateCaravanTimer();
 		}
@@ -65,7 +75,7 @@ namespace Snowship.NCaravan {
 				return;
 			}
 
-			if (UnityEngine.Random.Range(0f, 1f) < (((float)caravanTimer - CaravanTimeMin) / (CaravanTimeMax - CaravanTimeMin))) {
+			if (Random.Unit() < (((float)caravanTimer - CaravanTimeMin) / (CaravanTimeMax - CaravanTimeMin))) {
 				caravanTimer = 0;
 				SpawnCaravan(CaravanType.Foot, 4);
 			}
@@ -77,7 +87,7 @@ namespace Snowship.NCaravan {
 
 			switch (caravanType) {
 				case CaravanType.Foot or CaravanType.Wagon:
-					validSpawnTiles.AddRange(GameManager.Get<MapManager>().Map.edgeTiles.Where(tile => tile.walkable && !tile.tileType.classes[TileType.ClassEnum.LiquidWater]).ToList());
+					validSpawnTiles.AddRange(mapQuery.Map.edgeTiles.Where(tile => tile.walkable && !tile.tileType.classes[TileType.ClassEnum.LiquidWater]).ToList());
 					break;
 				case CaravanType.Boat:
 					// TODO Implement boat caravans
@@ -88,12 +98,12 @@ namespace Snowship.NCaravan {
 				return;
 			}
 
-			Tile targetSpawnTile = validSpawnTiles[UnityEngine.Random.Range(0, validSpawnTiles.Count)];
+			Tile targetSpawnTile = validSpawnTiles.RandomElement();
 
-			List<Tile> edgeTilesConnectedToTargetSpawnTile = new List<Tile>();
+			List<Tile> edgeTilesConnectedToTargetSpawnTile = new();
 
-			List<Tile> spawnTilesFrontier = new List<Tile>() { targetSpawnTile };
-			List<Tile> spawnTilesChecked = new List<Tile>();
+			List<Tile> spawnTilesFrontier = new() { targetSpawnTile };
+			List<Tile> spawnTilesChecked = new();
 			while (spawnTilesFrontier.Count > 0) {
 				Tile currentTile = spawnTilesFrontier[0];
 				spawnTilesFrontier.RemoveAt(0);
@@ -110,7 +120,7 @@ namespace Snowship.NCaravan {
 				return;
 			}
 
-			int numTraders = UnityEngine.Random.Range(1, maxNumTraders + 1);
+			int numTraders = Random.Range(1, maxNumTraders + 1);
 			List<Tile> edgeTilesCloseToTargetSpawnTile = edgeTilesConnectedToTargetSpawnTile.Where(tile => Vector2.Distance(tile.obj.transform.position, targetSpawnTile.obj.transform.position) <= numTraders * 2).ToList();
 
 			if (edgeTilesCloseToTargetSpawnTile.Count <= 0) {
@@ -132,7 +142,7 @@ namespace Snowship.NCaravan {
 
 			ObjectInstance selectedTradingPost = null;
 			if (tradingPosts.Count > 0) {
-				selectedTradingPost = tradingPosts[UnityEngine.Random.Range(0, tradingPosts.Count)];
+				selectedTradingPost = tradingPosts.RandomElement();
 			}
 
 			Tile targetTile;
@@ -140,7 +150,7 @@ namespace Snowship.NCaravan {
 				targetTile = selectedTradingPost.zeroPointTile;
 			} else {
 				List<Tile> validTargetTiles = targetSpawnTile.region.tiles.Where(tile => tile.walkable && !tile.tileType.classes[TileType.ClassEnum.LiquidWater]).ToList();
-				targetTile = validTargetTiles[UnityEngine.Random.Range(0, validTargetTiles.Count)];
+				targetTile = validTargetTiles.RandomElement();
 			}
 
 			AddCaravan(new Caravan(numTraders, CaravanType.Foot, edgeTilesCloseToTargetSpawnTile, targetTile));
@@ -156,7 +166,7 @@ namespace Snowship.NCaravan {
 		public async void SetSelectedCaravan(Caravan selectedCaravan) {
 			this.selectedCaravan = selectedCaravan;
 
-			await GameManager.Get<UIManager>().OpenViewAsync<UITradeMenu>();
+			await uiM.OpenViewAsync<UITradeMenu>();
 		}
 	}
 }

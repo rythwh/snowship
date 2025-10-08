@@ -1,54 +1,75 @@
-using System;
 using Cysharp.Threading.Tasks;
 using Snowship.NCamera;
 using Snowship.NColony;
 using Snowship.NMap.Generation;
+using Snowship.NMap.Models.Geography;
+using Snowship.NMap.NTile;
 using Snowship.NState;
+using VContainer.Unity;
 
 namespace Snowship.NMap
 {
-	public class MapManager : Manager
+	public class MapManager : IInitializable
 	{
-		public Map Map { get; private set; }
+		private readonly IMapWrite mapWrite;
+		private readonly IMapQuery mapQuery;
+		private readonly IMapEvents mapEvents;
+		private readonly ICameraEvents cameraEvents;
+		private readonly StateManager stateM;
+		private readonly TileManager tileM;
 
-		private CameraManager CameraM => GameManager.Get<CameraManager>();
-		private ColonyManager ColonyM => GameManager.Get<ColonyManager>();
-		private StateManager stateM => GameManager.Get<StateManager>();
-		private ResourceManager resourceM => GameManager.Get<ResourceManager>();
+		public MapManager(
+			IMapWrite mapWrite,
+			IMapQuery mapQuery,
+			IMapEvents mapEvents,
+			ICameraEvents cameraEvents,
+			IColonyEvents colonyEvents,
+			StateManager stateM,
+			TileManager tileM
+		) {
+			this.mapWrite = mapWrite;
+			this.mapQuery = mapQuery;
+			this.mapEvents = mapEvents;
+			this.cameraEvents = cameraEvents;
+			this.stateM = stateM;
+			this.tileM = tileM;
 
-		public MapState MapState = MapState.Nothing;
+			colonyEvents.OnColonyCreated += OnColonyCreated;
+		}
 
-		public event Action<Map> OnMapCreated;
+		private async void OnColonyCreated(Colony _) {
+			await CreateMap(mapQuery.MapData);
+		}
 
-		public async UniTask CreateMap(MapData mapData, MapInitializeType mapInitializeType) {
+		public void Initialize() {
+			TileType.InitializeTileTypes();
+			Biome.InitializeBiomes();
+			ResourceVein.InitializeResourceVeins();
+		}
 
-			MapState = MapState.Generating;
+		public async UniTask CreateMap(MapData mapData) {
+
 			await stateM.TransitionToState(EState.LoadToSimulation);
 
-			Map = new Map(mapData, new MapContext(resourceM.tilePrefab));
-			MapGenContext context = new(Map, mapData, mapData.mapSeed);
-
+			Map map = new Map(mapData, new MapContext(tileM.TilePrefab));
+			mapWrite.SetMap(map);
+			MapGenContext context = new(map, mapData, mapData.mapSeed);
 			MapGenerator mapGenerator = new();
 			await mapGenerator.Run(context);
 
-			MapState = MapState.Generated;
-
-			InitializeMap(mapInitializeType);
+			InitializeMap();
 
 			await stateM.TransitionToState(EState.Simulation);
 		}
 
-		private void InitializeMap(MapInitializeType mapInitializeType) {
-			if (mapInitializeType == MapInitializeType.NewMap) {
-				ColonyM.SetupNewColony();
-			}
+		private void InitializeMap() {
 
-			Map.DetermineVisibleRegionBlocks();
+			mapQuery.Map.DetermineVisibleRegionBlocks();
 
-			CameraM.OnCameraPositionChanged += Map.OnCameraPositionChanged;
-			CameraM.OnCameraZoomChanged += Map.OnCameraZoomChanged;
+			cameraEvents.OnCameraPositionChanged += mapQuery.Map.OnCameraPositionChanged;
+			cameraEvents.OnCameraZoomChanged += mapQuery.Map.OnCameraZoomChanged;
 
-			OnMapCreated?.Invoke(Map);
+			mapEvents.InvokeOnMapCreated();
 		}
 	}
 }

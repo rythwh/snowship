@@ -3,7 +3,6 @@ using Snowship.NMap.NTile;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace Snowship.NJob
 {

@@ -1,4 +1,4 @@
-﻿public class ShipManager : Manager {
+﻿public class ShipManager {
 
 	public class Ship {
 

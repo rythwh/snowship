@@ -9,7 +9,6 @@ using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NTime;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace Snowship.NCaravan {
 	public class Caravan : IInventoriable, IDisposable
@@ -272,7 +271,7 @@ namespace Snowship.NCaravan {
 				leaveTimer = 0;
 
 				foreach (Trader trader in traders) {
-					List<Tile> validLeaveTiles = GameManager.Get<MapManager>().Map.edgeTiles.Where(t => t.region == trader.Tile.region).ToList();
+					List<Tile> validLeaveTiles = GameManager.Get<IMapQuery>().Map.edgeTiles.Where(t => t.region == trader.Tile.region).ToList();
 					if (validLeaveTiles.Count > 0) {
 						trader.leaveTile = validLeaveTiles[Random.Range(0, validLeaveTiles.Count)];
 						trader.MoveToTile(trader.leaveTile, false);

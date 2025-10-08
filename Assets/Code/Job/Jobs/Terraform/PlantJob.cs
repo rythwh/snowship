@@ -6,7 +6,6 @@ using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NTime;
 using Snowship.NUtilities;
-using Random = UnityEngine.Random;
 
 namespace Snowship.NJob
 {
@@ -78,7 +77,7 @@ namespace Snowship.NJob
 					variation.plants[chosenPlantPrefab]
 				)
 			);
-			GameManager.Get<MapManager>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.DecimalHour, true);
+			GameManager.Get<IMapQuery>().Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.DecimalHour, true);
 		}
 	}
 }

@@ -6,7 +6,6 @@ using Snowship.NHuman;
 using Snowship.NJob;
 using Snowship.NResource;
 using Snowship.NUtilities;
-using Random = UnityEngine.Random;
 
 namespace Snowship.NColonist {
 	public class Colonist : Human

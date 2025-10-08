@@ -53,7 +53,7 @@ namespace Snowship.NResource
 				harvestResource = specificHarvestResource;
 			}
 
-			obj = MonoBehaviour.Instantiate(GameManager.Get<ResourceManager>().tilePrefab, tile.obj.transform.position, Quaternion.identity);
+			obj = MonoBehaviour.Instantiate(GameManager.Get<TileManager>().TilePrefab, tile.obj.transform.position, Quaternion.identity);
 			sr = obj.GetComponent<SpriteRenderer>();
 			if (harvestResource != null) {
 				name = harvestResource.name + " " + prefab.name;

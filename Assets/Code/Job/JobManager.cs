@@ -7,11 +7,16 @@ using Snowship.NColonist;
 using Snowship.NResource;
 using Snowship.NTime;
 using UnityEngine;
+using VContainer.Unity;
 
 namespace Snowship.NJob
 {
-	public class JobManager : Manager
+	public class JobManager : IStartable
 	{
+		private readonly TimeManager timeM;
+		private readonly IColonistQuery colonistQuery;
+		private readonly SharedReferences sharedReferences;
+
 		public JobRegistry JobRegistry { get; private set; }
 		public HashSet<IJob> Jobs { get; } = new();
 		private readonly Dictionary<Type, HashSet<IJob>> jobsByType = new();
@@ -22,14 +27,20 @@ namespace Snowship.NJob
 		public event Action<IJob> OnJobAdded;
 		public event Action<IJob> OnJobRemoved;
 
-		private TimeManager TimeM => GameManager.Get<TimeManager>();
-		private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
-		private ResourceManager ResourceM => GameManager.Get<ResourceManager>();
+		public JobManager(
+			TimeManager timeM,
+			IColonistQuery colonistQuery,
+			SharedReferences sharedReferences
+		) {
+			this.timeM = timeM;
+			this.colonistQuery = colonistQuery;
+			this.sharedReferences = sharedReferences;
+		}
 
-		public override void OnCreate() {
+		public void Start() {
 			JobRegistry = new JobRegistry();
 			JobRegistry.CreateJobRegistry();
-			TimeM.OnTimeChanged += OnTimeChanged;
+			timeM.OnTimeChanged += OnTimeChanged;
 		}
 
 		private void OnTimeChanged(SimulationDateTime _) {
@@ -41,11 +52,11 @@ namespace Snowship.NJob
 			if (Jobs.Count(j => j.CanBeAssigned()) == 0) {
 				return;
 			}
-			if (ColonistM.Colonists.Count(c => c.Jobs.CanTakeNewJob()) == 0) {
+			if (colonistQuery.Colonists.Count(c => c.Jobs.CanTakeNewJob()) == 0) {
 				return;
 			}
 
-			foreach (Colonist colonist in ColonistM.Colonists) {
+			foreach (Colonist colonist in colonistQuery.Colonists) {
 				if (!colonist.Jobs.CanTakeNewJob()) {
 					colonistJobs.Remove(colonist);
 					continue;
@@ -205,7 +216,7 @@ namespace Snowship.NJob
 
 		public Sprite GetJobSprite(IJobDefinition jobDefinition, IJobParams args) {
 			args?.UpdateJobPreviewSprite();
-			return args?.JobPreviewSprite ?? jobDefinition?.Icon ?? ResourceM.selectionCornersSprite;
+			return args?.JobPreviewSprite ?? jobDefinition?.Icon ?? sharedReferences.SelectionSprite;
 		}
 	}
 

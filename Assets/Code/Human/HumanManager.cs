@@ -1,25 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Snowship.NCamera;
 using Snowship.NColonist;
 using Snowship.NInput;
 using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
+using Snowship.NProfession;
+using Snowship.NState;
 using Snowship.NUtilities;
+using Snowship.Selectable;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using VContainer.Unity;
 using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 
 namespace Snowship.NHuman
 {
-	public sealed class HumanManager : Manager
+	public sealed class HumanManager : IAsyncStartable, ITickable
 	{
-		private readonly List<Human> humans = new();
-		private readonly Dictionary<Human, HumanView> humanToViewMap = new();
-		private readonly Dictionary<Type, List<Human>> humansByType = new();
+		private readonly IHumanQuery humanQuery;
+		private readonly IHumanEvents humanEvents;
+
+		private readonly ICameraWrite cameraWrite;
+		private readonly ICameraQuery cameraQuery;
+
+		private readonly InputManager inputM;
+		private readonly IMapQuery mapQuery;
+		private readonly SelectionManager selectionM;
+		private readonly IStateQuery stateQuery;
+
+		private GameObject humanViewPrefab;
 
 		private readonly Dictionary<Gender, string[]> names = new();
 
@@ -27,13 +42,52 @@ namespace Snowship.NHuman
 
 		public Human selectedHuman;
 		private GameObject selectionIndicator;
-		public event Action<Human> OnHumanSelected;
-		public event Action<Human> OnHumanRemoved;
 
-		private CameraManager CameraM => GameManager.Get<CameraManager>();
-		private InputManager InputM => GameManager.Get<InputManager>();
-		private ResourceManager ResourceM => GameManager.Get<ResourceManager>();
-		private MapManager MapM => GameManager.Get<MapManager>();
+		public HumanManager(
+			IHumanQuery humanQuery,
+			IHumanEvents humanEvents,
+			ICameraWrite cameraWrite,
+			ICameraQuery cameraQuery,
+			InputManager inputM,
+			IMapQuery mapQuery,
+			SelectionManager selectionM,
+			IStateQuery stateQuery
+		) {
+			this.humanQuery = humanQuery;
+			this.humanEvents = humanEvents;
+			this.cameraWrite = cameraWrite;
+			this.cameraQuery = cameraQuery;
+			this.inputM = inputM;
+			this.mapQuery = mapQuery;
+			this.selectionM = selectionM;
+			this.stateQuery = stateQuery;
+		}
+
+		public async UniTask StartAsync(CancellationToken cancellation = new CancellationToken()) {
+			await LoadHumanPrefab();
+			LoadNames();
+			LoadSprites();
+
+			SkillPrefab.CreateColonistSkills(); // TODO (Solution: Use string references which can be converted to the correct Prefab obj when needed) Skills must currently be ahead of professions to determine skill-profession relationship
+			ProfessionPrefab.CreateProfessionPrefabs();
+			NeedPrefab.CreateColonistNeeds();
+			MoodModifierGroup.CreateMoodModifiers();
+		}
+
+		public void Tick() {
+			if (stateQuery.State == EState.Simulation) {
+				SetSelectedHumanFromClick();
+			}
+			if (Input.GetKey(KeyCode.F) && selectedHuman != null) {
+				cameraWrite.SetPosition(selectedHuman.Position, false);
+			}
+		}
+
+		private async UniTask LoadHumanPrefab() {
+			AsyncOperationHandle<GameObject> handle = Addressables.LoadAssetAsync<GameObject>("Prefabs/Game/Human");
+			handle.ReleaseHandleOnCompletion();
+			humanViewPrefab = await handle;
+		}
 
 		public void LoadNames() {
 			foreach (Gender gender in Enum.GetValues(typeof(Gender))) {
@@ -60,7 +114,7 @@ namespace Snowship.NHuman
 				return null;
 			}
 
-			HumanView humanView = Object.Instantiate(ResourceM.humanPrefab, tile.PositionWorld, Quaternion.identity).GetComponent<HumanView>();
+			HumanView humanView = Object.Instantiate(humanViewPrefab, tile.PositionWorld, Quaternion.identity).GetComponent<HumanView>();
 			humanView.gameObject.AddComponent<TViewModule>();
 
 			// TODO Move into Bind()
@@ -68,58 +122,8 @@ namespace Snowship.NHuman
 
 			humanView.Bind(human);
 
-			if (!humansByType.TryAdd(humanType, new List<Human> { human })) {
-				humansByType[humanType] ??= new List<Human>();
-				humansByType[humanType].Add(human);
-			}
-			humanToViewMap.Add(human, humanView);
-			humans.Add(human);
+
 			return human;
-		}
-
-		public ReadOnlyCollection<Human> GetHumans() {
-			return humans.AsReadOnly();
-		}
-
-		/// <summary>
-		/// If the return result of IEnumerable&lt;THuman&gt; is simply iterated over (foreach),
-		/// no copy of the original list will be created -> better performance.
-		/// If a copy is needed, can call ToList() on the result.
-		/// </summary>
-		/// <typeparam name="THuman"></typeparam>
-		/// <returns>IEnumerable&lt;THuman&gt;</returns>
-		public IEnumerable<THuman> GetHumans<THuman>() where THuman : Human {
-			if (humansByType.TryGetValue(typeof(THuman), out List<Human> humansOfType)) {
-				return humansOfType.Cast<THuman>();
-			}
-			humansByType[typeof(THuman)] = new List<Human>();
-			return humansByType[typeof(THuman)].Cast<THuman>();
-		}
-
-		public int CountHumans<THuman>() where THuman : Human {
-			if (humansByType.TryGetValue(typeof(THuman), out List<Human> humansOfType)) {
-				return humansOfType.Count;
-			}
-			return 0;
-		}
-
-		public THumanView GetHumanView<THuman, THumanView>(THuman human) where THuman : Human where THumanView : HumanView {
-			humanToViewMap.TryGetValue(human, out HumanView humanView);
-			return humanView as THumanView;
-		}
-
-		public HumanView GetHumanView(Human human) {
-			humanToViewMap.TryGetValue(human, out HumanView humanView);
-			return humanView;
-		}
-
-		public override void OnUpdate() {
-			if (MapM.MapState == MapState.Generated) {
-				SetSelectedHumanFromClick();
-			}
-			if (Input.GetKey(KeyCode.F) && selectedHuman != null) {
-				CameraM.SetCameraPosition(selectedHuman.Position, false);
-			}
 		}
 
 		public string GetName(Gender gender) {
@@ -129,9 +133,9 @@ namespace Snowship.NHuman
 		}
 
 		private void SetSelectedHumanFromClick() {
-			if (Input.GetMouseButtonDown(0) && !InputM.IsPointerOverUI()) {
-				Vector2 mousePosition = CameraM.camera.ScreenToWorldPoint(Input.mousePosition);
-				List<Human> validHumans = humans.Where(human => Vector2.Distance(human.Position, mousePosition) < 0.5f).ToList();
+			if (Input.GetMouseButtonDown(0) && !inputM.IsPointerOverUI()) {
+				Vector2 mousePosition = cameraQuery.ScreenToWorld(Input.mousePosition);
+				List<Human> validHumans = humanQuery.Humans.Where(human => Vector2.Distance(human.Position, mousePosition) < 0.5f).ToList();
 				Human humanToSelect = null;
 				switch (validHumans.Count) {
 					case 1:
@@ -157,7 +161,7 @@ namespace Snowship.NHuman
 				if (humanToSelect != null) {
 					SetSelectedHuman(humanToSelect);
 				} else if (selectedHuman is Colonist colonist) {
-					colonist.PlayerMoveToTile(MapM.Map.GetTileFromPosition(mousePosition));
+					colonist.PlayerMoveToTile(mapQuery.Map.GetTileFromPosition(mousePosition));
 				}
 			}
 			if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape)) {
@@ -171,7 +175,7 @@ namespace Snowship.NHuman
 
 			SetSelectedHumanIndicator();
 
-			OnHumanSelected?.Invoke(selectedHuman);
+			humanEvents.InvokeHumanSelected(selectedHuman);
 		}
 
 		private void SetSelectedHumanIndicator() {
@@ -182,10 +186,10 @@ namespace Snowship.NHuman
 				return;
 			}
 
-			HumanView humanView = humanToViewMap[selectedHuman];
+			HumanView humanView = humanQuery.GetHumanView(selectedHuman);
 
 			if (selectionIndicator == null) {
-				selectionIndicator = Object.Instantiate(ResourceM.selectionIndicator, humanView.transform, false);
+				selectionIndicator = Object.Instantiate(selectionM.SelectionIndicatorPrefab, humanView.transform, false);
 				selectionIndicator.name = "SelectedHumanIndicator";
 				selectionIndicator.GetComponent<SpriteRenderer>().sortingOrder = (int)SortingOrder.UI;
 			} else {
@@ -193,19 +197,6 @@ namespace Snowship.NHuman
 			}
 
 			selectionIndicator.SetActive(true);
-		}
-
-		public void RemoveHuman(Human human) {
-
-			humans.Remove(human);
-			humansByType[human.GetType()].Remove(human);
-
-			HumanView humanView = humanToViewMap[human];
-			humanView.Unbind();
-			Object.Destroy(humanView.gameObject);
-			humanToViewMap.Remove(human);
-
-			OnHumanRemoved?.Invoke(human);
 		}
 	}
 }

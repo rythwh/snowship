@@ -4,13 +4,29 @@ using Snowship.NColonist;
 using Snowship.NPlanet;
 
 namespace Snowship.NColony {
-	public class ColonyManager : Manager {
+	public class ColonyManager
+	{
+		private readonly IColonyEvents colonyEvents;
+		private readonly IMapWrite mapWrite;
+		private readonly ColonistManager colonistM;
+		private readonly PlanetManager planetM;
 
 		public Colony colony;
 
-		private MapManager MapM => GameManager.Get<MapManager>();
-		private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
-		private PlanetManager PlanetM => GameManager.Get<PlanetManager>();
+		public ColonyManager(
+			IColonyEvents colonyEvents,
+			IMapWrite mapWrite,
+			IMapEvents mapEvents,
+			ColonistManager colonistM,
+			PlanetManager planetM
+		) {
+			this.colonyEvents = colonyEvents;
+			this.mapWrite = mapWrite;
+			this.colonistM = colonistM;
+			this.planetM = planetM;
+
+			mapEvents.OnMapCreated += SetupNewColony;
+		}
 
 		public async UniTask CreateColony(CreateColonyData data) {
 
@@ -28,17 +44,17 @@ namespace Snowship.NColony {
 				data.PlanetTile.isRiver,
 				data.PlanetTile.surroundingPlanetTileRivers,
 				false,
-				PlanetM.planet.MapData.primaryWindDirection,
+				planetM.planet.MapData.primaryWindDirection,
 				data.PlanetTile.tile.PositionGrid
 			);
 
 			colony = new Colony(data.Name);
-
-			await MapM.CreateMap(mapData, MapInitializeType.NewMap);
+			mapWrite.SetMapData(mapData);
+			colonyEvents.InvokeOnColonyCreated(colony);
 		}
 
-		public void SetupNewColony() {
-			ColonistM.SpawnStartColonists(3);
+		public void SetupNewColony(Map _) {
+			colonistM.SpawnStartColonists(3);
 		}
 	}
 }

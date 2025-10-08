@@ -39,7 +39,7 @@ namespace Snowship.NLife
 		public event Action Died;
 
 		// Managers
-		private MapManager MapM => GameManager.Get<MapManager>();
+		private IMapQuery MapQuery => GameManager.Get<IMapQuery>();
 		private TimeManager TimeM => GameManager.Get<TimeManager>();
 
 		protected Life(int id, Tile spawnTile, LifeData data) {
@@ -95,7 +95,7 @@ namespace Snowship.NLife
 			if (path.Count > 0) {
 
 				Position = Vector2.Lerp(PreviousPosition, path[0].obj.transform.position, moveTimer);
-				SetTile(MapM.Map.GetTileFromPosition(Position));
+				SetTile(MapQuery.Map.GetTileFromPosition(Position));
 
 				if (moveTimer >= 1f) {
 					PreviousPosition = Position;

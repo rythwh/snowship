@@ -2,17 +2,18 @@
 using Snowship.NPersistence;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer.Unity;
 
 namespace Snowship.NSettings
 {
-	public class SettingsManager : Manager
+	public class SettingsManager : IStartable
 	{
 		public SettingsState Settings { get; } = new();
 		public SettingsState UnappliedSettings { get; } = new();
 
 		public event Action OnSettingsChanged;
 
-		public override void OnCreate() {
+		public void Start() {
 			LoadSettings();
 			ApplySettings(Settings);
 		}

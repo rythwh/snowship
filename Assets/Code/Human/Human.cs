@@ -51,7 +51,7 @@ namespace Snowship.NHuman
 		public event Action<BodySection, Clothing> OnClothingChanged;
 
 		// Managers
-		private HumanManager HumanM => GameManager.Get<HumanManager>();
+		private IHumanQuery HumanQuery => GameManager.Get<IHumanQuery>();
 
 		protected Human(int id, Tile spawnTile, HumanData data) : base(id, spawnTile, data) {
 
@@ -107,7 +107,7 @@ namespace Snowship.NHuman
 				List<Tile> validWanderTiles = Tile.surroundingTiles
 					.Where(tile => tile is { walkable: true, buildable: true })
 					.Where(tile => tile.GetObjectInstanceAtLayer(2) == null)
-					.Where(tile => HumanM.GetHumans().FirstOrDefault(human => human.Tile == tile) == null)
+					.Where(tile => HumanQuery.Humans.FirstOrDefault(human => human.Tile == tile) == null)
 					.ToList();
 				if (stayNearOptional is { } stayNear) {
 					validWanderTiles = validWanderTiles.Where(t => Vector2.Distance(t.obj.transform.position, stayNear.position) <= stayNear.maxDistance).ToList();
@@ -139,7 +139,7 @@ namespace Snowship.NHuman
 						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
 						MoveToTile(walkableSurroundingTiles[0], false);
 					} else {
-						List<Tile> validTiles = GameManager.Get<MapManager>().Map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
+						List<Tile> validTiles = GameManager.Get<IMapQuery>().Map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
 						if (validTiles.Count > 0) {
 							MoveToTile(validTiles[0], false);
 						}

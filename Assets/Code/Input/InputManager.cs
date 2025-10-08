@@ -1,9 +1,10 @@
 ﻿using System;
 using TMPro;
 using UnityEngine.EventSystems;
+using VContainer.Unity;
 
 namespace Snowship.NInput {
-	public class InputManager : Manager {
+	public class InputManager : IStartable {
 
 		private InputSystemActions inputSystemActions;
 		public InputSystemActions InputSystemActions {
@@ -14,7 +15,7 @@ namespace Snowship.NInput {
 		public event Action<InputSystemActions> OnInputSystemEnabled;
 		public event Action<InputSystemActions> OnInputSystemDisabled;
 
-		public override void OnCreate() {
+		public void Start() {
 			inputSystemActions = new InputSystemActions();
 
 			EnableInputSystem();

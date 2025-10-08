@@ -1,15 +1,20 @@
 ﻿using Cysharp.Threading.Tasks;
 using Snowship.NMap;
 using Snowship.NMap.Generation;
+using Snowship.NMap.NTile;
 
 namespace Snowship.NPlanet {
-	public class PlanetManager : Manager {
+	public class PlanetManager
+	{
+		private readonly TileManager tileM;
 
 		public Planet planet;
 		public PlanetTile selectedPlanetTile;
 		private readonly PlanetMapDataValues planetMapDataValues = new PlanetMapDataValues();
 
-		private ResourceManager resourceM => GameManager.Get<ResourceManager>();
+		public PlanetManager(TileManager tileM) {
+			this.tileM = tileM;
+		}
 
 		public void SetPlanet(Planet planet) {
 			this.planet = planet;
@@ -39,7 +44,7 @@ namespace Snowship.NPlanet {
 				planetMapDataValues.planetTilePosition
 			);
 
-			Planet planet = new Planet(planetData, new MapContext(resourceM.tilePrefab));
+			Planet planet = new Planet(planetData, new MapContext(tileM.TilePrefab));
 			MapGenContext context = new MapGenContext(planet, planetData, planetData.mapSeed);
 			MapGenerator mapGenerator = new();
 			await mapGenerator.Run(context);

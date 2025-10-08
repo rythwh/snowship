@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using Snowship.NState;
 using Snowship.NTime;
 
 namespace Snowship.NMap.Generation

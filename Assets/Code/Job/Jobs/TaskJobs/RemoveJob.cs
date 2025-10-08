@@ -89,7 +89,7 @@ namespace Snowship.NJob
 
 			GameManager.Get<ResourceManager>().Bitmask(new List<Tile> { Tile }.Concat(Tile.surroundingTiles).ToList());
 			if (Tile.walkable && !previousWalkability) {
-				GameManager.Get<MapManager>().Map.RemoveTileBrightnessEffect(Tile);
+				GameManager.Get<IMapQuery>().Map.RemoveTileBrightnessEffect(Tile);
 			}
 		}
 	}

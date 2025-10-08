@@ -1,26 +1,25 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using Cysharp.Threading.Tasks;
 using LitMotion;
 using Snowship.NInput;
 using Snowship.NMap;
 using Snowship.NState;
 using UnityEngine;
+using VContainer.Unity;
 using Time = UnityEngine.Time;
 
 namespace Snowship.NCamera {
 
-	public partial class CameraManager : Manager {
+	public partial class CameraManager : IStartable, ITickable
+	{
+		private readonly ICameraQuery cameraQuery;
+		private readonly ICameraWrite cameraWrite;
+		private readonly IStateEvents stateEvents;
+		private readonly IStateQuery stateQuery;
+		private readonly InputManager inputM;
+		private readonly IMapQuery mapQuery;
 
-		public Camera camera;
-
-		public Vector2 CurrentPosition => camera.transform.position;
 		private const float CameraMoveSpeedMultiplier = 1.25f;
-		private UniTask moveTaskHandle;
-		private CancellationTokenSource moveCancellationTokenSource = new();
-		public event Action<Vector2, float> OnCameraPositionChanged;
-
-		public float CurrentZoom => camera.orthographicSize;
 
 		private const float CameraZoomSpeedMultiplier = 2.5f;
 		private const float CameraZoomSpeedDampener = 5;
@@ -30,24 +29,38 @@ namespace Snowship.NCamera {
 
 		private UniTask zoomTaskHandle;
 		private CancellationTokenSource zoomCancellationTokenSource = new();
-		public event Action<float, Vector2> OnCameraZoomChanged;
 
-		private StateManager stateM => GameManager.Get<StateManager>();
-		private InputManager inputM => GameManager.Get<InputManager>();
-		private MapManager mapM => GameManager.Get<MapManager>();
+		public CameraManager(
+			ICameraQuery cameraQuery,
+			ICameraWrite cameraWrite,
+			IStateEvents stateEvents,
+			IStateQuery stateQuery,
+			InputManager inputM,
+			IMapQuery mapQuery
+		) {
+			this.cameraQuery = cameraQuery;
+			this.cameraWrite = cameraWrite;
+			this.stateEvents = stateEvents;
+			this.stateQuery = stateQuery;
+			this.inputM = inputM;
+			this.mapQuery = mapQuery;
+		}
 
-		public override void OnCreate() {
-
-			camera = GameManager.SharedReferences.Camera;
-
-			stateM.OnStateChanged += OnStateChanged;
+		public void Start() {
+			stateEvents.OnStateChanged += OnStateChanged;
 
 			OnInputSystemEnabled(inputM.InputSystemActions);
 			inputM.OnInputSystemDisabled += OnInputSystemDisabled;
 		}
 
+		public void Tick() {
+			if (!Mathf.Approximately(moveVector.magnitude, 0)) {
+				MoveCamera();
+			}
+		}
+
 		private void OnLightingUpdated(Color colour) {
-			camera.backgroundColor = colour;
+			cameraWrite.SetBackgroundColour(colour);
 		}
 
 		private void OnStateChanged((EState previousState, EState newState) states) {
@@ -55,56 +68,21 @@ namespace Snowship.NCamera {
 				return;
 			}
 
-			int mapSize = mapM.Map.MapData.mapSize;
-			SetCameraPosition(Vector2.one * mapSize / 2f, false);
-			SetCameraZoom(ZoomMax);
+			int mapSize = mapQuery.Map.MapData.mapSize;
+			cameraWrite.SetPosition(Vector2.one * mapSize / 2f, false);
+			cameraWrite.SetZoom(ZoomMax);
 
-			mapM.Map.LightingUpdated += OnLightingUpdated;
-		}
-
-		public override void OnUpdate() {
-			if (!Mathf.Approximately(moveVector.magnitude, 0)) {
-				MoveCamera();
-			}
-		}
-
-		public void SetCameraPosition(Vector2 position, bool animate = true) {
-			if (animate) {
-				if (!moveCancellationTokenSource.IsCancellationRequested) {
-					moveCancellationTokenSource.Cancel();
-					moveCancellationTokenSource.Dispose();
-					moveCancellationTokenSource = new CancellationTokenSource();
-				}
-
-				moveTaskHandle = LMotion
-					.Create(camera.transform.position, (Vector3)position, 2)
-					.WithEase(Ease.InOutCubic)
-					.WithOnComplete(() => OnCameraPositionChanged?.Invoke(CurrentPosition, CurrentZoom))
-					.Bind(x => camera.transform.position = x)
-					.ToUniTask(moveCancellationTokenSource.Token);
-			} else {
-				camera.transform.position = position;
-				OnCameraPositionChanged?.Invoke(CurrentPosition, CurrentZoom);
-			}
-		}
-
-		public void SetCameraZoom(float zoom) {
-			camera.orthographicSize = zoom;
-			OnCameraZoomChanged?.Invoke(CurrentZoom, CurrentPosition);
+			mapQuery.Map.LightingUpdated += OnLightingUpdated;
 		}
 
 		private void MoveCamera() {
-
-			if (!moveCancellationTokenSource.IsCancellationRequested) {
-				moveCancellationTokenSource.Cancel();
-			}
-
-			camera.transform.Translate(moveVector * (CameraMoveSpeedMultiplier * camera.orthographicSize * Time.deltaTime));
-			camera.transform.position = new Vector2(
-				Mathf.Clamp(camera.transform.position.x, 0, mapM.Map.MapData.mapSize),
-				Mathf.Clamp(camera.transform.position.y, 0, mapM.Map.MapData.mapSize)
+			Vector3 newPosition = cameraQuery.CurrentPosition;
+			newPosition += moveVector * (CameraMoveSpeedMultiplier * cameraQuery.CurrentZoom * Time.deltaTime);
+			newPosition = new Vector2(
+				Mathf.Clamp(newPosition.x, 0, mapQuery.Map.MapData.mapSize),
+				Mathf.Clamp(newPosition.y, 0, mapQuery.Map.MapData.mapSize)
 			);
-			OnCameraPositionChanged?.Invoke(CurrentPosition, CurrentZoom);
+			cameraWrite.SetPosition(newPosition);
 		}
 
 		private void ZoomCamera() {
@@ -113,8 +91,8 @@ namespace Snowship.NCamera {
 				return;
 			}
 
-			float currentZoom = camera.orthographicSize;
-			float newZoom = currentZoom + (zoomAxis * CameraZoomSpeedMultiplier) * (camera.orthographicSize / CameraZoomSpeedDampener);
+			float newZoom = cameraQuery.CurrentZoom;
+			newZoom += (zoomAxis * CameraZoomSpeedMultiplier) * (cameraQuery.CurrentZoom / CameraZoomSpeedDampener);
 			newZoom = Mathf.Clamp(newZoom, ZoomMin, ZoomMax);
 
 			if (!zoomTaskHandle.GetAwaiter().IsCompleted && !zoomCancellationTokenSource.IsCancellationRequested) {
@@ -124,13 +102,13 @@ namespace Snowship.NCamera {
 			}
 
 			zoomTaskHandle = LMotion
-				.Create(camera.orthographicSize, newZoom, ZoomTweenDuration)
+				.Create(cameraQuery.CurrentZoom, newZoom, ZoomTweenDuration)
 				.WithEase(Ease.OutCubic)
-				.Bind(SetCameraZoom)
+				.Bind(cameraWrite.SetZoom)
 				.ToUniTask(zoomCancellationTokenSource.Token);
 		}
 
-		// TODO Use this to improve performance on visible region blocks
+		/*// TODO Use this to improve performance on visible region blocks
 		public RectInt CalculateCameraWorldRect() {
 			Vector2Int bottomLeftCorner = Vector2Int.FloorToInt(camera.ViewportToWorldPoint(new Vector3(0, 0, 0)));
 			Vector2Int topRightCorner = Vector2Int.CeilToInt(camera.ViewportToWorldPoint(new Vector3(1, 1, 1)));
@@ -147,6 +125,6 @@ namespace Snowship.NCamera {
 				width,
 				height
 			);
-		}
+		}*/
 	}
 }

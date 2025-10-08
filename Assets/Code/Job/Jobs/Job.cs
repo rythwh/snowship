@@ -62,7 +62,7 @@ namespace Snowship.NJob
 
 			if (Definition.HasPreviewObject) {
 				JobPreviewObject = Object.Instantiate(
-					GameManager.Get<ResourceManager>().tilePrefab, // TODO Create separate Class/Prefab for JobPreviewObject
+					GameManager.Get<TileManager>().TilePrefab, // TODO Create separate Class/Prefab for JobPreviewObject
 					Tile.obj.transform,
 					false
 				);

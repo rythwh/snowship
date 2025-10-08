@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Snowship.NCamera;
 using Snowship.NMap.Generation;
 using Snowship.NMap.Models.Structure;
 using Snowship.NMap.NTile;

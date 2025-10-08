@@ -4,7 +4,6 @@ using Snowship.NMap.NTile;
 using Snowship.NColonist;
 using Snowship.NResource;
 using Snowship.NUtilities;
-using UnityEngine;
 
 namespace Snowship.NJob
 {

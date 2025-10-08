@@ -4,7 +4,6 @@ using System.Linq;
 using Snowship.NMap.NTile;
 using Snowship.NResource;
 using Snowship.NUtilities;
-using Random = UnityEngine.Random;
 
 namespace Snowship.NJob
 {

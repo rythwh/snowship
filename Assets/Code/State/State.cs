@@ -1,6 +1,5 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
-using Snowship.NUI;
 using VContainer;
 
 namespace Snowship.NState {

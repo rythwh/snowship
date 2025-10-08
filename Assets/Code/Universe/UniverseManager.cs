@@ -1,11 +1,10 @@
 ﻿
 
-public class UniverseManager : Manager {
+public class UniverseManager {
 
 	public Universe universe = null;
 
 	public static string GetRandomUniverseName() {
-		//return GameManager.Get<ResourceManager>().GetRandomLocationName();
 		return "Universe " + System.DateTime.Today.ToString("ddMMyyyy");
 	}
 

@@ -13,7 +13,7 @@ namespace Snowship.NMap.Models.Structure
 
 		public bool Visible { get; private set; }
 
-		private MapManager MapManager => GameManager.Get<MapManager>();
+		private IMapQuery MapQuery => GameManager.Get<IMapQuery>();
 
 		public Region(TileType regionTileType) {
 			tileType = regionTileType;
@@ -33,11 +33,11 @@ namespace Snowship.NMap.Models.Structure
 			tilesToModify = tilesToModify.Distinct().ToList();
 
 			if (retile) {
-				MapManager.Map.RedrawTiles(tilesToModify, true, false);
+				MapQuery.Map.RedrawTiles(tilesToModify, true, false);
 			}
 
 			if (recalculateLighting) {
-				MapManager.Map.RecalculateLighting(tilesToModify, true);
+				MapQuery.Map.RecalculateLighting(tilesToModify, true);
 			}
 
 		}

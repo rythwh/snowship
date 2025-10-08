@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Snowship;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
@@ -15,18 +17,26 @@ using Snowship.NResource;
 using Snowship.NTime;
 using Snowship.NUtilities;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using VContainer.Unity;
 using Random = UnityEngine.Random;
 
-public class ResourceManager : Manager, IDisposable
+public class ResourceManager : IAsyncStartable, IPostStartable, ITickable, IDisposable
 {
-	public GameObject tilePrefab;
-	public GameObject objectPrefab;
-	public GameObject humanPrefab;
-	public GameObject selectionIndicator;
+	private readonly TimeManager timeM;
+	private readonly JobManager jobM;
+	private readonly IColonistQuery colonistQuery;
+	private readonly UniverseManager universeM;
+	private readonly PlanetManager planetM;
+	private readonly ColonyManager colonyM;
+	private readonly CaravanManager caravanM;
+
+	public GameObject objectPrefab { get; private set; }
+
 	public Sprite selectionCornersSprite;
 	public Sprite whiteSquareSprite;
 	public Sprite clearSquareSprite;
-	public GameObject planetTilePrefab;
 	public GameObject colonyObj;
 	public GameObject tileImage;
 	public GameObject objectDataPanel;
@@ -35,15 +45,28 @@ public class ResourceManager : Manager, IDisposable
 
 	private static readonly List<string> locationNames = new();
 
-	private TimeManager TimeM => GameManager.Get<TimeManager>();
-	private JobManager JobM => GameManager.Get<JobManager>();
-	private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
-	private UniverseManager UniverseM => GameManager.Get<UniverseManager>();
-	private PlanetManager PlanetM => GameManager.Get<PlanetManager>();
-	private ColonyManager ColonyM => GameManager.Get<ColonyManager>();
-	private CaravanManager CaravanM => GameManager.Get<CaravanManager>();
+	public ResourceManager(
+		TimeManager timeM,
+		JobManager jobM,
+		IColonistQuery colonistQuery,
+		UniverseManager universeM,
+		PlanetManager planetM,
+		ColonyManager colonyM,
+		CaravanManager caravanM
+	) {
+		this.timeM = timeM;
+		this.jobM = jobM;
+		this.colonistQuery = colonistQuery;
+		this.universeM = universeM;
+		this.planetM = planetM;
+		this.colonyM = colonyM;
+		this.caravanM = caravanM;
+	}
 
-	public override void OnCreate() {
+	public async UniTask StartAsync(CancellationToken cancellation = new CancellationToken()) {
+
+		await LoadObjectPrefab();
+
 		SetResourceReferences();
 		CreateResources();
 		CreatePlantPrefabs();
@@ -53,12 +76,18 @@ public class ResourceManager : Manager, IDisposable
 		Inventory.AnyInventoryChanged += OnAnyInventoryChanged;
 	}
 
-	public override void OnGameSetupComplete() {
-		TimeM.OnTimeChanged += OnTimeChanged;
+	private async UniTask LoadObjectPrefab() {
+		AsyncOperationHandle<GameObject> handle = Addressables.LoadAssetAsync<GameObject>("Prefabs/Game/Object");
+		handle.ReleaseHandleOnCompletion();
+		objectPrefab = await handle;
+	}
+
+	public void PostStart() {
+		timeM.OnTimeChanged += OnTimeChanged;
 	}
 
 	public void Dispose() {
-		TimeM.OnTimeChanged -= OnTimeChanged;
+		timeM.OnTimeChanged -= OnTimeChanged;
 	}
 
 	private void OnTimeChanged(SimulationDateTime time) {
@@ -66,20 +95,15 @@ public class ResourceManager : Manager, IDisposable
 	}
 
 	private void SetResourceReferences() {
-		tilePrefab = Resources.Load<GameObject>(@"Prefabs/Tile");
-		objectPrefab = Resources.Load<GameObject>(@"Prefabs/Object");
-		humanPrefab = Resources.Load<GameObject>(@"Prefabs/Human");
-		selectionIndicator = Resources.Load<GameObject>(@"Prefabs/SelectionIndicator");
 		selectionCornersSprite = Resources.Load<Sprite>(@"UI/selectionCorners");
 		whiteSquareSprite = Resources.Load<Sprite>(@"UI/white-square");
 		clearSquareSprite = Resources.Load<Sprite>(@"UI/clear-square");
-		planetTilePrefab = Resources.Load<GameObject>(@"UI/UIElements/PlanetTile");
 		colonyObj = Resources.Load<GameObject>(@"UI/UIElements/ColonyObj");
 		tileImage = Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-TileImage");
 		objectDataPanel = Resources.Load<GameObject>(@"UI/UIElements/TileInfoElement-ObjectData-Panel");
 	}
 
-	public override void OnUpdate() {
+	public void Tick() {
 		foreach (Farm farm in Farm.farms) {
 			farm.Update();
 		}
@@ -451,7 +475,7 @@ public class ResourceManager : Manager, IDisposable
 
 	public CreateResourceJob CreateResource(CraftableResourceInstance resource, CraftingObject craftingObject) {
 		CreateResourceJob job = new(craftingObject, resource);
-		JobM.AddJob(job);
+		jobM.AddJob(job);
 		return job;
 	}
 
@@ -469,7 +493,7 @@ public class ResourceManager : Manager, IDisposable
 			resource.SetAvailableAmount(0);
 		}
 
-		foreach (Colonist colonist in ColonistM.Colonists) {
+		foreach (Colonist colonist in colonistQuery.Colonists) {
 			foreach (ResourceAmount resourceAmount in colonist.Inventory.resources) {
 				resourceAmount.Resource.AddToWorldTotalAmount(resourceAmount.Amount);
 				resourceAmount.Resource.AddToColonistsTotalAmount(resourceAmount.Amount);
@@ -510,7 +534,7 @@ public class ResourceManager : Manager, IDisposable
 	public List<ResourceAmount> GetFilteredResources(bool colonistInventory, bool colonistReserved, bool containerInventory, bool containerReserved) {
 		List<ResourceAmount> returnResources = new();
 		if (colonistInventory || colonistReserved) {
-			foreach (Colonist colonist in ColonistM.Colonists) {
+			foreach (Colonist colonist in colonistQuery.Colonists) {
 				if (colonistInventory) {
 					foreach (ResourceAmount resourceAmount in colonist.Inventory.resources) {
 						ResourceAmount existingResourceAmount = returnResources.Find(ra => ra.Resource == resourceAmount.Resource);
@@ -1151,10 +1175,10 @@ public class ResourceManager : Manager, IDisposable
 
 	public string GetRandomLocationName() {
 		string[] filteredLocationNames = locationNames
-			.Where(name => UniverseM.universe == null || name != UniverseM.universe.name)
-			.Where(name => PlanetM.planet == null || name != PlanetM.planet.name)
-			.Where(name => ColonyM.colony == null || name != ColonyM.colony.Name)
-			.Where(name => CaravanM.caravans.Find(c => c.location.Name == name) == null)
+			.Where(name => universeM.universe == null || name != universeM.universe.name)
+			.Where(name => planetM.planet == null || name != planetM.planet.name)
+			.Where(name => colonyM.colony == null || name != colonyM.colony.Name)
+			.Where(name => caravanM.caravans.Find(c => c.location.Name == name) == null)
 			.ToArray();
 
 		return filteredLocationNames.RandomElement();

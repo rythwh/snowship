@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
-using Snowship.NColony;
-using Snowship.NMap.NTile;
-using Snowship.NPlanet;
 using Snowship.NState.States;
 using Snowship.NUI;
 using UnityEngine;
@@ -12,11 +9,9 @@ using VContainer;
 using VContainer.Unity;
 
 namespace Snowship.NState {
-	public partial class StateManager : Manager, IStartable
+	public class StateManager : IStartable, IStateEvents, IStateQuery
 	{
 		private readonly IObjectResolver resolver;
-		private readonly PlanetManager planetM;
-		private readonly ColonyManager colonyM;
 		private readonly UIManager uiM;
 
 		private Dictionary<EState, State<EState>> states = new();
@@ -29,10 +24,11 @@ namespace Snowship.NState {
 
 		public event Action<(EState previousState, EState newState)> OnStateChanged;
 
-		public StateManager(IObjectResolver resolver, PlanetManager planetM, ColonyManager colonyM, UIManager uiM) {
+		public StateManager(
+			IObjectResolver resolver,
+			UIManager uiM
+		) {
 			this.resolver = resolver;
-			this.planetM = planetM;
-			this.colonyM = colonyM;
 			this.uiM = uiM;
 
 			states.Add(EState.Boot, new BootState());
@@ -52,21 +48,6 @@ namespace Snowship.NState {
 		private async void SetInitialState() {
 			await TransitionToState(EState.Boot);
 			await TransitionToState(EState.MainMenu);
-
-			#if UNITY_EDITOR
-			if (PlayerPrefs.GetInt("DebugSettings/Quick Start", 0) == 0) {
-				return;
-			}
-			Planet planet = await planetM.CreatePlanet(new CreatePlanetData());
-
-			const string colonyName = "Lumia";
-			int seed = Random.Range(0, int.MaxValue);
-			const int size = 100;
-			List<PlanetTile> filteredPlanetTiles = planet.planetTiles.Where(pt => pt.tile.tileType.classes[TileType.ClassEnum.Dirt]).ToList();
-			PlanetTile planetTile = filteredPlanetTiles.ElementAt(Random.Range(0, filteredPlanetTiles.Count));
-
-			await colonyM.CreateColony(new CreateColonyData(colonyName, seed, size, planetTile));
-			#endif
 		}
 
 		public async UniTask TransitionToState(EState newState, ETransitionUIAction transitionUIAction = ETransitionUIAction.Close) {

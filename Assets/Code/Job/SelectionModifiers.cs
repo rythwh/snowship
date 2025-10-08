@@ -11,7 +11,7 @@ namespace Snowship.NJob
 {
 	public static class SelectionModifiers
 	{
-		private static ColonistManager ColonistM => GameManager.Get<ColonistManager>();
+		private static IColonistQuery ColonistQuery => GameManager.Get<IColonistQuery>();
 
 		public enum SelectionModifiersEnum
 		{
@@ -30,21 +30,21 @@ namespace Snowship.NJob
 							}
 							if (job is BuildJob buildJob) {
 								foreach (Vector2 multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
-									if (GameManager.Get<MapManager>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
+									if (GameManager.Get<IMapQuery>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
 										return false;
 									}
 								}
 							}
 						}
 					}
-					foreach (Colonist colonist in ColonistM.Colonists) {
+					foreach (Colonist colonist in ColonistQuery.Colonists) {
 						if (colonist.Jobs.ActiveJob != null && colonist.Jobs.ActiveJob.Layer == prefab.layer) {
 							if (colonist.Jobs.ActiveJob.Tile == posTile) {
 								return false;
 							}
 							if (colonist.Jobs.ActiveJob is BuildJob buildJob) {
 								foreach (Vector2 multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
-									if (GameManager.Get<MapManager>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
+									if (GameManager.Get<IMapQuery>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
 										return false;
 									}
 								}
@@ -58,7 +58,7 @@ namespace Snowship.NJob
 					// 		}
 					// 		if (colonist.StoredJob is BuildJob buildJob) {
 					// 			foreach (Vector2 multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
-					// 				if (GameManager.Get<MapManager>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
+					// 				if (GameManager.Get<IMapQuery>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
 					// 					return false;
 					// 				}
 					// 			}
@@ -71,7 +71,7 @@ namespace Snowship.NJob
 				SelectionModifiersEnum.CloseToSupport, delegate(Tile tile, Tile posTile, ObjectPrefab prefab, Variation variation) {
 					for (int y = -5; y < 5; y++) {
 						for (int x = -5; x < 5; x++) {
-							Tile supportTile = GameManager.Get<MapManager>().Map.GetTileFromPosition(new Vector2(posTile.PositionGrid.x + x, posTile.PositionGrid.y + y));
+							Tile supportTile = GameManager.Get<IMapQuery>().Map.GetTileFromPosition(new Vector2(posTile.PositionGrid.x + x, posTile.PositionGrid.y + y));
 							if (!supportTile.buildable && !supportTile.walkable) {
 								return true;
 							}

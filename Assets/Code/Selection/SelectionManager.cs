@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
 using Snowship.NCamera;
@@ -9,13 +11,23 @@ using Snowship.NJob;
 using Snowship.NState;
 using Snowship.NUtilities;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.InputSystem;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using VContainer.Unity;
 using Object = UnityEngine.Object;
 
 namespace Snowship.Selectable
 {
-	public class SelectionManager : Manager
+	public class SelectionManager : IAsyncStartable, ITickable
 	{
+		private readonly InputManager inputM;
+		private readonly IStateEvents stateEvents;
+		private readonly IMapQuery mapQuery;
+		private readonly ICameraQuery cameraQuery;
+		private readonly JobManager jobM;
+		private readonly TileManager tileM;
+
 		private readonly Stack<ISelectable> selectables = new();
 
 		private Type selectedJobType;
@@ -29,20 +41,31 @@ namespace Snowship.Selectable
 		private Tile secondTile;
 		private Tile previousSecondTile;
 
+		public GameObject SelectionIndicatorPrefab { get; private set; }
 		private HashSet<Tile> selectionArea = new();
 		private readonly Dictionary<Tile, GameObject> selectionIndicators = new();
 
 		private Map map;
-		private Camera camera;
 
-		private InputManager inputM => GameManager.Get<InputManager>();
-		private StateManager stateM => GameManager.Get<StateManager>();
-		private MapManager mapM => GameManager.Get<MapManager>();
-		private CameraManager cameraM => GameManager.Get<CameraManager>();
-		private JobManager jobM => GameManager.Get<JobManager>();
-		private ResourceManager resourceM => GameManager.Get<ResourceManager>();
+		public SelectionManager(
+			InputManager inputM,
+			IStateEvents stateEvents,
+			IMapQuery mapQuery,
+			ICameraQuery cameraQuery,
+			JobManager jobM,
+			TileManager tileM
+		) {
+			this.inputM = inputM;
+			this.stateEvents = stateEvents;
+			this.mapQuery = mapQuery;
+			this.cameraQuery = cameraQuery;
+			this.jobM = jobM;
+			this.tileM = tileM;
+		}
 
-		public override void OnCreate() {
+		public async UniTask StartAsync(CancellationToken cancellation = new CancellationToken()) {
+
+			await LoadSelectionIndicatorPrefab();
 
 			inputM.InputSystemActions.Simulation.Select.performed += OnSelectPerformed;
 			inputM.InputSystemActions.Simulation.Select.canceled += OnSelectCanceled;
@@ -51,15 +74,27 @@ namespace Snowship.Selectable
 
 			inputM.InputSystemActions.Simulation.Rotate.performed += OnRotatePerformed;
 
-			stateM.OnStateChanged += OnStateChanged;
+			stateEvents.OnStateChanged += OnStateChanged;
 
 			selectedJobPreviewObject = GameManager.SharedReferences.SelectedJobPreview;
 		}
 
+		private async UniTask LoadSelectionIndicatorPrefab() {
+			AsyncOperationHandle<GameObject> handle = Addressables.LoadAssetAsync<GameObject>("Prefabs/Game/SelectionIndicator");
+			handle.ReleaseHandleOnCompletion();
+			SelectionIndicatorPrefab = await handle;
+		}
+
+		public void Tick() {
+			UpdateSelectedJobPreview();
+			if (selecting) {
+				UpdateSelectionArea();
+			}
+		}
+
 		private void OnStateChanged((EState previousState, EState newState) state) {
 			if (state is { previousState: EState.LoadToSimulation, newState: EState.Simulation }) {
-				map = mapM.Map;
-				camera = cameraM.camera;
+				map = mapQuery.Map;
 			}
 		}
 
@@ -169,13 +204,6 @@ namespace Snowship.Selectable
 			UpdateSelectedJobPreview();
 		}
 
-		public override void OnUpdate() {
-			UpdateSelectedJobPreview();
-			if (selecting) {
-				UpdateSelectionArea();
-			}
-		}
-
 		private void UpdateSelectedJobPreview() {
 
 			if (selectedJobDefinition == null || selecting) {
@@ -267,7 +295,7 @@ namespace Snowship.Selectable
 		}
 
 		private Tile GetTileFromMouseScreenPosition(Vector2 mousePosition) {
-			return map?.GetTileFromPosition(camera.ScreenToWorldPoint(mousePosition));
+			return map?.GetTileFromPosition(cameraQuery.ScreenToWorld(mousePosition));
 		}
 
 		private void SetSelectionIndicators(IJobParams jobParams) {
@@ -292,7 +320,7 @@ namespace Snowship.Selectable
 			}
 			foreach (Tile tile in selectionArea) {
 				if (!selectionIndicators.ContainsKey(tile)) {
-					GameObject selectionIndicator = Object.Instantiate(resourceM.tilePrefab, tile.obj.transform, false);
+					GameObject selectionIndicator = Object.Instantiate(tileM.TilePrefab, tile.obj.transform, false);
 					SpriteRenderer selectionIndicatorSpriteRenderer = selectionIndicator.GetComponent<SpriteRenderer>();
 					selectionIndicatorSpriteRenderer.sprite = jobM.GetJobSprite(selectedJobDefinition, selectedJobParams);
 					selectionIndicatorSpriteRenderer.sortingOrder = selectedJobDefinition.Layer + tile.sr.sortingOrder + (int)SortingOrder.Selection;

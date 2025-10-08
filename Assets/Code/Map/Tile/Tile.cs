@@ -3,7 +3,6 @@ using System.Linq;
 using Snowship.NMap.Models.Geography;
 using Snowship.NMap.Models.Structure;
 using Snowship.NResource;
-using Snowship.NTime;
 using Snowship.NUtilities;
 using UnityEngine;
 
@@ -155,7 +154,7 @@ namespace Snowship.NMap.NTile
 								tile.ChangeRegion(largestRegion, false, false);
 							}
 							surroundingRegion.tiles.Clear();
-							GameManager.Get<MapManager>().Map.regions.Remove(surroundingRegion);
+							GameManager.Get<IMapQuery>().Map.regions.Remove(surroundingRegion);
 						}
 						region.SetVisible(anyVisible, true, false);
 					} else {

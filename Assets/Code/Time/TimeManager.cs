@@ -1,25 +1,35 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Snowship.NInput;
-using Snowship.NMap;
 using Snowship.NState;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer.Unity;
 
 namespace Snowship.NTime {
 
-	public class TimeManager : Manager {
+	public class TimeManager : IPostStartable, ITickable {
+		private readonly IStateEvents stateEvents;
+		private readonly IStateQuery stateQuery;
+		private readonly InputManager inputM;
 
 		public SimulationDateTime Time { get; } = new SimulationDateTime();
 		private float timer = 0;
 
 		public event Action<SimulationDateTime> OnTimeChanged;
 
-		private StateManager stateM => GameManager.Get<StateManager>();
-		private InputManager inputM => GameManager.Get<InputManager>();
+		public TimeManager(
+			IStateEvents stateEvents,
+			IStateQuery stateQuery,
+			InputManager inputM
+		) {
+			this.stateEvents = stateEvents;
+			this.stateQuery = stateQuery;
+			this.inputM = inputM;
+		}
 
-		public override void OnGameSetupComplete() {
-			stateM.OnStateChanged += OnStateChanged;
+		public void PostStart() {
+			stateEvents.OnStateChanged += OnStateChanged;
 
 			OnTimeChanged?.Invoke(Time);
 		}
@@ -39,7 +49,7 @@ namespace Snowship.NTime {
 			}
 		}
 
-		public override void OnUpdate() {
+		public void Tick() {
 			UpdateTime();
 		}
 
@@ -52,7 +62,7 @@ namespace Snowship.NTime {
 		}
 
 		private void ChangeTimeModifier(int direction) {
-			if (stateM.State != EState.Simulation) {
+			if (stateQuery.State != EState.Simulation) {
 				return;
 			}
 
@@ -77,7 +87,7 @@ namespace Snowship.NTime {
 
 		private bool UpdateTime() {
 
-			if (stateM.State != EState.Simulation) {
+			if (stateQuery.State != EState.Simulation) {
 				return false;
 			}
 
@@ -121,7 +131,7 @@ namespace Snowship.NTime {
 
 		public void TogglePause() {
 
-			if (stateM.State != EState.Simulation) {
+			if (stateQuery.State != EState.Simulation) {
 				return;
 			}
 

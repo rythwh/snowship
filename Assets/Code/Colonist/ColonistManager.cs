@@ -2,36 +2,39 @@
 using System.Linq;
 using Snowship.NMap.NTile;
 using Snowship.NCamera;
-using Snowship.NColony;
 using Snowship.NHuman;
 using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NMap.Models.Structure;
 using Snowship.NResource;
-using Snowship.NTime;
 using UnityEngine;
+using VContainer.Unity;
 
 namespace Snowship.NColonist {
 
-	public class ColonistManager : Manager
+	public class ColonistManager : ITickable
 	{
-		public IEnumerable<Colonist> Colonists => HumanM.GetHumans<Colonist>();
-		public int ColonistCount => HumanM.CountHumans<Colonist>();
+		private readonly IColonistQuery colonistQuery;
+		private readonly IMapQuery mapQuery;
+		private readonly ICameraWrite cameraWrite;
+		private readonly HumanManager humanManager;
 
-		private MapManager MapM => GameManager.Get<MapManager>();
-		private CameraManager CameraM => GameManager.Get<CameraManager>();
-		private ColonyManager ColonyM => GameManager.Get<ColonyManager>();
-		private TimeManager TimeM => GameManager.Get<TimeManager>();
-		private ResourceManager ResourceM => GameManager.Get<ResourceManager>();
-		private HumanManager HumanM => GameManager.Get<HumanManager>();
+		private IEnumerable<Colonist> Colonists => colonistQuery.Colonists;
+		private int ColonistCount => colonistQuery.ColonistCount;
 
-		private void SetInitialRegionVisibility() {
-			foreach (Region region in MapM.Map.regions) {
-				region.SetVisible(IsRegionVisibleToAnyColonist(region), false, false);
-			}
+		public ColonistManager(
+			IColonistQuery colonistQuery,
+			IMapQuery mapQuery,
+			ICameraWrite cameraWrite,
+			HumanManager humanManager
+		) {
+			this.colonistQuery = colonistQuery;
+			this.mapQuery = mapQuery;
+			this.cameraWrite = cameraWrite;
+			this.humanManager = humanManager;
 		}
 
-		public override void OnUpdate() {
+		public void Tick() {
 			UpdateColonists();
 		}
 
@@ -50,7 +53,7 @@ namespace Snowship.NColonist {
 				averageColonistPosition += colonist.Position;
 			}
 			averageColonistPosition /= ColonistCount;
-			CameraM.SetCameraPosition(averageColonistPosition);
+			cameraWrite.SetPosition(averageColonistPosition);
 
 			if (ColonistCount <= 0) {
 				Debug.LogError("Unable to spawn starting colonists");
@@ -89,14 +92,14 @@ namespace Snowship.NColonist {
 				return;
 			}
 
-			int mapSize = MapM.Map.MapData.mapSize;
+			int mapSize = mapQuery.Map.MapData.mapSize;
 			for (int i = 0; i < amount; i++) {
-				List<Tile> walkableTilesByDistanceToCentre = MapM.Map.tiles.Where(o => o.walkable && o.buildable && Colonists.ToList().Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))).ToList();
+				List<Tile> walkableTilesByDistanceToCentre = mapQuery.Map.tiles.Where(o => o.walkable && o.buildable && Colonists.ToList().Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))).ToList();
 				if (walkableTilesByDistanceToCentre.Count <= 0) {
-					foreach (Tile tile in MapM.Map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
+					foreach (Tile tile in mapQuery.Map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
 						tile.SetTileType(tile.biome.tileTypes[TileTypeGroup.TypeEnum.Ground], true, true, true);
 					}
-					walkableTilesByDistanceToCentre = MapM.Map.tiles.Where(o => o.walkable && Colonists.ToList().Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))).ToList();
+					walkableTilesByDistanceToCentre = mapQuery.Map.tiles.Where(o => o.walkable && Colonists.ToList().Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))).ToList();
 				}
 
 				List<Tile> validSpawnTiles = new List<Tile>();
@@ -130,16 +133,22 @@ namespace Snowship.NColonist {
 				// TODO Finish HumanData implementation and use it
 				Gender gender = Random.RandomElement<Gender>();
 				HumanData data = new HumanData(
-					HumanM.GetName(gender),
+					humanManager.GetName(gender),
 					gender,
 					new List<(ESkill, float)>()
 				);
 
-				HumanM.CreateHuman<Colonist, ColonistViewModule>(colonistSpawnTile, data);
+				humanManager.CreateHuman<Colonist, ColonistViewModule>(colonistSpawnTile, data);
 			}
 
 			// MapM.Map.RedrawTiles(MapM.Map.tiles, true, true);
 			// MapM.Map.UpdateGlobalLighting(TimeM.Time.TileBrightnessTime, true);
+		}
+
+		private void SetInitialRegionVisibility() {
+			foreach (Region region in mapQuery.Map.regions) {
+				region.SetVisible(IsRegionVisibleToAnyColonist(region), false, false);
+			}
 		}
 
 		public bool IsRegionVisibleToAnyColonist(Region region) {

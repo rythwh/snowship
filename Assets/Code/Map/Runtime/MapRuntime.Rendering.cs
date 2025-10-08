@@ -5,7 +5,6 @@ using Snowship.NMap.Models.Geography;
 using Snowship.NMap.NTile;
 using Snowship.NResource;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace Snowship.NMap
 {

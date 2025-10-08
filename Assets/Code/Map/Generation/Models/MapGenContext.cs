@@ -1,7 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
 using Snowship.NUI;
-using VContainer;
 
 namespace Snowship.NMap.Generation
 {

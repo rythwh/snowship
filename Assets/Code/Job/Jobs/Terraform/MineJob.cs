@@ -4,7 +4,6 @@ using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace Snowship.NJob
 {
@@ -43,7 +42,7 @@ namespace Snowship.NJob
 				true
 			);
 
-			GameManager.Get<MapManager>().Map.RemoveTileBrightnessEffect(Tile);
+			GameManager.Get<IMapQuery>().Map.RemoveTileBrightnessEffect(Tile);
 
 			foreach (LightSource lightSource in LightSource.lightSources) {
 				if (Vector2.Distance(Tile.obj.transform.position, lightSource.obj.transform.position) <= lightSource.prefab.maxLightDistance) {

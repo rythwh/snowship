@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using VContainer.Unity;
 
 namespace Snowship.NUI {
-	public class UIManager : Manager, IUIManager
+	public class UIManager : IUIManager, IStartable
 	{
 		private Transform canvas;
 
@@ -11,7 +12,7 @@ namespace Snowship.NUI {
 
 		internal static readonly Dictionary<string, GameObject> CachedComponents = new();
 
-		public override void OnCreate() {
+		public void Start() {
 			canvas = GameManager.SharedReferences.Canvas;
 		}
 

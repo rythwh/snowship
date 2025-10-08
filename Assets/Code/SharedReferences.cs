@@ -28,5 +28,8 @@ namespace Snowship
 		[SerializeField] private Sprite emptySprite;
 		public Sprite EmptySprite => emptySprite;
 
+		[SerializeField] private Sprite selectionSprite;
+		public Sprite SelectionSprite => selectionSprite;
+
 	}
 }

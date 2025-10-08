@@ -1,5 +1,4 @@
-﻿using Snowship.NInput;
-using Snowship.NState;
+﻿using Snowship.NState;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -31,7 +30,7 @@ namespace Snowship.NCamera {
 				return;
 			}
 
-			if (stateM.State != EState.Simulation) {
+			if (stateQuery.State != EState.Simulation) {
 				return;
 			}
 
@@ -49,7 +48,7 @@ namespace Snowship.NCamera {
 				return;
 			}
 
-			if (stateM.State != EState.Simulation) {
+			if (stateQuery.State != EState.Simulation) {
 				return;
 			}
 
