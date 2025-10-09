@@ -7,11 +7,13 @@ namespace Snowship.NUI
 
 	[UsedImplicitly]
 	public class UILoadSavePresenter : UIPresenter<UILoadSaveView> {
+		private readonly UIManager uiM;
 
 		// private PSave.PersistenceSave selectedSave;
 		// private readonly PSave pSave = new PSave();
 
-		public UILoadSavePresenter(UILoadSaveView view) : base(view) {
+		public UILoadSavePresenter(UILoadSaveView view, UIManager uiM) : base(view) {
+			this.uiM = uiM;
 		}
 
 		public override UniTask OnCreate() {
@@ -37,11 +39,11 @@ namespace Snowship.NUI
 		}*/
 
 		private void OnBackButtonClicked() {
-			GameManager.Get<UIManager>().CloseView(this);
+			uiM.CloseView(this);
 		}
 
 		/*private async void OnLoadSaveButtonClicked() {
-			await GameManager.Get<PersistenceManager>().ApplyLoadedSave(selectedSave);
+			await persistenceM.ApplyLoadedSave(selectedSave);
 		}*/
 
 		/*private void OnSaveElementClicked(PSave.PersistenceSave save) {

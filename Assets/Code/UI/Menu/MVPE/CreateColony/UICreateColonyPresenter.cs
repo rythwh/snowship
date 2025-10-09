@@ -8,12 +8,25 @@ using UnityEngine;
 namespace Snowship.NUI
 {
 	[UsedImplicitly]
-	public class UICreateColonyPresenter : UIPresenter<UICreateColonyView> {
+	public class UICreateColonyPresenter : UIPresenter<UICreateColonyView>
+	{
+		private readonly PlanetManager planetM;
+		private readonly UIManager uiM;
+		private readonly ColonyManager colonyM;
 
 		private PlanetViewModule planetViewModule;
 		private readonly CreateColonyData createColonyData = new CreateColonyData();
 
-		public UICreateColonyPresenter(UICreateColonyView view) : base(view) {
+		public UICreateColonyPresenter(
+			UICreateColonyView view,
+			PlanetManager planetM,
+			UIManager uiM,
+			ColonyManager colonyM
+		) : base(view)
+		{
+			this.planetM = planetM;
+			this.uiM = uiM;
+			this.colonyM = colonyM;
 		}
 
 		public override UniTask OnCreate() {
@@ -54,7 +67,7 @@ namespace Snowship.NUI
 		private void CreatePlanetViewModule() {
 			planetViewModule = new PlanetViewModule(View.PlanetViewGridLayoutGroup, View.PlanetTilePrefab);
 			planetViewModule.DisplayPlanet(
-				GameManager.Get<PlanetManager>().planet,
+				planetM.planet,
 				// pColony.GetPersistenceColonies(),
 				true
 			);
@@ -71,7 +84,7 @@ namespace Snowship.NUI
 		}
 
 		private void CreatePlanetPreview() {
-			Planet planet = GameManager.Get<PlanetManager>().planet;
+			Planet planet = planetM.planet;
 			planetViewModule.DisplayPlanet(
 				planet,
 				// pColony.GetPersistenceColonies(),
@@ -100,7 +113,7 @@ namespace Snowship.NUI
 		}
 
 		private void OnBackButtonClicked() {
-			GameManager.Get<UIManager>().GoBack(this);
+			uiM.GoBack(this);
 		}
 
 		private void OnColonyNameChanged(string colonyName) {
@@ -131,7 +144,7 @@ namespace Snowship.NUI
 		}
 
 		private void OnCreateColonyButtonClicked() {
-			GameManager.Get<ColonyManager>().CreateColony(createColonyData);
+			colonyM.CreateColony(createColonyData);
 		}
 
 		// private void OnColonyTileClicked(PersistenceColony persistenceColony) {

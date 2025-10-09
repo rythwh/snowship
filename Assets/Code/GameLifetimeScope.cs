@@ -64,7 +64,9 @@ namespace Snowship
 			builder.RegisterEntryPoint<StateManager>(Lifetime.Singleton).AsSelf();
 			builder.RegisterEntryPoint<TileManager>(Lifetime.Singleton).AsSelf();
 			builder.RegisterEntryPoint<TimeManager>(Lifetime.Singleton).AsSelf();
-			builder.RegisterEntryPoint<UIManager>(Lifetime.Singleton).AsSelf();
+
+			UIServiceInstaller.Install(builder);
+
 			builder.RegisterEntryPoint<UniverseManager>(Lifetime.Singleton).AsSelf();
 		}
 	}

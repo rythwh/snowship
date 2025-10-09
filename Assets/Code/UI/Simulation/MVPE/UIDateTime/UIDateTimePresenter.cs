@@ -7,13 +7,16 @@ namespace Snowship.NUI
 
 	[UsedImplicitly]
 	public class UIDateTimePresenter : UIPresenter<UIDateTimeView> {
+		private readonly TimeManager timeM;
 
-		public UIDateTimePresenter(UIDateTimeView view) : base(view) {
+		public UIDateTimePresenter(UIDateTimeView view, TimeManager timeM) : base(view)
+		{
+			this.timeM = timeM;
 		}
 
 		public override UniTask OnCreate() {
-			GameManager.Get<TimeManager>().OnTimeChanged += OnTimeChanged;
-			OnTimeChanged(GameManager.Get<TimeManager>().Time);
+			timeM.OnTimeChanged += OnTimeChanged;
+			OnTimeChanged(timeM.Time);
 
 			return UniTask.CompletedTask;
 		}

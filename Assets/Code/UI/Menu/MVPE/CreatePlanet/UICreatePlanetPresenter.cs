@@ -9,12 +9,17 @@ namespace Snowship.NUI
 {
 
 	[UsedImplicitly]
-	public class UICreatePlanetPresenter : UIPresenter<UICreatePlanetView> {
+	public class UICreatePlanetPresenter : UIPresenter<UICreatePlanetView>
+	{
+		private readonly UIManager uiM;
+		private readonly PlanetManager planetM;
 
 		private PlanetViewModule planetViewModule;
 		private readonly CreatePlanetData createPlanetData = new CreatePlanetData();
 
-		public UICreatePlanetPresenter(UICreatePlanetView view) : base(view) {
+		public UICreatePlanetPresenter(UICreatePlanetView view, UIManager uiM, PlanetManager planetM) : base(view) {
+			this.uiM = uiM;
+			this.planetM = planetM;
 		}
 
 		public override async UniTask OnCreate() {
@@ -124,7 +129,7 @@ namespace Snowship.NUI
 		}
 
 		private void OnBackButtonClicked() {
-			GameManager.Get<UIManager>().GoBack(this);
+			uiM.GoBack(this);
 		}
 
 		private void OnPlanetNameChanged(string planetName) {
@@ -166,12 +171,12 @@ namespace Snowship.NUI
 		}
 
 		private async void OnCreatePlanetButtonClicked() {
-			// pPlanet.CreatePlanet(GameManager.Get<PlanetManager>().planet);
-			await GameManager.Get<UIManager>().OpenViewAsync<UICreateColony>(this, false);
+			// pPlanet.CreatePlanet(planetManager.planet);
+			await uiM.OpenViewAsync<UICreateColony>(this, false);
 		}
 
 		private void OnPlanetTileClicked(PlanetTile planetTile) {
-			GameManager.Get<PlanetManager>().SetSelectedPlanetTile(planetTile);
+			planetM.SetSelectedPlanetTile(planetTile);
 			View.SetPlanetTileData(planetTile);
 		}
 
@@ -180,7 +185,7 @@ namespace Snowship.NUI
 		// }
 
 		private async UniTask CreatePlanetPreview() {
-			Planet planet = await GameManager.Get<PlanetManager>().CreatePlanet(createPlanetData);
+			Planet planet = await planetM.CreatePlanet(createPlanetData);
 			planetViewModule.DisplayPlanet(
 				planet,
 				// pColony.GetPersistenceColonies(),

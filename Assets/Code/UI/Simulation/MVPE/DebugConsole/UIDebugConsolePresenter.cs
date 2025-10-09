@@ -7,16 +7,16 @@ namespace Snowship.NUI
 	[UsedImplicitly]
 	public class UIDebugConsolePresenter : UIPresenter<UIDebugConsoleView>
 	{
+		private readonly DebugManager debugM;
 
-		private DebugManager DebugM => GameManager.Get<DebugManager>();
-
-		public UIDebugConsolePresenter(UIDebugConsoleView view) : base(view) {
+		public UIDebugConsolePresenter(UIDebugConsoleView view, DebugManager debugM) : base(view) {
+			this.debugM = debugM;
 		}
 
 		public override UniTask OnCreate() {
 
-			DebugM.OnConsoleOutputProduced += OnDebugOutputReceived;
-			DebugM.OnConsoleClearRequested += ClearConsole;
+			debugM.OnConsoleOutputProduced += OnDebugOutputReceived;
+			debugM.OnConsoleClearRequested += ClearConsole;
 
 			View.SelectDebugInputField();
 
@@ -27,14 +27,14 @@ namespace Snowship.NUI
 
 		public override void OnClose() {
 
-			DebugM.OnConsoleOutputProduced -= OnDebugOutputReceived;
-			DebugM.OnConsoleClearRequested -= ClearConsole;
+			debugM.OnConsoleOutputProduced -= OnDebugOutputReceived;
+			debugM.OnConsoleClearRequested -= ClearConsole;
 
 			View.OnDebugCommandSent -= OnDebugCommandSent;
 		}
 
 		private void OnDebugCommandSent(string text) {
-			DebugM.ParseCommandInput(text);
+			debugM.ParseCommandInput(text);
 		}
 
 		private async void OnDebugOutputReceived(string text) {

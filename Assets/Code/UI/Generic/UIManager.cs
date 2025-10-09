@@ -1,17 +1,23 @@
 ﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using VContainer;
+using VContainer.Unity;
 
 namespace Snowship.NUI {
 	public class UIManager : IUIManager
 	{
+		private readonly IObjectResolver resolver;
+		private readonly LifetimeScope parentScope;
 		private readonly Transform canvas;
 
 		private readonly List<IUIGroup> parentGroups = new List<IUIGroup>();
 
 		internal static readonly Dictionary<string, GameObject> CachedComponents = new();
 
-		public UIManager(SharedReferences sharedReferences) {
+		public UIManager(IObjectResolver resolver, LifetimeScope parentScope, SharedReferences sharedReferences) {
+			this.resolver = resolver;
+			this.parentScope = parentScope;
 			canvas = sharedReferences.Canvas;
 		}
 
@@ -40,17 +46,18 @@ namespace Snowship.NUI {
 			Transform transformToUse = useParentTransform ? parentTransform : canvas;
 
 			TUIConfig config = new();
-			(IUIView view, IUIPresenter presenter) ui;
+			(IUIView view, IUIPresenter presenter, LifetimeScope scope) ui;
 			if (parameters == null) {
-				ui = await config.Open(transformToUse);
+				ui = await config.Open(transformToUse, parentScope);
 			} else {
-				ui = await ((IUIConfigParameters)config).Open(transformToUse, parameters);
+				ui = await ((IUIConfigParameters)config).Open(transformToUse, parameters, parentScope);
 			}
 
 			UIGroup<IUIConfig, IUIView, IUIPresenter> group = new(
 				config,
 				ui.view,
 				ui.presenter,
+				ui.scope,
 				parentGroup
 			);
 			await group.OnCreate();

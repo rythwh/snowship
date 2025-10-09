@@ -8,12 +8,14 @@ namespace Snowship.NUI
 
 	[UsedImplicitly]
 	public class UILoadColonyPresenter : UIPresenter<UILoadColonyView> {
+		private readonly UIManager uiM;
 
 		private PlanetViewModule planetViewModule;
 		// private PersistenceColony selectedColony;
 		// private readonly PColony pColony = new PColony();
 
-		public UILoadColonyPresenter(UILoadColonyView view) : base(view) {
+		public UILoadColonyPresenter(UILoadColonyView view, UIManager uiM) : base(view) {
+			this.uiM = uiM;
 		}
 
 		public override UniTask OnCreate() {
@@ -51,11 +53,11 @@ namespace Snowship.NUI
 		}
 
 		private void OnBackButtonClicked() {
-			GameManager.Get<UIManager>().CloseView(this);
+			uiM.CloseView(this);
 		}
 
 		private async void OnCreateColonyButtonClicked() {
-			await GameManager.Get<UIManager>().OpenViewAsync<UICreateColony>(this, false);
+			await uiM.OpenViewAsync<UICreateColony>(this, false);
 		}
 
 		/*private void OnColonyElementClicked(PersistenceColony colony) {
@@ -69,7 +71,7 @@ namespace Snowship.NUI
 		/*private void CreateColonyElements() {
 			List<PersistenceColony> colonies = pColony.GetPersistenceColonies();
 
-			planetViewModule.DisplayPlanet(GameManager.Get<PlanetManager>().planet, colonies, true);
+			planetViewModule.DisplayPlanet(planetM.planet, colonies, true);
 
 			foreach (PersistenceColony colony in colonies) {
 				UILoadColonyElement loadColonyElement = new(colony);

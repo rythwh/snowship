@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using VContainer.Unity;
 
 namespace Snowship.NUI
 {
@@ -12,6 +13,7 @@ namespace Snowship.NUI
 		private readonly TConfig config;
 		private readonly TView view;
 		private readonly TPresenter presenter;
+		private readonly LifetimeScope scope;
 
 		private readonly List<IUIGroup> children = new List<IUIGroup>();
 
@@ -26,11 +28,13 @@ namespace Snowship.NUI
 			TConfig config,
 			TView view,
 			TPresenter presenter,
+			LifetimeScope scope,
 			IUIGroup parent
 		) {
 			this.config = config;
 			this.view = view;
 			this.presenter = presenter;
+			this.scope = scope;
 
 			Parent = parent;
 		}
@@ -80,6 +84,7 @@ namespace Snowship.NUI
 			config.OnClose();
 			presenter.OnClose();
 			view.OnClose();
+			scope.Dispose();
 
 			Object.Destroy(view.Instance);
 

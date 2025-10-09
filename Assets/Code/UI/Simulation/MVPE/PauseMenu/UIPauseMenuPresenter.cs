@@ -13,8 +13,20 @@ namespace Snowship.NUI
 
 	[UsedImplicitly]
 	public class UIPauseMenuPresenter : UIPresenter<UIPauseMenuView> {
+		private readonly InputManager inputM;
+		private readonly StateManager stateM;
+		private readonly UIManager uiM;
 
-		public UIPauseMenuPresenter(UIPauseMenuView view) : base(view) {
+		public UIPauseMenuPresenter(
+			UIPauseMenuView view,
+			InputManager inputM,
+			StateManager stateM,
+			UIManager uiM
+		) : base(view)
+		{
+			this.inputM = inputM;
+			this.stateM = stateM;
+			this.uiM = uiM;
 		}
 
 		public override UniTask OnCreate() {
@@ -25,7 +37,7 @@ namespace Snowship.NUI
 			View.OnExitToMenuButtonClicked += OnExitToMenuButtonClicked;
 			View.OnExitToDesktopButtonClicked += OnExitToDesktopButtonClicked;
 
-			GameManager.Get<InputManager>().InputSystemActions.Simulation.Escape.performed += OnEscapePerformed;
+			inputM.InputSystemActions.Simulation.Escape.performed += OnEscapePerformed;
 
 			return UniTask.CompletedTask;
 		}
@@ -37,20 +49,20 @@ namespace Snowship.NUI
 			View.OnExitToMenuButtonClicked -= OnExitToMenuButtonClicked;
 			View.OnExitToDesktopButtonClicked -= OnExitToDesktopButtonClicked;
 
-			GameManager.Get<InputManager>().InputSystemActions.Simulation.Escape.performed -= OnEscapePerformed;
+			inputM.InputSystemActions.Simulation.Escape.performed -= OnEscapePerformed;
 		}
 
 		private async void OnContinueButtonClicked() {
-			await GameManager.Get<StateManager>().TransitionToState(EState.Simulation, ETransitionUIAction.Close);
+			await stateM.TransitionToState(EState.Simulation, ETransitionUIAction.Close);
 		}
 
 		private async void OnEscapePerformed(InputAction.CallbackContext callbackContext) {
-			await GameManager.Get<StateManager>().TransitionToState(EState.Simulation, ETransitionUIAction.Close);
+			await stateM.TransitionToState(EState.Simulation, ETransitionUIAction.Close);
 		}
 
 		private void OnSaveButtonClicked() {
 			try {
-				// await GameManager.Get<PersistenceManager>().CreateSave(GameManager.Get<ColonyManager>().colony);
+				// await persistenceM.CreateSave(GameManager.Get<ColonyManager>().colony);
 				View.SetSaveButtonImageColour(ColourUtilities.GetColour(ColourUtilities.EColour.LightGreen));
 			} catch (Exception e) {
 				View.SetSaveButtonImageColour(ColourUtilities.GetColour(ColourUtilities.EColour.LightRed));
@@ -59,11 +71,11 @@ namespace Snowship.NUI
 		}
 
 		private async void OnSettingsButtonClicked() {
-			await GameManager.Get<UIManager>().OpenViewAsync<UISettings>(this, false);
+			await uiM.OpenViewAsync<UISettings>(this, false);
 		}
 
 		private async void OnExitToMenuButtonClicked() {
-			await GameManager.Get<StateManager>().TransitionToState(EState.MainMenu, ETransitionUIAction.Close);
+			await stateM.TransitionToState(EState.MainMenu, ETransitionUIAction.Close);
 		}
 
 		private void OnExitToDesktopButtonClicked() {

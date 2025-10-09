@@ -10,12 +10,6 @@ public class DebugSettingsWindow : EditorWindow
 		GetWindow<DebugSettingsWindow>("Snowship Debug");
 	}
 
-	private void OnEnable() {
-	}
-
-	private void OnDisable() {
-	}
-
 	private void OnGUI() {
 		DrawHeaderRow("Debug Settings");
 		DrawSettingsRow("Quick Start");

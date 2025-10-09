@@ -69,7 +69,7 @@ namespace Snowship.NCaravan {
 			Inventory = new Inventory(this, int.MaxValue, int.MaxValue);
 
 			resourceGroup = ResourceGroup.GetRandomResourceGroup();
-			foreach (Resource resource in resourceGroup.resources.OrderBy(r => Random.Range(0f, 1f))) { // Randomize resource group list
+			foreach (Resource resource in resourceGroup.resources.OrderBy(_ => Random.Range(0f, 1f))) { // Randomize resource group list
 				int resourceGroupResourceCount = Mathf.Clamp(resourceGroup.resources.Count, MinDistinctResources + 1, int.MaxValue); // Ensure minimum count of (minimumDistinctResources + 1)
 				if (Random.Range(0f, 1f) < Mathf.Clamp((resourceGroupResourceCount - Inventory.resources.Count - MinDistinctResources) / (float)(resourceGroupResourceCount - MinDistinctResources), MinDistinctResourceChance, 1f)) { // Decrease chance of additional distinct resources on caravan as distinct resources on caravan increase
 					int resourceAvailableAmount = resource.GetAvailableAmount();

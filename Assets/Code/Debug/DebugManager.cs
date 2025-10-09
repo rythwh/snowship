@@ -29,7 +29,7 @@ using Random = UnityEngine.Random;
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 [SuppressMessage("ReSharper", "ConvertIfStatementToConditionalTernaryExpression")]
-public class DebugManager : IAsyncStartable, IPostStartable, ITickable
+public class DebugManager : IStartable, IPostStartable, ITickable
 {
 	private readonly CaravanManager caravanM;
 	private readonly UIManager uiM;
@@ -83,7 +83,7 @@ public class DebugManager : IAsyncStartable, IPostStartable, ITickable
 		this.resourceQuery = resourceQuery;
 	}
 
-	public async UniTask StartAsync(CancellationToken token = new CancellationToken()) {
+	public void Start() {
 
 		inputM.InputSystemActions.Simulation.DebugMenu.performed += OnDebugMenuButtonPerformed;
 

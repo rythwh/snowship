@@ -28,6 +28,7 @@ namespace Snowship.Selectable
 		private readonly ICameraQuery cameraQuery;
 		private readonly JobManager jobM;
 		private readonly TileManager tileM;
+		private readonly JobRegistry jobRegistry;
 
 		private readonly Stack<ISelectable> selectables = new();
 
@@ -55,7 +56,8 @@ namespace Snowship.Selectable
 			IMapQuery mapQuery,
 			ICameraQuery cameraQuery,
 			JobManager jobM,
-			TileManager tileM
+			TileManager tileM,
+			JobRegistry jobRegistry
 		) {
 			this.sharedReferences = sharedReferences;
 			this.inputM = inputM;
@@ -64,6 +66,7 @@ namespace Snowship.Selectable
 			this.cameraQuery = cameraQuery;
 			this.jobM = jobM;
 			this.tileM = tileM;
+			this.jobRegistry = jobRegistry;
 
 			selectedJobPreviewObject = sharedReferences.SelectedJobPreview;
 		}
@@ -135,7 +138,7 @@ namespace Snowship.Selectable
 			ClearSelectedJob();
 
 			selectedJobType = typeof(TJob);
-			selectedJobDefinition = GameManager.Get<JobRegistry>().GetJobDefinition(typeof(TJobDefinition)) as TJobDefinition;
+			selectedJobDefinition = jobRegistry.GetJobDefinition(typeof(TJobDefinition)) as TJobDefinition;
 			selectedJobParams = null;
 		}
 

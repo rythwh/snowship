@@ -3,6 +3,8 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using VContainer;
+using VContainer.Unity;
 using Object = UnityEngine.Object;
 
 namespace Snowship.NUI
@@ -17,15 +19,15 @@ namespace Snowship.NUI
 			return $"UI/{GetType().Name}";
 		}
 
-		public async UniTask<(IUIView view, IUIPresenter presenter)> Open(Transform parent) {
+		public async UniTask<(IUIView view, IUIPresenter presenter, LifetimeScope scope)> Open(Transform parent, LifetimeScope parentScope) {
 			GameObject viewPrefab = await GetViewPrefab();
 			GameObject viewGameObject = Object.Instantiate(viewPrefab, parent, false);
 			TView viewComponent = viewGameObject.GetComponent<TView>();
 			viewComponent.Instance = viewGameObject;
 
-			TPresenter presenter = CreatePresenter(viewComponent);
+			(TPresenter presenter, LifetimeScope scope) = CreatePresenter(viewComponent, parentScope);
 
-			return (viewComponent, presenter);
+			return (viewComponent, presenter, scope);
 		}
 
 		protected async UniTask<GameObject> GetViewPrefab() {
@@ -43,8 +45,16 @@ namespace Snowship.NUI
 			return viewPrefabGameObject;
 		}
 
-		private TPresenter CreatePresenter(TView view) {
-			return (TPresenter)Activator.CreateInstance(typeof(TPresenter), view);
+		private (TPresenter presenter, LifetimeScope scope) CreatePresenter(TView view, LifetimeScope parentScope) {
+
+			LifetimeScope scope = parentScope.CreateChild(builder => {
+				builder.RegisterInstance(view).AsSelf().As<TView>();
+				builder.Register<TPresenter>(Lifetime.Scoped).AsSelf();
+			});
+
+			TPresenter presenter = scope.Container.Resolve<TPresenter>();
+
+			return (presenter, scope);
 		}
 
 		public void OnClose() {
@@ -57,19 +67,28 @@ namespace Snowship.NUI
 		where TPresenter : IUIPresenter
 		where TParameters : IUIParameters
 	{
-		public async UniTask<(IUIView view, IUIPresenter presenter)> Open(Transform parent, IUIParameters parameters) {
+		public async UniTask<(IUIView view, IUIPresenter presenter, LifetimeScope scope)> Open(Transform parent, IUIParameters parameters, LifetimeScope parentScope) {
 			GameObject viewPrefab = await GetViewPrefab();
 			GameObject viewGameObject = Object.Instantiate(viewPrefab, parent, false);
 			TView viewComponent = viewGameObject.GetComponent<TView>();
 			viewComponent.Instance = viewGameObject;
 
-			TPresenter presenter = CreatePresenter(viewComponent, parameters);
+			(TPresenter presenter, LifetimeScope scope) = CreatePresenter(viewComponent, parameters, parentScope);
 
-			return (viewComponent, presenter);
+			return (viewComponent, presenter, scope);
 		}
 
-		private TPresenter CreatePresenter(TView view, IUIParameters parameters) {
-			return (TPresenter)Activator.CreateInstance(typeof(TPresenter), view, parameters);
+		private (TPresenter presenter, LifetimeScope scope) CreatePresenter(TView view, IUIParameters parameters, LifetimeScope parentScope) {
+
+			LifetimeScope scope = parentScope.CreateChild(builder => {
+				builder.RegisterInstance(view).AsSelf().As<TView>();
+				builder.RegisterInstance(parameters).AsSelf().As<IUIParameters>();
+				builder.Register<TPresenter>(Lifetime.Scoped).AsSelf();
+			});
+
+			TPresenter presenter = scope.Container.Resolve<TPresenter>();
+
+			return (presenter, scope);
 		}
 	}
 }

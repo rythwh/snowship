@@ -9,10 +9,12 @@ namespace Snowship.NUI
 
 	[UsedImplicitly]
 	public class UIMainMenuPresenter : UIPresenter<UIMainMenuView> {
+		private readonly UIManager uiM;
 
 		// private readonly PLastSave pLastSave = new PLastSave();
 
-		public UIMainMenuPresenter(UIMainMenuView view) : base(view) {
+		public UIMainMenuPresenter(UIMainMenuView view, UIManager uiM) : base(view) {
+			this.uiM = uiM;
 		}
 
 		public override UniTask OnCreate() {
@@ -50,19 +52,19 @@ namespace Snowship.NUI
 		}
 
 		private async void OnNewButtonClicked() {
-			await GameManager.Get<UIManager>().OpenViewAsync<UICreatePlanet>(this, false);
+			await uiM.OpenViewAsync<UICreatePlanet>(this, false);
 		}
 
 		private void OnContinueButtonClicked() {
-			// GameManager.Get<PersistenceManager>().ContinueFromMostRecentSave();
+			// persistenceM.ContinueFromMostRecentSave();
 		}
 
 		private async void OnLoadButtonClicked() {
-			await GameManager.Get<UIManager>().OpenViewAsync<UILoadColony>(this, false);
+			await uiM.OpenViewAsync<UILoadColony>(this, false);
 		}
 
 		private async void OnSettingsButtonClicked() {
-			await GameManager.Get<UIManager>().OpenViewAsync<UISettings>(this, false);
+			await uiM.OpenViewAsync<UISettings>(this, false);
 		}
 
 		private void OnExitButtonClicked() {

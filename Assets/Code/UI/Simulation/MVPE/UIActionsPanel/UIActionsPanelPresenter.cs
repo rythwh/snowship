@@ -13,9 +13,15 @@ namespace Snowship.NUI
 	[UsedImplicitly]
 	public class UIActionsPanelPresenter : UIPresenter<UIActionsPanelView>
 	{
+		private readonly SelectionManager selectionM;
+		private readonly JobRegistry jobRegistry;
+
 		private readonly List<ITreeButton> childButtons = new();
 
-		public UIActionsPanelPresenter(UIActionsPanelView view) : base(view) {
+		public UIActionsPanelPresenter(UIActionsPanelView view, SelectionManager selectionM, JobRegistry jobRegistry) : base(view)
+		{
+			this.selectionM = selectionM;
+			this.jobRegistry = jobRegistry;
 		}
 
 		public override async UniTask OnCreate() {
@@ -121,13 +127,13 @@ namespace Snowship.NUI
 			}
 
 			BuildJobParams buildJobParams = new(prefab);
-			prefabButton.OnButtonClicked += () => GameManager.Get<SelectionManager>().SetSelectedJob<BuildJob, BuildJobDefinition>(buildJobParams);
+			prefabButton.OnButtonClicked += () => selectionM.SetSelectedJob<BuildJob, BuildJobDefinition>(buildJobParams);
 		}
 
 		// Terraform Buttons
 
 		private async UniTask CreateTerraformButtons(ITreeButton button) {
-			JobGroup group = GameManager.Get<JobRegistry>().GetJobGroup("Terraform");
+			JobGroup group = jobRegistry.GetJobGroup("Terraform");
 
 			await CreateGroupButtons(button, group, SetupIndividualTerraformButton);
 		}
@@ -140,13 +146,13 @@ namespace Snowship.NUI
 				return;
 			}
 
-			jobButton.OnButtonClicked += () => GameManager.Get<SelectionManager>().SetSelectedJob(jobDefinition);
+			jobButton.OnButtonClicked += () => selectionM.SetSelectedJob(jobDefinition);
 		}
 
 		// Farm Buttons
 
 		private async UniTask CreateFarmButtons(ITreeButton button) {
-			JobGroup group = GameManager.Get<JobRegistry>().GetJobGroup("Farm");
+			JobGroup group = jobRegistry.GetJobGroup("Farm");
 
 			await CreateGroupButtons(button, group, SetupIndividualFarmButton);
 		}
@@ -159,13 +165,13 @@ namespace Snowship.NUI
 				return;
 			}
 
-			jobButton.OnButtonClicked += () => GameManager.Get<SelectionManager>().SetSelectedJob(jobDefinition);
+			jobButton.OnButtonClicked += () => selectionM.SetSelectedJob(jobDefinition);
 		}
 
 		// Remove Buttons
 
 		private async UniTask CreateRemoveButtons(ITreeButton button) {
-			JobGroup group = GameManager.Get<JobRegistry>().GetJobGroup("Remove");
+			JobGroup group = jobRegistry.GetJobGroup("Remove");
 
 			await CreateGroupButtons(button, group, SetupIndividualRemoveButton);
 		}
@@ -178,7 +184,7 @@ namespace Snowship.NUI
 				return;
 			}
 
-			jobButton.OnButtonClicked += () => GameManager.Get<SelectionManager>().SetSelectedJob(jobDefinition);
+			jobButton.OnButtonClicked += () => selectionM.SetSelectedJob(jobDefinition);
 		}
 	}
 }

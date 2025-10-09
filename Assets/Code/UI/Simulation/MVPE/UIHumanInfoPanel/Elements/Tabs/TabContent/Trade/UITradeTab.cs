@@ -28,6 +28,7 @@ namespace Snowship.NUI.UITab
 			Component.TradeButtonClicked -= OnTradeButtonClicked;
 		}
 
+		// TODO Send an event when this happens instead of accessing JobManager directly
 		private void OnTradeButtonClicked() {
 			if (human is not Trader trader) {
 				return;

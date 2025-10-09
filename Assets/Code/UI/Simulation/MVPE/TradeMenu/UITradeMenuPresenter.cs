@@ -9,16 +9,19 @@ namespace Snowship.NUI
 {
 	[UsedImplicitly]
 	public class UITradeMenuPresenter : UIPresenter<UITradeMenuView> {
+		private readonly CaravanManager caravanM;
 
 		private List<TradeResourceAmount> tradeResourceAmounts = new();
 		private readonly List<ConfirmedTradeResourceAmount> colonyConfirmedTradeResourceAmounts = new();
 		private readonly List<ConfirmedTradeResourceAmount> caravanConfirmedTradeResourceAmounts = new();
 
-		public UITradeMenuPresenter(UITradeMenuView view) : base(view) {
+		public UITradeMenuPresenter(UITradeMenuView view, CaravanManager caravanM) : base(view)
+		{
+			this.caravanM = caravanM;
 		}
 
 		public override async UniTask OnCreate() {
-			Caravan caravan = GameManager.Get<CaravanManager>().selectedCaravan;
+			Caravan caravan = caravanM.selectedCaravan;
 
 			View.SetCaravanInformation(caravan);
 
@@ -47,14 +50,14 @@ namespace Snowship.NUI
 		// TODO Probably needs to be two methods, one for adding/removing TREs as values resource totals change, and one for summing up the trade amounts as TradeAmounts change
 		// public void UpdateTradeMenu() {
 		//
-		// 	if (GameManager.Get<CaravanManager>().selectedCaravan.traders.Count > 0) {
-		// 		List<ResourceManager.ResourceAmount> availableResources = GameManager.Get<ResourceManager>().GetAvailableResourcesInTradingPostsInRegion(GameManager.Get<CaravanManager>().selectedCaravan.traders.Find(t => t != null).overTile.region);
+		// 	if (caravanM.selectedCaravan.traders.Count > 0) {
+		// 		List<ResourceManager.ResourceAmount> availableResources = resourceM.GetAvailableResourcesInTradingPostsInRegion(caravanM.selectedCaravan.traders.Find(t => t != null).overTile.region);
 		// 		foreach (ResourceManager.ResourceAmount resourceAmount in availableResources) {
 		// 			View.AddTradeResourceElementIfMissing(
 		// 				resourceAmount.resource,
 		// 				0,
 		// 				resourceAmount.amount,
-		// 				GameManager.Get<CaravanManager>().selectedCaravan
+		// 				caravanM.selectedCaravan
 		// 			);
 		// 		}
 		// 	}
@@ -103,7 +106,7 @@ namespace Snowship.NUI
 		// }
 
 		private void ConfirmTrade() {
-			Caravan caravan = GameManager.Get<CaravanManager>().selectedCaravan;
+			Caravan caravan = caravanM.selectedCaravan;
 
 			if (caravan == null) {
 				return;
