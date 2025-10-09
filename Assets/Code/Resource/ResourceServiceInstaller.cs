@@ -1,4 +1,5 @@
 ﻿using VContainer;
+using VContainer.Unity;
 
 namespace Snowship.NResource
 {
@@ -6,8 +7,8 @@ namespace Snowship.NResource
 	{
 		public static void Install(IContainerBuilder builder) {
 			builder.Register<ResourceProvider>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<ResourceLoader>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<ResourceManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.RegisterEntryPoint<ResourceLoader>(Lifetime.Singleton).AsSelf();
+			builder.RegisterEntryPoint<ResourceManager>(Lifetime.Singleton).AsSelf();
 		}
 	}
 }

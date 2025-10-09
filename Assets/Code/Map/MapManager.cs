@@ -5,15 +5,17 @@ using Snowship.NMap.Generation;
 using Snowship.NMap.NTile;
 using Snowship.NState;
 using Snowship.NTime;
+using VContainer.Unity;
 
 namespace Snowship.NMap
 {
-	public class MapManager
+	public class MapManager : IInitializable
 	{
 		private readonly IMapWrite mapWrite;
 		private readonly IMapQuery mapQuery;
 		private readonly IMapEvents mapEvents;
 		private readonly ICameraEvents cameraEvents;
+		private readonly IColonyEvents colonyEvents;
 		private readonly StateManager stateM;
 		private readonly TileManager tileM;
 		private readonly TimeManager timeM;
@@ -32,10 +34,13 @@ namespace Snowship.NMap
 			this.mapQuery = mapQuery;
 			this.mapEvents = mapEvents;
 			this.cameraEvents = cameraEvents;
+			this.colonyEvents = colonyEvents;
 			this.stateM = stateM;
 			this.tileM = tileM;
 			this.timeM = timeM;
+		}
 
+		public void Initialize() {
 			colonyEvents.OnColonyCreated += OnColonyCreated;
 		}
 

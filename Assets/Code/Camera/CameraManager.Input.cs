@@ -44,7 +44,7 @@ namespace Snowship.NCamera {
 
 		private void OnZoomCameraPerformed(InputAction.CallbackContext callbackContext) {
 
-			if (inputM.IsPointerOverUI()) {
+			if (inputM.PointerOverUI) {
 				return;
 			}
 

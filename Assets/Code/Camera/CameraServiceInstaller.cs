@@ -1,4 +1,5 @@
 ﻿using VContainer;
+using VContainer.Unity;
 
 namespace Snowship.NCamera
 {
@@ -6,7 +7,7 @@ namespace Snowship.NCamera
 	{
 		public static void Install(IContainerBuilder builder) {
 			builder.Register<CameraProvider>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<CameraManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.RegisterEntryPoint<CameraManager>(Lifetime.Singleton).AsSelf();
 		}
 	}
 }

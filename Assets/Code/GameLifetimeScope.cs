@@ -36,36 +36,36 @@ namespace Snowship
 
 			CameraServiceInstaller.Install(builder);
 
-			builder.Register<CaravanManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.RegisterEntryPoint<CaravanManager>(Lifetime.Singleton).AsSelf();
 
 			ColonistServiceInstaller.Install(builder);
 			ColonyServiceInstaller.Install(builder);
 
-			builder.Register<DebugManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.RegisterEntryPoint<DebugManager>(Lifetime.Singleton).AsSelf();
 
 			HumanServiceInstaller.Install(builder);
 
-			builder.Register<InputManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.RegisterEntryPoint<InputManager>(Lifetime.Singleton).AsSelf();
 
 			JobServiceInstaller.Install(builder);
 
-			builder.Register<LifeManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.RegisterEntryPoint<LifeManager>(Lifetime.Singleton).AsSelf();
 
 			MapServiceInstaller.Install(builder);
 
-			builder.Register<PersistenceManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<PlanetManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.RegisterEntryPoint<PersistenceManager>(Lifetime.Singleton).AsSelf();
+			builder.RegisterEntryPoint<PlanetManager>(Lifetime.Singleton).AsSelf();
 
 			ResourceServiceInstaller.Install(builder);
 
-			builder.Register<SelectionManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<SettingsManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<SimulationManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<StateManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<TileManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<TimeManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<UIManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<UniverseManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.RegisterEntryPoint<SelectionManager>(Lifetime.Singleton).AsSelf();
+			builder.RegisterEntryPoint<SettingsManager>(Lifetime.Singleton).AsSelf();
+			builder.RegisterEntryPoint<SimulationManager>(Lifetime.Singleton).AsSelf();
+			builder.RegisterEntryPoint<StateManager>(Lifetime.Singleton).AsSelf();
+			builder.RegisterEntryPoint<TileManager>(Lifetime.Singleton).AsSelf();
+			builder.RegisterEntryPoint<TimeManager>(Lifetime.Singleton).AsSelf();
+			builder.RegisterEntryPoint<UIManager>(Lifetime.Singleton).AsSelf();
+			builder.RegisterEntryPoint<UniverseManager>(Lifetime.Singleton).AsSelf();
 		}
 	}
 }

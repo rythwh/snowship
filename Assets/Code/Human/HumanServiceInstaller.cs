@@ -1,4 +1,5 @@
 ﻿using VContainer;
+using VContainer.Unity;
 
 namespace Snowship.NHuman
 {
@@ -6,7 +7,7 @@ namespace Snowship.NHuman
 	{
 		public static void Install(IContainerBuilder builder) {
 			builder.Register<HumanProvider>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<HumanManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+			builder.RegisterEntryPoint<HumanManager>(Lifetime.Singleton).AsSelf();
 		}
 	}
 }

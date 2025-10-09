@@ -49,7 +49,7 @@ namespace Snowship.NCamera {
 		public void Start() {
 			mapEvents.MapSet += OnMapSet;
 
-			OnInputSystemEnabled(inputM.InputSystemActions);
+			inputM.OnInputSystemEnabled += OnInputSystemEnabled;
 			inputM.OnInputSystemDisabled += OnInputSystemDisabled;
 		}
 

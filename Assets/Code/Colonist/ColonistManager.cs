@@ -7,6 +7,7 @@ using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NMap.Models.Structure;
 using Snowship.NResource;
+using Snowship.NState;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -19,6 +20,7 @@ namespace Snowship.NColonist {
 		private readonly ICameraWrite cameraWrite;
 		private readonly HumanManager humanManager;
 		private readonly IResourceQuery resourceQuery;
+		private readonly IStateQuery stateQuery;
 
 		private IEnumerable<Colonist> Colonists => colonistQuery.Colonists;
 		private int ColonistCount => colonistQuery.ColonistCount;
@@ -28,17 +30,21 @@ namespace Snowship.NColonist {
 			IMapQuery mapQuery,
 			ICameraWrite cameraWrite,
 			HumanManager humanManager,
-			IResourceQuery resourceQuery
+			IResourceQuery resourceQuery,
+			IStateQuery stateQuery
 		) {
 			this.colonistQuery = colonistQuery;
 			this.mapQuery = mapQuery;
 			this.cameraWrite = cameraWrite;
 			this.humanManager = humanManager;
 			this.resourceQuery = resourceQuery;
+			this.stateQuery = stateQuery;
 		}
 
 		public void Tick() {
-			UpdateColonists();
+			if (stateQuery.State == EState.Simulation) {
+				UpdateColonists();
+			}
 		}
 
 		private void UpdateColonists() {
