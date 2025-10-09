@@ -4,6 +4,7 @@ using System.Linq;
 using Snowship.NMap.NTile;
 using Snowship.NResource;
 using Snowship.NUtilities;
+using UnityEngine.UI;
 
 namespace Snowship.NJob
 {
@@ -11,8 +12,8 @@ namespace Snowship.NJob
 	public class HarvestFarmJobDefinition : JobDefinition<HarvestFarmJob>
 	{
 		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
-			Selectable.SelectionConditions.Farm,
-			Selectable.SelectionConditions.NoSameLayerJobs
+			NSelection.SelectionConditions.Farm,
+			NSelection.SelectionConditions.NoSameLayerJobs
 		};
 
 		public HarvestFarmJobDefinition(IGroupItem group, IGroupItem subGroup, string name) : base(group, subGroup, name) {

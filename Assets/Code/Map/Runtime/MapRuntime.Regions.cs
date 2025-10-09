@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Snowship.NMap.NTile;
+using Snowship.NPath;
 
 namespace Snowship.NMap
 {
@@ -45,7 +46,7 @@ namespace Snowship.NMap
 						if (!removeTiles.Contains(startTile)) {
 							foreach (Tile endTile in horizontalGroups) {
 								if (!removeTiles.Contains(endTile) && startTile != endTile) {
-									if (PathManager.PathExists(startTile, endTile, true, MapData.mapSize, PathManager.WalkableSetting.Walkable, PathManager.DirectionSetting.Horizontal)) {
+									if (Path.PathExists(startTile, endTile, true, MapData.mapSize, WalkableSetting.Walkable, Tile.EGridConnectivity.FourWay)) {
 										removeTiles.Add(endTile);
 									}
 								}

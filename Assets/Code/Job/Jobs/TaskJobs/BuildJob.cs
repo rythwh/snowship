@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Snowship.NJob
 {
@@ -12,11 +13,11 @@ namespace Snowship.NJob
 	public class BuildJobDefinition : JobDefinition<BuildJob>
 	{
 		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
-			Selectable.SelectionConditions.WalkableIncludingFences,
-			Selectable.SelectionConditions.Buildable,
-			Selectable.SelectionConditions.NoPlant,
-			Selectable.SelectionConditions.NoSameLayerObject,
-			Selectable.SelectionConditions.NoSameLayerJobs
+			NSelection.SelectionConditions.WalkableIncludingFences,
+			NSelection.SelectionConditions.Buildable,
+			NSelection.SelectionConditions.NoPlant,
+			NSelection.SelectionConditions.NoSameLayerObject,
+			NSelection.SelectionConditions.NoSameLayerJobs
 		};
 
 		public override int Layer { get; protected set; } = 100;

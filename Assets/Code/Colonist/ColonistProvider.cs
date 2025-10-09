@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using Snowship.NHuman;
 
 namespace Snowship.NColonist
 {
+	[UsedImplicitly]
 	public class ColonistProvider : IColonistQuery
 	{
 		private readonly IHumanQuery humanQuery;

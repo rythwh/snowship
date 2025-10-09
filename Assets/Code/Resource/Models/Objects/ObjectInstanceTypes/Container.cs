@@ -2,6 +2,7 @@
 using System.Linq;
 using Snowship.NMap.Models.Structure;
 using Snowship.NMap.NTile;
+using Snowship.NResource.NInventory;
 
 namespace Snowship.NResource
 {

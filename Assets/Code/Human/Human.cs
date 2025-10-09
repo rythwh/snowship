@@ -8,6 +8,7 @@ using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NProfession;
 using Snowship.NResource;
+using Snowship.NResource.NInventory;
 using Snowship.NTime;
 using Snowship.NUtilities;
 using UnityEngine;

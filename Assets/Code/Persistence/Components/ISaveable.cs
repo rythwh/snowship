@@ -1,4 +1,4 @@
-﻿namespace Snowship.Persistence
+﻿namespace Snowship.NPersistence
 {
 	public interface ISaveable
 	{

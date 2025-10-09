@@ -1,7 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 // ReSharper disable InvertIf
@@ -120,7 +119,7 @@ public class RecentAssetsWindow : EditorWindow
 
 	private void CreateContentButton(string assetPath, bool assetExists) {
 
-		string fileName = Path.GetFileName(assetPath);
+		string fileName = System.IO.Path.GetFileName(assetPath);
 
 		GUIStyle buttonStyle = new(EditorStyles.label) {
 			alignment = TextAnchor.MiddleLeft,

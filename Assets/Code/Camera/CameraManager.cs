@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using LitMotion;
 using Snowship.NInput;
 using Snowship.NMap;
@@ -8,8 +9,9 @@ using UnityEngine;
 using VContainer.Unity;
 using Time = UnityEngine.Time;
 
-namespace Snowship.NCamera {
-
+namespace Snowship.NCamera
+{
+	[UsedImplicitly]
 	public partial class CameraManager : IStartable, ITickable
 	{
 		private readonly ICameraQuery cameraQuery;

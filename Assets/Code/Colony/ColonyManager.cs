@@ -1,8 +1,11 @@
-﻿using Snowship.NMap;
+﻿using JetBrains.Annotations;
+using Snowship.NMap;
 using Snowship.NColonist;
 using Snowship.NPlanet;
 
-namespace Snowship.NColony {
+namespace Snowship.NColony
+{
+	[UsedImplicitly]
 	public class ColonyManager
 	{
 		private readonly IColonyEvents colonyEvents;

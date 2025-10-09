@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NState.States;
 using Snowship.NUI;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-namespace Snowship.NState {
+namespace Snowship.NState
+{
+	[UsedImplicitly]
 	public class StateManager : IStartable, IStateEvents, IStateQuery
 	{
 		private readonly IObjectResolver resolver;

@@ -2,6 +2,7 @@
 using System.Linq;
 using Snowship.NMap.NTile;
 using Snowship.NColonist;
+using Snowship.NPath;
 using Snowship.NResource;
 using Snowship.NUtilities;
 
@@ -81,7 +82,7 @@ namespace Snowship.NJob
 				Container nextContainerToCheck = Container
 					.GetContainersInRegion(Worker.Tile.region)
 					.Where(c => !alreadyCheckedContainers.Contains(c))
-					.OrderBy(c => PathManager.RegionBlockDistance(Worker.Tile.regionBlock, c.tile.regionBlock, true, true, false))
+					.OrderBy(c => Path.RegionBlockDistance(Worker.Tile.regionBlock, c.tile.regionBlock, true, true, false))
 					.FirstOrDefault();
 				if (nextContainerToCheck == null) {
 					colonist.Jobs.ForceJob(new CollectFoodJob(colonist.Tile, null, alreadyCheckedContainers, nutritionTarget));

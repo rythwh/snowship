@@ -2,7 +2,7 @@
 using Snowship.NJob;
 using Snowship.NResource;
 
-namespace Snowship.Selectable
+namespace Snowship.NSelection
 {
 	public static class SelectionConditions
 	{

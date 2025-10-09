@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using Snowship.NCaravan;
 using Snowship.NHuman;
 using Snowship.NJob;
+using Snowship.NResource.NInventory;
 using Snowship.NUI.UITab;
 
 namespace Snowship.NUI
@@ -57,7 +58,7 @@ namespace Snowship.NUI
 
 		private async UniTask CreateTabs() {
 			// TODO Should make tabs from some type of registry, or data on the actual "human" object(?)
-			IUITabElement biographyTab = await AddTabAsync<UIBiographyTab>("Biography");
+			await AddTabAsync<UIBiographyTab>("Biography");
 			await AddTabAsync<UIInventoryTab>("Inventory");
 			await AddTabAsync<UIClothingTab>("Clothing");
 			if (human is Trader) {
@@ -75,20 +76,13 @@ namespace Snowship.NUI
 		public override void OnClose() {
 			base.OnClose();
 
-			human.Jobs.OnJobChanged -= OnJobChanged;
-
 			human.HealthChanged -= View.OnHealthChanged;
-
+			human.Jobs.OnJobChanged -= OnJobChanged;
 			human.Moods.OnMoodChanged -= View.OnMoodChanged;
-
+			human.OnClothingChanged -= View.OnHumanClothingChanged;
 			inventory.OnInventoryChanged -= View.OnInventoryChanged;
 
-			human.OnClothingChanged -= View.OnHumanClothingChanged;
-
-			RemoveTab<UIBiographyTab>();
-			RemoveTab<UIInventoryTab>();
-			RemoveTab<UIClothingTab>();
-			RemoveTab<UITradeTab>();
+			RemoveTabs();
 		}
 
 		private async UniTask<IUITabElement> AddTabAsync<TTab>(string buttonText) where TTab : class, IUITabElement {
@@ -119,15 +113,13 @@ namespace Snowship.NUI
 			}
 		}
 
-		private void RemoveTab<TTab>() where TTab : class, IUITabElement {
-			foreach ((IUITabElement tab, UITabButton button) group in tabAndButtonGroups.ToList()) {
-				if (group.tab is not TTab) {
-					continue;
-				}
+		private void RemoveTabs()
+		{
+			foreach ((IUITabElement tab, UITabButton button) group in tabAndButtonGroups) {
 				group.tab.Close();
-				tabAndButtonGroups.Remove(group);
-				return;
+				group.button.Close();
 			}
+			tabAndButtonGroups.Clear();
 		}
 
 		private void OnJobChanged(IJob job) {

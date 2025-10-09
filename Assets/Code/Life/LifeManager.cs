@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using Snowship.NMap;
 using UnityEngine;
 using VContainer.Unity;
 
 namespace Snowship.NLife
 {
+	[UsedImplicitly]
 	public class LifeManager : IPostStartable
 	{
 		private readonly IMapQuery mapQuery;

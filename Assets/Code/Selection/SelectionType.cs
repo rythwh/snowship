@@ -1,4 +1,4 @@
-﻿namespace Snowship.Selectable
+﻿namespace Snowship.NSelection
 {
 	public enum SelectionType
 	{

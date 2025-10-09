@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Snowship.NMap.NTile;
 using Snowship.NResource;
+using Snowship.NSelection;
 using Snowship.NUtilities;
-using Snowship.Selectable;
 
 namespace Snowship.NJob
 {

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Snowship.NMap.NTile;
 using Snowship.NMap;
 using Snowship.NResource;
@@ -9,8 +10,9 @@ using Snowship.NUI;
 using UnityEngine;
 using VContainer.Unity;
 
-namespace Snowship.NCaravan {
-
+namespace Snowship.NCaravan
+{
+	[UsedImplicitly]
 	public class CaravanManager : IStartable, ITickable, IDisposable {
 		private readonly TimeManager timeM;
 		private readonly IMapQuery mapQuery;

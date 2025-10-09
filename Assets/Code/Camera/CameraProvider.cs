@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading;
+using JetBrains.Annotations;
 using LitMotion;
 using UnityEngine;
 
 namespace Snowship.NCamera
 {
+	[UsedImplicitly]
 	public class CameraProvider : ICameraQuery, ICameraWrite, ICameraEvents
 	{
 		private readonly Camera camera;

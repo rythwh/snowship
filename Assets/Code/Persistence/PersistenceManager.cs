@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Path = System.IO.Path;
 
-namespace Snowship.Persistence
+namespace Snowship.NPersistence
 {
+	[UsedImplicitly]
 	public class PersistenceManager
 	{
 		private readonly List<ISaveRootProvider> providers = new List<ISaveRootProvider>();
@@ -69,7 +71,7 @@ namespace Snowship.Persistence
 				}
 			);
 
-			string directory = Path.GetDirectoryName(path);
+			string directory = System.IO.Path.GetDirectoryName(path);
 			if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) {
 				Directory.CreateDirectory(directory);
 			}

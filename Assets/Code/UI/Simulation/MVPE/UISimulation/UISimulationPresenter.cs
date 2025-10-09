@@ -68,6 +68,7 @@ namespace Snowship.NUI
 			if (selectedHuman == null) {
 				Debug.Log("Close UIHumanInfoPanel");
 				uiM.CloseView<UIHumanInfoPanel>();
+				OnHumanTabIndexOpened(0);
 				return;
 			}
 

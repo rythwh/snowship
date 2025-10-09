@@ -1,31 +1,39 @@
 ﻿
+namespace Snowship.NUniverse
+{
+	public class UniverseManager
+	{
 
-public class UniverseManager {
+		public Universe universe = null;
 
-	public Universe universe = null;
+		public static string GetRandomUniverseName()
+		{
+			return "Universe " + System.DateTime.Today.ToString("ddMMyyyy");
+		}
 
-	public static string GetRandomUniverseName() {
-		return "Universe " + System.DateTime.Today.ToString("ddMMyyyy");
-	}
+		public Universe CreateUniverse(string name)
+		{
+			Universe universe = new Universe(name);
 
-	public Universe CreateUniverse(string name) {
-		Universe universe = new Universe(name);
+			this.universe = universe;
 
-		this.universe = universe;
+			return universe;
+		}
 
-		return universe;
-	}
+		public void SetUniverse(Universe universe)
+		{
+			this.universe = universe;
+		}
 
-	public void SetUniverse(Universe universe) {
-		this.universe = universe;
-	}
+		public class Universe
+		{
 
-	public class Universe {
+			public string name;
 
-		public string name;
-
-		public Universe(string name) {
-			this.name = name;
+			public Universe(string name)
+			{
+				this.name = name;
+			}
 		}
 	}
 }

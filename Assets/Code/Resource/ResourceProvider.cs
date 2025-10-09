@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace Snowship.NResource
 {
+	[UsedImplicitly]
 	public class ResourceProvider : IResourceQuery
 	{
 		public Dictionary<EResource, Resource> Resources { get; } = new();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
 using Snowship.NCamera;
@@ -17,11 +18,11 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using VContainer.Unity;
 using Object = UnityEngine.Object;
 
-namespace Snowship.Selectable
+namespace Snowship.NSelection
 {
+	[UsedImplicitly]
 	public class SelectionManager : IAsyncStartable, ITickable
 	{
-		private readonly SharedReferences sharedReferences;
 		private readonly InputManager inputM;
 		private readonly IStateEvents stateEvents;
 		private readonly IMapQuery mapQuery;
@@ -59,7 +60,6 @@ namespace Snowship.Selectable
 			TileManager tileM,
 			JobRegistry jobRegistry
 		) {
-			this.sharedReferences = sharedReferences;
 			this.inputM = inputM;
 			this.stateEvents = stateEvents;
 			this.mapQuery = mapQuery;

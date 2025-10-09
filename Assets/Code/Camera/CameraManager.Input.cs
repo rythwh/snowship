@@ -2,9 +2,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Snowship.NCamera {
-	public partial class CameraManager {
-
+namespace Snowship.NCamera
+{
+	public partial class CameraManager
+	{
 		private Vector3 moveVector = Vector2.zero;
 		private float zoomAxis = 0;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 using Snowship.NPersistence;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,6 +7,7 @@ using VContainer.Unity;
 
 namespace Snowship.NSettings
 {
+	[UsedImplicitly]
 	public class SettingsManager : IStartable
 	{
 		private readonly SharedReferences sharedReferences;
@@ -17,7 +19,6 @@ namespace Snowship.NSettings
 
 		public SettingsManager(SharedReferences sharedReferences) {
 			this.sharedReferences = sharedReferences;
-
 		}
 
 		public void Start() {

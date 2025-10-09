@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using Snowship.NMap.Models.Geography;
 using Snowship.NMap.Models.Structure;
 using Snowship.NMap.NTile;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NCamera;
 using Snowship.NCaravan;
 using Snowship.NColonist;
@@ -29,6 +29,7 @@ using Random = UnityEngine.Random;
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 [SuppressMessage("ReSharper", "ConvertIfStatementToConditionalTernaryExpression")]
+[UsedImplicitly]
 public class DebugManager : IStartable, IPostStartable, ITickable
 {
 	private readonly CaravanManager caravanM;

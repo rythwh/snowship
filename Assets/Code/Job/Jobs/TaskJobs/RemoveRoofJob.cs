@@ -3,6 +3,7 @@ using Snowship.NMap.NTile;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Snowship.NJob
 {
@@ -10,8 +11,8 @@ namespace Snowship.NJob
 	public class RemoveRoofJobDefinition : JobDefinition<RemoveRoofJob>
 	{
 		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
-			Selectable.SelectionConditions.Roof,
-			Selectable.SelectionConditions.NoSameLayerJobs
+			NSelection.SelectionConditions.Roof,
+			NSelection.SelectionConditions.NoSameLayerJobs
 		};
 
 		public RemoveRoofJobDefinition(IGroupItem group, IGroupItem subGroup, string name) : base(group, subGroup, name) {

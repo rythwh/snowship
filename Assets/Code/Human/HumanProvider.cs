@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 
 namespace Snowship.NHuman
 {
+	[UsedImplicitly]
 	public class HumanProvider : IHumanQuery, IHumanWrite, IHumanEvents
 	{
 		private readonly List<Human> humans = new();

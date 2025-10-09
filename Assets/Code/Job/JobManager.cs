@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Snowship.NMap.Models.Structure;
 using Snowship.NMap.NTile;
 using Snowship.NColonist;
@@ -12,9 +13,9 @@ using VContainer.Unity;
 
 namespace Snowship.NJob
 {
+	[UsedImplicitly]
 	public class JobManager : IStartable
 	{
-		private readonly JobRegistry jobRegistry;
 		private readonly TimeManager timeM;
 		private readonly IColonistQuery colonistQuery;
 		private readonly SharedReferences sharedReferences;
@@ -37,7 +38,6 @@ namespace Snowship.NJob
 			this.timeM = timeM;
 			this.colonistQuery = colonistQuery;
 			this.sharedReferences = sharedReferences;
-			this.jobRegistry = jobRegistry;
 		}
 
 		public void Start() {

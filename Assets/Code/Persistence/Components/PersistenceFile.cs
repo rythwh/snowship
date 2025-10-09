@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Snowship.Persistence
+namespace Snowship.NPersistence
 {
 	[Serializable]
 	public sealed class PersistenceFile

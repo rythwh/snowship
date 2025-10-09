@@ -2,6 +2,7 @@
 using System.Linq;
 using Snowship.NMap.NTile;
 using Snowship.NColonist;
+using Snowship.NPath;
 using Snowship.NResource;
 using Snowship.NUtilities;
 
@@ -44,7 +45,7 @@ namespace Snowship.NJob
 
 			ObjectInstance chair = chairs
 				.Where(chair => chair.tile.region == colonist.Tile.region)
-				.OrderBy(chair => PathManager.RegionBlockDistance(colonist.Tile.regionBlock, chair.tile.regionBlock, true, true, false))
+				.OrderBy(chair => Path.RegionBlockDistance(colonist.Tile.regionBlock, chair.tile.regionBlock, true, true, false))
 				.ThenByDescending(
 					chair => chair.tile.surroundingTiles.Find(
 						surroundingTile => {

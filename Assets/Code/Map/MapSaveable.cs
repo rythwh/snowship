@@ -1,4 +1,4 @@
-﻿using Snowship.Persistence;
+﻿using Snowship.NPersistence;
 
 namespace Snowship.NMap
 {

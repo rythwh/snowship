@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Snowship.NMap.NTile;
 using Snowship.NColonist;
+using Snowship.NPath;
 using Snowship.NResource;
 using Snowship.NTime;
 using Snowship.NUtilities;
@@ -33,7 +34,7 @@ namespace Snowship.NJob
 			bed = Bed.Beds
 				.Where(b => b.Occupant == null && b.tile.region == Worker.Tile.region)
 				.OrderByDescending(b => b.prefab.restComfortAmount)
-				.ThenByDescending(b => PathManager.RegionBlockDistance(Worker.Tile.regionBlock, b.tile.regionBlock, true, true, false))
+				.ThenByDescending(b => Path.RegionBlockDistance(Worker.Tile.regionBlock, b.tile.regionBlock, true, true, false))
 				.FirstOrDefault();
 
 			if (bed != null) {

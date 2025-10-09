@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NCamera;
 using Snowship.NColonist;
 using Snowship.NInput;
 using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
+using Snowship.NSelection;
 using Snowship.NState;
 using Snowship.NUtilities;
-using Snowship.Selectable;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -20,6 +21,7 @@ using Object = UnityEngine.Object;
 
 namespace Snowship.NHuman
 {
+	[UsedImplicitly]
 	public sealed class HumanManager : IInitializable, IAsyncStartable, ITickable
 	{
 		private readonly IHumanQuery humanQuery;

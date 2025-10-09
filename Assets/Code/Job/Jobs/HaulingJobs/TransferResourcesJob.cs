@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Snowship.NResource;
+using Snowship.NResource.NInventory;
 using Snowship.NUtilities;
 
 namespace Snowship.NJob

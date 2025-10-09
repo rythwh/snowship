@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Snowship.NMap.NTile;
 using Snowship.NCamera;
 using Snowship.NHuman;
@@ -11,8 +12,9 @@ using Snowship.NState;
 using UnityEngine;
 using VContainer.Unity;
 
-namespace Snowship.NColonist {
-
+namespace Snowship.NColonist
+{
+	[UsedImplicitly]
 	public class ColonistManager : ITickable
 	{
 		private readonly IColonistQuery colonistQuery;

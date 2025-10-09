@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Snowship.Persistence
+namespace Snowship.NPersistence
 {
 	public sealed class LoadContext
 	{

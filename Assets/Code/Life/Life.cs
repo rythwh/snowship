@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Snowship.NMap.NTile;
 using Snowship.NMap;
+using Snowship.NPath;
 using Snowship.NTime;
 using UnityEngine;
 
@@ -85,7 +86,7 @@ namespace Snowship.NLife
 				return true;
 			}
 			if (endTile != null) {
-				path = PathManager.FindPathToTile(Tile, endTile, allowEndTileNonWalkable);
+				path = Path.FindPathToTile(Tile, endTile, allowEndTileNonWalkable);
 				if (path.Count == 0) {
 					return false;
 				}

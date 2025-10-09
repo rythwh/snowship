@@ -1,4 +1,7 @@
-﻿public interface IInventoriable
+﻿namespace Snowship.NResource.NInventory
 {
-	Inventory Inventory { get; }
+	public interface IInventoriable
+	{
+		Inventory Inventory { get; }
+	}
 }

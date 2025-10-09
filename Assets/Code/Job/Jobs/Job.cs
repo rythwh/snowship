@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Snowship.NMap.NTile;
 using Snowship.NColonist;
 using Snowship.NHuman;
+using Snowship.NPath;
 using Snowship.NResource;
 using Snowship.NTime;
 using Snowship.NUtilities;
@@ -245,7 +246,7 @@ namespace Snowship.NJob
 		[CanBeNull]
 		public List<ContainerPickup> CalculateWorkerResourcePickups(Human worker, List<ResourceAmount> resourcesToPickup) {
 			List<Container> sortedContainersByDistance = Container.GetContainersInRegion(worker.Tile.region)
-				.OrderBy(container => PathManager.RegionBlockDistance(
+				.OrderBy(container => Path.RegionBlockDistance(
 					worker.Tile.regionBlock,
 					container.tile.regionBlock,
 					true,

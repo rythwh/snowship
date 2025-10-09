@@ -3,8 +3,8 @@ using System.Linq;
 using Snowship.NMap.NTile;
 using Snowship.NJob;
 using Snowship.NMap;
+using Snowship.NSelection;
 using Snowship.NUtilities;
-using Snowship.Selectable;
 using UnityEngine;
 
 namespace Snowship.NResource

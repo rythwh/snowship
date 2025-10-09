@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NResource;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -11,6 +12,7 @@ using VContainer.Unity;
 
 namespace Snowship.NJob
 {
+	[UsedImplicitly]
 	public class JobRegistry : IStartable
 	{
 		private readonly IResourceQuery resourceQuery;

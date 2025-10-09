@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Snowship.NMap.Models.Geography;
+using Snowship.NResource;
 using Snowship.NUtilities;
 
 namespace Snowship.NCaravan {

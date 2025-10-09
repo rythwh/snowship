@@ -4,6 +4,7 @@ using Snowship.NMap.NTile;
 using Snowship.NColony;
 using Snowship.NHuman;
 using Snowship.NJob;
+using Snowship.NPath;
 using Snowship.NResource;
 using Snowship.NUtilities;
 
@@ -45,7 +46,7 @@ namespace Snowship.NColonist {
 
 		public void EmptyInventory(List<Container> validContainers) {
 			if (Inventory.UsedWeight() > 0 && Inventory.UsedVolume() > 0 && validContainers.Count > 0) {
-				Container closestContainer = validContainers.OrderBy(container => PathManager.RegionBlockDistance(container.tile.regionBlock, Tile.regionBlock, true, true, false)).ToList()[0];
+				Container closestContainer = validContainers.OrderBy(container => Path.RegionBlockDistance(container.tile.regionBlock, Tile.regionBlock, true, true, false)).ToList()[0];
 				Jobs.ForceJob(new EmptyInventoryJob(closestContainer));
 			}
 		}

@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NCamera;
 using Snowship.NColony;
 using Snowship.NMap.Generation;
@@ -9,6 +10,7 @@ using VContainer.Unity;
 
 namespace Snowship.NMap
 {
+	[UsedImplicitly]
 	public class MapManager : IInitializable
 	{
 		private readonly IMapWrite mapWrite;

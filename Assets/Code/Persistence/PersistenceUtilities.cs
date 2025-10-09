@@ -134,7 +134,7 @@ namespace Snowship.NPersistence {
 		}
 
 		public static Sprite LoadSaveImageFromSaveDirectoryPath(string saveDirectoryPath) {
-			string screenshotPath = Directory.GetFiles(saveDirectoryPath).ToList().Find(f => Path.GetExtension(f).ToLower() == ".png");
+			string screenshotPath = Directory.GetFiles(saveDirectoryPath).ToList().Find(f => System.IO.Path.GetExtension(f).ToLower() == ".png");
 			if (screenshotPath != null) {
 				return LoadSpriteFromImageFile(screenshotPath);
 			}

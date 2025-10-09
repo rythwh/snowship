@@ -1,5 +1,6 @@
 ﻿using Snowship.NMap;
 using Snowship.NPlanet;
+using Snowship.NResource;
 using Snowship.NUtilities;
 
 namespace Snowship.NColony {

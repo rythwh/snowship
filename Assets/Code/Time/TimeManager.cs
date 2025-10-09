@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 using Snowship.NInput;
 using Snowship.NState;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using VContainer.Unity;
 
-namespace Snowship.NTime {
-
+namespace Snowship.NTime
+{
+	[UsedImplicitly]
 	public class TimeManager : IPostStartable, ITickable {
 		private readonly IStateEvents stateEvents;
 		private readonly IStateQuery stateQuery;

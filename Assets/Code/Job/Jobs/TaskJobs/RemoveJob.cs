@@ -5,8 +5,10 @@ using Snowship.NMap.NTile;
 using Snowship.NHuman;
 using Snowship.NMap;
 using Snowship.NResource;
+using Snowship.NResource.NInventory;
 using Snowship.NUtilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Snowship.NJob
 {
@@ -14,8 +16,8 @@ namespace Snowship.NJob
 	public class RemoveJobDefinition : JobDefinition<RemoveJob>
 	{
 		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
-			Selectable.SelectionConditions.SameLayerObject,
-			Selectable.SelectionConditions.NoSameLayerJobs
+			NSelection.SelectionConditions.SameLayerObject,
+			NSelection.SelectionConditions.NoSameLayerJobs
 		};
 
 		public RemoveJobDefinition(IGroupItem group, IGroupItem subGroup, string name) : base(group, subGroup, name) {

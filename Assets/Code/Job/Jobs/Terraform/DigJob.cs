@@ -4,6 +4,7 @@ using System.Linq;
 using Snowship.NMap.NTile;
 using Snowship.NResource;
 using Snowship.NUtilities;
+using UnityEngine.UI;
 
 namespace Snowship.NJob
 {
@@ -11,13 +12,13 @@ namespace Snowship.NJob
 	public class DigJobDefinition : JobDefinition<DigJob>
 	{
 		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
-			Selectable.SelectionConditions.CoastalWater,
-			Selectable.SelectionConditions.NoHole,
-			Selectable.SelectionConditions.NotDugPreviously,
-			Selectable.SelectionConditions.NotStone,
-			Selectable.SelectionConditions.NoObjects,
-			Selectable.SelectionConditions.NoPlant,
-			Selectable.SelectionConditions.NoSameLayerJobs
+			NSelection.SelectionConditions.CoastalWater,
+			NSelection.SelectionConditions.NoHole,
+			NSelection.SelectionConditions.NotDugPreviously,
+			NSelection.SelectionConditions.NotStone,
+			NSelection.SelectionConditions.NoObjects,
+			NSelection.SelectionConditions.NoPlant,
+			NSelection.SelectionConditions.NoSameLayerJobs
 		};
 
 		public DigJobDefinition(IGroupItem group, IGroupItem subGroup, string name) : base(group, subGroup, name) {

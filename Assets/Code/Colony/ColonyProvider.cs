@@ -1,7 +1,9 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Snowship.NColony
 {
+	[UsedImplicitly]
 	public class ColonyProvider : IColonyEvents
 	{
 		public event Action<Colony> OnColonyCreated;

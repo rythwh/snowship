@@ -3,6 +3,7 @@ using System.Linq;
 using Snowship.NMap.Models.Geography;
 using Snowship.NMap.Models.Structure;
 using Snowship.NMap.NTile;
+using Snowship.NPath;
 using UnityEngine;
 
 namespace Snowship.NMap.Generation
@@ -146,10 +147,10 @@ namespace Snowship.NMap.Generation
 			int expandRadius,
 			bool ignoreStone
 		) {
-			PathManager.PathfindingTile currentTile = new PathManager.PathfindingTile(riverStartTile, null, 0);
+			PathfindingTile currentTile = new PathfindingTile(riverStartTile, null, 0);
 
-			List<PathManager.PathfindingTile> checkedTiles = new List<PathManager.PathfindingTile> { currentTile };
-			List<PathManager.PathfindingTile> frontier = new List<PathManager.PathfindingTile> { currentTile };
+			List<PathfindingTile> checkedTiles = new List<PathfindingTile> { currentTile };
+			List<PathfindingTile> frontier = new List<PathfindingTile> { currentTile };
 
 			List<Tile> river = new List<Tile>();
 
@@ -170,12 +171,12 @@ namespace Snowship.NMap.Generation
 					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (ignoreStone || nTile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
 						if (context.Map.rivers.Find(otherRiver => otherRiver.tiles.Find(riverTile => nTile == riverTile) != null) != null) {
 							frontier.Clear();
-							frontier.Add(new PathManager.PathfindingTile(nTile, currentTile, 0));
+							frontier.Add(new PathfindingTile(nTile, currentTile, 0));
 							nTile.SetTileType(TileType.GetTileTypeByEnum(TileType.TypeEnum.GrassWater), true, false, false);
 							break;
 						}
 						float cost = Vector2.Distance(nTile.obj.transform.position, riverEndTile.obj.transform.position) + nTile.height * (context.Data.mapSize / 10f) + context.Random.NextInt(0, 10);
-						PathManager.PathfindingTile pTile = new PathManager.PathfindingTile(nTile, currentTile, cost);
+						PathfindingTile pTile = new PathfindingTile(nTile, currentTile, cost);
 						frontier.Add(pTile);
 						checkedTiles.Add(pTile);
 					}

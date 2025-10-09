@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Snowship.NHuman;
 using Snowship.NPersistence;
 using Snowship.NUtilities;
@@ -8,6 +9,7 @@ using UnityEngine;
 
 namespace Snowship.NResource
 {
+	[UsedImplicitly]
 	public class ResourceLoader
 	{
 		private readonly IResourceQuery resourceQuery;

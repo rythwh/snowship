@@ -1,6 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using Snowship.NHuman;
 using Snowship.NResource;
+using Snowship.NResource.NInventory;
 using Snowship.NUI.UITab;
 using TMPro;
 using UnityEngine;

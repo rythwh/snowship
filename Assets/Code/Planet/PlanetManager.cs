@@ -1,9 +1,12 @@
 ﻿using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using Snowship.NMap;
 using Snowship.NMap.Generation;
 using Snowship.NMap.NTile;
 
-namespace Snowship.NPlanet {
+namespace Snowship.NPlanet
+{
+	[UsedImplicitly]
 	public class PlanetManager
 	{
 		private readonly TileManager tileM;

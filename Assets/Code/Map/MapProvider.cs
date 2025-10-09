@@ -1,7 +1,9 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Snowship.NMap
 {
+	[UsedImplicitly]
 	public class MapProvider : IMapQuery, IMapWrite, IMapEvents
 	{
 		public Map Map { get; private set; }

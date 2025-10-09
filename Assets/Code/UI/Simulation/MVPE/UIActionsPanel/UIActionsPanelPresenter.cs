@@ -5,8 +5,8 @@ using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NJob;
 using Snowship.NResource;
+using Snowship.NSelection;
 using Snowship.NUtilities;
-using Snowship.Selectable;
 
 namespace Snowship.NUI
 {

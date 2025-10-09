@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Snowship.NMap.NTile;
 using Snowship.NResource;
 using Snowship.NUtilities;
+using UnityEngine.UI;
 
 namespace Snowship.NJob
 {
@@ -10,10 +11,10 @@ namespace Snowship.NJob
 	public class FillJobDefinition : JobDefinition<FillJob>
 	{
 		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
-			Selectable.SelectionConditions.Fillable,
-			Selectable.SelectionConditions.NoObjects,
-			Selectable.SelectionConditions.NoPlant,
-			Selectable.SelectionConditions.NoSameLayerJobs
+			NSelection.SelectionConditions.Fillable,
+			NSelection.SelectionConditions.NoObjects,
+			NSelection.SelectionConditions.NoPlant,
+			NSelection.SelectionConditions.NoSameLayerJobs
 		};
 
 		public override List<(EResource, int)> BaseRequiredResources { get; } = new() {

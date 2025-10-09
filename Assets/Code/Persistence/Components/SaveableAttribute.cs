@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Snowship.Persistence
+namespace Snowship.NPersistence
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 	public sealed class SaveableAttribute : Attribute

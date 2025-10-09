@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Snowship.Persistence
+namespace Snowship.NPersistence
 {
 	[Serializable]
 	public sealed class ObjectRecord

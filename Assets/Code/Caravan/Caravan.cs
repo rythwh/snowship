@@ -6,7 +6,9 @@ using Snowship.NHuman;
 using Snowship.NLife;
 using Snowship.NMap.NTile;
 using Snowship.NMap;
+using Snowship.NPath;
 using Snowship.NResource;
+using Snowship.NResource.NInventory;
 using Snowship.NTime;
 using UnityEngine;
 
@@ -203,7 +205,7 @@ namespace Snowship.NCaravan {
 
 			Trader primaryTrader = traders[0];
 			if (primaryTrader != null) {
-				foreach (TradingPost tradingPost in TradingPost.GetTradingPostsInRegion(primaryTrader.Tile.region).OrderBy(tp => PathManager.RegionBlockDistance(primaryTrader.Tile.regionBlock, tp.zeroPointTile.regionBlock, true, true, false))) {
+				foreach (TradingPost tradingPost in TradingPost.GetTradingPostsInRegion(primaryTrader.Tile.region).OrderBy(tp => Path.RegionBlockDistance(primaryTrader.Tile.regionBlock, tp.zeroPointTile.regionBlock, true, true, false))) {
 					List<ResourceAmount> resourcesToReserveAtThisTradingPost = new();
 					List<ResourceAmount> resourcesToReserveToRemove = new();
 					foreach (ResourceAmount resourceToReserve in resourcesToReserve) {

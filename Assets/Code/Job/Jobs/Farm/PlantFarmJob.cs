@@ -1,6 +1,7 @@
 ﻿using System;
 using Snowship.NMap.NTile;
 using Snowship.NUtilities;
+using UnityEngine.UI;
 
 namespace Snowship.NJob
 {
@@ -8,12 +9,12 @@ namespace Snowship.NJob
 	public class PlantFarmJobDefinition : JobDefinition<PlantFarmJob>
 	{
 		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
-			Selectable.SelectionConditions.Walkable,
-			Selectable.SelectionConditions.Buildable,
-			Selectable.SelectionConditions.NoObjects,
-			Selectable.SelectionConditions.NoRoof,
-			Selectable.SelectionConditions.NoPlant,
-			Selectable.SelectionConditions.NoSameLayerJobs
+			NSelection.SelectionConditions.Walkable,
+			NSelection.SelectionConditions.Buildable,
+			NSelection.SelectionConditions.NoObjects,
+			NSelection.SelectionConditions.NoRoof,
+			NSelection.SelectionConditions.NoPlant,
+			NSelection.SelectionConditions.NoSameLayerJobs
 		};
 
 		public PlantFarmJobDefinition(IGroupItem group, IGroupItem subGroup, string name) : base(group, subGroup, name) {

@@ -4,6 +4,7 @@ using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NUtilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Snowship.NJob
 {
@@ -11,8 +12,8 @@ namespace Snowship.NJob
 	public class MineJobDefinition : JobDefinition<MineJob>
 	{
 		public override Func<Tile, int, bool>[] SelectionConditions { get; protected set; } = {
-			Selectable.SelectionConditions.Stone,
-			Selectable.SelectionConditions.NoSameLayerJobs
+			NSelection.SelectionConditions.Stone,
+			NSelection.SelectionConditions.NoSameLayerJobs
 		};
 
 		public MineJobDefinition(IGroupItem group, IGroupItem subGroup, string name) : base(group, subGroup, name) {

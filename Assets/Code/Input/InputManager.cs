@@ -1,16 +1,16 @@
 ﻿using System;
+using JetBrains.Annotations;
 using TMPro;
 using UnityEngine.EventSystems;
 using VContainer.Unity;
 
-namespace Snowship.NInput {
+namespace Snowship.NInput
+{
+	[UsedImplicitly]
 	public class InputManager : IStartable, ITickable {
 
 		private InputSystemActions inputSystemActions;
-		public InputSystemActions InputSystemActions {
-			get => inputSystemActions ??= new InputSystemActions();
-			private set => inputSystemActions = value;
-		}
+		public InputSystemActions InputSystemActions => inputSystemActions ??= new InputSystemActions();
 
 		public bool PointerOverUI { get; private set; }
 

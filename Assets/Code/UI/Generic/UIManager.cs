@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-namespace Snowship.NUI {
+namespace Snowship.NUI
+{
+	[UsedImplicitly]
 	public class UIManager : IUIManager
 	{
 		private readonly IObjectResolver resolver;
@@ -101,7 +104,7 @@ namespace Snowship.NUI {
 			if (presenter == null) {
 				return await OpenViewAsync<TUIConfigToOpen>(parent, parameters, showParent, useParentTransform);
 			}
-			return null;
+			return presenter;
 		}
 
 		public async UniTask<IUIPresenter> ReopenView<TUIConfigToReopen>(

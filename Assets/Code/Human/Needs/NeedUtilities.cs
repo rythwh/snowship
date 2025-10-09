@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Snowship.NJob;
+using Snowship.NPath;
 using Snowship.NResource;
 using Snowship.NTime;
 
@@ -82,7 +83,7 @@ namespace Snowship.NColonist {
 					containersWithResourceAmount.Add(container);
 				}
 			}
-			return containersWithResourceAmount.OrderBy(container => PathManager.RegionBlockDistance(colonist.Tile.regionBlock, container.tile.regionBlock, true, true, false)).FirstOrDefault();
+			return containersWithResourceAmount.OrderBy(container => Path.RegionBlockDistance(colonist.Tile.regionBlock, container.tile.regionBlock, true, true, false)).FirstOrDefault();
 		}
 
 		public static int FindAvailableResourceAmount(ResourceGroup.ResourceGroupEnum resourceGroup, Colonist colonist, bool worldTotal, bool includeOtherColonists) {
