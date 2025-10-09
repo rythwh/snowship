@@ -127,7 +127,7 @@ namespace Snowship.NUI
 		// Terraform Buttons
 
 		private async UniTask CreateTerraformButtons(ITreeButton button) {
-			JobGroup group = GameManager.Get<JobManager>().JobRegistry.GetJobGroup("Terraform");
+			JobGroup group = GameManager.Get<JobRegistry>().GetJobGroup("Terraform");
 
 			await CreateGroupButtons(button, group, SetupIndividualTerraformButton);
 		}
@@ -146,7 +146,7 @@ namespace Snowship.NUI
 		// Farm Buttons
 
 		private async UniTask CreateFarmButtons(ITreeButton button) {
-			JobGroup group = GameManager.Get<JobManager>().JobRegistry.GetJobGroup("Farm");
+			JobGroup group = GameManager.Get<JobRegistry>().GetJobGroup("Farm");
 
 			await CreateGroupButtons(button, group, SetupIndividualFarmButton);
 		}
@@ -165,7 +165,7 @@ namespace Snowship.NUI
 		// Remove Buttons
 
 		private async UniTask CreateRemoveButtons(ITreeButton button) {
-			JobGroup group = GameManager.Get<JobManager>().JobRegistry.GetJobGroup("Remove");
+			JobGroup group = GameManager.Get<JobRegistry>().GetJobGroup("Remove");
 
 			await CreateGroupButtons(button, group, SetupIndividualRemoveButton);
 		}

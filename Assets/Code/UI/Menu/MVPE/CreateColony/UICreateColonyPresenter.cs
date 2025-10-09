@@ -130,8 +130,8 @@ namespace Snowship.NUI
 			View.SetPlanetTileData(planetTile, planetTileValid);
 		}
 
-		private async void OnCreateColonyButtonClicked() {
-			await GameManager.Get<ColonyManager>().CreateColony(createColonyData);
+		private void OnCreateColonyButtonClicked() {
+			GameManager.Get<ColonyManager>().CreateColony(createColonyData);
 		}
 
 		// private void OnColonyTileClicked(PersistenceColony persistenceColony) {

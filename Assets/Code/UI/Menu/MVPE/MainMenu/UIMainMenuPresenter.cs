@@ -36,7 +36,7 @@ namespace Snowship.NUI
 			// }
 
 			List<Sprite> backgroundImages = Resources.LoadAll<Sprite>(@"UI/Backgrounds/SingleMap").ToList();
-			View.SetBackground(backgroundImages[Random.Range(0, backgroundImages.Count)]);
+			View.SetBackground(backgroundImages.RandomElement());
 
 			return UniTask.CompletedTask;
 		}

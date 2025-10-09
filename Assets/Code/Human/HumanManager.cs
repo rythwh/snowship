@@ -9,7 +9,6 @@ using Snowship.NInput;
 using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
-using Snowship.NProfession;
 using Snowship.NState;
 using Snowship.NUtilities;
 using Snowship.Selectable;
@@ -21,10 +20,11 @@ using Object = UnityEngine.Object;
 
 namespace Snowship.NHuman
 {
-	public sealed class HumanManager : IAsyncStartable, ITickable
+	public sealed class HumanManager : IInitializable, IAsyncStartable, ITickable
 	{
 		private readonly IHumanQuery humanQuery;
 		private readonly IHumanEvents humanEvents;
+		private readonly IHumanWrite humanWrite;
 
 		private readonly ICameraWrite cameraWrite;
 		private readonly ICameraQuery cameraQuery;
@@ -46,6 +46,7 @@ namespace Snowship.NHuman
 		public HumanManager(
 			IHumanQuery humanQuery,
 			IHumanEvents humanEvents,
+			IHumanWrite humanWrite,
 			ICameraWrite cameraWrite,
 			ICameraQuery cameraQuery,
 			InputManager inputM,
@@ -55,6 +56,7 @@ namespace Snowship.NHuman
 		) {
 			this.humanQuery = humanQuery;
 			this.humanEvents = humanEvents;
+			this.humanWrite = humanWrite;
 			this.cameraWrite = cameraWrite;
 			this.cameraQuery = cameraQuery;
 			this.inputM = inputM;
@@ -63,15 +65,16 @@ namespace Snowship.NHuman
 			this.stateQuery = stateQuery;
 		}
 
+		public void Initialize() {
+			SkillPrefab.CreateColonistSkills(); // TODO (Solution: Use string references which can be converted to the correct Prefab obj when needed) Skills must currently be ahead of professions to determine skill-profession relationship
+			NeedPrefab.CreateColonistNeeds();
+			MoodModifierGroup.CreateMoodModifiers();
+		}
+
 		public async UniTask StartAsync(CancellationToken cancellation = new CancellationToken()) {
 			await LoadHumanPrefab();
 			LoadNames();
 			LoadSprites();
-
-			SkillPrefab.CreateColonistSkills(); // TODO (Solution: Use string references which can be converted to the correct Prefab obj when needed) Skills must currently be ahead of professions to determine skill-profession relationship
-			ProfessionPrefab.CreateProfessionPrefabs();
-			NeedPrefab.CreateColonistNeeds();
-			MoodModifierGroup.CreateMoodModifiers();
 		}
 
 		public void Tick() {
@@ -122,6 +125,7 @@ namespace Snowship.NHuman
 
 			humanView.Bind(human);
 
+			humanWrite.AddHuman<THuman>(human, humanView);
 
 			return human;
 		}

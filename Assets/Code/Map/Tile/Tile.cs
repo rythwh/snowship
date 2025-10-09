@@ -26,8 +26,8 @@ namespace Snowship.NMap.NTile
 
 		public Dictionary<EGridConnectivity, List<Tile>> SurroundingTiles { get; } = new();
 
-		public List<Tile> horizontalSurroundingTiles = new List<Tile>();
-		public List<Tile> surroundingTiles = new List<Tile>();
+		public List<Tile> horizontalSurroundingTiles => SurroundingTiles[EGridConnectivity.FourWay];
+		public List<Tile> surroundingTiles => SurroundingTiles[EGridConnectivity.EightWay];
 
 		public float height;
 
@@ -82,7 +82,7 @@ namespace Snowship.NMap.NTile
 				new Vector2(positionGrid.x + 0.5f, positionGrid.y + 0.5f),
 				Quaternion.identity
 			);
-			obj.transform.SetParent(GameManager.SharedReferences.TileParent, true);
+			obj.transform.SetParent(GameManager.Get<SharedReferences>().TileParent, true);
 			obj.name = $"Tile-{positionGrid}";
 
 			sr = obj.GetComponent<SpriteRenderer>();

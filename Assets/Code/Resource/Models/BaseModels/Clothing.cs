@@ -56,7 +56,7 @@ namespace Snowship.NResource
 		}
 
 		public static List<Clothing> GetClothesByAppearance(BodySection bodySection) {
-			return GetResourcesInClass(ResourceClassEnum.Clothing).Select(r => (Clothing)r).Where(c => c.prefab.BodySection == bodySection).ToList();
+			return GameManager.Get<IResourceQuery>().GetResourcesInClass(ResourceClassEnum.Clothing).Select(r => (Clothing)r).Where(c => c.prefab.BodySection == bodySection).ToList();
 		}
 
 		public enum ClothingEnum

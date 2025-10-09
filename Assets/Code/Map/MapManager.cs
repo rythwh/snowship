@@ -2,14 +2,13 @@ using Cysharp.Threading.Tasks;
 using Snowship.NCamera;
 using Snowship.NColony;
 using Snowship.NMap.Generation;
-using Snowship.NMap.Models.Geography;
 using Snowship.NMap.NTile;
 using Snowship.NState;
-using VContainer.Unity;
+using Snowship.NTime;
 
 namespace Snowship.NMap
 {
-	public class MapManager : IInitializable
+	public class MapManager
 	{
 		private readonly IMapWrite mapWrite;
 		private readonly IMapQuery mapQuery;
@@ -17,6 +16,7 @@ namespace Snowship.NMap
 		private readonly ICameraEvents cameraEvents;
 		private readonly StateManager stateM;
 		private readonly TileManager tileM;
+		private readonly TimeManager timeM;
 
 		public MapManager(
 			IMapWrite mapWrite,
@@ -25,7 +25,8 @@ namespace Snowship.NMap
 			ICameraEvents cameraEvents,
 			IColonyEvents colonyEvents,
 			StateManager stateM,
-			TileManager tileM
+			TileManager tileM,
+			TimeManager timeM
 		) {
 			this.mapWrite = mapWrite;
 			this.mapQuery = mapQuery;
@@ -33,18 +34,13 @@ namespace Snowship.NMap
 			this.cameraEvents = cameraEvents;
 			this.stateM = stateM;
 			this.tileM = tileM;
+			this.timeM = timeM;
 
 			colonyEvents.OnColonyCreated += OnColonyCreated;
 		}
 
 		private async void OnColonyCreated(Colony _) {
 			await CreateMap(mapQuery.MapData);
-		}
-
-		public void Initialize() {
-			TileType.InitializeTileTypes();
-			Biome.InitializeBiomes();
-			ResourceVein.InitializeResourceVeins();
 		}
 
 		public async UniTask CreateMap(MapData mapData) {
@@ -68,6 +64,7 @@ namespace Snowship.NMap
 
 			cameraEvents.OnCameraPositionChanged += mapQuery.Map.OnCameraPositionChanged;
 			cameraEvents.OnCameraZoomChanged += mapQuery.Map.OnCameraZoomChanged;
+			timeM.OnTimeChanged += mapQuery.Map.OnTimeChanged;
 
 			mapEvents.InvokeOnMapCreated();
 		}

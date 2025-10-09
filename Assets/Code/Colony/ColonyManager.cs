@@ -1,5 +1,4 @@
 ﻿using Snowship.NMap;
-using Cysharp.Threading.Tasks;
 using Snowship.NColonist;
 using Snowship.NPlanet;
 
@@ -28,7 +27,7 @@ namespace Snowship.NColony {
 			mapEvents.OnMapCreated += SetupNewColony;
 		}
 
-		public async UniTask CreateColony(CreateColonyData data) {
+		public void CreateColony(CreateColonyData data) {
 
 			MapData mapData = new MapData(
 				data.Seed,

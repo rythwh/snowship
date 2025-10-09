@@ -21,6 +21,7 @@ namespace Snowship.Selectable
 {
 	public class SelectionManager : IAsyncStartable, ITickable
 	{
+		private readonly SharedReferences sharedReferences;
 		private readonly InputManager inputM;
 		private readonly IStateEvents stateEvents;
 		private readonly IMapQuery mapQuery;
@@ -48,6 +49,7 @@ namespace Snowship.Selectable
 		private Map map;
 
 		public SelectionManager(
+			SharedReferences sharedReferences,
 			InputManager inputM,
 			IStateEvents stateEvents,
 			IMapQuery mapQuery,
@@ -55,12 +57,15 @@ namespace Snowship.Selectable
 			JobManager jobM,
 			TileManager tileM
 		) {
+			this.sharedReferences = sharedReferences;
 			this.inputM = inputM;
 			this.stateEvents = stateEvents;
 			this.mapQuery = mapQuery;
 			this.cameraQuery = cameraQuery;
 			this.jobM = jobM;
 			this.tileM = tileM;
+
+			selectedJobPreviewObject = sharedReferences.SelectedJobPreview;
 		}
 
 		public async UniTask StartAsync(CancellationToken cancellation = new CancellationToken()) {
@@ -75,8 +80,6 @@ namespace Snowship.Selectable
 			inputM.InputSystemActions.Simulation.Rotate.performed += OnRotatePerformed;
 
 			stateEvents.OnStateChanged += OnStateChanged;
-
-			selectedJobPreviewObject = GameManager.SharedReferences.SelectedJobPreview;
 		}
 
 		private async UniTask LoadSelectionIndicatorPrefab() {
@@ -132,7 +135,7 @@ namespace Snowship.Selectable
 			ClearSelectedJob();
 
 			selectedJobType = typeof(TJob);
-			selectedJobDefinition = jobM.JobRegistry.GetJobDefinition(typeof(TJobDefinition)) as TJobDefinition;
+			selectedJobDefinition = GameManager.Get<JobRegistry>().GetJobDefinition(typeof(TJobDefinition)) as TJobDefinition;
 			selectedJobParams = null;
 		}
 

@@ -59,9 +59,10 @@ namespace Snowship.NProfession {
 									type = (string)professionSubProperty.Value;
 									break;
 								case "Jobs":
-									foreach (string jobString in ((string)professionSubProperty.Value).Split(',')) {
-										jobs.Add(GameManager.Get<JobManager>().JobRegistry.GetJobTypeFromName(jobString));
-									}
+									// TODO JobRegistry not created yet when this is called
+									// foreach (string jobString in ((string)professionSubProperty.Value).Split(',')) {
+									// 	jobs.Add(GameManager.Get<JobManager>().JobRegistry.GetJobTypeFromName(jobString));
+									// }
 									break;
 								default:
 									Debug.LogError("Unknown profession sub property: " + professionSubProperty.Key + " " + professionSubProperty.Value);

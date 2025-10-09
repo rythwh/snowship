@@ -70,16 +70,16 @@ namespace Snowship.NResource
 						switch (resource.creationMethod) {
 							case CraftableResourceInstance.CreationMethod.SingleRun:
 								if (resource.GetRemainingAmount() > 0) {
-									resource.Job = GameManager.Get<ResourceManager>().CreateResource(resource, this);
+									resource.Job = GameManager.Get<JobManager>().CreateResource(resource, this);
 								}
 								break;
 							case CraftableResourceInstance.CreationMethod.MaintainStock:
 								if (resource.GetTargetAmount() > resource.resource.GetAvailableAmount()) {
-									resource.Job = GameManager.Get<ResourceManager>().CreateResource(resource, this);
+									resource.Job = GameManager.Get<JobManager>().CreateResource(resource, this);
 								}
 								break;
 							case CraftableResourceInstance.CreationMethod.ContinuousRun:
-								resource.Job = GameManager.Get<ResourceManager>().CreateResource(resource, this);
+								resource.Job = GameManager.Get<JobManager>().CreateResource(resource, this);
 								break;
 						}
 					}
@@ -150,7 +150,7 @@ namespace Snowship.NResource
 
 		public List<Resource> GetResourcesByCraftingObject() {
 			List<Resource> resources = new();
-			foreach (Resource resource in Resource.GetResourcesInClass(Resource.ResourceClassEnum.Craftable)) {
+			foreach (Resource resource in GameManager.Get<IResourceQuery>().GetResourcesInClass(Resource.ResourceClassEnum.Craftable)) {
 				foreach (ObjectPrefabSubGroup.ObjectSubGroupEnum craftingObjectSubGroupEnum in resource.craftingObjects.Keys) {
 					if (prefab.subGroupType == craftingObjectSubGroupEnum) {
 						if (resource.craftingObjects[craftingObjectSubGroupEnum] == null) {

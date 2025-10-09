@@ -33,8 +33,8 @@ namespace Snowship.NMap.Generation
 			for (int y = 0; y < context.Data.mapSize; y++) {
 				for (int x = 0; x < context.Data.mapSize; x++) {
 
-					List<Tile> horizontalTiles = context.Map.sortedTiles[y][x].SurroundingTiles[Tile.EGridConnectivity.FourWay];
-					List<Tile> surroundingTiles = context.Map.sortedTiles[y][x].SurroundingTiles[Tile.EGridConnectivity.EightWay];
+					List<Tile> horizontalTiles = new();
+					List<Tile> surroundingTiles = new();
 
 					// Horizontal
 					horizontalTiles.Add(y + 1 < context.Data.mapSize ? context.Map.sortedTiles[y + 1][x] : null);
@@ -65,6 +65,9 @@ namespace Snowship.NMap.Generation
 					} else {
 						surroundingTiles.Add(null);
 					}
+
+					context.Map.sortedTiles[y][x].SurroundingTiles[Tile.EGridConnectivity.FourWay] = horizontalTiles;
+					context.Map.sortedTiles[y][x].SurroundingTiles[Tile.EGridConnectivity.EightWay] = surroundingTiles;
 				}
 			}
 		}

@@ -14,10 +14,10 @@ namespace Snowship.NCamera {
 	{
 		private readonly ICameraQuery cameraQuery;
 		private readonly ICameraWrite cameraWrite;
-		private readonly IStateEvents stateEvents;
 		private readonly IStateQuery stateQuery;
 		private readonly InputManager inputM;
 		private readonly IMapQuery mapQuery;
+		private readonly IMapEvents mapEvents;
 
 		private const float CameraMoveSpeedMultiplier = 1.25f;
 
@@ -33,24 +33,32 @@ namespace Snowship.NCamera {
 		public CameraManager(
 			ICameraQuery cameraQuery,
 			ICameraWrite cameraWrite,
-			IStateEvents stateEvents,
 			IStateQuery stateQuery,
 			InputManager inputM,
-			IMapQuery mapQuery
+			IMapQuery mapQuery,
+			IMapEvents mapEvents
 		) {
 			this.cameraQuery = cameraQuery;
 			this.cameraWrite = cameraWrite;
-			this.stateEvents = stateEvents;
 			this.stateQuery = stateQuery;
 			this.inputM = inputM;
 			this.mapQuery = mapQuery;
+			this.mapEvents = mapEvents;
 		}
 
 		public void Start() {
-			stateEvents.OnStateChanged += OnStateChanged;
+			mapEvents.MapSet += OnMapSet;
 
 			OnInputSystemEnabled(inputM.InputSystemActions);
 			inputM.OnInputSystemDisabled += OnInputSystemDisabled;
+		}
+
+		private void OnMapSet(Map map) {
+			int mapSize = mapQuery.Map.MapData.mapSize;
+			cameraWrite.SetPosition(Vector2.one * mapSize / 2f, false);
+			cameraWrite.SetZoom(ZoomMax);
+
+			mapQuery.Map.LightingUpdated += OnLightingUpdated;
 		}
 
 		public void Tick() {
@@ -63,18 +71,6 @@ namespace Snowship.NCamera {
 			cameraWrite.SetBackgroundColour(colour);
 		}
 
-		private void OnStateChanged((EState previousState, EState newState) states) {
-			if (states is not { previousState: EState.MainMenu, newState: EState.LoadToSimulation }) {
-				return;
-			}
-
-			int mapSize = mapQuery.Map.MapData.mapSize;
-			cameraWrite.SetPosition(Vector2.one * mapSize / 2f, false);
-			cameraWrite.SetZoom(ZoomMax);
-
-			mapQuery.Map.LightingUpdated += OnLightingUpdated;
-		}
-
 		private void MoveCamera() {
 			Vector3 newPosition = cameraQuery.CurrentPosition;
 			newPosition += moveVector * (CameraMoveSpeedMultiplier * cameraQuery.CurrentZoom * Time.deltaTime);
@@ -82,7 +78,7 @@ namespace Snowship.NCamera {
 				Mathf.Clamp(newPosition.x, 0, mapQuery.Map.MapData.mapSize),
 				Mathf.Clamp(newPosition.y, 0, mapQuery.Map.MapData.mapSize)
 			);
-			cameraWrite.SetPosition(newPosition);
+			cameraWrite.SetPosition(newPosition, false);
 		}
 
 		private void ZoomCamera() {

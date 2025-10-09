@@ -8,10 +8,17 @@ namespace Snowship.NSettings
 {
 	public class SettingsManager : IStartable
 	{
+		private readonly SharedReferences sharedReferences;
+
 		public SettingsState Settings { get; } = new();
 		public SettingsState UnappliedSettings { get; } = new();
 
 		public event Action OnSettingsChanged;
+
+		public SettingsManager(SharedReferences sharedReferences) {
+			this.sharedReferences = sharedReferences;
+
+		}
 
 		public void Start() {
 			LoadSettings();
@@ -29,7 +36,7 @@ namespace Snowship.NSettings
 				Settings.Resolution.refreshRateRatio
 			);
 
-			GameManager.SharedReferences.Canvas.GetComponent<CanvasScaler>().uiScaleMode = Settings.ScaleMode;
+			sharedReferences.Canvas.GetComponent<CanvasScaler>().uiScaleMode = Settings.ScaleMode;
 
 			SaveSettings();
 

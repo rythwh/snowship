@@ -20,10 +20,10 @@ namespace Snowship.NMap.NTile
 		};
 
 		public async UniTask StartAsync(CancellationToken cancellation = new CancellationToken()) {
-			await LoadTilePrefab(cancellation);
+			await LoadTilePrefab();
 		}
 
-		private async UniTask LoadTilePrefab(CancellationToken cancellation) {
+		private async UniTask LoadTilePrefab() {
 			AsyncOperationHandle<GameObject> handle = Addressables.LoadAssetAsync<GameObject>("Prefabs/Game/Tile");
 			handle.ReleaseHandleOnCompletion();
 			TilePrefab = await handle;

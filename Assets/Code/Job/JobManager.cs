@@ -4,6 +4,7 @@ using System.Linq;
 using Snowship.NMap.Models.Structure;
 using Snowship.NMap.NTile;
 using Snowship.NColonist;
+using Snowship.NProfession;
 using Snowship.NResource;
 using Snowship.NTime;
 using UnityEngine;
@@ -13,11 +14,11 @@ namespace Snowship.NJob
 {
 	public class JobManager : IStartable
 	{
+		private readonly JobRegistry jobRegistry;
 		private readonly TimeManager timeM;
 		private readonly IColonistQuery colonistQuery;
 		private readonly SharedReferences sharedReferences;
 
-		public JobRegistry JobRegistry { get; private set; }
 		public HashSet<IJob> Jobs { get; } = new();
 		private readonly Dictionary<Type, HashSet<IJob>> jobsByType = new();
 		private readonly Dictionary<Tile, HashSet<IJob>> jobsByTile = new();
@@ -30,16 +31,18 @@ namespace Snowship.NJob
 		public JobManager(
 			TimeManager timeM,
 			IColonistQuery colonistQuery,
-			SharedReferences sharedReferences
+			SharedReferences sharedReferences,
+			JobRegistry jobRegistry
 		) {
 			this.timeM = timeM;
 			this.colonistQuery = colonistQuery;
 			this.sharedReferences = sharedReferences;
+			this.jobRegistry = jobRegistry;
 		}
 
 		public void Start() {
-			JobRegistry = new JobRegistry();
-			JobRegistry.CreateJobRegistry();
+			ProfessionPrefab.CreateProfessionPrefabs();
+
 			timeM.OnTimeChanged += OnTimeChanged;
 		}
 
@@ -218,44 +221,11 @@ namespace Snowship.NJob
 			args?.UpdateJobPreviewSprite();
 			return args?.JobPreviewSprite ?? jobDefinition?.Icon ?? sharedReferences.SelectionSprite;
 		}
-	}
 
-	public readonly struct JobCostEntry : IComparable<JobCostEntry>, IComparer<JobCostEntry>, IEquatable<JobCostEntry>
-	{
-		public IJob Job { get; }
-		public float Cost { get; }
-
-		public JobCostEntry(IJob job, float cost) {
-			Job = job;
-			Cost = cost;
-		}
-
-		public int CompareTo(JobCostEntry other) {
-			return Cost.CompareTo(other.Cost);
-		}
-
-		public int Compare(JobCostEntry x, JobCostEntry y) {
-			return x.CompareTo(y);
-		}
-
-		public bool Equals(JobCostEntry other) {
-			return Equals(Job, other.Job);
-		}
-
-		public override bool Equals(object obj) {
-			return obj is JobCostEntry other && Equals(other);
-		}
-
-		public override int GetHashCode() {
-			return Job != null ? Job.GetHashCode() : 0;
-		}
-
-		public static bool operator ==(JobCostEntry left, JobCostEntry right) {
-			return left.Equals(right);
-		}
-
-		public static bool operator !=(JobCostEntry left, JobCostEntry right) {
-			return !left.Equals(right);
+		public CreateResourceJob CreateResource(CraftableResourceInstance resource, CraftingObject craftingObject) {
+			CreateResourceJob job = new(craftingObject, resource);
+			AddJob(job);
+			return job;
 		}
 	}
 }

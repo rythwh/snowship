@@ -8,9 +8,11 @@ namespace Snowship.NMap
 		public MapData MapData { get; private set; }
 
 		public event Action<Map> OnMapCreated;
+		public event Action<Map> MapSet;
 
 		public void SetMap(Map map) {
 			Map = map;
+			MapSet?.Invoke(Map);
 		}
 
 		public void SetMapData(MapData mapData) {
@@ -25,6 +27,7 @@ namespace Snowship.NMap
 	public interface IMapEvents
 	{
 		event Action<Map> OnMapCreated;
+		event Action<Map> MapSet;
 		void InvokeOnMapCreated();
 	}
 

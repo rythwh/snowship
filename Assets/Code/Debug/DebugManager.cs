@@ -29,7 +29,7 @@ using Random = UnityEngine.Random;
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 [SuppressMessage("ReSharper", "ConvertIfStatementToConditionalTernaryExpression")]
-public class DebugManager : IAsyncStartable, ITickable
+public class DebugManager : IAsyncStartable, IPostStartable, ITickable
 {
 	private readonly CaravanManager caravanM;
 	private readonly UIManager uiM;
@@ -44,6 +44,7 @@ public class DebugManager : IAsyncStartable, ITickable
 	private readonly ICameraWrite cameraWrite;
 	private readonly ColonyManager colonyM;
 	private readonly PlanetManager planetM;
+	private readonly IResourceQuery resourceQuery;
 
 	private bool debugEnabled = false;
 
@@ -63,7 +64,8 @@ public class DebugManager : IAsyncStartable, ITickable
 		ColonyManager colonyM,
 		PlanetManager planetM,
 		HumanManager humanM,
-		IColonistQuery colonistQuery
+		IColonistQuery colonistQuery,
+		IResourceQuery resourceQuery
 	) {
 		this.caravanM = caravanM;
 		this.uiM = uiM;
@@ -78,6 +80,7 @@ public class DebugManager : IAsyncStartable, ITickable
 		this.planetM = planetM;
 		this.humanM = humanM;
 		this.colonistQuery = colonistQuery;
+		this.resourceQuery = resourceQuery;
 	}
 
 	public async UniTask StartAsync(CancellationToken token = new CancellationToken()) {
@@ -85,7 +88,9 @@ public class DebugManager : IAsyncStartable, ITickable
 		inputM.InputSystemActions.Simulation.DebugMenu.performed += OnDebugMenuButtonPerformed;
 
 		CreateCommandFunctions();
+	}
 
+	public async void PostStart() {
 		await QuickStart();
 	}
 
@@ -113,7 +118,7 @@ public class DebugManager : IAsyncStartable, ITickable
 		List<PlanetTile> filteredPlanetTiles = planet.planetTiles.Where(pt => pt.tile.tileType.classes[TileType.ClassEnum.Dirt]).ToList();
 		PlanetTile planetTile = filteredPlanetTiles.ElementAt(Random.Range(0, filteredPlanetTiles.Count));
 
-		await colonyM.CreateColony(new CreateColonyData(colonyName, seed, size, planetTile));
+		colonyM.CreateColony(new CreateColonyData(colonyName, seed, size, planetTile));
 		#endif
 	}
 
@@ -502,7 +507,7 @@ public class DebugManager : IAsyncStartable, ITickable
 			Commands.changeinvamt,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 2) {
-					Resource resource = Resource.GetResources().Find(r => r.type.ToString() == parameters[0]);
+					Resource resource = resourceQuery.GetResources().Find(r => r.type.ToString() == parameters[0]);
 					if (resource != null) {
 						if (humanM.selectedHuman != null /* || UIManagerOld.selectedContainer != null*/) {
 							if (humanM.selectedHuman != null) {
@@ -544,7 +549,7 @@ public class DebugManager : IAsyncStartable, ITickable
 				} else if (parameters.Count == 3) {
 					if (bool.TryParse(parameters[2], out bool allColonists)) {
 						if (allColonists) {
-							Resource resource = Resource.GetResources().Find(r => r.type.ToString() == parameters[0]);
+							Resource resource = resourceQuery.GetResources().Find(r => r.type.ToString() == parameters[0]);
 							if (resource != null) {
 								if (int.TryParse(parameters[1], out int amount)) {
 									foreach (Colonist colonist in colonistQuery.Colonists) {
@@ -563,7 +568,7 @@ public class DebugManager : IAsyncStartable, ITickable
 				} else if (parameters.Count == 4) {
 					if (bool.TryParse(parameters[2], out bool allColonists)) {
 						if (allColonists) {
-							Resource resource = Resource.GetResources().Find(r => r.type.ToString() == parameters[0]);
+							Resource resource = resourceQuery.GetResources().Find(r => r.type.ToString() == parameters[0]);
 							if (resource != null) {
 								if (int.TryParse(parameters[1], out int amount)) {
 									foreach (Colonist colonist in colonistQuery.Colonists) {
@@ -581,7 +586,7 @@ public class DebugManager : IAsyncStartable, ITickable
 					}
 					if (bool.TryParse(parameters[3], out bool allContainers)) {
 						if (allContainers) {
-							Resource resource = Resource.GetResources().Find(r => r.type.ToString() == parameters[0]);
+							Resource resource = resourceQuery.GetResources().Find(r => r.type.ToString() == parameters[0]);
 							if (resource != null) {
 								if (int.TryParse(parameters[1], out int amount)) {
 									foreach (Container container in Container.containers) {
@@ -606,7 +611,7 @@ public class DebugManager : IAsyncStartable, ITickable
 			Commands.listresources,
 			delegate(List<string> parameters) {
 				if (parameters.Count == 0) {
-					foreach (Resource resource in Resource.GetResources()) {
+					foreach (Resource resource in resourceQuery.GetResources()) {
 						Output(resource.type.ToString());
 					}
 				} else {

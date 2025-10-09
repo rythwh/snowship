@@ -16,8 +16,8 @@ namespace Snowship.NJob
 			Selectable.SelectionConditions.NoSameLayerJobs
 		};
 
-		public override List<ResourceAmount> BaseRequiredResources { get; } = new() {
-			new ResourceAmount(Resource.GetResourceByEnum(EResource.Dirt), 4)
+		public override List<(EResource, int)> BaseRequiredResources { get; } = new() {
+			(EResource.Dirt, 4)
 		};
 
 		public FillJobDefinition(IGroupItem group, IGroupItem subGroup, string name) : base(group, subGroup, name) {

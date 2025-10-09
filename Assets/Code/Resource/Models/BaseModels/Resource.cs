@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Snowship.NUtilities;
 using UnityEngine;
 
@@ -8,9 +7,6 @@ namespace Snowship.NResource
 {
 	public class Resource
 	{
-		public static readonly Dictionary<EResource, Resource> Resources = new();
-		public static readonly Dictionary<ResourceClassEnum, List<Resource>> resourceClassToResources = new();
-
 		public readonly EResource type;
 		public string name; // Can't be readonly
 
@@ -216,20 +212,6 @@ namespace Snowship.NResource
 			return classes.Contains(resourceClass);
 		}
 
-		public static List<Resource> GetResources() {
-			return Resources.Values.ToList();
-		}
 
-		public static Resource GetResourceByString(string resourceString) {
-			return GetResourceByEnum((EResource)Enum.Parse(typeof(EResource), resourceString));
-		}
-
-		public static Resource GetResourceByEnum(EResource resourceType) {
-			return Resources[resourceType];
-		}
-
-		public static List<Resource> GetResourcesInClass(ResourceClassEnum resourceClass) {
-			return resourceClassToResources[resourceClass];
-		}
 	}
 }

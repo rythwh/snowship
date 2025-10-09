@@ -3,17 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
+using Snowship.NResource;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using VContainer.Unity;
 
 namespace Snowship.NJob
 {
-	public class JobRegistry
+	public class JobRegistry : IStartable
 	{
+		private readonly IResourceQuery resourceQuery;
+
 		private readonly List<JobGroup> jobGroups = new();
 		private readonly Dictionary<Type, object> jobDefinitionTypeToDefinitionMap = new();
 		private readonly Dictionary<string, object> jobNameToDefinitionMap = new();
+
+		public JobRegistry(IResourceQuery resourceQuery) {
+			this.resourceQuery = resourceQuery;
+		}
+
+		public void Start() {
+			CreateJobRegistry();
+		}
 
 		internal void CreateJobRegistry() {
 			List<Type> jobTypes = Assembly

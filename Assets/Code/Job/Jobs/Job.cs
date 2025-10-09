@@ -50,13 +50,19 @@ namespace Snowship.NJob
 		public event Action<Job<TJobDefinition>, int> OnPriorityChanged;
 
 		protected Job(Tile tile) {
-			Definition = GameManager.Get<JobManager>().JobRegistry.GetJobDefinition(typeof(TJobDefinition)) ?? throw new InvalidOperationException();
+			Definition = GameManager.Get<JobRegistry>().GetJobDefinition(typeof(TJobDefinition)) ?? throw new InvalidOperationException();
 			Tile = tile;
 			Layer = Definition.Layer;
 			Progress = Definition.TimeToWork;
 			Experience = Definition.TimeToWork;
 
-			RequiredResources.AddRange(Definition.BaseRequiredResources);
+			RequiredResources.AddRange(
+				Definition.BaseRequiredResources.Select(ra => new ResourceAmount(
+						GameManager.Get<IResourceQuery>().GetResourceByEnum(ra.resource),
+						ra.amount
+					)
+				)
+			);
 
 			GameManager.Get<TimeManager>().OnTimeChanged += OnTimeChanged;
 

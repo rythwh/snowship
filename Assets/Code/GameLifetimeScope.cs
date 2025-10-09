@@ -10,6 +10,7 @@ using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
 using Snowship.NPlanet;
+using Snowship.NResource;
 using Snowship.NSettings;
 using Snowship.NState;
 using Snowship.NTime;
@@ -24,11 +25,11 @@ namespace Snowship
 {
 	public class GameLifetimeScope : LifetimeScope
 	{
-		[SerializeField] private SharedReferences sharedReferences;
+		[SerializeField] private SharedReferences SharedReferences;
 
 		protected override void Configure(IContainerBuilder builder) {
 
-			builder.RegisterInstance(sharedReferences);
+			builder.RegisterInstance(SharedReferences);
 
 			builder.RegisterEntryPoint<ServiceLocatorBridge>(Lifetime.Singleton).AsSelf();
 			builder.RegisterEntryPoint<GameManager>(Lifetime.Singleton).AsSelf();
@@ -45,14 +46,18 @@ namespace Snowship
 			HumanServiceInstaller.Install(builder);
 
 			builder.Register<InputManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<JobManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+
+			JobServiceInstaller.Install(builder);
+
 			builder.Register<LifeManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 
 			MapServiceInstaller.Install(builder);
 
 			builder.Register<PersistenceManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<PlanetManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
-			builder.Register<ResourceManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+
+			ResourceServiceInstaller.Install(builder);
+
 			builder.Register<SelectionManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<SettingsManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.Register<SimulationManager>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();

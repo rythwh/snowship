@@ -39,7 +39,7 @@ namespace Snowship.NLife
 
 			CameraEvents.OnCameraZoomChanged += OnCameraZoomChanged;
 
-			transform.SetParent(GameManager.SharedReferences.LifeParent, false);
+			transform.SetParent(GameManager.Get<SharedReferences>().LifeParent, false);
 			transform.position = model.Position;
 
 			modules = GetComponents<LifeViewModule>();

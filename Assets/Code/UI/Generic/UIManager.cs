@@ -1,19 +1,18 @@
 ﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using VContainer.Unity;
 
 namespace Snowship.NUI {
-	public class UIManager : IUIManager, IStartable
+	public class UIManager : IUIManager
 	{
-		private Transform canvas;
+		private readonly Transform canvas;
 
 		private readonly List<IUIGroup> parentGroups = new List<IUIGroup>();
 
 		internal static readonly Dictionary<string, GameObject> CachedComponents = new();
 
-		public void Start() {
-			canvas = GameManager.SharedReferences.Canvas;
+		public UIManager(SharedReferences sharedReferences) {
+			canvas = sharedReferences.Canvas;
 		}
 
 		public async UniTask<IUIPresenter> OpenViewAsync<TUIConfig>() where TUIConfig : IUIConfig, new() {

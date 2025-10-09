@@ -150,7 +150,7 @@ namespace Snowship.NMap.NTile
 															break;
 														case PropertyEnum.ResourceRanges:
 															foreach (string resourceRangeString in ((string)tileTypeSubProperty.Value).Split(',')) {
-																Resource resource = Resource.GetResourceByEnum((EResource)Enum.Parse(typeof(EResource), resourceRangeString.Split(':')[0]));
+																Resource resource = GameManager.Get<IResourceQuery>().GetResourceByEnum((EResource)Enum.Parse(typeof(EResource), resourceRangeString.Split(':')[0]));
 																int min = int.Parse(resourceRangeString.Split(':')[1].Split('-')[0]);
 																int max = int.Parse(resourceRangeString.Split(':')[1].Split('-')[1]);
 																resourceRanges.Add(new ResourceRange(resource, min, max));

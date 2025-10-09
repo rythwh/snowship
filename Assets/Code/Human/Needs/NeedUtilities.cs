@@ -88,7 +88,7 @@ namespace Snowship.NColonist {
 		public static int FindAvailableResourceAmount(ResourceGroup.ResourceGroupEnum resourceGroup, Colonist colonist, bool worldTotal, bool includeOtherColonists) {
 			if (worldTotal) {
 				int total = 0;
-				foreach (Resource resource in Resource.GetResources()) {
+				foreach (Resource resource in GameManager.Get<IResourceQuery>().GetResources()) {
 					if (resource.groupType == resourceGroup) {
 						total += resource.GetWorldTotalAmount();
 					}
@@ -104,7 +104,7 @@ namespace Snowship.NColonist {
 				total += amountOnThisColonist;
 
 				int amountUnreservedInContainers = 0;
-				foreach (Resource resource in Resource.GetResources().Where(r => r.groupType == resourceGroup)) {
+				foreach (Resource resource in GameManager.Get<IResourceQuery>().GetResources().Where(r => r.groupType == resourceGroup)) {
 					amountUnreservedInContainers += resource.GetUnreservedContainerTotalAmount();
 				}
 				total += amountUnreservedInContainers;

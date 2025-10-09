@@ -18,6 +18,7 @@ namespace Snowship.NColonist {
 		private readonly IMapQuery mapQuery;
 		private readonly ICameraWrite cameraWrite;
 		private readonly HumanManager humanManager;
+		private readonly IResourceQuery resourceQuery;
 
 		private IEnumerable<Colonist> Colonists => colonistQuery.Colonists;
 		private int ColonistCount => colonistQuery.ColonistCount;
@@ -26,12 +27,14 @@ namespace Snowship.NColonist {
 			IColonistQuery colonistQuery,
 			IMapQuery mapQuery,
 			ICameraWrite cameraWrite,
-			HumanManager humanManager
+			HumanManager humanManager,
+			IResourceQuery resourceQuery
 		) {
 			this.colonistQuery = colonistQuery;
 			this.mapQuery = mapQuery;
 			this.cameraWrite = cameraWrite;
 			this.humanManager = humanManager;
+			this.resourceQuery = resourceQuery;
 		}
 
 		public void Tick() {
@@ -46,7 +49,6 @@ namespace Snowship.NColonist {
 
 		public void SpawnStartColonists(int amount) {
 			SpawnColonists(amount);
-
 
 			Vector2 averageColonistPosition = new Vector2(0, 0);
 			foreach (Colonist colonist in Colonists) {
@@ -65,7 +67,7 @@ namespace Snowship.NColonist {
 				.ElementAt(Random.Range(0, ColonistCount))
 				.Inventory
 				.ChangeResourceAmount(
-					Resource.GetResourceByEnum(EResource.WheatSeed),
+					resourceQuery.GetResourceByEnum(EResource.WheatSeed),
 					Random.Range(5, 11),
 					false
 				);
@@ -73,7 +75,7 @@ namespace Snowship.NColonist {
 				.ElementAt(Random.Range(0, ColonistCount))
 				.Inventory
 				.ChangeResourceAmount(
-					Resource.GetResourceByEnum(EResource.Potato),
+					resourceQuery.GetResourceByEnum(EResource.Potato),
 					Random.Range(5, 11),
 					false
 				);
@@ -81,7 +83,7 @@ namespace Snowship.NColonist {
 				.ElementAt(Random.Range(0, ColonistCount))
 				.Inventory
 				.ChangeResourceAmount(
-					Resource.GetResourceByEnum(EResource.CottonSeed),
+					resourceQuery.GetResourceByEnum(EResource.CottonSeed),
 					Random.Range(5, 11),
 					false
 				);

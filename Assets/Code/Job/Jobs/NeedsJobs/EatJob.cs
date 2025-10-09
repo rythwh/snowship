@@ -79,7 +79,7 @@ namespace Snowship.NJob
 					foodNeed.ChangeValue(-((Food)ra.Resource).nutrition);
 					colonist.Inventory.ChangeResourceAmount(ra.Resource, -1, false);
 					if (ra.Resource.type == EResource.Apple || ra.Resource.type == EResource.BakedApple) {
-						colonist.Inventory.ChangeResourceAmount(Resource.GetResourceByEnum(EResource.AppleSeed), Random.Range(1, 5), false);
+						colonist.Inventory.ChangeResourceAmount(GameManager.Get<IResourceQuery>().GetResourceByEnum(EResource.AppleSeed), Random.Range(1, 5), false);
 					}
 				}
 				if (stopEating) {
