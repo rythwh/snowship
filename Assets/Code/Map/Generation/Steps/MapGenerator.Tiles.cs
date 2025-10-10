@@ -11,7 +11,7 @@ namespace Snowship.NMap.Generation
 				List<Tile> innerTiles = new List<Tile>();
 				for (int x = 0; x < context.Data.mapSize; x++) {
 
-					float height = context.Random.NextFloat(0f, 1f);
+					float height = Random.Unit();
 
 					Vector2Int position = new(x, y);
 

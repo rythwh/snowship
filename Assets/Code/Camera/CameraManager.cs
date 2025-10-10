@@ -51,16 +51,20 @@ namespace Snowship.NCamera
 		public void Start() {
 			mapEvents.MapSet += OnMapSet;
 
-			inputM.OnInputSystemEnabled += OnInputSystemEnabled;
 			inputM.OnInputSystemDisabled += OnInputSystemDisabled;
 		}
 
 		private void OnMapSet(Map map) {
+			SetInitialCameraSettings();
+			SubscribeToInputEvents();
+			mapQuery.Map.LightingUpdated += OnLightingUpdated;
+		}
+
+		private void SetInitialCameraSettings()
+		{
 			int mapSize = mapQuery.Map.MapData.mapSize;
 			cameraWrite.SetPosition(Vector2.one * mapSize / 2f, false);
 			cameraWrite.SetZoom(ZoomMax);
-
-			mapQuery.Map.LightingUpdated += OnLightingUpdated;
 		}
 
 		public void Tick() {

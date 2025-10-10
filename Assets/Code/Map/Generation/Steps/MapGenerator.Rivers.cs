@@ -61,20 +61,26 @@ namespace Snowship.NMap.Generation
 			int riverEndRiverIndex = context.Data.surroundingPlanetTileRivers.OrderByDescending(i => i).ToList()[0];
 			int riverEndListIndex = context.Data.surroundingPlanetTileRivers.IndexOf(riverEndRiverIndex);
 
-			List<Tile> validEndTiles = context.Map.sortedEdgeTiles[riverEndListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, context.Map.sortedEdgeTiles[riverEndListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, context.Map.sortedEdgeTiles[riverEndListIndex][context.Map.sortedEdgeTiles[riverEndListIndex].Count - 1].obj.transform.position) >= 10).ToList();
-			Tile riverEndTile = validEndTiles[context.Random.NextInt(0, validEndTiles.Count)];
+			List<Tile> validEndTiles = context.Map.sortedEdgeTiles[riverEndListIndex]
+				.Where(tile => Vector2.Distance(tile.PositionGrid, context.Map.sortedEdgeTiles[riverEndListIndex][0].PositionGrid) >= 10)
+				.Where(tile => Vector2.Distance(tile.PositionGrid, context.Map.sortedEdgeTiles[riverEndListIndex][context.Map.sortedEdgeTiles[riverEndListIndex].Count - 1].PositionGrid) >= 10)
+				.ToList();
+			Tile riverEndTile = validEndTiles.RandomElement();
 
 			int riverStartListIndex = 0;
 			foreach (int riverStartRiverIndex in context.Data.surroundingPlanetTileRivers) {
 				if (riverStartRiverIndex != -1 && riverStartRiverIndex != riverEndRiverIndex) {
 
-					int expandRadius = context.Random.NextInt(1, 3) * Mathf.CeilToInt(context.Data.mapSize / 100f);
+					int expandRadius = Random.Range(1, 3) * Mathf.CeilToInt(context.Data.mapSize / 100f);
 
-					List<Tile> validStartTiles = context.Map.sortedEdgeTiles[riverStartListIndex].Where(tile => Vector2.Distance(tile.obj.transform.position, context.Map.sortedEdgeTiles[riverStartListIndex][0].obj.transform.position) >= 10 && Vector2.Distance(tile.obj.transform.position, context.Map.sortedEdgeTiles[riverStartListIndex][context.Map.sortedEdgeTiles[riverStartListIndex].Count - 1].obj.transform.position) >= 10).ToList();
-					Tile riverStartTile = validStartTiles[context.Random.NextInt(0, validStartTiles.Count)];
+					List<Tile> validStartTiles = context.Map.sortedEdgeTiles[riverStartListIndex]
+						.Where(tile => Vector2.Distance(tile.PositionGrid, context.Map.sortedEdgeTiles[riverStartListIndex][0].PositionGrid) >= 10)
+						.Where(tile => Vector2.Distance(tile.PositionGrid, context.Map.sortedEdgeTiles[riverStartListIndex][context.Map.sortedEdgeTiles[riverStartListIndex].Count - 1].PositionGrid) >= 10)
+						.ToList();
+					Tile riverStartTile = validStartTiles.RandomElement();
 
-					List<Tile> possibleCentreTiles = context.Map.tiles.Where(t => Vector2.Distance(new Vector2(context.Data.mapSize / 2f, context.Data.mapSize / 2f), t.obj.transform.position) < context.Data.mapSize / 5f).ToList();
-					Tile centreTile = possibleCentreTiles[context.Random.NextInt(0, possibleCentreTiles.Count)];
+					List<Tile> possibleCentreTiles = context.Map.tiles.Where(t => Vector2.Distance(new Vector2(context.Data.mapSize / 2f, context.Data.mapSize / 2f), t.PositionGrid) < context.Data.mapSize / 5f).ToList();
+					Tile centreTile = possibleCentreTiles.RandomElement();
 
 					List<Tile> riverTiles = RiverPathfinding(context, riverStartTile, centreTile, expandRadius, ignoreStone);
 					riverTiles.AddRange(RiverPathfinding(context, centreTile, riverEndTile, expandRadius, ignoreStone));
@@ -84,7 +90,7 @@ namespace Snowship.NMap.Generation
 					if (river.tiles.Count > 0) {
 						context.Map.largeRivers.Add(river);
 					} else {
-						Debug.LogWarning($"Large River has no tiles. startTile: {riverStartTile.obj.transform.position} -> endTile: {riverEndTile.obj.transform.position}");
+						Debug.LogWarning($"Large River has no tiles. startTile: {riverStartTile.PositionGrid} -> endTile: {riverEndTile.PositionGrid}");
 					}
 				}
 				riverStartListIndex += 1;
@@ -98,7 +104,7 @@ namespace Snowship.NMap.Generation
 			context.Map.rivers.Clear();
 
 			// Create a list of potential river start tiles
-			Dictionary<Tile, Tile> riverStartTiles = new Dictionary<Tile, Tile>();
+			List<(Tile startTile, Tile drainageBasinHighestTile)> riverStartTiles = new();
 			foreach (DrainageBasin drainageBasin in context.Map.drainageBasins) {
 				bool drainageBasinContainsWater = drainageBasin.Tiles.Find(tile => tile.tileType.groupType == TileTypeGroup.TypeEnum.Water) != null;
 				bool drainageBasinNeighboursStone = drainageBasin.Tiles.Find(tile => tile.horizontalSurroundingTiles.Find(hTile => hTile != null && hTile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) != null) != null;
@@ -107,35 +113,34 @@ namespace Snowship.NMap.Generation
 				}
 				foreach (Tile tile in drainageBasin.Tiles) {
 					if (tile.walkable && tile.tileType.groupType != TileTypeGroup.TypeEnum.Water && tile.horizontalSurroundingTiles.Find(o => o != null && o.tileType.groupType == TileTypeGroup.TypeEnum.Stone) != null) {
-						riverStartTiles.Add(tile, drainageBasin.HighestTile);
+						riverStartTiles.Add((tile, drainageBasin.HighestTile));
 					}
 				}
 			}
 
 			// Create rivers
 			for (int i = 0; i < numRivers && i < riverStartTiles.Count; i++) {
-				Tile riverStartTile = riverStartTiles.Keys.ToList()[context.Random.NextInt(0, riverStartTiles.Count)];
-				Tile riverEndTile = riverStartTiles[riverStartTile];
+				(Tile startTile, Tile drainageBasinHighestTile) = riverStartTiles.RandomElement();
 				List<Tile> removeTiles = new List<Tile>();
-				foreach (KeyValuePair<Tile, Tile> kvp in riverStartTiles) {
-					if (Vector2.Distance(kvp.Key.obj.transform.position, riverStartTile.obj.transform.position) < 5f) {
-						removeTiles.Add(kvp.Key);
+				foreach ((Tile otherStartTile, Tile _) in riverStartTiles) {
+					if (Vector2.Distance(startTile.PositionGrid, otherStartTile.PositionGrid) < 5f) {
+						removeTiles.Add(startTile);
 					}
 				}
 				foreach (Tile removeTile in removeTiles) {
-					riverStartTiles.Remove(removeTile);
+					riverStartTiles.Remove((removeTile, drainageBasinHighestTile));
 				}
 				removeTiles.Clear();
 
 				const int expandRadius = 0;
 				const bool ignoreStone = false;
 
-				List<Tile> riverTiles = RiverPathfinding(context, riverStartTile, riverEndTile, expandRadius, ignoreStone);
+				List<Tile> riverTiles = RiverPathfinding(context, startTile, drainageBasinHighestTile, expandRadius, ignoreStone);
 				if (riverTiles.Count > 0) {
 					River river = new River(riverTiles, expandRadius, ignoreStone);
 					context.Map.rivers.Add(river);
 				} else {
-					Debug.LogWarning("River has no tiles. startTile: " + riverStartTile.obj.transform.position + " endTile: " + riverEndTile.obj.transform.position);
+					Debug.LogWarning("River has no tiles. startTile: " + startTile.obj.transform.position + " endTile: " + drainageBasinHighestTile.obj.transform.position);
 				}
 			}
 		}
@@ -175,7 +180,7 @@ namespace Snowship.NMap.Generation
 							nTile.SetTileType(TileType.GetTileTypeByEnum(TileType.TypeEnum.GrassWater), true, false, false);
 							break;
 						}
-						float cost = Vector2.Distance(nTile.obj.transform.position, riverEndTile.obj.transform.position) + nTile.height * (context.Data.mapSize / 10f) + context.Random.NextInt(0, 10);
+						float cost = Vector2.Distance(nTile.obj.transform.position, riverEndTile.obj.transform.position) + nTile.height * (context.Data.mapSize / 10f) + Random.Range(0, 10);
 						PathfindingTile pTile = new PathfindingTile(nTile, currentTile, cost);
 						frontier.Add(pTile);
 						checkedTiles.Add(pTile);
@@ -188,7 +193,7 @@ namespace Snowship.NMap.Generation
 				return river;
 			}
 
-			float expandedExpandRadius = expandRadius * context.Random.NextFloat(2f, 4f);
+			float expandedExpandRadius = expandRadius * Random.Range(2f, 4f);
 			List<Tile> riverAdditions = new List<Tile>();
 			riverAdditions.AddRange(river);
 			foreach (Tile riverTile in river) {

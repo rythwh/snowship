@@ -13,7 +13,7 @@ namespace Snowship.NMap.Generation
 			MapGenContext context,
 			float yPos
 		) {
-			return -2 * Mathf.Abs((yPos - context.Data.mapSize / 2f) / (context.Data.mapSize / 100f / (context.Data.temperatureRange / 50f))) + context.Data.temperatureRange + context.Data.temperatureOffset + context.Random.NextFloat(-50f, 50f);
+			return -2 * Mathf.Abs((yPos - context.Data.mapSize / 2f) / (context.Data.mapSize / 100f / (context.Data.temperatureRange / 50f))) + context.Data.temperatureRange + context.Data.temperatureOffset + Random.Range(-50f, 50f);
 		}
 
 		private static void CalculateTemperature(MapGenContext context) {
@@ -107,7 +107,7 @@ namespace Snowship.NMap.Generation
 			}
 
 			primaryWindDirection = context.Data.primaryWindDirection == -1
-				? context.Random.NextInt(WindDirectionMin, WindDirectionMax + 1)
+				? Random.Range(WindDirectionMin, WindDirectionMax + 1)
 				: context.Data.primaryWindDirection;
 
 			for (int i = WindDirectionMin; i < WindDirectionMax + 1; i++) {
@@ -163,9 +163,9 @@ namespace Snowship.NMap.Generation
 						}
 						tile.SetPrecipitation((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier * waterMultiplier);
 					} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
-						tile.SetPrecipitation(previousTile.GetPrecipitation() * previousTileDistanceMultiplier * context.Random.NextFloat(0.95f, 0.99f));
+						tile.SetPrecipitation(previousTile.GetPrecipitation() * previousTileDistanceMultiplier * Random.Range(0.95f, 0.99f));
 					} else {
-						tile.SetPrecipitation(previousTile.GetPrecipitation() * previousTileDistanceMultiplier * context.Random.NextFloat(0.98f, 1f));
+						tile.SetPrecipitation(previousTile.GetPrecipitation() * previousTileDistanceMultiplier * Random.Range(0.98f, 1f));
 					}
 				} else {
 					if (tile.tileType.classes[TileType.ClassEnum.LiquidWater] || tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
@@ -229,7 +229,7 @@ namespace Snowship.NMap.Generation
 						}
 						tile.SetBiome(biome, context.Data.actualMap);
 						if (tile.plant is { small: true }) {
-							tile.plant.growthProgress = context.Random.NextInt(0, SimulationDateTime.DayLengthSeconds * 4);
+							tile.plant.growthProgress = Random.Range(0, SimulationDateTime.DayLengthSeconds * 4);
 						}
 					}
 				}

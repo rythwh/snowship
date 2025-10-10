@@ -6,7 +6,6 @@ using Snowship.NMap;
 using Snowship.NResource;
 using Snowship.NTime;
 using Snowship.NUtilities;
-using UnityEngine.UI;
 
 namespace Snowship.NJob
 {

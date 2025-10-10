@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Snowship.NMap.NTile;
 using Snowship.NResource;
 using Snowship.NUtilities;
-using UnityEngine.UI;
 
 namespace Snowship.NJob
 {

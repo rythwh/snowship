@@ -50,7 +50,7 @@ namespace Snowship.NMap
 			await CreateMap(mapQuery.MapData);
 		}
 
-		public async UniTask CreateMap(MapData mapData) {
+		private async UniTask CreateMap(MapData mapData) {
 
 			await stateM.TransitionToState(EState.LoadToSimulation);
 

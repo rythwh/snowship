@@ -8,7 +8,6 @@ using Snowship.NResource;
 using Snowship.NResource.NInventory;
 using Snowship.NUtilities;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Snowship.NJob
 {

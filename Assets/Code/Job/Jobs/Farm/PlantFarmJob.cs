@@ -1,7 +1,6 @@
 ﻿using System;
 using Snowship.NMap.NTile;
 using Snowship.NUtilities;
-using UnityEngine.UI;
 
 namespace Snowship.NJob
 {

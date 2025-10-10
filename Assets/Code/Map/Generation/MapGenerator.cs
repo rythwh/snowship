@@ -5,18 +5,7 @@ namespace Snowship.NMap.Generation
 {
 	public partial class MapGenerator
 	{
-		// private readonly List<IMapGenStep> steps = new();
-
-		// public MapGenerator Add(IMapGenStep step) {
-		// 	steps.Add(step);
-		// 	return this;
-		// }
-
 		public async UniTask Run(MapGenContext context) {
-			// foreach (IMapGenStep step in steps) {
-			// 	step.Run(context);
-			// }
-
 			await CreateMap(context);
 		}
 

@@ -9,12 +9,13 @@ namespace Snowship.NCamera
 		private Vector3 moveVector = Vector2.zero;
 		private float zoomAxis = 0;
 
-		private void OnInputSystemEnabled(InputSystemActions actions) {
-			actions.Simulation.MoveCamera.performed += OnMoveCameraPerformed;
-			actions.Simulation.MoveCamera.canceled += OnMoveCameraCancelled;
+		private void SubscribeToInputEvents()
+		{
+			inputM.InputSystemActions.Simulation.MoveCamera.performed += OnMoveCameraPerformed;
+			inputM.InputSystemActions.Simulation.MoveCamera.canceled += OnMoveCameraCancelled;
 
-			actions.Simulation.ZoomCamera.performed += OnZoomCameraPerformed;
-			actions.Simulation.ZoomCamera.canceled += OnZoomCameraCancelled;
+			inputM.InputSystemActions.Simulation.ZoomCamera.performed += OnZoomCameraPerformed;
+			inputM.InputSystemActions.Simulation.ZoomCamera.canceled += OnZoomCameraCancelled;
 		}
 
 		private void OnInputSystemDisabled(InputSystemActions actions) {

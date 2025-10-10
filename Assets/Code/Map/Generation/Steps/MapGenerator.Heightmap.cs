@@ -21,7 +21,7 @@ namespace Snowship.NMap.Generation
 							}
 						}
 						sectionAverage /= size * size;
-						float deviation = context.Random.NextFloat(-deviationSpan, deviationSpan);
+						float deviation = Random.Range(-deviationSpan, deviationSpan);
 						sectionAverage += deviation;
 						for (int y = sectionY; y < sectionY + size && y < context.Data.mapSize; y++) {
 							for (int x = sectionX; x < sectionX + size && x < context.Data.mapSize; x++) {

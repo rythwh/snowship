@@ -7,7 +7,7 @@ using VContainer.Unity;
 namespace Snowship.NInput
 {
 	[UsedImplicitly]
-	public class InputManager : IStartable, ITickable {
+	public class InputManager : IInitializable, ITickable {
 
 		private InputSystemActions inputSystemActions;
 		public InputSystemActions InputSystemActions => inputSystemActions ??= new InputSystemActions();
@@ -17,7 +17,7 @@ namespace Snowship.NInput
 		public event Action<InputSystemActions> OnInputSystemEnabled;
 		public event Action<InputSystemActions> OnInputSystemDisabled;
 
-		public void Start() {
+		public void Initialize() {
 			inputSystemActions = new InputSystemActions();
 
 			EnableInputSystem();
