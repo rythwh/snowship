@@ -100,11 +100,11 @@ namespace Snowship.NCaravan {
 			traders.Add(trader);
 
 			List<Tile> targetTiles = new List<Tile> { targetTile };
-			targetTiles.AddRange(targetTile.horizontalSurroundingTiles.Where(t => t is { walkable: true, buildable: true }));
+			targetTiles.AddRange(targetTile.SurroundingTiles[EGridConnectivity.FourWay].Where(t => t is { walkable: true, buildable: true }));
 
 			List<Tile> additionalTargetTiles = new List<Tile>();
 			foreach (Tile tt in targetTiles) {
-				additionalTargetTiles.AddRange(tt.horizontalSurroundingTiles.Where(t => t is { walkable: true, buildable: true } && !additionalTargetTiles.Contains(t)));
+				additionalTargetTiles.AddRange(tt.SurroundingTiles[EGridConnectivity.FourWay].Where(t => t is { walkable: true, buildable: true } && !additionalTargetTiles.Contains(t)));
 			}
 
 			targetTiles.AddRange(additionalTargetTiles);

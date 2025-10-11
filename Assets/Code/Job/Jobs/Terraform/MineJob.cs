@@ -45,7 +45,7 @@ namespace Snowship.NJob
 			GameManager.Get<IMapQuery>().Map.RemoveTileBrightnessEffect(Tile);
 
 			foreach (LightSource lightSource in LightSource.lightSources) {
-				if (Vector2.Distance(Tile.obj.transform.position, lightSource.obj.transform.position) <= lightSource.prefab.maxLightDistance) {
+				if (Vector2.Distance(Tile.PositionGrid, lightSource.obj.transform.position) <= lightSource.prefab.maxLightDistance) {
 					lightSource.SetTileBrightnesses();
 				}
 			}

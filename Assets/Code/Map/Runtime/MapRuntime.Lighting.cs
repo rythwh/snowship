@@ -59,7 +59,7 @@ namespace Snowship.NMap
 				float shadowedBrightnessAtHour = Mathf.Clamp(1 - 0.6f * MapGenerator.CalculateBrightnessLevelAtHour(h) + 0.3f, 0, 1);
 
 				foreach (Tile shadowSourceTile in shadowSourceTiles) {
-					Vector2 shadowSourceTilePosition = shadowSourceTile.obj.transform.position;
+					Vector2 shadowSourceTilePosition = shadowSourceTile.PositionGrid;
 					bool shadowedAnyTile = false;
 
 					List<Tile> shadowTiles = new List<Tile>();
@@ -142,18 +142,18 @@ namespace Snowship.NMap
 						nTile.SetBrightness(darkestBrightnessAtHour, 12);
 					}
 				}
-				if (tile.shadowsFrom.ContainsKey(h)) {
-					foreach (Tile shadowFromTile in tile.shadowsFrom[h].Keys) {
+				if (tile.shadowsFrom.TryGetValue(h, out Dictionary<Tile, float> shadowsFromTiles)) {
+					foreach (Tile shadowFromTile in shadowsFromTiles.Keys) {
 						tilesToRecalculateShadowsFor.Add(shadowFromTile);
 					}
 				}
-				if (tile.blockingShadowsFrom.ContainsKey(h)) {
-					foreach (Tile blockingShadowFromTile in tile.blockingShadowsFrom[h]) {
+				if (tile.blockingShadowsFrom.TryGetValue(h, out List<Tile> blockingShadowsFromTiles)) {
+					foreach (Tile blockingShadowFromTile in blockingShadowsFromTiles) {
 						tilesToRecalculateShadowsFor.Add(blockingShadowFromTile);
 					}
 				}
 			}
-			foreach (Tile nTile in tile.surroundingTiles) {
+			foreach (Tile nTile in tile.SurroundingTiles[EGridConnectivity.EightWay]) {
 				if (nTile == null) {
 					continue;
 				}
@@ -168,7 +168,7 @@ namespace Snowship.NMap
 		}
 
 		private static bool TileCanShadowTiles(Tile tile) {
-			return tile.surroundingTiles.Any(nTile => nTile is { blocksLight: false }) && (tile.blocksLight || tile.HasRoof());
+			return tile.SurroundingTiles[EGridConnectivity.EightWay].Any(nTile => nTile is { blocksLight: false }) && (tile.blocksLight || tile.HasRoof());
 		}
 
 		private static bool TileCanBeShadowed(Tile tile) {

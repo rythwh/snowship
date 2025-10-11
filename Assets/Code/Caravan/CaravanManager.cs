@@ -111,7 +111,7 @@ namespace Snowship.NCaravan
 				spawnTilesFrontier.RemoveAt(0);
 				spawnTilesChecked.Add(currentTile);
 				edgeTilesConnectedToTargetSpawnTile.Add(currentTile);
-				foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+				foreach (Tile nTile in currentTile.SurroundingTiles[EGridConnectivity.FourWay]) {
 					if (!spawnTilesChecked.Contains(nTile) && validSpawnTiles.Contains(nTile)) {
 						spawnTilesFrontier.Add(nTile);
 					}
@@ -123,7 +123,7 @@ namespace Snowship.NCaravan
 			}
 
 			int numTraders = Random.Range(1, maxNumTraders + 1);
-			List<Tile> edgeTilesCloseToTargetSpawnTile = edgeTilesConnectedToTargetSpawnTile.Where(tile => Vector2.Distance(tile.obj.transform.position, targetSpawnTile.obj.transform.position) <= numTraders * 2).ToList();
+			List<Tile> edgeTilesCloseToTargetSpawnTile = edgeTilesConnectedToTargetSpawnTile.Where(tile => Vector2.Distance(tile.PositionGrid, targetSpawnTile.PositionGrid) <= numTraders * 2).ToList();
 
 			if (edgeTilesCloseToTargetSpawnTile.Count <= 0) {
 				return;

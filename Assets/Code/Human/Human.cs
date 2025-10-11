@@ -105,13 +105,13 @@ namespace Snowship.NHuman
 
 		protected void Wander((Vector2 position, int maxDistance)? stayNearOptional = null) {
 			if (WanderTimer <= 0) {
-				List<Tile> validWanderTiles = Tile.surroundingTiles
+				List<Tile> validWanderTiles = Tile.SurroundingTiles[EGridConnectivity.EightWay]
 					.Where(tile => tile is { walkable: true, buildable: true })
 					.Where(tile => tile.GetObjectInstanceAtLayer(2) == null)
 					.Where(tile => HumanQuery.Humans.FirstOrDefault(human => human.Tile == tile) == null)
 					.ToList();
 				if (stayNearOptional is { } stayNear) {
-					validWanderTiles = validWanderTiles.Where(t => Vector2.Distance(t.obj.transform.position, stayNear.position) <= stayNear.maxDistance).ToList();
+					validWanderTiles = validWanderTiles.Where(t => Vector2.Distance(t.PositionGrid, stayNear.position) <= stayNear.maxDistance).ToList();
 				}
 				if (validWanderTiles.Count > 0) {
 					MoveToTile(validWanderTiles[Random.Range(0, validWanderTiles.Count)], false);
@@ -124,7 +124,7 @@ namespace Snowship.NHuman
 
 		public void MoveToClosestWalkableTile(bool careIfOvertileIsWalkable) {
 			if (!careIfOvertileIsWalkable || !Tile.walkable) {
-				List<Tile> walkableSurroundingTiles = Tile.surroundingTiles.Where(tile => tile != null && tile.walkable).ToList();
+				List<Tile> walkableSurroundingTiles = Tile.SurroundingTiles[EGridConnectivity.EightWay].Where(tile => tile != null && tile.walkable).ToList();
 				if (walkableSurroundingTiles.Count > 0) {
 					MoveToTile(walkableSurroundingTiles[Random.Range(0, walkableSurroundingTiles.Count)], false);
 				} else {
@@ -135,12 +135,12 @@ namespace Snowship.NHuman
 							potentialWalkableSurroundingTiles.AddRange(regionBlock.tiles);
 						}
 					}
-					walkableSurroundingTiles = potentialWalkableSurroundingTiles.Where(tile => tile.surroundingTiles.Find(nTile => !nTile.walkable && nTile.regionBlock == Tile.regionBlock) != null).ToList();
+					walkableSurroundingTiles = potentialWalkableSurroundingTiles.Where(tile => tile.SurroundingTiles[EGridConnectivity.EightWay].Find(nTile => !nTile.walkable && nTile.regionBlock == Tile.regionBlock) != null).ToList();
 					if (walkableSurroundingTiles.Count > 0) {
-						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
+						walkableSurroundingTiles = walkableSurroundingTiles.OrderBy(tile => Vector2.Distance(tile.PositionGrid, Tile.PositionGrid)).ToList();
 						MoveToTile(walkableSurroundingTiles[0], false);
 					} else {
-						List<Tile> validTiles = GameManager.Get<IMapQuery>().Map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.obj.transform.position, Tile.obj.transform.position)).ToList();
+						List<Tile> validTiles = GameManager.Get<IMapQuery>().Map.tiles.Where(tile => tile.walkable).OrderBy(tile => Vector2.Distance(tile.PositionGrid, Tile.PositionGrid)).ToList();
 						if (validTiles.Count > 0) {
 							MoveToTile(validTiles[0], false);
 						}

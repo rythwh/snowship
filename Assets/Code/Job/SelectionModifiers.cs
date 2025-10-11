@@ -29,8 +29,8 @@ namespace Snowship.NJob
 								return false;
 							}
 							if (job is BuildJob buildJob) {
-								foreach (Vector2 multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
-									if (GameManager.Get<IMapQuery>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
+								foreach (Vector2Int multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
+									if (GameManager.Get<IMapQuery>().Map.GetTileFromPosition(buildJob.Tile.PositionGrid + multiTilePosition) == posTile) {
 										return false;
 									}
 								}
@@ -43,8 +43,8 @@ namespace Snowship.NJob
 								return false;
 							}
 							if (colonist.Jobs.ActiveJob is BuildJob buildJob) {
-								foreach (Vector2 multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
-									if (GameManager.Get<IMapQuery>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
+								foreach (Vector2Int multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
+									if (GameManager.Get<IMapQuery>().Map.GetTileFromPosition(buildJob.Tile.PositionGrid + multiTilePosition) == posTile) {
 										return false;
 									}
 								}
@@ -58,7 +58,7 @@ namespace Snowship.NJob
 					// 		}
 					// 		if (colonist.StoredJob is BuildJob buildJob) {
 					// 			foreach (Vector2 multiTilePosition in buildJob.ObjectPrefab.multiTilePositions[buildJob.Rotation]) {
-					// 				if (GameManager.Get<IMapQuery>().Map.GetTileFromPosition(buildJob.Tile.obj.transform.position + (Vector3)multiTilePosition) == posTile) {
+					// 				if (GameManager.Get<IMapQuery>().Map.GetTileFromPosition(buildJob.Tile.PositionGrid + (Vector3)multiTilePosition) == posTile) {
 					// 					return false;
 					// 				}
 					// 			}

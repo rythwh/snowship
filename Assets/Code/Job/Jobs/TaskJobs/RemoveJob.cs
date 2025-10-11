@@ -88,7 +88,7 @@ namespace Snowship.NJob
 				Tile.RemoveObjectAtLayer(instance.prefab.layer);
 			}
 
-			GameManager.Get<ResourceManager>().Bitmask(new List<Tile> { Tile }.Concat(Tile.surroundingTiles).ToList());
+			GameManager.Get<ResourceManager>().Bitmask(new List<Tile> { Tile }.Concat(Tile.SurroundingTiles[EGridConnectivity.EightWay]).ToList());
 			if (Tile.walkable && !previousWalkability) {
 				GameManager.Get<IMapQuery>().Map.RemoveTileBrightnessEffect(Tile);
 			}

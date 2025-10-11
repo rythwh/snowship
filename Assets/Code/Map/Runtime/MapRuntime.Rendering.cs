@@ -51,12 +51,13 @@ namespace Snowship.NMap
 		};
 
 		private int BitSum(
-			List<TileType.TypeEnum> compareTileTypes,
-			List<ObjectPrefab.ObjectEnum> compareObjectTypes,
+			HashSet<TileType.TypeEnum> compareTileTypes,
+			HashSet<ObjectPrefab.ObjectEnum> compareObjectTypes,
 			List<Tile> tilesToSum,
 			bool includeMapEdge
-		) {
-			compareObjectTypes ??= new List<ObjectPrefab.ObjectEnum>();
+		)
+		{
+			compareObjectTypes ??= new HashSet<ObjectPrefab.ObjectEnum>();
 
 			int sum = 0;
 			for (int i = 0; i < tilesToSum.Count; i++) {
@@ -95,25 +96,25 @@ namespace Snowship.NMap
 
 		private void RedrawTile(Tile tile, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, List<TileType.TypeEnum> customCompareTileTypes, bool includeMapEdge) {
 			int sum = 0;
-			List<Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? tile.surroundingTiles : tile.horizontalSurroundingTiles;
+			List<Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? tile.SurroundingTiles[EGridConnectivity.EightWay] : tile.SurroundingTiles[EGridConnectivity.FourWay];
 			if (customBitSumInputs) {
 				sum = BitSum(customCompareTileTypes, null, surroundingTilesToUse, includeMapEdge);
 			} else {
 				if (River.DoAnyRiversContainTile(tile, rivers)) {
-					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList(), null, surroundingTilesToUse, false);
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToHashSet(), null, surroundingTilesToUse, false);
 				} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Water) {
-					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList(), null, surroundingTilesToUse, includeMapEdge);
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToHashSet(), null, surroundingTilesToUse, includeMapEdge);
 				} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
-					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tt => tt.type).ToList(), null, surroundingTilesToUse, includeMapEdge);
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tt => tt.type).ToHashSet(), null, surroundingTilesToUse, includeMapEdge);
 					// Not-fully-working implementation of walls and stone connecting
 					//sum += GameManager.Get<ResourceManager>().BitSumObjects(
 					//	GameManager.Get<ResourceManager>().GetObjectPrefabSubGroupByEnum(ResourceManager.ObjectSubGroupEnum.Walls).prefabs.Select(prefab => prefab.type).ToList(),
 					//	surroundingTilesToUse
 					//);
 				} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Hole) {
-					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Hole).tileTypes.Select(tt => tt.type).ToList(), null, surroundingTilesToUse, false);
+					sum = BitSum(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Hole).tileTypes.Select(tt => tt.type).ToHashSet(), null, surroundingTilesToUse, false);
 				} else {
-					sum = BitSum(new List<TileType.TypeEnum> { tile.tileType.type }, null, surroundingTilesToUse, includeMapEdge);
+					sum = BitSum(new HashSet<TileType.TypeEnum> { tile.tileType.type }, null, surroundingTilesToUse, includeMapEdge);
 				}
 			}
 			if (sum < 16 || bitmaskMap[sum] != 46) {

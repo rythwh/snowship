@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -8,6 +9,7 @@ using VContainer.Unity;
 
 namespace Snowship.NMap.NTile
 {
+	[UsedImplicitly]
 	public class TileManager : IAsyncStartable
 	{
 		public GameObject TilePrefab { get; private set; }

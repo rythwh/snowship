@@ -16,8 +16,7 @@ namespace Snowship.NColonist {
 		public override string Title => "Colonist";
 		public override ILocation OriginLocation => GameManager.Get<ColonyManager>().colony;
 
-		public Colonist(int id, Tile spawnTile, HumanData data) : base(id, spawnTile, data) {
-		}
+		public Colonist(int id, Tile spawnTile, HumanData data) : base(id, spawnTile, data) { }
 
 		public override void Update() {
 

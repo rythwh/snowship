@@ -150,7 +150,7 @@ namespace Snowship.NLife
 			if (previousTile == Model.NextTile) {
 				return moveSpriteIndex;
 			}
-			moveSpriteIndex = previousTile.surroundingTiles.IndexOf(Model.NextTile);
+			moveSpriteIndex = previousTile.SurroundingTiles[EGridConnectivity.EightWay].IndexOf(Model.NextTile);
 			if (moveSpriteIndex == -1) {
 				moveSpriteIndex = 0;
 			}

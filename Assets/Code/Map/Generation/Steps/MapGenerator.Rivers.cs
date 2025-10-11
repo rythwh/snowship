@@ -34,7 +34,7 @@ namespace Snowship.NMap.Generation
 					region.tiles.Add(currentFloodFillPoint);
 					currentFloodFillPoint.drainageBasin = region;
 
-					foreach (Tile nTile in currentFloodFillPoint.horizontalSurroundingTiles) {
+					foreach (Tile nTile in currentFloodFillPoint.SurroundingTiles[EGridConnectivity.FourWay]) {
 						if (nTile != null && !checkedTiles.Contains(nTile) && nTile.tileType.groupType != TileTypeGroup.TypeEnum.Stone && nTile.drainageBasin == null) {
 							if (nTile.height * 1.2f >= currentFloodFillPoint.height) {
 								frontier.Add(nTile);
@@ -107,12 +107,12 @@ namespace Snowship.NMap.Generation
 			List<(Tile startTile, Tile drainageBasinHighestTile)> riverStartTiles = new();
 			foreach (DrainageBasin drainageBasin in context.Map.drainageBasins) {
 				bool drainageBasinContainsWater = drainageBasin.Tiles.Find(tile => tile.tileType.groupType == TileTypeGroup.TypeEnum.Water) != null;
-				bool drainageBasinNeighboursStone = drainageBasin.Tiles.Find(tile => tile.horizontalSurroundingTiles.Find(hTile => hTile != null && hTile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) != null) != null;
+				bool drainageBasinNeighboursStone = drainageBasin.Tiles.Find(tile => tile.SurroundingTiles[EGridConnectivity.FourWay].Find(hTile => hTile != null && hTile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) != null) != null;
 				if (!drainageBasinContainsWater || !drainageBasinNeighboursStone) {
 					continue;
 				}
 				foreach (Tile tile in drainageBasin.Tiles) {
-					if (tile.walkable && tile.tileType.groupType != TileTypeGroup.TypeEnum.Water && tile.horizontalSurroundingTiles.Find(o => o != null && o.tileType.groupType == TileTypeGroup.TypeEnum.Stone) != null) {
+					if (tile.walkable && tile.tileType.groupType != TileTypeGroup.TypeEnum.Water && tile.SurroundingTiles[EGridConnectivity.FourWay].Find(o => o != null && o.tileType.groupType == TileTypeGroup.TypeEnum.Stone) != null) {
 						riverStartTiles.Add((tile, drainageBasin.HighestTile));
 					}
 				}
@@ -140,7 +140,7 @@ namespace Snowship.NMap.Generation
 					River river = new River(riverTiles, expandRadius, ignoreStone);
 					context.Map.rivers.Add(river);
 				} else {
-					Debug.LogWarning("River has no tiles. startTile: " + startTile.obj.transform.position + " endTile: " + drainageBasinHighestTile.obj.transform.position);
+					Debug.LogWarning("River has no tiles. startTile: " + startTile.PositionGrid + " endTile: " + drainageBasinHighestTile.PositionGrid);
 				}
 			}
 		}
@@ -163,7 +163,7 @@ namespace Snowship.NMap.Generation
 				currentTile = frontier[0];
 				frontier.RemoveAt(0);
 
-				if (currentTile.tile == riverEndTile || (expandRadius == 0 && (currentTile.tile.tileType.groupType == TileTypeGroup.TypeEnum.Water || currentTile.tile.horizontalSurroundingTiles.Find(tile => tile != null && tile.tileType.groupType == TileTypeGroup.TypeEnum.Water && !River.DoAnyRiversContainTile(tile, context.Map.rivers, context.Map.largeRivers)) != null))) {
+				if (currentTile.tile == riverEndTile || (expandRadius == 0 && (currentTile.tile.tileType.groupType == TileTypeGroup.TypeEnum.Water || currentTile.tile.SurroundingTiles[EGridConnectivity.FourWay].Find(tile => tile != null && tile.tileType.groupType == TileTypeGroup.TypeEnum.Water && !River.DoAnyRiversContainTile(tile, context.Map.rivers, context.Map.largeRivers)) != null))) {
 					while (currentTile != null) {
 						river.Add(currentTile.tile);
 						currentTile.tile.SetTileType(TileType.GetTileTypeByEnum(TileType.TypeEnum.GrassWater), true, false, false);
@@ -172,7 +172,7 @@ namespace Snowship.NMap.Generation
 					break;
 				}
 
-				foreach (Tile nTile in currentTile.tile.horizontalSurroundingTiles) {
+				foreach (Tile nTile in currentTile.tile.SurroundingTiles[EGridConnectivity.FourWay]) {
 					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (ignoreStone || nTile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
 						if (context.Map.rivers.Find(otherRiver => otherRiver.tiles.Find(riverTile => nTile == riverTile) != null) != null) {
 							frontier.Clear();
@@ -180,7 +180,7 @@ namespace Snowship.NMap.Generation
 							nTile.SetTileType(TileType.GetTileTypeByEnum(TileType.TypeEnum.GrassWater), true, false, false);
 							break;
 						}
-						float cost = Vector2.Distance(nTile.obj.transform.position, riverEndTile.obj.transform.position) + nTile.height * (context.Data.mapSize / 10f) + Random.Range(0, 10);
+						float cost = Vector2.Distance(nTile.PositionGrid, riverEndTile.PositionGrid) + nTile.height * (context.Data.mapSize / 10f) + Random.Range(0, 10);
 						PathfindingTile pTile = new PathfindingTile(nTile, currentTile, cost);
 						frontier.Add(pTile);
 						checkedTiles.Add(pTile);
@@ -204,7 +204,7 @@ namespace Snowship.NMap.Generation
 				while (expandFrontier.Count > 0) {
 					Tile expandTile = expandFrontier[0];
 					expandFrontier.RemoveAt(0);
-					float distanceExpandTileRiverTile = Vector2.Distance(expandTile.obj.transform.position, riverTile.obj.transform.position);
+					float distanceExpandTileRiverTile = Vector2.Distance(expandTile.PositionGrid, riverTile.PositionGrid);
 					float newRiverHeight = CalculateLargeRiverTileHeight(context, expandRadius, distanceExpandTileRiverTile);
 					float newRiverBankHeight = CalculateLargeRiverBankTileHeight(context, expandRadius, distanceExpandTileRiverTile);
 					if (distanceExpandTileRiverTile <= expandRadius) {
@@ -215,9 +215,9 @@ namespace Snowship.NMap.Generation
 					} else if (!riverAdditions.Contains(expandTile) && expandTile.height > newRiverBankHeight) {
 						expandTile.SetTileHeight(newRiverBankHeight);
 					}
-					foreach (Tile nTile in expandTile.surroundingTiles) {
+					foreach (Tile nTile in expandTile.SurroundingTiles[EGridConnectivity.EightWay]) {
 						if (nTile != null && !checkedExpandTiles.Contains(nTile) && (ignoreStone || nTile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
-							if (Vector2.Distance(nTile.obj.transform.position, riverTile.obj.transform.position) <= expandedExpandRadius) {
+							if (Vector2.Distance(nTile.PositionGrid, riverTile.PositionGrid) <= expandedExpandRadius) {
 								expandFrontier.Add(nTile);
 								checkedExpandTiles.Add(nTile);
 							}

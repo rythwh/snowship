@@ -52,14 +52,14 @@ namespace Snowship.NResource
 			this.tile = tile;
 			zeroPointTile = tile;
 			foreach (Vector2 multiTilePosition in prefab.multiTilePositions[rotationIndex]) {
-				Tile additionalTile = zeroPointTile.map.GetTileFromPosition(zeroPointTile.obj.transform.position + (Vector3)multiTilePosition);
+				Tile additionalTile = zeroPointTile.map.GetTileFromPosition(zeroPointTile.PositionGrid + multiTilePosition);
 				additionalTiles.Add(additionalTile);
 				if (additionalTile != zeroPointTile) {
 					additionalTile.SetObjectInstanceReference(this);
 				}
 			}
 			if (additionalTiles.Count > 0 && !additionalTiles.Contains(tile)) {
-				tile = additionalTiles.OrderBy(additionalTile => Vector2.Distance(tile.obj.transform.position, additionalTile.obj.transform.position)).ToList()[0];
+				tile = additionalTiles.OrderBy(additionalTile => Vector2.Distance(tile.PositionGrid, additionalTile.PositionGrid)).ToList()[0];
 			} else if (additionalTiles.Count <= 0) {
 				additionalTiles.Add(tile);
 			}
@@ -185,7 +185,7 @@ namespace Snowship.NResource
 					break;
 			}
 			if (instance == null) {
-				Debug.LogError("Instance is null for prefab " + (prefab != null ? prefab.Name : "null") + " at tile " + tile.obj.transform.position);
+				Debug.LogError("Instance is null for prefab " + (prefab != null ? prefab.Name : "null") + " at tile " + tile.PositionGrid);
 			}
 			if (addToList) {
 				AddObjectInstance(instance);

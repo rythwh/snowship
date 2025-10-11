@@ -46,7 +46,6 @@ namespace Snowship.NUI
 
 			CreatePlanetViewModule();
 			CreatePlanetPreview();
-			View.SetPlanetTileData(null, false);
 
 			return UniTask.CompletedTask;
 		}
@@ -88,8 +87,9 @@ namespace Snowship.NUI
 			planetViewModule.DisplayPlanet(
 				planet,
 				// pColony.GetPersistenceColonies(),
-				true
+				false
 			);
+			OnPlanetTileClicked(planetM.selectedPlanetTile);
 		}
 
 		private void SetColonyNameInputField() {

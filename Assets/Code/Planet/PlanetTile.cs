@@ -30,7 +30,7 @@ namespace Snowship.NPlanet {
 			River river = River.GetRiverContainingTile(tile, planet.rivers, planet.largeRivers);
 			isRiver = river != null;
 
-			foreach (Tile sTile in tile.horizontalSurroundingTiles) {
+			foreach (Tile sTile in tile.SurroundingTiles[EGridConnectivity.FourWay]) {
 				if (sTile != null) {
 					if (planet.rivers.Find(r => r.tiles.Contains(sTile)) == null) {
 						if (sTile.tileType.groupType == TileTypeGroup.TypeEnum.Water) {

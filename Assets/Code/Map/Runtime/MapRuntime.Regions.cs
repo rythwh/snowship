@@ -10,8 +10,8 @@ namespace Snowship.NMap
 		public void RecalculateRegionsAtTile(Tile tile) {
 			if (!tile.walkable) {
 				List<Tile> orderedSurroundingTiles = new List<Tile> {
-					tile.surroundingTiles[0], tile.surroundingTiles[4], tile.surroundingTiles[1], tile.surroundingTiles[5],
-					tile.surroundingTiles[2], tile.surroundingTiles[6], tile.surroundingTiles[3], tile.surroundingTiles[7]
+					tile.SurroundingTiles[EGridConnectivity.EightWay][0], tile.SurroundingTiles[EGridConnectivity.EightWay][4], tile.SurroundingTiles[EGridConnectivity.EightWay][1], tile.SurroundingTiles[EGridConnectivity.EightWay][5],
+					tile.SurroundingTiles[EGridConnectivity.EightWay][2], tile.SurroundingTiles[EGridConnectivity.EightWay][6], tile.SurroundingTiles[EGridConnectivity.EightWay][3], tile.SurroundingTiles[EGridConnectivity.EightWay][7]
 				};
 				List<List<Tile>> separateTileGroups = new List<List<Tile>>();
 				int groupIndex = 0;
@@ -35,7 +35,7 @@ namespace Snowship.NMap
 				}
 				List<Tile> horizontalGroups = new List<Tile>();
 				foreach (List<Tile> tileGroup in separateTileGroups) {
-					List<Tile> horizontalTilesInGroup = tileGroup.Where(groupTile => tile.horizontalSurroundingTiles.Contains(groupTile)).ToList();
+					List<Tile> horizontalTilesInGroup = tileGroup.Where(groupTile => tile.SurroundingTiles[EGridConnectivity.FourWay].Contains(groupTile)).ToList();
 					if (horizontalTilesInGroup.Count > 0) {
 						horizontalGroups.Add(horizontalTilesInGroup[0]);
 					}
@@ -46,7 +46,7 @@ namespace Snowship.NMap
 						if (!removeTiles.Contains(startTile)) {
 							foreach (Tile endTile in horizontalGroups) {
 								if (!removeTiles.Contains(endTile) && startTile != endTile) {
-									if (Path.PathExists(startTile, endTile, true, MapData.mapSize, WalkableSetting.Walkable, Tile.EGridConnectivity.FourWay)) {
+									if (Path.PathExists(startTile, endTile, true, MapData.mapSize, WalkableSetting.Walkable, EGridConnectivity.FourWay)) {
 										removeTiles.Add(endTile);
 									}
 								}

@@ -940,7 +940,7 @@ namespace Snowship.NResource
 			List<ObjectPrefab.ObjectEnum> customCompareObjectTypes
 		)
 		{
-			List<Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? objectInstance.tile.surroundingTiles : objectInstance.tile.horizontalSurroundingTiles;
+			List<Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? objectInstance.tile.SurroundingTiles[EGridConnectivity.EightWay] : objectInstance.tile.SurroundingTiles[EGridConnectivity.FourWay];
 
 			int sum;
 			if (customBitSumInputs) {

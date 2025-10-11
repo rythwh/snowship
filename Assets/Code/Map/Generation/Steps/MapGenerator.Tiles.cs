@@ -66,8 +66,8 @@ namespace Snowship.NMap.Generation
 						surroundingTiles.Add(null);
 					}
 
-					context.Map.sortedTiles[y][x].SurroundingTiles[Tile.EGridConnectivity.FourWay] = horizontalTiles;
-					context.Map.sortedTiles[y][x].SurroundingTiles[Tile.EGridConnectivity.EightWay] = surroundingTiles;
+					context.Map.sortedTiles[y][x].SurroundingTiles[EGridConnectivity.FourWay] = horizontalTiles;
+					context.Map.sortedTiles[y][x].SurroundingTiles[EGridConnectivity.EightWay] = surroundingTiles;
 				}
 			}
 		}

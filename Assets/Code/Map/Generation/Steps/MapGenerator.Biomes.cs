@@ -33,7 +33,7 @@ namespace Snowship.NMap.Generation
 				foreach (Tile tile in context.Map.tiles) {
 					float averageTemperature = tile.temperature;
 					int numValidTiles = 1;
-					foreach (Tile nTile in tile.surroundingTiles) {
+					foreach (Tile nTile in tile.SurroundingTiles[EGridConnectivity.EightWay]) {
 						if (nTile == null) {
 							continue;
 						}
@@ -78,7 +78,7 @@ namespace Snowship.NMap.Generation
 					for (int y = yStartAtTop ? context.Data.mapSize - 1 : 0; yStartAtTop ? y >= 0 : y < context.Data.mapSize; y += yStartAtTop ? -1 : 1) {
 						for (int x = xStartAtRight ? context.Data.mapSize - 1 : 0; xStartAtRight ? x >= 0 : x < context.Data.mapSize; x += xStartAtRight ? -1 : 1) {
 							Tile tile = context.Map.sortedTiles[y][x];
-							Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
+							Tile previousTile = tile.SurroundingTiles[EGridConnectivity.EightWay][oppositeDirectionTileMap[windDirection]];
 							SetTilePrecipitation(context, tile, previousTile, context.Data.planetTemperature);
 						}
 					}
@@ -93,7 +93,7 @@ namespace Snowship.NMap.Generation
 								continue;
 							}
 							Tile tile = context.Map.sortedTiles[y][x];
-							Tile previousTile = tile.surroundingTiles[oppositeDirectionTileMap[windDirection]];
+							Tile previousTile = tile.SurroundingTiles[EGridConnectivity.EightWay][oppositeDirectionTileMap[windDirection]];
 							SetTilePrecipitation(context, tile, previousTile, context.Data.planetTemperature);
 						}
 					}
@@ -138,7 +138,7 @@ namespace Snowship.NMap.Generation
 		private void SetTilePrecipitation(MapGenContext context, Tile tile, Tile previousTile, bool planet) {
 			if (planet) {
 				if (previousTile != null) {
-					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
+					float previousTileDistanceMultiplier = -Vector2.Distance(tile.PositionGrid, previousTile.PositionGrid) + 2;
 					if (tile.tileType.classes[TileType.ClassEnum.LiquidWater]) {
 						tile.SetPrecipitation((previousTile.GetPrecipitation() + (Mathf.Approximately(previousTile.GetPrecipitation(), 0f) ? 0.01f : 0f)) * previousTileDistanceMultiplier * (context.Data.mapSize / 5f));
 					} else if (tile.tileType.groupType == TileTypeGroup.TypeEnum.Stone) {
@@ -155,7 +155,7 @@ namespace Snowship.NMap.Generation
 				}
 			} else {
 				if (previousTile != null) {
-					float previousTileDistanceMultiplier = -Vector2.Distance(tile.obj.transform.position, previousTile.obj.transform.position) + 2;
+					float previousTileDistanceMultiplier = -Vector2.Distance(tile.PositionGrid, previousTile.PositionGrid) + 2;
 					if (tile.tileType.classes[TileType.ClassEnum.LiquidWater]) {
 						float waterMultiplier = context.Data.mapSize / 5f;
 						if (River.DoAnyRiversContainTile(tile, context.Map.rivers, context.Map.largeRivers)) {
@@ -191,7 +191,7 @@ namespace Snowship.NMap.Generation
 				foreach (Tile tile in context.Map.tiles) {
 					float averagePrecipitation = tile.GetPrecipitation();
 					int numValidTiles = 1;
-					foreach (Tile nTile in tile.surroundingTiles) {
+					foreach (Tile nTile in tile.SurroundingTiles[EGridConnectivity.EightWay]) {
 						if (nTile == null) {
 							continue;
 						}
@@ -238,7 +238,7 @@ namespace Snowship.NMap.Generation
 
 		private void SetCoastalWater(MapGenContext context) {
 			foreach (Tile tile in context.Map.tiles) {
-				tile.CoastalWater = tile.tileType.groupType == TileTypeGroup.TypeEnum.Water && tile.surroundingTiles.Count(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) > 0;
+				tile.CoastalWater = tile.tileType.groupType == TileTypeGroup.TypeEnum.Water && tile.SurroundingTiles[EGridConnectivity.EightWay].Count(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) > 0;
 			}
 		}
 	}

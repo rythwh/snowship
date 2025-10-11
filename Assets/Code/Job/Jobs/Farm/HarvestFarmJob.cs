@@ -46,7 +46,7 @@ namespace Snowship.NJob
 				ObjectInstance.RemoveObjectInstance(Farm);
 				Tile.RemoveObjectAtLayer(Farm.prefab.layer);
 			}
-			GameManager.Get<ResourceManager>().Bitmask(new List<Tile> { Tile }.Concat(Tile.surroundingTiles).ToList());
+			GameManager.Get<ResourceManager>().Bitmask(new List<Tile> { Tile }.Concat(Tile.SurroundingTiles[EGridConnectivity.EightWay]).ToList());
 		}
 	}
 }

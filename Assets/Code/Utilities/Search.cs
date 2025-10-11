@@ -8,7 +8,7 @@ namespace Snowship
 	{
 		public static List<Tile> FloodSearch(
 			Tile originTile,
-			Tile.EGridConnectivity connectivity,
+			EGridConnectivity connectivity,
 			Func<Tile, bool> predicate
 		) {
 

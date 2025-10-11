@@ -18,16 +18,7 @@ namespace Snowship.NMap.NTile
 		public Vector2Int PositionGrid { get; }
 		public Vector2 PositionWorld => obj.transform.position;
 
-		public enum EGridConnectivity
-		{
-			FourWay,
-			EightWay
-		}
-
 		public Dictionary<EGridConnectivity, List<Tile>> SurroundingTiles { get; } = new();
-
-		public List<Tile> horizontalSurroundingTiles => SurroundingTiles[EGridConnectivity.FourWay];
-		public List<Tile> surroundingTiles => SurroundingTiles[EGridConnectivity.EightWay];
 
 		public float height;
 
@@ -54,6 +45,7 @@ namespace Snowship.NMap.NTile
 
 		private bool roof = false;
 		public bool CoastalWater { get; set; } = false;
+		public River River { get; set; }
 
 		public float brightness = 0;
 		public Dictionary<int, float> brightnessAtHour = new Dictionary<int, float>();
@@ -93,8 +85,8 @@ namespace Snowship.NMap.NTile
 			SetBrightness(1f, 12);
 		}
 
-		public void SetTileHeight(float height) {
-			this.height = height;
+		public void SetTileHeight(float newHeight) {
+			height = newHeight;
 			SetTileTypeByHeight();
 		}
 
@@ -128,18 +120,13 @@ namespace Snowship.NMap.NTile
 
 		public void RedetermineRegion(TileType oldTileType) {
 			if (walkable != oldTileType.walkable) { // Difference in walkability
-				if (region != null) {
-					region.tiles.Remove(this);
-				}
+				region?.tiles.Remove(this);
 				if (walkable && !oldTileType.walkable) { // Type is walkable, old type wasn't (e.g. stone mined, now ground)
-					List<Region> surroundingRegions = new List<Region>();
+					HashSet<Region> surroundingRegions = new();
 					bool anyVisible = false;
-					foreach (Tile tile in horizontalSurroundingTiles) {
-						if (tile != null && tile.region != null && !surroundingRegions.Contains(tile.region)) {
-							surroundingRegions.Add(tile.region);
-							if (tile.visible) {
-								anyVisible = true;
-							}
+					foreach (Tile tile in SurroundingTiles[EGridConnectivity.FourWay]) {
+						if (tile is { visible: true, region: not null } && surroundingRegions.Add(tile.region)) {
+							anyVisible = true;
 						}
 					}
 					if (surroundingRegions.Count > 0) {
@@ -221,7 +208,7 @@ namespace Snowship.NMap.NTile
 								}
 								frontier.RemoveAt(0);
 								nonWalkableTiles.Add(currentTile);
-								foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+								foreach (Tile nTile in currentTile.SurroundingTiles[EGridConnectivity.FourWay]) {
 									if (nTile != null && !checkedTiles.Contains(nTile) && !nTile.walkable) {
 										frontier.Add(nTile);
 										checkedTiles.Add(nTile);
@@ -370,7 +357,7 @@ namespace Snowship.NMap.NTile
 			if (objectInstances.ContainsKey(layer)) { // If the layer exists
 				if (objectInstances[layer] != null) { // If the object at the layer exists
 					if (instance != null) { // If the object being added exists, throw error
-						Debug.LogError("Trying to add object where one already exists at " + obj.transform.position);
+						Debug.LogError("Trying to add object where one already exists at " + PositionGrid);
 					} else { // If the object being added is null, set this layer to null
 						objectInstances[layer] = null;
 					}

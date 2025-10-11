@@ -44,10 +44,10 @@ namespace Snowship.NPath
 					return path;
 				}
 
-				foreach (Tile nTile in (currentTile.tile.surroundingTiles.Find(tile => tile != null && !tile.walkable) != null ? currentTile.tile.horizontalSurroundingTiles : currentTile.tile.surroundingTiles)) {
+				foreach (Tile nTile in (currentTile.tile.SurroundingTiles[EGridConnectivity.EightWay].Find(tile => tile != null && !tile.walkable) != null ? currentTile.tile.SurroundingTiles[EGridConnectivity.FourWay] : currentTile.tile.SurroundingTiles[EGridConnectivity.EightWay])) {
 					if (nTile != null && checkedTiles.Find(checkedTile => checkedTile.tile == nTile) == null && (allowEndTileNonWalkable && nTile == endTile || (!walkable || nTile.walkable))) {
 						float cost = 0;
-						cost += 1 * Vector2.Distance(nTile.obj.transform.position, endTile.obj.transform.position);
+						cost += 1 * Vector2.Distance(nTile.PositionGrid, endTile.PositionGrid);
 						cost += 1 * RegionBlockDistance(nTile.regionBlock, endTile.regionBlock, true, true, true);
 						cost += 50 * (nTile.tileType.classes[TileType.ClassEnum.LiquidWater] ? 1 : 0);
 						cost += 5 * currentTile.pathDistance;
@@ -63,7 +63,7 @@ namespace Snowship.NPath
 			return new List<Tile>();
 		}
 
-		public static bool PathExists(Tile startTile, Tile endTile, bool breakTooLong, int breakAfterTiles, WalkableSetting walkableSetting, Tile.EGridConnectivity directionSetting) {
+		public static bool PathExists(Tile startTile, Tile endTile, bool breakTooLong, int breakAfterTiles, WalkableSetting walkableSetting, EGridConnectivity directionSetting) {
 
 			PathfindingTile currentTile = new PathfindingTile(startTile, null, 0);
 
@@ -89,7 +89,7 @@ namespace Snowship.NPath
 
 				foreach (Tile nTile in currentTile.tile.SurroundingTiles[directionSetting]) {
 					if (nTile != null && checkedTiles.Find(o => o.tile == nTile) == null && (walkableSetting == WalkableSetting.Walkable ? nTile.walkable : (walkableSetting != WalkableSetting.NonWalkable || !nTile.walkable))) {
-						PathfindingTile pTile = new PathfindingTile(nTile, null, Vector2.Distance(nTile.obj.transform.position, endTile.obj.transform.position));
+						PathfindingTile pTile = new PathfindingTile(nTile, null, Vector2.Distance(nTile.PositionGrid, endTile.PositionGrid));
 						frontier.Add(pTile);
 						checkedTiles.Add(pTile);
 					}

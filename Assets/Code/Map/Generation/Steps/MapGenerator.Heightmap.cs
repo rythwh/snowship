@@ -48,8 +48,8 @@ namespace Snowship.NMap.Generation
 				foreach (Tile tile in context.Map.tiles) {
 					float averageHeight = tile.height;
 					float numValidTiles = 1;
-					for (int nTileIndex = 0; nTileIndex < tile.surroundingTiles.Count; nTileIndex++) {
-						Tile nTile = tile.surroundingTiles[nTileIndex];
+					for (int nTileIndex = 0; nTileIndex < tile.SurroundingTiles[EGridConnectivity.EightWay].Count; nTileIndex++) {
+						Tile nTile = tile.SurroundingTiles[EGridConnectivity.EightWay][nTileIndex];
 						if (nTile == null) {
 							continue;
 						}
@@ -79,7 +79,7 @@ namespace Snowship.NMap.Generation
 
 		private void PreventEdgeTouching(MapGenContext context) {
 			foreach (Tile tile in context.Map.tiles) {
-				float edgeDistance = (context.Data.mapSize - Vector2.Distance(tile.obj.transform.position, new Vector2(context.Data.mapSize / 2f, context.Data.mapSize / 2f))) / context.Data.mapSize;
+				float edgeDistance = (context.Data.mapSize - Vector2.Distance(tile.PositionGrid, new Vector2(context.Data.mapSize / 2f, context.Data.mapSize / 2f))) / context.Data.mapSize;
 				tile.SetTileHeight(tile.height * Mathf.Clamp(-Mathf.Pow(edgeDistance - 1.5f, 10) + 1, 0f, 1f));
 			}
 		}
@@ -88,7 +88,7 @@ namespace Snowship.NMap.Generation
 			for (int i = 0; i < context.Data.surroundingPlanetTileHeightDirections.Count; i++) {
 				if (context.Data.surroundingPlanetTileHeightDirections[i] != 0) {
 					foreach (Tile tile in context.Map.tiles) {
-						float closestEdgeDistance = context.Map.sortedEdgeTiles[i].Min(edgeTile => Vector2.Distance(edgeTile.obj.transform.position, tile.obj.transform.position)) / context.Data.mapSize;
+						float closestEdgeDistance = context.Map.sortedEdgeTiles[i].Min(edgeTile => Vector2.Distance(edgeTile.PositionGrid, tile.PositionGrid)) / context.Data.mapSize;
 						float heightMultiplier = context.Data.surroundingPlanetTileHeightDirections[i] * Mathf.Pow(closestEdgeDistance - 1f, 10f) + 1f;
 						float newHeight = Mathf.Clamp(tile.height * heightMultiplier, 0f, 1f);
 						tile.SetTileHeight(newHeight);

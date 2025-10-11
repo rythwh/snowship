@@ -34,9 +34,9 @@ namespace Snowship.NResource
 
 		public readonly int integrity;
 
-		public readonly Dictionary<int, List<Vector2>> multiTilePositions = new();
+		public readonly Dictionary<int, List<Vector2Int>> multiTilePositions = new();
 		public readonly Dictionary<int, Vector2> anchorPositionOffset = new();
-		public readonly Dictionary<int, Vector2> dimensions = new();
+		public readonly Dictionary<int, Vector2Int> dimensions = new();
 
 		public readonly float walkSpeed;
 		public readonly bool walkable;
@@ -96,7 +96,7 @@ namespace Snowship.NResource
 			bool bitmasking,
 			bool blocksLight,
 			int integrity,
-			List<Vector2> multiTilePositions,
+			List<Vector2Int> multiTilePositions,
 			float walkSpeed,
 			bool walkable,
 			bool buildable,
@@ -219,28 +219,27 @@ namespace Snowship.NResource
 			canRotate = !bitmasking && allSpritesHaveBitmasking;
 
 			// Multi Tile Positions
-			float largestX = 0;
-			float largestY = 0;
+			int largestX = 0;
 
 			if (multiTilePositions.Count <= 0) {
-				multiTilePositions.Add(new Vector2(0, 0));
+				multiTilePositions.Add(new Vector2Int(0, 0));
 			}
 
 			for (int i = 0; i < (allSpritesHaveBitmasking ? bitmaskSpritesCount : 1); i++) {
 				if (i == 0 || (i > 0 && canRotate)) {
-					this.multiTilePositions.Add(i, new List<Vector2>());
+					this.multiTilePositions.Add(i, new List<Vector2Int>());
 					if (i == 0) {
 						this.multiTilePositions[i].AddRange(multiTilePositions);
 					} else {
-						foreach (Vector2 oldMultiTilePosition in this.multiTilePositions[i - 1]) {
-							Vector2 newMultiTilePosition = new(oldMultiTilePosition.y, largestX - oldMultiTilePosition.x);
+						foreach (Vector2Int oldMultiTilePosition in this.multiTilePositions[i - 1]) {
+							Vector2Int newMultiTilePosition = new(oldMultiTilePosition.y, largestX - oldMultiTilePosition.x);
 							this.multiTilePositions[i].Add(newMultiTilePosition);
 						}
 					}
-					largestX = this.multiTilePositions[i].OrderByDescending(MTP => MTP.x).ToList()[0].x;
-					largestY = this.multiTilePositions[i].OrderByDescending(MTP => MTP.y).ToList()[0].y;
-					dimensions.Add(i, new Vector2(largestX + 1, largestY + 1));
-					anchorPositionOffset.Add(i, new Vector2(largestX / 2, largestY / 2));
+					largestX = this.multiTilePositions[i].OrderByDescending(mtp => mtp.x).ToList()[0].x;
+					int largestY = this.multiTilePositions[i].OrderByDescending(mtp => mtp.y).ToList()[0].y;
+					dimensions.Add(i, new Vector2Int(largestX + 1, largestY + 1));
+					anchorPositionOffset.Add(i, new Vector2(largestX / 2f, largestY / 2f));
 				}
 			}
 
@@ -253,7 +252,7 @@ namespace Snowship.NResource
 
 		public Variation GetVariationFromString(string variationName) {
 			return variations.Count > 0
-				? variations.Find(v => v.name.Replace(" ", string.Empty).ToLower() == variationName.Replace(" ", string.Empty).ToLower())
+				? variations.Find(v => string.Equals(v.name.Replace(" ", string.Empty), variationName.Replace(" ", string.Empty), StringComparison.CurrentCultureIgnoreCase))
 				: null;
 		}
 

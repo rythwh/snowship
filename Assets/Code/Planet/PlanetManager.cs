@@ -9,18 +9,17 @@ namespace Snowship.NPlanet
 	[UsedImplicitly]
 	public class PlanetManager
 	{
+		private readonly IMapGenerator mapGenerator;
 		private readonly TileManager tileM;
 
 		public Planet planet;
 		public PlanetTile selectedPlanetTile;
 		private readonly PlanetMapDataValues planetMapDataValues = new PlanetMapDataValues();
 
-		public PlanetManager(TileManager tileM) {
+		public PlanetManager(IMapGenerator mapGenerator, TileManager tileM)
+		{
+			this.mapGenerator = mapGenerator;
 			this.tileM = tileM;
-		}
-
-		public void SetPlanet(Planet planet) {
-			this.planet = planet;
 		}
 
 		public void SetSelectedPlanetTile(PlanetTile planetTile) {
@@ -47,14 +46,10 @@ namespace Snowship.NPlanet
 				planetMapDataValues.planetTilePosition
 			);
 
-			Planet planet = new Planet(planetData, new MapContext(tileM.TilePrefab));
+			planet = new Planet(planetData, new MapContext(tileM.TilePrefab));
 			MapGenContext context = new MapGenContext(planet, planetData, planetData.mapSeed);
-			MapGenerator mapGenerator = new();
 			await mapGenerator.Run(context);
 			planet.planetTiles.AddRange(planet.tiles.ConvertAll(t => new PlanetTile(planet, t)));
-
-			this.planet = planet;
-
 			return planet;
 		}
 	}

@@ -1606,7 +1606,7 @@ namespace Snowship.NUI {
 				jobInfoNameText.text = job.prefab.GetJobInfoNameText(job);
 
 				jobInfo.transform.Find("Type").GetComponent<Text>().text = StringUtilities.SplitByCapitals(job.objectPrefab.jobType.ToString());
-				obj.GetComponent<Button>().onClick.AddListener(delegate { GameManager.Get<CameraManager>().SetCameraPosition(job.tile.obj.transform.position); });
+				obj.GetComponent<Button>().onClick.AddListener(delegate { GameManager.Get<CameraManager>().SetCameraPosition(job.tile.PositionGrid); });
 
 				bool hasPriority = job.priority != 0;
 

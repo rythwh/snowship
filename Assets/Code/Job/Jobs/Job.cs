@@ -78,9 +78,6 @@ namespace Snowship.NJob
 			}
 		}
 
-		protected Job() {
-		}
-
 		protected void SetTimeToWork(float timeToWork) {
 			Progress = timeToWork;
 		}

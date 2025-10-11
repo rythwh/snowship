@@ -47,7 +47,7 @@ namespace Snowship.NJob
 				.Where(chair => chair.tile.region == colonist.Tile.region)
 				.OrderBy(chair => Path.RegionBlockDistance(colonist.Tile.regionBlock, chair.tile.regionBlock, true, true, false))
 				.ThenByDescending(
-					chair => chair.tile.surroundingTiles.Find(
+					chair => chair.tile.SurroundingTiles[EGridConnectivity.EightWay].Find(
 						surroundingTile => {
 							ObjectInstance tableNextToChair = surroundingTile.GetObjectInstanceAtLayer(2);
 							return tableNextToChair?.prefab.subGroupType == ObjectPrefabSubGroup.ObjectSubGroupEnum.Tables;
@@ -101,7 +101,7 @@ namespace Snowship.NJob
 
 			ObjectInstance objectOnTile = colonist.Tile.GetObjectInstanceAtLayer(2);
 			if (objectOnTile != null && objectOnTile.prefab.subGroupType == ObjectPrefabSubGroup.ObjectSubGroupEnum.Chairs) {
-				if (objectOnTile.tile.surroundingTiles.Find(
+				if (objectOnTile.tile.SurroundingTiles[EGridConnectivity.EightWay].Find(
 					tile => {
 						ObjectInstance tableNextToChair = tile.GetObjectInstanceAtLayer(2);
 						if (tableNextToChair != null) {

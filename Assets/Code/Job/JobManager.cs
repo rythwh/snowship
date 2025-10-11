@@ -83,7 +83,7 @@ namespace Snowship.NJob
 
 					// Check that the job is in the same region as the colonist
 					// AND Check that if the job's tile is NOT walkable, then it has at least 1 surrounding tile that IS walkable (for e.g. Mine jobs)
-					if (job.Tile.region != colonist.Tile.region && !job.Tile.walkable && job.Tile.horizontalSurroundingTiles.All(t => t.region != colonist.Tile.region)) {
+					if (job.Tile.region != colonist.Tile.region && !job.Tile.walkable && job.Tile.SurroundingTiles[EGridConnectivity.FourWay].All(t => t.region != colonist.Tile.region)) {
 						continue;
 					}
 

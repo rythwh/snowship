@@ -16,6 +16,7 @@ namespace Snowship.NMap
 		private readonly IMapWrite mapWrite;
 		private readonly IMapQuery mapQuery;
 		private readonly IMapEvents mapEvents;
+		private readonly IMapGenerator mapGenerator;
 		private readonly ICameraEvents cameraEvents;
 		private readonly IColonyEvents colonyEvents;
 		private readonly StateManager stateM;
@@ -26,6 +27,7 @@ namespace Snowship.NMap
 			IMapWrite mapWrite,
 			IMapQuery mapQuery,
 			IMapEvents mapEvents,
+			IMapGenerator mapGenerator,
 			ICameraEvents cameraEvents,
 			IColonyEvents colonyEvents,
 			StateManager stateM,
@@ -35,6 +37,7 @@ namespace Snowship.NMap
 			this.mapWrite = mapWrite;
 			this.mapQuery = mapQuery;
 			this.mapEvents = mapEvents;
+			this.mapGenerator = mapGenerator;
 			this.cameraEvents = cameraEvents;
 			this.colonyEvents = colonyEvents;
 			this.stateM = stateM;
@@ -57,7 +60,6 @@ namespace Snowship.NMap
 			Map map = new Map(mapData, new MapContext(tileM.TilePrefab));
 			mapWrite.SetMap(map);
 			MapGenContext context = new(map, mapData, mapData.mapSeed);
-			MapGenerator mapGenerator = new();
 			await mapGenerator.Run(context);
 
 			InitializeMap();

@@ -15,7 +15,7 @@ namespace Snowship.NUI
 		private readonly GameObject planetTilePrefab;
 
 		private Planet currentPlanet;
-		private readonly List<GameObject> planetTileGameObjects = new List<GameObject>();
+		private readonly List<GameObject> planetTileGameObjects = new();
 
 		public event Action<PlanetTile> OnPlanetTileClicked;
 		// public event Action<PersistenceColony> OnColonyTileClicked;
@@ -39,7 +39,7 @@ namespace Snowship.NUI
 			// List<PersistenceColony> persistenceColonies,
 			bool destroyCurrentPlanet
 		) {
-			bool instantiateNewPlanetTiles = destroyCurrentPlanet || planetTileGameObjects.Count == 0 || currentPlanet.MapData.mapSize != planet.MapData.mapSize;
+			bool instantiateNewPlanetTiles = destroyCurrentPlanet || planetTileGameObjects.Count == 0 || currentPlanet?.MapData.mapSize != planet.MapData.mapSize;
 			if (instantiateNewPlanetTiles) {
 				DestroyPlanet();
 			}

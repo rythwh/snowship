@@ -20,7 +20,7 @@ namespace Snowship.NResource
 			RemoveTileBrightnesses();
 			List<Tile> newLitTiles = new();
 			foreach (Tile tile in GameManager.Get<IMapQuery>().Map.tiles) {
-				float distance = Vector2.Distance(tile.obj.transform.position, this.tile.obj.transform.position);
+				float distance = Vector2.Distance(tile.PositionGrid, this.tile.PositionGrid);
 				if (distance <= prefab.maxLightDistance) {
 					float intensityAtTile = Mathf.Clamp(prefab.maxLightDistance * (1f / Mathf.Pow(distance, 2f)), 0f, 1f);
 					if (tile != this.tile) {
@@ -31,7 +31,7 @@ namespace Snowship.NResource
 							if (lightVectorTile != this.tile) {
 								if (lightVectorTile.blocksLight /*GameManager.Get<IMapQuery>().Map.TileBlocksLight(lightVectorTile)*/) {
 									/*
-									if (!lightVectorTile.horizontalSurroundingTiles.Any(t => newLitTiles.Contains(t) && !tileM.map.TileBlocksLight(t))) {
+									if (!lightVectorTile.SurroundingTiles[EGridConnectivity.FourWay].Any(t => newLitTiles.Contains(t) && !tileM.map.TileBlocksLight(t))) {
 										lightTile = false;
 										break;
 									}
@@ -40,7 +40,7 @@ namespace Snowship.NResource
 									break;
 								}
 							}
-							lightVector += (tile.obj.transform.position - obj.transform.position).normalized * 0.1f;
+							lightVector += (tile.PositionGrid - obj.transform.position).normalized * 0.1f;
 						}
 						if (lightTile) {
 							tile.AddLightSourceBrightness(this, intensityAtTile);

@@ -40,7 +40,7 @@ namespace Snowship.NJob
 			}
 			bool setToWater = Tile.tileType.groupType == TileTypeGroup.TypeEnum.Water;
 			if (!setToWater) {
-				foreach (Tile nTile in Tile.horizontalSurroundingTiles) {
+				foreach (Tile nTile in Tile.SurroundingTiles[EGridConnectivity.FourWay]) {
 					if (nTile != null && nTile.tileType.groupType == TileTypeGroup.TypeEnum.Water) {
 						setToWater = true;
 						break;
@@ -49,7 +49,7 @@ namespace Snowship.NJob
 			}
 			if (setToWater) {
 				Tile.SetTileType(Tile.biome.tileTypes[TileTypeGroup.TypeEnum.Water], false, true, true);
-				foreach (Tile nTile in Tile.horizontalSurroundingTiles) {
+				foreach (Tile nTile in Tile.SurroundingTiles[EGridConnectivity.FourWay]) {
 					if (nTile != null && nTile.tileType.groupType == TileTypeGroup.TypeEnum.Hole) {
 						List<Tile> frontier = new() { nTile };
 						List<Tile> checkedTiles = new() { };
@@ -58,7 +58,7 @@ namespace Snowship.NJob
 							frontier.RemoveAt(0);
 							checkedTiles.Add(currentTile);
 							currentTile.SetTileType(currentTile.biome.tileTypes[TileTypeGroup.TypeEnum.Water], true, true, true);
-							foreach (Tile nTile2 in currentTile.horizontalSurroundingTiles) {
+							foreach (Tile nTile2 in currentTile.SurroundingTiles[EGridConnectivity.FourWay]) {
 								if (nTile2 != null && nTile2.tileType.groupType == TileTypeGroup.TypeEnum.Hole && !checkedTiles.Contains(nTile2)) {
 									frontier.Add(nTile2);
 								}

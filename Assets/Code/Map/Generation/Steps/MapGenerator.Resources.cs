@@ -29,7 +29,7 @@ namespace Snowship.NMap.Generation
 					continue;
 				}
 				foreach (Tile tile in regionBlock.tiles) {
-					if (tile.surroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) != null) {
+					if (tile.SurroundingTiles[EGridConnectivity.EightWay].Find(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) != null) {
 						coastTiles.Add(tile);
 					}
 				}
@@ -89,7 +89,7 @@ namespace Snowship.NMap.Generation
 
 					currentTile.SetTileType(TileType.GetTileTypeByEnum(resourceVeinData.tileTypes[currentTile.tileType.groupType]), false, false, false);
 
-					foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+					foreach (Tile nTile in currentTile.SurroundingTiles[EGridConnectivity.FourWay]) {
 						if (nTile == null || checkedTiles.Contains(nTile) || resourceVeinData.tileTypes.Values.Contains(nTile.tileType.type)) {
 							continue;
 						}

@@ -10,7 +10,6 @@ namespace Snowship.NMap
 {
 	public partial class Map
 	{
-
 		private ColonistManager ColonistM => GameManager.Get<ColonistManager>();
 
 		public bool Created = false;

@@ -25,8 +25,8 @@ namespace Snowship.NMap.Generation
 		private static void EstablishInitialRegions(MapGenContext context, bool splitByTileType) {
 			foreach (Tile tile in context.Map.tiles) { // Go through all tiles
 				List<Region> foundRegions = new List<Region>(); // For each tile, store a list of the regions around them
-				for (int i = 0; i < tile.surroundingTiles.Count; i++) { // Go through the tiles around each tile
-					Tile nTile = tile.surroundingTiles[i];
+				for (int i = 0; i < tile.SurroundingTiles[EGridConnectivity.EightWay].Count; i++) { // Go through the tiles around each tile
+					Tile nTile = tile.SurroundingTiles[EGridConnectivity.EightWay][i];
 					if (nTile != null && (splitByTileType ? tile.tileType == nTile.tileType : tile.walkable == nTile.walkable) && (i == 2 || i == 3 /*|| i == 5 || i == 6 */)) { // Uncomment indexes 5 and 6 to enable 8-connectivity connected-component labeling -- If the tiles have the same type
 						if (nTile.region != null && !foundRegions.Contains(nTile.region)) { // If the tiles have a region, and it hasn't already been looked at
 							foundRegions.Add(nTile.region); // Add the surrounding tile's region to the regions found around the original tile
@@ -46,7 +46,7 @@ namespace Snowship.NMap.Generation
 		private static void FindConnectedRegions(MapGenContext context, bool splitByTileType) {
 			foreach (Region region in context.Map.regions) {
 				foreach (Tile tile in region.tiles) {
-					foreach (Tile nTile in tile.horizontalSurroundingTiles) {
+					foreach (Tile nTile in tile.SurroundingTiles[EGridConnectivity.FourWay]) {
 						if (nTile != null && nTile.region != null && nTile.region != region && !region.connectedRegions.Contains(nTile.region) && (splitByTileType ? tile.tileType == nTile.tileType : tile.walkable == nTile.walkable)) {
 							region.connectedRegions.Add(nTile.region);
 						}
@@ -142,7 +142,7 @@ namespace Snowship.NMap.Generation
 					if (region.tiles.Count < removeRegionsBelowSize) {
 						/* --- This code is essentially copied from FindConnectedRegions() */
 						foreach (Tile tile in region.tiles) {
-							foreach (Tile nTile in tile.horizontalSurroundingTiles) {
+							foreach (Tile nTile in tile.SurroundingTiles[EGridConnectivity.FourWay]) {
 								if (nTile != null && nTile.region != null && nTile.region != region && !region.connectedRegions.Contains(nTile.region)) {
 									region.connectedRegions.Add(nTile.region);
 								}

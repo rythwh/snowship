@@ -1,10 +1,22 @@
 ﻿using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
+using Snowship.NMap.NTile;
 using Snowship.NTime;
 
 namespace Snowship.NMap.Generation
 {
-	public partial class MapGenerator
+	[UsedImplicitly]
+	public partial class MapGenerator : IMapGenerator
 	{
+		private readonly TileManager tileM;
+		private readonly TimeManager timeM;
+
+		public MapGenerator(TileManager tileM, TimeManager timeM)
+		{
+			this.tileM = tileM;
+			this.timeM = timeM;
+		}
+
 		public async UniTask Run(MapGenContext context) {
 			await CreateMap(context);
 		}
@@ -99,7 +111,7 @@ namespace Snowship.NMap.Generation
 				await UpdateProgress(context, "Lighting", "Calculating Lighting");
 				context.Map.RecalculateLighting(context.Map.tiles, false);
 				context.Map.DetermineVisibleRegionBlocks();
-				context.Map.UpdateGlobalLighting(GameManager.Get<TimeManager>().Time.DecimalHour, true);
+				context.Map.UpdateGlobalLighting(timeM.Time.DecimalHour, true);
 			}
 
 			await UpdateProgress(context, "Finishing Touches", string.Empty, false);

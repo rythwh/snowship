@@ -61,7 +61,7 @@ namespace Snowship.NMap.Models.Geography
 		public static readonly Dictionary<EResource, Func<Tile, bool>> resourceVeinValidTileFunctions = new Dictionary<EResource, Func<Tile, bool>>() {
 			{
 				EResource.Clay, delegate(Tile tile) {
-					if (((tile.tileType.groupType == TileTypeGroup.TypeEnum.Water && tile.horizontalSurroundingTiles.Find(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) != null) || (tile.tileType.groupType != TileTypeGroup.TypeEnum.Water)) && (tile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
+					if (((tile.tileType.groupType == TileTypeGroup.TypeEnum.Water && tile.SurroundingTiles[EGridConnectivity.FourWay].Find(t => t != null && t.tileType.groupType != TileTypeGroup.TypeEnum.Water) != null) || (tile.tileType.groupType != TileTypeGroup.TypeEnum.Water)) && (tile.tileType.groupType != TileTypeGroup.TypeEnum.Stone)) {
 						if (tile.temperature >= -30) {
 							return true;
 						}

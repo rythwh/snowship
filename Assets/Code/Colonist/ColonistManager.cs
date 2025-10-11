@@ -104,19 +104,19 @@ namespace Snowship.NColonist
 
 			int mapSize = mapQuery.Map.MapData.mapSize;
 			for (int i = 0; i < amount; i++) {
-				List<Tile> walkableTilesByDistanceToCentre = mapQuery.Map.tiles.Where(o => o.walkable && o.buildable && Colonists.ToList().Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))).ToList();
+				List<Tile> walkableTilesByDistanceToCentre = mapQuery.Map.tiles.Where(o => o.walkable && o.buildable && Colonists.ToList().Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.PositionGrid, new Vector2(mapSize / 2f, mapSize / 2f))).ToList();
 				if (walkableTilesByDistanceToCentre.Count <= 0) {
-					foreach (Tile tile in mapQuery.Map.tiles.Where(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
+					foreach (Tile tile in mapQuery.Map.tiles.Where(o => Vector2.Distance(o.PositionGrid, new Vector2(mapSize / 2f, mapSize / 2f)) <= 4f)) {
 						tile.SetTileType(tile.biome.tileTypes[TileTypeGroup.TypeEnum.Ground], true, true, true);
 					}
-					walkableTilesByDistanceToCentre = mapQuery.Map.tiles.Where(o => o.walkable && Colonists.ToList().Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f))).ToList();
+					walkableTilesByDistanceToCentre = mapQuery.Map.tiles.Where(o => o.walkable && Colonists.ToList().Find(c => c.Tile == o) == null).OrderBy(o => Vector2.Distance(o.PositionGrid, new Vector2(mapSize / 2f, mapSize / 2f))).ToList();
 				}
 
 				List<Tile> validSpawnTiles = new List<Tile>();
 				Tile currentTile = walkableTilesByDistanceToCentre[0];
-				float minimumDistance = Vector2.Distance(currentTile.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f));
+				float minimumDistance = Vector2.Distance(currentTile.PositionGrid, new Vector2(mapSize / 2f, mapSize / 2f));
 				foreach (Tile tile in walkableTilesByDistanceToCentre) {
-					float distance = Vector2.Distance(currentTile.obj.transform.position, new Vector2(mapSize / 2f, mapSize / 2f));
+					float distance = Vector2.Distance(currentTile.PositionGrid, new Vector2(mapSize / 2f, mapSize / 2f));
 					if (distance < minimumDistance) {
 						currentTile = tile;
 						minimumDistance = distance;
@@ -132,13 +132,15 @@ namespace Snowship.NColonist
 					if (validSpawnTiles.Count > 100) {
 						break;
 					}
-					foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+					foreach (Tile nTile in currentTile.SurroundingTiles[EGridConnectivity.FourWay]) {
 						if (walkableTilesByDistanceToCentre.Contains(nTile) && !checkedTiles.Contains(nTile)) {
 							frontier.Add(nTile);
 						}
 					}
 				}
-				Tile colonistSpawnTile = validSpawnTiles.Count >= amount ? validSpawnTiles[Random.Range(0, validSpawnTiles.Count)] : walkableTilesByDistanceToCentre[Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
+				Tile colonistSpawnTile = validSpawnTiles.Count >= amount
+					? validSpawnTiles.RandomElement()
+					: walkableTilesByDistanceToCentre[Random.Range(0, (walkableTilesByDistanceToCentre.Count > 100 ? 100 : walkableTilesByDistanceToCentre.Count))];
 
 				// TODO Finish HumanData implementation and use it
 				Gender gender = Random.RandomElement<Gender>();
@@ -173,7 +175,7 @@ namespace Snowship.NColonist
 							return true;
 						}
 					} else {
-						foreach (Tile hTile in colonist.Tile.horizontalSurroundingTiles) {
+						foreach (Tile hTile in colonist.Tile.SurroundingTiles[EGridConnectivity.FourWay]) {
 							if (hTile != null && hTile.visible) {
 								if (hTile.region == tile.region) {
 									return true;
@@ -183,13 +185,13 @@ namespace Snowship.NColonist
 					}
 				}
 			}
-			for (int i = 0; i < tile.surroundingTiles.Count; i++) {
-				Tile surroundingTile = tile.surroundingTiles[i];
+			for (int i = 0; i < tile.SurroundingTiles[EGridConnectivity.EightWay].Count; i++) {
+				Tile surroundingTile = tile.SurroundingTiles[EGridConnectivity.EightWay][i];
 				if (surroundingTile != null && surroundingTile.walkable) {
 					if (Map.diagonalCheckMap.ContainsKey(i)) {
 						bool skip = true;
 						foreach (int horizontalTileIndex in Map.diagonalCheckMap[i]) {
-							Tile horizontalTile = surroundingTile.surroundingTiles[horizontalTileIndex];
+							Tile horizontalTile = surroundingTile.SurroundingTiles[EGridConnectivity.EightWay][horizontalTileIndex];
 							if (horizontalTile != null && horizontalTile.walkable) {
 								skip = false;
 								break;

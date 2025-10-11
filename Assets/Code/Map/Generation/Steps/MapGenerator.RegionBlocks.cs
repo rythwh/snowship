@@ -30,12 +30,12 @@ namespace Snowship.NMap.Generation
 			}
 			foreach (RegionBlock squareRegionBlock in context.Map.squareRegionBlocks) {
 				foreach (Tile tile in squareRegionBlock.tiles) {
-					foreach (Tile nTile in tile.surroundingTiles) {
+					foreach (Tile nTile in tile.SurroundingTiles[EGridConnectivity.EightWay]) {
 						if (nTile != null && nTile.squareRegionBlock != tile.squareRegionBlock && nTile.squareRegionBlock != null && !squareRegionBlock.surroundingRegionBlocks.Contains(nTile.squareRegionBlock)) {
 							squareRegionBlock.surroundingRegionBlocks.Add(nTile.squareRegionBlock);
 						}
 					}
-					squareRegionBlock.averagePosition = new Vector2(squareRegionBlock.averagePosition.x + tile.obj.transform.position.x, squareRegionBlock.averagePosition.y + tile.obj.transform.position.y);
+					squareRegionBlock.averagePosition = new Vector2(squareRegionBlock.averagePosition.x + tile.PositionGrid.x, squareRegionBlock.averagePosition.y + tile.PositionGrid.y);
 				}
 				squareRegionBlock.averagePosition = new Vector2(squareRegionBlock.averagePosition.x / squareRegionBlock.tiles.Count, squareRegionBlock.averagePosition.y / squareRegionBlock.tiles.Count);
 			}
@@ -65,7 +65,7 @@ namespace Snowship.NMap.Generation
 								frontier.RemoveAt(0);
 								unwalkableRegionBlock.tiles.Add(currentTile);
 								currentTile.regionBlock = unwalkableRegionBlock;
-								foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+								foreach (Tile nTile in currentTile.SurroundingTiles[EGridConnectivity.FourWay]) {
 									if (nTile != null && !nTile.walkable && !checkedTiles.Contains(nTile) && unwalkableTiles.Contains(nTile) && nTile.regionBlock == null) {
 										frontier.Add(nTile);
 									}
@@ -86,7 +86,7 @@ namespace Snowship.NMap.Generation
 								frontier.RemoveAt(0);
 								walkableRegionBlock.tiles.Add(currentTile);
 								currentTile.regionBlock = walkableRegionBlock;
-								foreach (Tile nTile in currentTile.horizontalSurroundingTiles) {
+								foreach (Tile nTile in currentTile.SurroundingTiles[EGridConnectivity.FourWay]) {
 									if (nTile != null && nTile.walkable && !checkedTiles.Contains(nTile) && walkableTiles.Contains(nTile) && nTile.regionBlock == null) {
 										frontier.Add(nTile);
 									}
@@ -109,17 +109,17 @@ namespace Snowship.NMap.Generation
 			context.Map.regionBlocks.AddRange(newRegionBlocks);
 			foreach (RegionBlock regionBlock in context.Map.regionBlocks) {
 				foreach (Tile tile in regionBlock.tiles) {
-					foreach (Tile nTile in tile.horizontalSurroundingTiles) {
+					foreach (Tile nTile in tile.SurroundingTiles[EGridConnectivity.FourWay]) {
 						if (nTile != null && nTile.regionBlock != tile.regionBlock && nTile.regionBlock != null && !regionBlock.horizontalSurroundingRegionBlocks.Contains(nTile.regionBlock)) {
 							regionBlock.horizontalSurroundingRegionBlocks.Add(nTile.regionBlock);
 						}
 					}
-					foreach (Tile nTile in tile.surroundingTiles) {
+					foreach (Tile nTile in tile.SurroundingTiles[EGridConnectivity.EightWay]) {
 						if (nTile != null && nTile.regionBlock != tile.regionBlock && nTile.regionBlock != null && !regionBlock.surroundingRegionBlocks.Contains(nTile.regionBlock)) {
 							regionBlock.surroundingRegionBlocks.Add(nTile.regionBlock);
 						}
 					}
-					regionBlock.averagePosition = new Vector2(regionBlock.averagePosition.x + tile.obj.transform.position.x, regionBlock.averagePosition.y + tile.obj.transform.position.y);
+					regionBlock.averagePosition = new Vector2(regionBlock.averagePosition.x + tile.PositionGrid.x, regionBlock.averagePosition.y + tile.PositionGrid.y);
 				}
 				regionBlock.averagePosition = new Vector2(regionBlock.averagePosition.x / regionBlock.tiles.Count, regionBlock.averagePosition.y / regionBlock.tiles.Count);
 			}
