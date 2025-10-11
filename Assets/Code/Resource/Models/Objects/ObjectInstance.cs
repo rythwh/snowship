@@ -96,7 +96,7 @@ namespace Snowship.NResource
 			List<Tile> bitmaskingTiles = new();
 			foreach (Tile additionalTile in additionalTiles) {
 				bitmaskingTiles.Add(additionalTile);
-				bitmaskingTiles.AddRange(additionalTile.surroundingTiles);
+				bitmaskingTiles.AddRange(additionalTile.SurroundingTiles[EGridConnectivity.EightWay]);
 			}
 			bitmaskingTiles = bitmaskingTiles.Distinct().ToList();
 			GameManager.Get<ResourceManager>().Bitmask(bitmaskingTiles);

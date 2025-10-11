@@ -46,6 +46,7 @@ public class DebugManager : IStartable, IPostStartable, ITickable
 	private readonly ColonyManager colonyM;
 	private readonly PlanetManager planetM;
 	private readonly IResourceQuery resourceQuery;
+	private readonly TileManager tileM;
 
 	private bool debugEnabled = false;
 
@@ -66,7 +67,8 @@ public class DebugManager : IStartable, IPostStartable, ITickable
 		PlanetManager planetM,
 		HumanManager humanM,
 		IColonistQuery colonistQuery,
-		IResourceQuery resourceQuery
+		IResourceQuery resourceQuery,
+		TileManager tileM
 	) {
 		this.caravanM = caravanM;
 		this.uiM = uiM;
@@ -82,6 +84,7 @@ public class DebugManager : IStartable, IPostStartable, ITickable
 		this.humanM = humanM;
 		this.colonistQuery = colonistQuery;
 		this.resourceQuery = resourceQuery;
+		this.tileM = tileM;
 	}
 
 	public void Start() {
@@ -111,6 +114,9 @@ public class DebugManager : IStartable, IPostStartable, ITickable
 		if (PlayerPrefs.GetInt("DebugSettings/Quick Start", 0) == 0) {
 			return;
 		}
+
+		await UniTask.WaitUntil(() => tileM.TilePrefab != null, PlayerLoopTiming.Update);
+
 		Planet planet = await planetM.CreatePlanet(new CreatePlanetData());
 
 		const string colonyName = "Lumia";

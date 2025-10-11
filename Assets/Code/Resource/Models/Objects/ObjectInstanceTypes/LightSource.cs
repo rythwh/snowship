@@ -40,7 +40,7 @@ namespace Snowship.NResource
 									break;
 								}
 							}
-							lightVector += (tile.PositionGrid - obj.transform.position).normalized * 0.1f;
+							lightVector += (tile.obj.transform.position - obj.transform.position).normalized * 0.1f;
 						}
 						if (lightTile) {
 							tile.AddLightSourceBrightness(this, intensityAtTile);

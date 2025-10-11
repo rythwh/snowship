@@ -94,7 +94,7 @@ namespace Snowship.NMap
 			return sum;
 		}
 
-		private void RedrawTile(Tile tile, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, List<TileType.TypeEnum> customCompareTileTypes, bool includeMapEdge) {
+		private void RedrawTile(Tile tile, bool includeDiagonalSurroundingTiles, bool customBitSumInputs, HashSet<TileType.TypeEnum> customCompareTileTypes, bool includeMapEdge) {
 			int sum = 0;
 			List<Tile> surroundingTilesToUse = includeDiagonalSurroundingTiles ? tile.SurroundingTiles[EGridConnectivity.EightWay] : tile.SurroundingTiles[EGridConnectivity.FourWay];
 			if (customBitSumInputs) {
@@ -168,9 +168,9 @@ namespace Snowship.NMap
 
 		private void BitmaskRiverStartTiles() {
 			foreach (River river in rivers) {
-				List<TileType.TypeEnum> compareTileTypes = new List<TileType.TypeEnum>();
-				compareTileTypes.AddRange(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type).ToList());
-				compareTileTypes.AddRange(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tt => tt.type).ToList());
+				HashSet<TileType.TypeEnum> compareTileTypes = new();
+				compareTileTypes.UnionWith(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Water).tileTypes.Select(tt => tt.type));
+				compareTileTypes.UnionWith(TileTypeGroup.GetTileTypeGroupByEnum(TileTypeGroup.TypeEnum.Stone).tileTypes.Select(tt => tt.type));
 				RedrawTile(river.startTile, false, true, compareTileTypes, false /*river.expandRadius > 0*/);
 			}
 		}

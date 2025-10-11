@@ -415,7 +415,7 @@ namespace Snowship.NResource
 			bool? bitmasking = false;
 			bool? blocksLight = false;
 			int? integrity = 0;
-			List<Vector2> multiTilePositions = new();
+			List<Vector2Int> multiTilePositions = new();
 
 			float? walkSpeed = 1;
 			bool? walkable = true;
@@ -472,7 +472,7 @@ namespace Snowship.NResource
 						break;
 					case ObjectPropertyEnum.MultiTilePositions:
 						foreach (string vector2String in ((string)objectSubProperty.Value).Split(';')) {
-							multiTilePositions.Add(new Vector2(float.Parse(vector2String.Split(',')[0]), float.Parse(vector2String.Split(',')[1])));
+							multiTilePositions.Add(new Vector2Int(int.Parse(vector2String.Split(',')[0]), int.Parse(vector2String.Split(',')[1])));
 						}
 						break;
 					case ObjectPropertyEnum.WalkSpeed:

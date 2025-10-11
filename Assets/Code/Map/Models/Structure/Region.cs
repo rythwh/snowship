@@ -27,7 +27,7 @@ namespace Snowship.NMap.Models.Structure
 				tile.SetVisible(Visible);
 
 				tilesToModify.Add(tile);
-				tilesToModify.AddRange(tile.surroundingTiles);
+				tilesToModify.AddRange(tile.SurroundingTiles[EGridConnectivity.EightWay]);
 			}
 
 			tilesToModify = tilesToModify.Distinct().ToList();
