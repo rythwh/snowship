@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NResource;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ public class ClothingPrefab
 {
 	public static readonly List<ClothingPrefab> clothingPrefabs = new();
 
-	public BodySection BodySection;
+	public EBodySection BodySection;
 	public Clothing.ClothingEnum clothingType;
 	public int insulation;
 	public int waterResistance;
@@ -22,7 +22,7 @@ public class ClothingPrefab
 	public List<Clothing> clothes = new();
 
 	public ClothingPrefab(
-		BodySection bodySection,
+		EBodySection bodySection,
 		Clothing.ClothingEnum clothingType,
 		int insulation,
 		int waterResistance,
@@ -44,7 +44,7 @@ public class ClothingPrefab
 		}
 	}
 
-	public static List<ClothingPrefab> GetClothingPrefabsByAppearance(BodySection bodySection) {
+	public static List<ClothingPrefab> GetClothingPrefabsByAppearance(EBodySection bodySection) {
 		return clothingPrefabs.FindAll(c => c.BodySection == bodySection);
 	}
 }

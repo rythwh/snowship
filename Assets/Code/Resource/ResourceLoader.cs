@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NPersistence;
 using Snowship.NUtilities;
 using UnityEngine;
@@ -197,7 +197,7 @@ namespace Snowship.NResource
 			// craftingResources -> craftingResourcesTemp
 
 			// Clothing
-			BodySection? clothingAppearance = null;
+			EBodySection? clothingAppearance = null;
 			Clothing.ClothingEnum? clothingType = null;
 			int? clothingInsulation = null;
 			int? clothingWaterResistance = null;
@@ -290,7 +290,7 @@ namespace Snowship.NResource
 						foreach (KeyValuePair<string, object> clothingProperty in (List<KeyValuePair<string, object>>)resourceSubProperty.Value) {
 							switch ((ResourceClothingPropertyEnum)Enum.Parse(typeof(ResourceClothingPropertyEnum), clothingProperty.Key)) {
 								case ResourceClothingPropertyEnum.Appearance:
-									clothingAppearance = (BodySection)Enum.Parse(typeof(BodySection), (string)clothingProperty.Value);
+									clothingAppearance = (EBodySection)Enum.Parse(typeof(EBodySection), (string)clothingProperty.Value);
 									break;
 								case ResourceClothingPropertyEnum.ClothingType:
 									clothingType = (Clothing.ClothingEnum)Enum.Parse(typeof(Clothing.ClothingEnum), (string)clothingProperty.Value);

@@ -1,6 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NResource;
 using UnityEngine;
 
@@ -17,18 +18,18 @@ namespace Snowship.NUI
 		}
 
 		protected override UniTask OnCreate() {
-			foreach ((BodySection appearance, Clothing clothing) in human.Clothes) {
+			foreach ((EBodySection appearance, Clothing clothing) in human.Clothes) {
 				SetClothingOnBodySection(appearance, clothing);
 			}
 			return UniTask.CompletedTask;
 		}
 
-		public void SetClothingOnBodySection(BodySection bodySection, Clothing clothing) {
+		public void SetClothingOnBodySection(EBodySection bodySection, Clothing clothing) {
 			Component.SetClothingOnBodySection(bodySection, clothing);
 		}
 
 		public void SetSpriteOnBodySection(Sprite sprite) {
-			Component.SetBodySectionSprite(BodySection.Skin, sprite);
+			Component.SetBodySectionSprite(EBodySection.Skin, sprite);
 		}
 	}
 }

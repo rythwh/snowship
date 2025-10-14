@@ -46,9 +46,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc4984d0808b4e3aa2cb721a9fdd512d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Snowship::Snowship.NHuman.HumanView
-  moveSprites: []
-  BodySpriteRenderer: {fileID: 252265776745211324}
-  NameBox: {fileID: 7516068721245019009}
+  uBodySpriteRenderer: {fileID: 252265776745211324}
+  uNameBox: {fileID: 7516068721245019009}
+  uBodySections:
+  - {fileID: 2408516666604110264}
+  - {fileID: 3923218693075955642}
+  - {fileID: 5148836398128748603}
+  - {fileID: 274949369636877313}
+  - {fileID: 5856538615574970820}
+  - {fileID: 8639654836926514893}
+  - {fileID: 1948545812010316718}
 --- !u!1 &1276782573063544
 GameObject:
   m_ObjectHideFlags: 0
@@ -59,13 +66,14 @@ GameObject:
   m_Component:
   - component: {fileID: 4697545462523790}
   - component: {fileID: 212467543486797128}
+  - component: {fileID: 5148836398128748603}
   m_Layer: 0
   m_Name: Hat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4697545462523790
 Transform:
   m_ObjectHideFlags: 0
@@ -139,6 +147,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &5148836398128748603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1276782573063544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e370f903d4c7a9e2d9f111a642bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Snowship::Snowship.NLife.BodySectionView
+  uBodySection: 2
 --- !u!1 &1282428847983436
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,13 +170,14 @@ GameObject:
   m_Component:
   - component: {fileID: 4539539715178340}
   - component: {fileID: 212850719195739032}
+  - component: {fileID: 274949369636877313}
   m_Layer: 0
   m_Name: Top
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4539539715178340
 Transform:
   m_ObjectHideFlags: 0
@@ -229,6 +251,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &274949369636877313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1282428847983436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e370f903d4c7a9e2d9f111a642bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Snowship::Snowship.NLife.BodySectionView
+  uBodySection: 3
 --- !u!1 &1296305411011394
 GameObject:
   m_ObjectHideFlags: 0
@@ -239,13 +274,14 @@ GameObject:
   m_Component:
   - component: {fileID: 4776711842955946}
   - component: {fileID: 212448900397639402}
+  - component: {fileID: 8639654836926514893}
   m_Layer: 0
   m_Name: Scarf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4776711842955946
 Transform:
   m_ObjectHideFlags: 0
@@ -319,6 +355,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &8639654836926514893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1296305411011394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e370f903d4c7a9e2d9f111a642bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Snowship::Snowship.NLife.BodySectionView
+  uBodySection: 5
 --- !u!1 &1303948988259534
 GameObject:
   m_ObjectHideFlags: 0
@@ -329,13 +378,14 @@ GameObject:
   m_Component:
   - component: {fileID: 4531919846666042}
   - component: {fileID: 212857044594341512}
+  - component: {fileID: 1948545812010316718}
   m_Layer: 0
   m_Name: Backpack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4531919846666042
 Transform:
   m_ObjectHideFlags: 0
@@ -409,6 +459,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1948545812010316718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303948988259534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e370f903d4c7a9e2d9f111a642bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Snowship::Snowship.NLife.BodySectionView
+  uBodySection: 6
 --- !u!1 &1338037454320612
 GameObject:
   m_ObjectHideFlags: 0
@@ -509,13 +572,14 @@ GameObject:
   m_Component:
   - component: {fileID: 4324112166680484}
   - component: {fileID: 212081200071182238}
+  - component: {fileID: 3923218693075955642}
   m_Layer: 0
   m_Name: Hair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4324112166680484
 Transform:
   m_ObjectHideFlags: 0
@@ -589,6 +653,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &3923218693075955642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385887575249906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e370f903d4c7a9e2d9f111a642bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Snowship::Snowship.NLife.BodySectionView
+  uBodySection: 1
 --- !u!1 &1855776716730286
 GameObject:
   m_ObjectHideFlags: 0
@@ -689,13 +766,14 @@ GameObject:
   m_Component:
   - component: {fileID: 4740375909392200}
   - component: {fileID: 212545985843357038}
+  - component: {fileID: 5856538615574970820}
   m_Layer: 0
   m_Name: Bottoms
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4740375909392200
 Transform:
   m_ObjectHideFlags: 0
@@ -769,6 +847,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &5856538615574970820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896714349390634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e370f903d4c7a9e2d9f111a642bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Snowship::Snowship.NLife.BodySectionView
+  uBodySection: 4
 --- !u!1 &7458389507153810858
 GameObject:
   m_ObjectHideFlags: 0
@@ -779,6 +870,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7164117378333669035}
   - component: {fileID: 252265776745211324}
+  - component: {fileID: 2408516666604110264}
   m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
@@ -867,6 +959,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &2408516666604110264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7458389507153810858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e370f903d4c7a9e2d9f111a642bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Snowship::Snowship.NLife.BodySectionView
+  uBodySection: 0
 --- !u!1001 &1919743088383481008
 PrefabInstance:
   m_ObjectHideFlags: 0

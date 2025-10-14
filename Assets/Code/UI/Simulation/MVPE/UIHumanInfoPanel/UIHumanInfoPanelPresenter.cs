@@ -32,7 +32,7 @@ namespace Snowship.NUI
 		public override async UniTask OnCreate() {
 
 			View.SetGeneralInformation(
-				humanView.moveSprites[0],
+				humanView.GetForwardFacingSprite(),
 				$"{human.Name} ({human.Gender.ToString()[0]})",
 				$"{human.Title} of {human.OriginLocation.Name}"
 			);

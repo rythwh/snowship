@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Snowship.NLife;
 using Snowship.NMap.NTile;
 using Snowship.NResource;
@@ -8,8 +10,11 @@ namespace Snowship.NHuman
 {
 	public class HumanView : LifeView<Human>
 	{
-		public override void Bind(Human model) {
-			base.Bind(model);
+		public override void Bind(
+			Human model,
+			Sprite[] moveSprites
+		) {
+			base.Bind(model, moveSprites);
 
 			Model.OnClothingChanged += OnClothingChanged;
 		}
@@ -17,7 +22,7 @@ namespace Snowship.NHuman
 		protected override void OnAfterBind() {
 			base.OnAfterBind();
 
-			SetAppearance(Model.Clothes);
+			SetInitialAppearance(Model.Clothes);
 		}
 
 		public override void Unbind() {
@@ -36,31 +41,21 @@ namespace Snowship.NHuman
 			SetColour(tile.sr.color);
 		}
 
-		private void SetAppearance(Dictionary<BodySection, Clothing> clothes) {
-			int appearanceIndex = 1;
-			foreach (BodySection appearance in clothes.Keys) {
-				transform.Find($"{BodySpriteRenderer.gameObject.name}/{appearance.ToString()}").GetComponent<SpriteRenderer>().sortingOrder = BodySpriteRenderer.sortingOrder + appearanceIndex;
-				appearanceIndex += 1;
-			}
-		}
-
-		private void OnClothingChanged(BodySection bodySection, Clothing clothing) {
-			bool clothingValid = clothing != null && clothing.image != null;
-			SpriteRenderer clothingSectionSpriteRenderer = transform
-				.Find(bodySection.ToString())
-				.GetComponent<SpriteRenderer>();
-			clothingSectionSpriteRenderer.sprite = clothingValid ? clothing.image : null;
-			clothingSectionSpriteRenderer.color = clothingValid ? Color.white : Color.clear;
-		}
-
-		protected override void OnModelPositionChanged(Vector2 position) {
-			base.OnModelPositionChanged(position);
-
-			foreach ((BodySection bodySection, Clothing clothing) in Model.Clothes) {
-				if (clothing != null) {
-					transform.Find(bodySection.ToString()).GetComponent<SpriteRenderer>().sprite = clothing.moveSprites[MoveSpriteIndex];
+		private void SetInitialAppearance(Dictionary<EBodySection, Clothing> clothes) {
+			foreach (BodySectionView bodySectionView in uBodySections) {
+				bodySectionView.SetSortingOrder(uBodySpriteRenderer.sortingOrder);
+				if (clothes.TryGetValue(bodySectionView.GetBodySection(), out Clothing clothing)) {
+					bodySectionView.SetClothing(clothing);
 				}
 			}
+		}
+
+		private void OnClothingChanged(EBodySection bodySection, Clothing clothing) {
+			BodySectionView bodySectionView = uBodySections.FirstOrDefault(bs => bs.GetBodySection() == bodySection);
+			if (bodySectionView == null) {
+				throw new ArgumentNullException($"Body section {bodySection.ToString()} does not exist on {Model.Name}");
+			}
+			bodySectionView.SetClothing(clothing);
 		}
 	}
 }

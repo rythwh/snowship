@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NResource;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,11 +11,11 @@ namespace Snowship.NUI
 	{
 		[SerializeField] private List<UIHumanBodyClothingSection> clothingSections = new();
 
-		public void SetClothingOnBodySection(BodySection bodySection, Clothing clothing) {
+		public void SetClothingOnBodySection(EBodySection bodySection, Clothing clothing) {
 			SetBodySectionSprite(bodySection, clothing.moveSprites[0]);
 		}
 
-		public void SetBodySectionSprite(BodySection bodySection, Sprite sprite) {
+		public void SetBodySectionSprite(EBodySection bodySection, Sprite sprite) {
 			foreach (UIHumanBodyClothingSection clothingSection in clothingSections) {
 				if (clothingSection.bodySection != bodySection) {
 					continue;
@@ -32,7 +32,7 @@ namespace Snowship.NUI
 	[Serializable]
 	public struct UIHumanBodyClothingSection
 	{
-		public BodySection bodySection;
+		public EBodySection bodySection;
 		public Image sectionImage;
 	}
 }

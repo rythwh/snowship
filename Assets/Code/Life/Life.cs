@@ -17,6 +17,7 @@ namespace Snowship.NLife
 		public Vector2 Position { get; protected set; }
 		internal Vector2 PreviousPosition { get; private set; }
 		public Tile Tile { get; protected set; }
+		public Tile PreviousTile { get; protected set; }
 		public bool Visible;
 		public float Health { get; protected set; }
 		public Gender Gender { get; protected set; }
@@ -63,6 +64,7 @@ namespace Snowship.NLife
 			if (Tile == tile) {
 				return;
 			}
+			PreviousTile = Tile;
 			Tile = tile;
 			TileChanged?.Invoke(Tile);
 			SetVisible(Tile.visible);
@@ -114,6 +116,7 @@ namespace Snowship.NLife
 					moveTimer = 0;
 				}
 				moveSpeedRampingMultiplier = 0;
+				PositionChanged?.Invoke(Position);
 			}
 			if (Position != PreviousPosition) {
 				PositionChanged?.Invoke(Position);

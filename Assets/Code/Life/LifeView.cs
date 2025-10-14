@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Snowship.NCamera;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
@@ -14,22 +13,24 @@ namespace Snowship.NLife
 
 		private LifeViewModule[] modules;
 
-		public List<Sprite> moveSprites;
+		protected Sprite[] MoveSprites;
 		private readonly int[] moveSpriteIndices = { 1, 2, 0, 3, 1, 0, 0, 1 };
-		protected int MoveSpriteIndex => CalculateMoveSpriteIndex();
 
 		private ICameraEvents CameraEvents => GameManager.Get<ICameraEvents>();
 		private ICameraQuery CameraQuery => GameManager.Get<ICameraQuery>();
 		private IMapQuery MapQuery => GameManager.Get<IMapQuery>();
 
-		[SerializeField] protected SpriteRenderer BodySpriteRenderer;
-		[SerializeField] private WorldSpaceNameBox NameBox;
+		[SerializeField] protected SpriteRenderer uBodySpriteRenderer;
+		[SerializeField] private WorldSpaceNameBox uNameBox;
+		[SerializeField] protected BodySectionView[] uBodySections;
 
-		public virtual void Bind([NotNull] TLife model) {
+		public virtual void Bind([NotNull] TLife model, Sprite[] moveSprites) {
 
 			Unbind();
 
 			Model = model;
+			MoveSprites = moveSprites;
+
 			Model.NameChanged += OnModelNameChanged;
 			Model.PositionChanged += OnModelPositionChanged;
 			Model.TileChanged += OnModelTileChanged;
@@ -47,7 +48,9 @@ namespace Snowship.NLife
 				module.OnBind(Model, this);
 			}
 
-			BodySpriteRenderer.sortingOrder = (int)SortingOrder.Life;
+			foreach (BodySectionView bodySectionView in uBodySections) {
+				bodySectionView.Initialize();
+			}
 
 			OnAfterBind();
 		}
@@ -87,8 +90,7 @@ namespace Snowship.NLife
 			OnCameraZoomChanged(CameraQuery.CurrentZoom, CameraQuery.CurrentPosition);
 		}
 
-		protected virtual void OnBeforeUnbind() {
-		}
+		protected virtual void OnBeforeUnbind() { }
 
 		public void ApplyTileColour() {
 			SetColour(Model.Tile.sr.color);
@@ -97,15 +99,15 @@ namespace Snowship.NLife
 		protected virtual void OnModelNameChanged(string name) {
 			gameObject.name = $"{Model.GetType().Name}-{name}";
 
-			NameBox.OnNameChanged(name);
+			uNameBox.OnNameChanged(name);
 		}
 
 		internal virtual void OnNameColourChanged(Color colour) {
-			NameBox.OnNameColourChanged(colour);
+			uNameBox.OnNameColourChanged(colour);
 		}
 
 		protected void OnCameraZoomChanged(float zoom, Vector2 _) {
-			NameBox.OnCameraZoomChanged(zoom);
+			uNameBox.OnCameraZoomChanged(zoom);
 		}
 
 		protected virtual void OnModelPositionChanged(Vector2 position) {
@@ -123,7 +125,7 @@ namespace Snowship.NLife
 		}
 
 		protected virtual void OnModelHealthChanged(float health) {
-			NameBox.OnHealthChanged(health);
+			uNameBox.OnHealthChanged(health);
 		}
 
 		protected virtual void OnModelDied() {
@@ -136,21 +138,25 @@ namespace Snowship.NLife
 
 		protected void SetColour(Color newColour) {
 			newColour.a = 1;
-			foreach (SpriteRenderer spriteRenderer in GetComponentsInChildren<SpriteRenderer>()) {
-				spriteRenderer.color = newColour;
+			foreach (BodySectionView bodySection in uBodySections) {
+				bodySection.SetAmbientColour(newColour);
 			}
 		}
 
-		private int CalculateMoveSpriteIndex() {
-			int moveSpriteIndex = 0;
+		public Sprite GetForwardFacingSprite()
+		{
+			return MoveSprites[0];
+		}
+
+		protected int CalculateMoveSpriteIndex() {
 			if (!Model.IsMoving) {
-				return moveSpriteIndex;
+				return 0;
 			}
 			Tile previousTile = MapQuery.Map.GetTileFromPosition(Model.PreviousPosition);
 			if (previousTile == Model.NextTile) {
-				return moveSpriteIndex;
+				return 0;
 			}
-			moveSpriteIndex = previousTile.SurroundingTiles[EGridConnectivity.EightWay].IndexOf(Model.NextTile);
+			int moveSpriteIndex = previousTile.SurroundingTiles[EGridConnectivity.EightWay].IndexOf(Model.NextTile);
 			if (moveSpriteIndex == -1) {
 				moveSpriteIndex = 0;
 			}
@@ -159,7 +165,11 @@ namespace Snowship.NLife
 		}
 
 		private void SetMoveSprite() {
-			BodySpriteRenderer.sprite = moveSprites[CalculateMoveSpriteIndex()];
+			int moveSpriteIndex = CalculateMoveSpriteIndex();
+			uBodySpriteRenderer.sprite = MoveSprites[moveSpriteIndex];
+			foreach (BodySectionView bodySection in uBodySections) {
+				bodySection.SetMoveSprite(moveSpriteIndex);
+			}
 		}
 
 		private void SetVisible(bool visible) {
@@ -167,7 +177,10 @@ namespace Snowship.NLife
 		}
 
 		private void SetSortingOrder(int sortingOrder) {
-			BodySpriteRenderer.sortingOrder = sortingOrder;
+			uBodySpriteRenderer.sortingOrder = sortingOrder;
+			foreach (BodySectionView bodySectionView in uBodySections) {
+				bodySectionView.SetSortingOrder(uBodySpriteRenderer.sortingOrder);
+			}
 		}
 	}
 }

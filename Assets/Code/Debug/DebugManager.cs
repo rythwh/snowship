@@ -121,7 +121,7 @@ public class DebugManager : IStartable, IPostStartable, ITickable
 
 		const string colonyName = "Lumia";
 		int seed = Random.Range(0, int.MaxValue);
-		const int size = 100;
+		const int size = 50;
 		List<PlanetTile> filteredPlanetTiles = planet.planetTiles.Where(pt => pt.tile.tileType.classes[TileType.ClassEnum.Dirt]).ToList();
 		PlanetTile planetTile = filteredPlanetTiles.ElementAt(Random.Range(0, filteredPlanetTiles.Count));
 

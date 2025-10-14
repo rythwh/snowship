@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NResource;
 using UnityEngine;
 using UnityEngine.UI;
@@ -45,10 +45,10 @@ namespace Snowship.NUI.UITab
 		}
 
 		public void SetBodySectionSprite(Sprite skinSprite) {
-			humanBody.SetBodySectionSprite(BodySection.Skin, skinSprite);
+			humanBody.SetBodySectionSprite(EBodySection.Skin, skinSprite);
 		}
 
-		public async UniTask<UIClothingButtonElement> CreateClothingButton(BodySection bodySection, Clothing clothing) {
+		public async UniTask<UIClothingButtonElement> CreateClothingButton(EBodySection bodySection, Clothing clothing) {
 			UIClothingButtonElement clothingButton = new(bodySection, clothing);
 			await clothingButton.OpenAsync(clothingButtonsListVerticalLayoutGroup.transform);
 			clothingButtonElements.Add(clothingButton);
@@ -65,12 +65,12 @@ namespace Snowship.NUI.UITab
 			clothingSelectionPanel.SetActive(active);
 		}
 
-		public void SetDisrobeButtonTarget(BodySection bodySection) {
+		public void SetDisrobeButtonTarget(EBodySection bodySection) {
 			disrobeButton.onClick.RemoveAllListeners();
 			disrobeButton.onClick.AddListener(() => OnDisrobeButtonClicked(bodySection));
 		}
 
-		private void OnDisrobeButtonClicked(BodySection bodySection) {
+		private void OnDisrobeButtonClicked(EBodySection bodySection) {
 			OnHumanClothingChanged(bodySection, null);
 			SetClothingSelectionPanelActive(false);
 		}
@@ -98,7 +98,7 @@ namespace Snowship.NUI.UITab
 			clothesTakenTitleTextPanel.SetActive(active);
 		}
 
-		public void OnHumanClothingChanged(BodySection bodySection, Clothing clothing) {
+		public void OnHumanClothingChanged(EBodySection bodySection, Clothing clothing) {
 			foreach (UIClothingButtonElement clothingButtonElement in clothingButtonElements) {
 				if (clothingButtonElement.BodySection != bodySection) {
 					continue;

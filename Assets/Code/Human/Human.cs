@@ -37,19 +37,19 @@ namespace Snowship.NHuman
 		protected float WanderTimer = Random.Range(WanderTimerMin, WanderTimerMax);
 
 		// Body
-		internal Dictionary<BodySection, int> BodyTypeProperties;
-		public readonly Dictionary<BodySection, Clothing> Clothes = new() {
-			{ BodySection.Hat, null },
-			{ BodySection.Top, null },
-			{ BodySection.Bottoms, null },
-			{ BodySection.Scarf, null },
-			{ BodySection.Backpack, null }
+		internal Dictionary<EBodySection, int> BodyTypeProperties;
+		public readonly Dictionary<EBodySection, Clothing> Clothes = new() {
+			{ EBodySection.Hat, null },
+			{ EBodySection.Top, null },
+			{ EBodySection.Bottoms, null },
+			{ EBodySection.Scarf, null },
+			{ EBodySection.Backpack, null }
 		};
 
 		// TODO Carrying Item
 
 		// Events
-		public event Action<BodySection, Clothing> OnClothingChanged;
+		public event Action<EBodySection, Clothing> OnClothingChanged;
 
 		// Managers
 		private IHumanQuery HumanQuery => GameManager.Get<IHumanQuery>();
@@ -70,10 +70,10 @@ namespace Snowship.NHuman
 			BodyTypeProperties = SetBodyType(Gender);
 		}
 
-		private static Dictionary<BodySection, int> SetBodyType(Gender gender) {
-			Dictionary<BodySection, int> bodyIndices = new() {
-				{ BodySection.Skin, Random.Range(0, 3) },
-				{ BodySection.Hair, Random.Range(0, 0) }
+		private static Dictionary<EBodySection, int> SetBodyType(Gender gender) {
+			Dictionary<EBodySection, int> bodyIndices = new() {
+				{ EBodySection.Skin, Random.Range(0, 3) },
+				{ EBodySection.Hair, Random.Range(0, 0) }
 			};
 			return bodyIndices;
 		}
@@ -85,7 +85,7 @@ namespace Snowship.NHuman
 			MoveSpeedMultiplier = Mathf.Clamp(MoveSpeedMultiplier, 0.1f, 1f);
 		}
 
-		public virtual void ChangeClothing(BodySection bodySection, Clothing clothing) {
+		public virtual void ChangeClothing(EBodySection bodySection, Clothing clothing) {
 			if (Clothes[bodySection] == clothing) {
 				return;
 			}

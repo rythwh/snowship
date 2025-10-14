@@ -40,7 +40,7 @@ namespace Snowship.NHuman
 
 		private readonly Dictionary<Gender, string[]> names = new();
 
-		public readonly List<List<Sprite>> humanMoveSprites = new();
+		private readonly List<Sprite[]> humanMoveSprites = new();
 
 		public Human selectedHuman;
 		private GameObject selectionIndicator;
@@ -94,15 +94,15 @@ namespace Snowship.NHuman
 			humanViewPrefab = await handle;
 		}
 
-		public void LoadNames() {
+		private void LoadNames() {
 			foreach (Gender gender in Enum.GetValues(typeof(Gender))) {
 				names.Add(gender, Resources.Load<TextAsset>($"Data/names-{gender.ToString().ToLower()}").text.Split(' '));
 			}
 		}
 
-		public void LoadSprites() {
+		private void LoadSprites() {
 			for (int i = 0; i < 3; i++) {
-				List<Sprite> innerHumanMoveSprites = Resources.LoadAll<Sprite>(@"Sprites/Colonists/colonists-body-base-" + i).ToList();
+				Sprite[] innerHumanMoveSprites = Resources.LoadAll<Sprite>(@"Sprites/Colonists/colonists-body-base-" + i);
 				humanMoveSprites.Add(innerHumanMoveSprites);
 			}
 		}
@@ -122,10 +122,9 @@ namespace Snowship.NHuman
 			HumanView humanView = Object.Instantiate(humanViewPrefab, tile.PositionWorld, Quaternion.identity).GetComponent<HumanView>();
 			humanView.gameObject.AddComponent<TViewModule>();
 
-			// TODO Move into Bind()
-			humanView.moveSprites = humanMoveSprites[human.BodyTypeProperties[BodySection.Skin]];
-
-			humanView.Bind(human);
+			humanView.Bind(
+				human,
+				humanMoveSprites[human.BodyTypeProperties[EBodySection.Skin]]);
 
 			humanWrite.AddHuman<THuman>(human, humanView);
 
@@ -187,12 +186,19 @@ namespace Snowship.NHuman
 		private void SetSelectedHumanIndicator() {
 
 			if (selectedHuman == null) {
+				if (selectionIndicator == null) {
+					return;
+				}
 				selectionIndicator.SetActive(false);
 				selectionIndicator.transform.SetParent(null);
 				return;
 			}
 
 			HumanView humanView = humanQuery.GetHumanView(selectedHuman);
+
+			if (humanView == null) {
+				throw new ArgumentNullException($"HumanView for SelectedHuman {selectedHuman.Name} is null");
+			}
 
 			if (selectionIndicator == null) {
 				selectionIndicator = Object.Instantiate(selectionM.SelectionIndicatorPrefab, humanView.transform, false);
@@ -202,6 +208,7 @@ namespace Snowship.NHuman
 				selectionIndicator.transform.SetParent(humanView.transform, false);
 			}
 
+			selectionIndicator.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
 			selectionIndicator.SetActive(true);
 		}
 	}

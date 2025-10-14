@@ -1,5 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
-using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NResource;
 using Snowship.NResource.NInventory;
 using Snowship.NUI.UITab;
@@ -38,7 +38,7 @@ namespace Snowship.NUI
 		}
 
 		public void SetGeneralInformation(Sprite skinSprite, string humanName, string affiliation) {
-			humanImage.SetBodySectionSprite(BodySection.Skin, skinSprite);
+			humanImage.SetBodySectionSprite(EBodySection.Skin, skinSprite);
 			nameText.SetText(humanName);
 			affiliationText.SetText(affiliation);
 		}
@@ -84,7 +84,7 @@ namespace Snowship.NUI
 			moodSlider.SetValue(effectiveMood);
 		}
 
-		public void OnHumanClothingChanged(BodySection bodySection, Clothing clothing) {
+		public void OnHumanClothingChanged(EBodySection bodySection, Clothing clothing) {
 			humanImage.SetClothingOnBodySection(bodySection, clothing);
 		}
 	}

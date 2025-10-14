@@ -6,10 +6,16 @@ namespace Snowship.NUtilities {
 	public static class ColourUtilities {
 
 		public static Color HexToColor(string hexString) {
-			int r = int.Parse("" + hexString[0] + hexString[1], System.Globalization.NumberStyles.HexNumber);
-			int g = int.Parse("" + hexString[2] + hexString[3], System.Globalization.NumberStyles.HexNumber);
-			int b = int.Parse("" + hexString[4] + hexString[5], System.Globalization.NumberStyles.HexNumber);
-			return new Color(r, g, b, 255f) / 255f;
+			if (string.IsNullOrWhiteSpace(hexString)) {
+				throw new ArgumentException("Provided hexString is null, empty, or whitespace.");
+			}
+			if (!hexString.StartsWith("#")) {
+				hexString = hexString.Insert(0, "#");
+			}
+			if (ColorUtility.TryParseHtmlString(hexString, out Color result)) {
+				return result;
+			}
+			throw new ArgumentException($"Hex string {hexString} could not be converted to a Color");
 		}
 
 		public enum EColour {

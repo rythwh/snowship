@@ -27,7 +27,7 @@ namespace Snowship.NUI {
 				componentPrefabOperationHandle.ReleaseHandleOnCompletion();
 				componentPrefab = await componentPrefabOperationHandle;
 				Debug.Log($"Created element: {addressableKey}");
-				UIManager.CachedComponents.Add(addressableKey, componentPrefab);
+				UIManager.CachedComponents.TryAdd(addressableKey, componentPrefab);
 			}
 
 			Component = Object.Instantiate(componentPrefab, parent, false).GetComponent<TComponent>();

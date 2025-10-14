@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NUtilities;
 using UnityEngine;
 
@@ -48,14 +48,14 @@ namespace Snowship.NResource
 				moveSprites.Add(prefab.moveSprites[i][0]);
 			}
 
-			if (prefab.BodySection == BodySection.Backpack) {
+			if (prefab.BodySection == EBodySection.Backpack) {
 				image = moveSprites[1];
 			} else {
 				image = moveSprites[0];
 			}
 		}
 
-		public static List<Clothing> GetClothesByAppearance(BodySection bodySection) {
+		public static List<Clothing> GetClothesByAppearance(EBodySection bodySection) {
 			return GameManager.Get<IResourceQuery>().GetResourcesInClass(ResourceClassEnum.Clothing).Select(r => (Clothing)r).Where(c => c.prefab.BodySection == bodySection).ToList();
 		}
 

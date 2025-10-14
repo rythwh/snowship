@@ -2,6 +2,7 @@
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NResource;
 
 namespace Snowship.NUI.UITab
@@ -18,14 +19,14 @@ namespace Snowship.NUI.UITab
 		}
 
 		protected override async UniTask OnCreate() {
-			foreach ((BodySection bodySection, Clothing clothing) in human.Clothes) {
+			foreach ((EBodySection bodySection, Clothing clothing) in human.Clothes) {
 				UIClothingButtonElement clothingButton = await Component.CreateClothingButton(bodySection, clothing);
 				clothingButton.OnButtonClicked += OnClothingButtonClicked;
 			}
 
 			human.OnClothingChanged += Component.OnHumanClothingChanged;
 			Component.SetClothingSelectionPanelActive(false);
-			Component.SetBodySectionSprite(humanView.moveSprites[0]);
+			Component.SetBodySectionSprite(humanView.GetForwardFacingSprite());
 		}
 
 		protected override void OnClose() {
@@ -34,7 +35,7 @@ namespace Snowship.NUI.UITab
 			human.OnClothingChanged -= Component.OnHumanClothingChanged;
 		}
 
-		private async void OnClothingButtonClicked(BodySection bodySection) {
+		private async void OnClothingButtonClicked(EBodySection bodySection) {
 
 			Component.SetClothingSelectionPanelActive(true);
 			Component.SetClothesAvailableTitleTextPanelActive(false);

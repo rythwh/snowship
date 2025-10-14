@@ -4,6 +4,7 @@ using Snowship.NMap.NTile;
 using Snowship.NColony;
 using Snowship.NHuman;
 using Snowship.NJob;
+using Snowship.NLife;
 using Snowship.NPath;
 using Snowship.NResource;
 using Snowship.NUtilities;
@@ -246,7 +247,7 @@ namespace Snowship.NColonist {
 			MoveToTile(tile, false);
 		}
 
-		public override void ChangeClothing(BodySection bodySection, Clothing clothing) {
+		public override void ChangeClothing(EBodySection bodySection, Clothing clothing) {
 			if (clothing == null || Inventory.resources.Find(ra => ra.Resource == clothing) != null) {
 				base.ChangeClothing(bodySection, clothing);
 			} else {

@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Cysharp.Threading.Tasks;
-using Snowship.NHuman;
+using Snowship.NLife;
 using Snowship.NResource;
 
 namespace Snowship.NUI
 {
 	public class UIClothingButtonElement : UIElement<UIClothingButtonElementComponent>
 	{
-		public readonly BodySection BodySection;
+		public readonly EBodySection BodySection;
 		private Clothing clothing;
 
-		public event Action<BodySection> OnButtonClicked;
+		public event Action<EBodySection> OnButtonClicked;
 
-		public UIClothingButtonElement(BodySection bodySection, Clothing clothing) {
+		public UIClothingButtonElement(EBodySection bodySection, Clothing clothing) {
 			BodySection = bodySection;
 			this.clothing = clothing;
 		}
