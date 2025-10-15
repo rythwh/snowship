@@ -36,7 +36,7 @@ namespace Snowship.NCamera
 				return;
 			}
 
-			moveVector = callbackContext.ReadValue<Vector2>() * CameraMoveSpeedMultiplier;
+			moveVector = callbackContext.ReadValue<Vector2>() * CameraConstants.MoveSpeedMultiplier;
 			MoveCamera();
 		}
 

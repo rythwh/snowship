@@ -63,7 +63,8 @@ namespace Snowship.NColonist
 				averageColonistPosition += colonist.Position;
 			}
 			averageColonistPosition /= ColonistCount;
-			cameraWrite.SetPosition(averageColonistPosition);
+			cameraWrite.SetPosition(averageColonistPosition, CameraConstants.StartMoveTweenDuration);
+			cameraWrite.SetZoom(CameraConstants.ZoomMin * 2, CameraConstants.StartZoomTweenDuration);
 
 			if (ColonistCount <= 0) {
 				Debug.LogError("Unable to spawn starting colonists");

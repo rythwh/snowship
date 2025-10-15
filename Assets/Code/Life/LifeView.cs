@@ -117,7 +117,7 @@ namespace Snowship.NLife
 
 		protected virtual void OnModelTileChanged(Tile tile) {
 			SetColour(tile.sr.color);
-			SetSortingOrder(tile.sr.sortingOrder + 1);
+			SetSortingOrder(tile.sr.sortingOrder + (int)SortingOrder.Object);
 		}
 
 		protected virtual void OnModelVisibilityChanged(bool visible) {

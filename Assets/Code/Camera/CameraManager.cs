@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
-using LitMotion;
 using Snowship.NInput;
 using Snowship.NMap;
 using Snowship.NState;
@@ -21,13 +20,7 @@ namespace Snowship.NCamera
 		private readonly IMapQuery mapQuery;
 		private readonly IMapEvents mapEvents;
 
-		private const float CameraMoveSpeedMultiplier = 1.25f;
 
-		private const float CameraZoomSpeedMultiplier = 2.5f;
-		private const float CameraZoomSpeedDampener = 5;
-		private const int ZoomMin = 3;
-		private const int ZoomMax = 20;
-		private const float ZoomTweenDuration = 0.3f;
 
 		private UniTask zoomTaskHandle;
 		private CancellationTokenSource zoomCancellationTokenSource = new();
@@ -63,8 +56,8 @@ namespace Snowship.NCamera
 		private void SetInitialCameraSettings()
 		{
 			int mapSize = mapQuery.Map.MapData.mapSize;
-			cameraWrite.SetPosition(Vector2.one * mapSize / 2f, false);
-			cameraWrite.SetZoom(ZoomMax);
+			cameraWrite.SetPosition(Vector2.one * mapSize / 2f);
+			cameraWrite.SetZoom(CameraConstants.ZoomMax);
 		}
 
 		public void Tick() {
@@ -79,12 +72,12 @@ namespace Snowship.NCamera
 
 		private void MoveCamera() {
 			Vector3 newPosition = cameraQuery.CurrentPosition;
-			newPosition += moveVector * (CameraMoveSpeedMultiplier * cameraQuery.CurrentZoom * Time.deltaTime);
+			newPosition += moveVector * (CameraConstants.MoveSpeedMultiplier * cameraQuery.CurrentZoom * Time.deltaTime);
 			newPosition = new Vector2(
 				Mathf.Clamp(newPosition.x, 0, mapQuery.Map.MapData.mapSize),
 				Mathf.Clamp(newPosition.y, 0, mapQuery.Map.MapData.mapSize)
 			);
-			cameraWrite.SetPosition(newPosition, false);
+			cameraWrite.SetPosition(newPosition);
 		}
 
 		private void ZoomCamera() {
@@ -94,10 +87,11 @@ namespace Snowship.NCamera
 			}
 
 			float newZoom = cameraQuery.CurrentZoom;
-			newZoom += (zoomAxis * CameraZoomSpeedMultiplier) * (cameraQuery.CurrentZoom / CameraZoomSpeedDampener);
-			newZoom = Mathf.Clamp(newZoom, ZoomMin, ZoomMax);
+			newZoom += (zoomAxis * CameraConstants.ZoomSpeedMultiplier) * (cameraQuery.CurrentZoom / CameraConstants.ZoomSpeedDampener);
+			newZoom = Mathf.Clamp(newZoom, CameraConstants.ZoomMin, CameraConstants.ZoomMax);
+			cameraWrite.SetZoom(newZoom, CameraConstants.ZoomTweenDuration);
 
-			if (!zoomTaskHandle.GetAwaiter().IsCompleted && !zoomCancellationTokenSource.IsCancellationRequested) {
+			/*if (!zoomTaskHandle.GetAwaiter().IsCompleted && !zoomCancellationTokenSource.IsCancellationRequested) {
 				zoomCancellationTokenSource.Cancel();
 				zoomCancellationTokenSource.Dispose();
 				zoomCancellationTokenSource = new CancellationTokenSource();
@@ -106,8 +100,8 @@ namespace Snowship.NCamera
 			zoomTaskHandle = LMotion
 				.Create(cameraQuery.CurrentZoom, newZoom, ZoomTweenDuration)
 				.WithEase(Ease.OutCubic)
-				.Bind(cameraWrite.SetZoom)
-				.ToUniTask(zoomCancellationTokenSource.Token);
+				.Bind(x => cameraWrite.SetZoom(x))
+				.ToUniTask(zoomCancellationTokenSource.Token);*/
 		}
 
 		/*// TODO Use this to improve performance on visible region blocks
