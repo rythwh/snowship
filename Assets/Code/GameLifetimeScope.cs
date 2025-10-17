@@ -2,6 +2,7 @@
 using Snowship.NCaravan;
 using Snowship.NColonist;
 using Snowship.NColony;
+using Snowship.NEntity;
 using Snowship.NHuman;
 using Snowship.NInput;
 using Snowship.NJob;
@@ -44,6 +45,7 @@ namespace Snowship
 
 			builder.RegisterEntryPoint<DebugManager>(Lifetime.Singleton).AsSelf();
 
+			EntityServiceInstaller.Install(builder);
 			HumanServiceInstaller.Install(builder);
 
 			builder.RegisterEntryPoint<InputManager>(Lifetime.Singleton).AsSelf();

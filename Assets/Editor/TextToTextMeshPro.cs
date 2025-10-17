@@ -5,7 +5,7 @@ using TMPro;
 
 // From: https://discussions.unity.com/t/replacing-text-with-textmesh-pro/690623
 
-public class TextToTextMeshPro : UnityEditor.Editor {
+public class TextToTextMeshPro : Editor {
 
 	public class TextMeshProSettings {
 
@@ -30,7 +30,7 @@ public class TextToTextMeshPro : UnityEditor.Editor {
 	private static bool applyOnDisabled = false;
 	private static bool removeEffectComponents = false;
 
-	[MenuItem("Tools/Snowship/Text To TextMeshPro", false, priority: 4000)]
+	[MenuItem("Snowship/Text To TextMeshPro", false, priority: 4000)]
 	private static void DoIt() {
 		if (TMP_Settings.defaultFontAsset == null) {
 			EditorUtility.DisplayDialog("ERROR!", "Assign a default font asset in project settings!", "OK", "");

@@ -42,6 +42,7 @@ namespace Snowship.NResource
 			Farm,
 			Terraform,
 			Command,
+			Plant,
 			None
 		}
 	}

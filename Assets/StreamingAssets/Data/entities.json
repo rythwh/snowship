@@ -1,0 +1,24 @@
+{
+  "id": "table",
+  "components": [
+    { "type": "BaseStats", "data": {
+      "Flammability": 0.10, "BuildWork": 20.0, "WalkSpeedFactor": 1.0, "Value": 50.0
+    }},
+    { "type": "MaterialOptions", "data": {
+      "allowed": {
+        "classes":   ["wood", "stone"],
+        "materials": ["steel"]
+      },
+      "defaults": { "class": "wood" },
+      "cost": {
+        "byClass": {
+          "wood":  { "mode": "ReplaceAll", "recipe": [ { "id": "wood",  "amount": 2 } ] },
+          "stone": { "mode": "ReplaceAll", "recipe": [ { "id": "stone", "amount": 2 }, { "id": "wood", "amount": 1 } ] }
+        },
+        "byMaterial": {
+          "steel": { "mode": "ReplaceAll", "recipe": [ { "id": "steel", "amount": 3 }, { "id": "screw", "amount": 4 } ] }
+        }
+      }
+    }}
+  ]
+}

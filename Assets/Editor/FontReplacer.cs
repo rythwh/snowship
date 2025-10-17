@@ -7,16 +7,16 @@ using UnityEngine.UI;
 
 public class FontReplacer : EditorWindow {
 	private const string EditorPrefsKey = "Utilities.FontReplacer";
-	private const string MenuItemName = "Tools/Snowship/Replace Fonts";
+	private const string MenuItemName = "Snowship/Replace Fonts";
 
-	private Font _src;
-	private Font _dest;
-	private bool _includePrefabs;
+	private Font src;
+	private Font dest;
+	private bool includePrefabs;
 
 	[MenuItem(MenuItemName, false, priority: 4000)]
 	public static void DisplayWindow() {
-		var window = GetWindow<FontReplacer>(true, "Replace Fonts");
-		var position = window.position;
+		FontReplacer window = GetWindow<FontReplacer>(true, "Replace Fonts");
+		Rect position = window.position;
 		position.size = new Vector2(position.size.x, 151);
 		position.center = new Rect(0f, 0f, Screen.currentResolution.width, Screen.currentResolution.height).center;
 		window.position = position;
@@ -24,57 +24,59 @@ public class FontReplacer : EditorWindow {
 	}
 
 	public void OnEnable() {
-		var path = EditorPrefs.GetString(EditorPrefsKey + ".src");
-		if (path != string.Empty)
-			_src = AssetDatabase.LoadAssetAtPath<Font>(path) ?? Resources.GetBuiltinResource<Font>(path);
+		string path = EditorPrefs.GetString(EditorPrefsKey + ".src");
+		if (path != string.Empty) {
+			src = AssetDatabase.LoadAssetAtPath<Font>(path) ?? Resources.GetBuiltinResource<Font>(path);
+		}
 
 		path = EditorPrefs.GetString(EditorPrefsKey + ".dest");
-		if (path != string.Empty)
-			_dest = AssetDatabase.LoadAssetAtPath<Font>(path) ?? Resources.GetBuiltinResource<Font>(path);
+		if (path != string.Empty) {
+			dest = AssetDatabase.LoadAssetAtPath<Font>(path) ?? Resources.GetBuiltinResource<Font>(path);
+		}
 
-		_includePrefabs = EditorPrefs.GetBool(EditorPrefsKey + ".includePrefabs", false);
+		includePrefabs = EditorPrefs.GetBool(EditorPrefsKey + ".includePrefabs", false);
 	}
 
 	public void OnGUI() {
 		EditorGUI.BeginChangeCheck();
 		EditorGUILayout.PrefixLabel("Find:");
-		_src = (Font)EditorGUILayout.ObjectField(_src, typeof(Font), false);
+		src = (Font)EditorGUILayout.ObjectField(src, typeof(Font), false);
 
 		EditorGUILayout.Space();
 		EditorGUILayout.PrefixLabel("Replace with:");
-		_dest = (Font)EditorGUILayout.ObjectField(_dest, typeof(Font), false);
+		dest = (Font)EditorGUILayout.ObjectField(dest, typeof(Font), false);
 
 		EditorGUILayout.Space();
-		_includePrefabs = EditorGUILayout.ToggleLeft("Include Prefabs", _includePrefabs);
+		includePrefabs = EditorGUILayout.ToggleLeft("Include Prefabs", includePrefabs);
 		if (EditorGUI.EndChangeCheck()) {
-			EditorPrefs.SetString(EditorPrefsKey + ".src", GetAssetPath(_src, "ttf"));
-			EditorPrefs.SetString(EditorPrefsKey + ".dest", GetAssetPath(_dest, "ttf"));
-			EditorPrefs.SetBool(EditorPrefsKey + ".includePrefabs", _includePrefabs);
+			EditorPrefs.SetString(EditorPrefsKey + ".src", GetAssetPath(src, "ttf"));
+			EditorPrefs.SetString(EditorPrefsKey + ".dest", GetAssetPath(dest, "ttf"));
+			EditorPrefs.SetBool(EditorPrefsKey + ".includePrefabs", includePrefabs);
 		}
 
 		GUI.color = Color.green;
 		if (GUILayout.Button("Replace All", GUILayout.Height(EditorGUIUtility.singleLineHeight * 2f))) {
-			ReplaceFonts(_src, _dest, _includePrefabs);
+			ReplaceFonts(src, dest, includePrefabs);
 		}
 		GUI.color = Color.white;
 	}
 
 	private static void ReplaceFonts(Font src, Font dest, bool includePrefabs) {
-		var sceneMatches = 0;
-		for (var i = 0; i < SceneManager.sceneCount; i++) {
-			var scene = SceneManager.GetSceneAt(i);
-			var gos = new List<GameObject>(scene.GetRootGameObjects());
-			foreach (var go in gos) {
+		int sceneMatches = 0;
+		for (int i = 0; i < SceneManager.sceneCount; i++) {
+			Scene scene = SceneManager.GetSceneAt(i);
+			List<GameObject> gos = new List<GameObject>(scene.GetRootGameObjects());
+			foreach (GameObject go in gos) {
 				sceneMatches += ReplaceFonts(src, dest, go.GetComponentsInChildren<Text>(true));
 			}
 		}
 
 		if (includePrefabs) {
-			var prefabMatches = 0;
-			var prefabs =
-				AssetDatabase.FindAssets("t:Prefab")
-					.Select(guid => AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid)));
-			foreach (var prefab in prefabs) {
+			int prefabMatches = 0;
+			IEnumerable<GameObject> prefabs = AssetDatabase
+				.FindAssets("t:Prefab")
+				.Select(guid => AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid)));
+			foreach (GameObject prefab in prefabs) {
 				prefabMatches += ReplaceFonts(src, dest, prefab.GetComponentsInChildren<Text>(true));
 			}
 
@@ -85,9 +87,9 @@ public class FontReplacer : EditorWindow {
 	}
 
 	private static int ReplaceFonts(Font src, Font dest, IEnumerable<Text> texts) {
-		var matches = 0;
-		var textsFiltered = src != null ? texts.Where(text => text.font == src) : texts;
-		foreach (var text in textsFiltered) {
+		int matches = 0;
+		IEnumerable<Text> textsFiltered = src != null ? texts.Where(text => text.font == src) : texts;
+		foreach (Text text in textsFiltered) {
 			text.font = dest;
 			matches++;
 		}
@@ -95,9 +97,10 @@ public class FontReplacer : EditorWindow {
 	}
 
 	private static string GetAssetPath(Object assetObject, string defaultExtension) {
-		var path = AssetDatabase.GetAssetPath(assetObject);
-		if (path.StartsWith("Library/", System.StringComparison.InvariantCultureIgnoreCase))
+		string path = AssetDatabase.GetAssetPath(assetObject);
+		if (path.StartsWith("Library/", System.StringComparison.InvariantCultureIgnoreCase)) {
 			path = assetObject.name + "." + defaultExtension;
+		}
 		return path;
 	}
 }

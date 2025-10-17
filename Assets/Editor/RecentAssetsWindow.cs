@@ -13,7 +13,7 @@ public class RecentAssetsWindow : EditorWindow
 	private const string StarredPrefsKey = "StarredAssets";
 	private Vector2 scrollPos;
 
-	[MenuItem("Tools/Snowship/Recent Assets Tracker", false, 0)]
+	[MenuItem("Snowship/Recent Assets Tracker", false, 0)]
 	public static void ShowWindow() {
 		GetWindow<RecentAssetsWindow>("Recent Assets");
 	}

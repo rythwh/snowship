@@ -5,7 +5,7 @@ public class DebugSettingsWindow : EditorWindow
 {
 	private const string PrefsKey = "DebugSettings";
 
-	[MenuItem("Tools/Snowship/Snowship Debug Settings", false, 0)]
+	[MenuItem("Snowship/Snowship Debug Settings", false, 0)]
 	public static void ShowWindow() {
 		GetWindow<DebugSettingsWindow>("Snowship Debug");
 	}

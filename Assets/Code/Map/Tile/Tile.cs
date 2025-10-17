@@ -30,7 +30,6 @@ namespace Snowship.NMap.NTile
 		public RegionBlock squareRegionBlock;
 
 		public Biome biome;
-		public Plant plant;
 		public Farm farm;
 
 		private float precipitation = 0;
@@ -58,6 +57,23 @@ namespace Snowship.NMap.NTile
 		public float lightSourceBrightness;
 
 		public Dictionary<int, ObjectInstance> objectInstances = new();
+
+		public Plant plant;
+		public ObjectInstance Plant {
+			get {
+				objectInstances.TryGetValue(2, out ObjectInstance plant);
+				if (plant != null && plant.prefab.groupType == ObjectPrefabGroup.ObjectGroupEnum.Plant) {
+					return plant;
+				}
+				return null;
+			}
+			set {
+				if (Plant != null) {
+					RemoveObjectAtLayer(2);
+				}
+				AddObjectInstanceToLayer(value, value.prefab.layer);
+			}
+		}
 
 		public bool dugPreviously;
 

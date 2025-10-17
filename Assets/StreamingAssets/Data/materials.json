@@ -1,0 +1,62 @@
+[
+  {
+    "id": "oak",
+    "class": "wood",
+    "mods": [
+      {
+        "stat": "Value",
+        "op": "Mul",
+        "value": 1.05
+      }
+    ]
+  },
+  {
+    "id": "birch",
+    "class": "wood",
+    "mods": [
+      {
+        "stat": "BuildTime",
+        "op": "Mul",
+        "value": 0.95
+      }
+    ]
+  },
+  {
+    "id": "granite",
+    "class": "stone",
+    "mods": [
+      {
+        "stat": "Flammability",
+        "op": "Add",
+        "value": -0.5
+      },
+      {
+        "stat": "Value",
+        "op": "Mul",
+        "value": 1.15
+      }
+    ]
+  },
+  {
+    "id": "limestone",
+    "class": "stone",
+    "mods": [
+      {
+        "stat": "Flammability",
+        "op": "Add",
+        "value": -0.3
+      }
+    ]
+  },
+  {
+    "id": "steel",
+    "class": "metal",
+    "mods": [
+      {
+        "stat": "Value",
+        "op": "Mul",
+        "value": 1.2
+      }
+    ]
+  }
+]
