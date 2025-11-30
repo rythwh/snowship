@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Newtonsoft.Json.Linq;
+using Snowship.NMaterial;
 
 namespace Snowship.NEntity
 {
@@ -15,30 +16,60 @@ namespace Snowship.NEntity
 			this.data = data ?? new JObject();
 		}
 
-		public string Str(string name, string def)
+		public string TryGetString(string name, string defaultValue)
 		{
 			if (data.TryGetValue(name, out JToken t)) {
 				return t.Value<string>();
 			}
-			return def;
+			return defaultValue;
 		}
 
-		public int Int(string name, int def)
+		public int TryGetInt(string name, int defaultValue)
 		{
 			if (data.TryGetValue(name, out JToken t)) {
 				return t.Value<int>();
 			}
-			return def;
+			return defaultValue;
 		}
 
-		public float Float(string name, float def)
+		public float TryGetFloat(string name, float defaultValue)
 		{
-			if (data.TryGetValue(name, out JToken t)) {
-				return t.Type is JTokenType.Float or JTokenType.Integer
-					? t.Value<float>()
-					: float.Parse(t.Value<string>(), CultureInfo.InvariantCulture);
+			if (data.TryGetValue(name, out JToken token)) {
+				return token.Type is JTokenType.Float or JTokenType.Integer
+					? token.Value<float>()
+					: float.Parse(token.Value<string>(), CultureInfo.InvariantCulture);
 			}
-			return def;
+			return defaultValue;
+		}
+
+		public bool TryGetBool(string key, bool defaultValue)
+		{
+			if (data.TryGetValue(key, out JToken token)) {
+				return token.Value<bool>();
+			}
+			return defaultValue;
+		}
+
+		public TEnum TryGetEnum<TEnum>(string key) where TEnum : Enum
+		{
+			int enumInt = TryGetInt(key, 0);
+			return (TEnum)Enum.Parse(typeof(TEnum), enumInt.ToString(), true);
+		}
+
+		public JArray TryGetArray(string key)
+		{
+			if (data.TryGetValue(key, out JToken token)) {
+				return token as JArray;
+			}
+			return null;
+		}
+
+		public T TryGetObject<T>(string key) where T : JObject
+		{
+			if (data.TryGetValue(key, out JToken token)) {
+				return token.Value<T>();
+			}
+			return null;
 		}
 
 		public Dictionary<EStat, float> StatMapFromSelf()
@@ -69,10 +100,10 @@ namespace Snowship.NEntity
 			return list;
 		}
 
-		public string PathStr(string key, string value, string def)
+		public string PathStr(string key, string value, string defaultValue)
 		{
 			if (!TryGetObject(key, out JObject jObject) || !jObject.TryGetValue(value, out JToken jToken)) {
-				return def;
+				return defaultValue;
 			}
 			return jToken.Value<string>();
 		}

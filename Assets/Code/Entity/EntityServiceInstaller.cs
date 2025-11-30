@@ -1,4 +1,5 @@
-﻿using VContainer;
+﻿using Snowship.NMaterial;
+using VContainer;
 using VContainer.Unity;
 
 namespace Snowship.NEntity
@@ -18,7 +19,7 @@ namespace Snowship.NEntity
 			builder.Register<IJsonComponentFactory, BaseRecipeFactory>(Lifetime.Singleton);
 			builder.Register<IJsonComponentFactory, MaterialOptionsFactory>(Lifetime.Singleton);
 
-			builder.Register<ComponentFactoryRegistry>(Lifetime.Singleton).AsSelf();
+			builder.Register<JsonComponentFactoryRegistry>(Lifetime.Singleton).AsSelf();
 
 			builder.Register<JsonEntityLoader>(Lifetime.Singleton).AsSelf();
 

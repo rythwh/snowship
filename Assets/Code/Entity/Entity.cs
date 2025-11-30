@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Snowship.NMaterial;
 using Snowship.NUtilities;
 
 namespace Snowship.NEntity

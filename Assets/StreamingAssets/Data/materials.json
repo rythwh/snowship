@@ -1,61 +1,535 @@
 [
   {
-    "id": "oak",
-    "class": "wood",
-    "mods": [
+    "id": "anthracite",
+    "class": "fuels",
+    "weight": 400,
+    "volume": 250,
+    "value": 45,
+    "modifiers": [],
+    "traits": [
       {
-        "stat": "Value",
-        "op": "Mul",
-        "value": 1.05
+        "type": 0,
+        "data": {
+          "energyPerUnit": 45
+        }
       }
     ]
   },
   {
-    "id": "birch",
-    "class": "wood",
-    "mods": [
+    "id": "coal",
+    "class": "fuels",
+    "weight": 313,
+    "volume": 250,
+    "value": 30,
+    "modifiers": [],
+    "traits": [
       {
-        "stat": "BuildTime",
-        "op": "Mul",
-        "value": 0.95
+        "type": 0,
+        "data": {
+          "energyPerUnit": 30
+        }
       }
     ]
   },
   {
-    "id": "granite",
-    "class": "stone",
-    "mods": [
+    "id": "lignite",
+    "class": "fuels",
+    "weight": 200,
+    "volume": 250,
+    "value": 15,
+    "modifiers": [],
+    "traits": [
       {
-        "stat": "Flammability",
-        "op": "Add",
-        "value": -0.5
-      },
-      {
-        "stat": "Value",
-        "op": "Mul",
-        "value": 1.15
+        "type": 0,
+        "data": {
+          "energyPerUnit": 15
+        }
       }
     ]
   },
   {
-    "id": "limestone",
-    "class": "stone",
-    "mods": [
+    "id": "bronze",
+    "class": "metals",
+    "weight": 1638,
+    "volume": 125,
+    "value": 100,
+    "modifiers": [],
+    "traits": [
       {
-        "stat": "Flammability",
-        "op": "Add",
-        "value": -0.3
+        "type": 1,
+        "data": {
+          "materialsToCraft": [
+            {
+              "id": "bronze_ore",
+              "amount": 1
+            }
+          ],
+          "craftWithEntities": "furnaces",
+          "energyRequired": 50,
+          "time": 10,
+          "activeCrafting": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "copper",
+    "class": "metals",
+    "weight": 1680,
+    "volume": 125,
+    "value": 250,
+    "modifiers": [],
+    "traits": [
+      {
+        "type": 1,
+        "data": {
+          "materialsToCraft": [
+            {
+              "id": "copper_ore",
+              "amount": 1
+            }
+          ],
+          "craftWithEntities": "furnaces",
+          "energyRequired": 50,
+          "time": 10,
+          "activeCrafting": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "gold",
+    "class": "metals",
+    "weight": 3623,
+    "volume": 125,
+    "value": 300,
+    "modifiers": [],
+    "traits": [
+      {
+        "type": 1,
+        "data": {
+          "craftWithEntities": "furnaces",
+          "energyRequired": 50,
+          "time": 10,
+          "activeCrafting": false,
+          "materialsToCraft": [
+            {
+              "id": "gold_ore",
+              "amount": 1
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "iron",
+    "class": "metals",
+    "weight": 1475,
+    "volume": 125,
+    "value": 150,
+    "modifiers": [],
+    "traits": [
+      {
+        "type": 1,
+        "data": {
+          "materialsToCraft": [
+            {
+              "id": "iron_ore",
+              "amount": 1
+            }
+          ],
+          "craftWithEntities": "furnaces",
+          "energyRequired": 50,
+          "time": 10,
+          "activeCrafting": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "silver",
+    "class": "metals",
+    "weight": 1969,
+    "volume": 125,
+    "value": 200,
+    "modifiers": [],
+    "traits": [
+      {
+        "type": 1,
+        "data": {
+          "materialsToCraft": [
+            {
+              "id": "silver_ore",
+              "amount": 1
+            }
+          ],
+          "craftWithEntities": "furnaces",
+          "energyRequired": 50,
+          "time": 10,
+          "activeCrafting": false
+        }
       }
     ]
   },
   {
     "id": "steel",
-    "class": "metal",
-    "mods": [
+    "class": "metals",
+    "weight": 0,
+    "volume": 0,
+    "value": 0,
+    "modifiers": [
       {
-        "stat": "Value",
-        "op": "Mul",
+        "stat": 1,
+        "operation": 1,
         "value": 1.2
+      }
+    ],
+    "traits": []
+  },
+  {
+    "id": "cactus",
+    "class": "nature",
+    "weight": 108,
+    "volume": 250,
+    "value": 4,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "clay",
+    "class": "nature",
+    "weight": 400,
+    "volume": 250,
+    "value": 10,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "dirt",
+    "class": "nature",
+    "weight": 305,
+    "volume": 250,
+    "value": 1,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "grass",
+    "class": "nature",
+    "weight": 1,
+    "volume": 2,
+    "value": 1,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "leaves",
+    "class": "nature",
+    "weight": 8,
+    "volume": 10,
+    "value": 1,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "mud",
+    "class": "nature",
+    "weight": 460,
+    "volume": 250,
+    "value": 1,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "sand",
+    "class": "nature",
+    "weight": 389,
+    "volume": 250,
+    "value": 1,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "sap",
+    "class": "nature",
+    "weight": 2,
+    "volume": 1,
+    "value": 2,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "snow",
+    "class": "nature",
+    "weight": 50,
+    "volume": 250,
+    "value": 1,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "straw",
+    "class": "nature",
+    "weight": 1,
+    "volume": 2,
+    "value": 2,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "bronze_ore",
+    "class": "ores",
+    "weight": 2183,
+    "volume": 250,
+    "value": 50,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "copper_ore",
+    "class": "ores",
+    "weight": 2240,
+    "volume": 250,
+    "value": 125,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "gold_ore",
+    "class": "ores",
+    "weight": 4830,
+    "volume": 250,
+    "value": 150,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "iron_ore",
+    "class": "ores",
+    "weight": 1968,
+    "volume": 250,
+    "value": 75,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "silver_ore",
+    "class": "ores",
+    "weight": 2625,
+    "volume": 250,
+    "value": 100,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "andesite",
+    "class": "stone",
+    "weight": 650,
+    "volume": 250,
+    "value": 2,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "basalt",
+    "class": "stone",
+    "weight": 750,
+    "volume": 250,
+    "value": 2,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "chalk",
+    "class": "stone",
+    "weight": 625,
+    "volume": 250,
+    "value": 4,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "claystone",
+    "class": "stone",
+    "weight": 500,
+    "volume": 250,
+    "value": 12,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "diorite",
+    "class": "stone",
+    "weight": 725,
+    "volume": 250,
+    "value": 2,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "flint",
+    "class": "stone",
+    "weight": 650,
+    "volume": 250,
+    "value": 10,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "granite",
+    "class": "stone",
+    "weight": 663,
+    "volume": 250,
+    "value": 2,
+    "modifiers": [
+      {
+        "stat": 1,
+        "operation": 1,
+        "value": 1.15
+      },
+      {
+        "stat": 3,
+        "operation": 1,
+        "value": 2.0
+      },
+      {
+        "stat": 4,
+        "operation": 0,
+        "value": -0.5
+      }
+    ],
+    "traits": []
+  },
+  {
+    "id": "kimberlite",
+    "class": "stone",
+    "weight": 637,
+    "volume": 250,
+    "value": 50,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "limestone",
+    "class": "stone",
+    "weight": 0,
+    "volume": 0,
+    "value": 0,
+    "modifiers": [
+      {
+        "stat": 4,
+        "operation": 0,
+        "value": -0.3
+      }
+    ],
+    "traits": []
+  },
+  {
+    "id": "marble",
+    "class": "stone",
+    "weight": 638,
+    "volume": 250,
+    "value": 20,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "obsidian",
+    "class": "stone",
+    "weight": 619,
+    "volume": 250,
+    "value": 35,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "quartz",
+    "class": "stone",
+    "weight": 675,
+    "volume": 250,
+    "value": 20,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "rhyolite",
+    "class": "stone",
+    "weight": 625,
+    "volume": 250,
+    "value": 2,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "sandstone",
+    "class": "stone",
+    "weight": 625,
+    "volume": 250,
+    "value": 2,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "slate",
+    "class": "stone",
+    "weight": 688,
+    "volume": 250,
+    "value": 5,
+    "modifiers": [],
+    "traits": []
+  },
+  {
+    "id": "birch",
+    "class": "wood",
+    "weight": 0,
+    "volume": 0,
+    "value": 0,
+    "modifiers": [
+      {
+        "stat": 0,
+        "operation": 1,
+        "value": 0.95
+      }
+    ],
+    "traits": [
+      {
+        "type": 0,
+        "data": {
+          "energyPerUnit": 5
+        }
+      }
+    ]
+  },
+  {
+    "id": "log",
+    "class": "wood",
+    "weight": 200,
+    "volume": 400,
+    "value": 2,
+    "modifiers": [],
+    "traits": [
+      {
+        "type": 0,
+        "data": {
+          "energyPerUnit": 8
+        }
+      }
+    ]
+  },
+  {
+    "id": "oak",
+    "class": "wood",
+    "weight": 0,
+    "volume": 0,
+    "value": 0,
+    "modifiers": [],
+    "traits": [
+      {
+        "type": 0,
+        "data": {
+          "energyPerUnit": 5
+        }
       }
     ]
   }

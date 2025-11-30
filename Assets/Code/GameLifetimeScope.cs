@@ -1,8 +1,8 @@
-﻿using Snowship.NCamera;
+﻿using Snowship.NEntity;
+using Snowship.NCamera;
 using Snowship.NCaravan;
 using Snowship.NColonist;
 using Snowship.NColony;
-using Snowship.NEntity;
 using Snowship.NHuman;
 using Snowship.NInput;
 using Snowship.NJob;

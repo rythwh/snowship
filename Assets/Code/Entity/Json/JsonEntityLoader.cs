@@ -7,11 +7,11 @@ namespace Snowship.NEntity
 {
 	public class JsonEntityLoader
 	{
-		private readonly ComponentFactoryRegistry registry;
+		private readonly JsonComponentFactoryRegistry registry;
 		private readonly IObjectResolver resolver;
 
 		public JsonEntityLoader(
-			ComponentFactoryRegistry registry,
+			JsonComponentFactoryRegistry registry,
 			IObjectResolver resolver
 		)
 		{
@@ -19,22 +19,22 @@ namespace Snowship.NEntity
 			this.resolver = resolver;
 		}
 
-		public JsonEntityDef Parse(string json)
+		public JsonEntity Parse(string json)
 		{
-			return JsonConvert.DeserializeObject<JsonEntityDef>(json);
+			return JsonConvert.DeserializeObject<JsonEntity>(json);
 		}
 
-		public Entity BuildFromDef(EntityManager manager, JsonEntityDef entityDef)
+		public Entity BuildFromDef(EntityManager manager, JsonEntity jsonEntity)
 		{
 			Entity entity = manager.Create();
 
-			foreach (JsonComponentDef entityDefComponent in entityDef.Components) {
-				if (!registry.TryGet(entityDefComponent.Type, out IJsonComponentFactory componentFactory)) {
-					throw new KeyNotFoundException($"No factory registered for component type: {entityDefComponent.Type}");
+			foreach (JsonComponent jsonComponent in jsonEntity.Components) {
+				if (!registry.TryGet(jsonComponent.Type, out IJsonComponentFactory jsonComponentFactory)) {
+					throw new KeyNotFoundException($"No factory registered for component type: {jsonComponent.Type}");
 				}
 
-				JsonArgs jsonArgs = new JsonArgs((JObject)entityDefComponent.Data);
-				IComponent component = componentFactory.Create(jsonArgs, resolver);
+				JsonArgs jsonArgs = new JsonArgs((JObject)jsonComponent.Data);
+				IComponent component = jsonComponentFactory.Create(jsonArgs);
 				entity.AddComponent(component);
 			}
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Snowship.NMap.NTile;
+using Snowship.NMaterial;
 
 namespace Snowship.NEntity
 {
@@ -10,14 +11,14 @@ namespace Snowship.NEntity
 		private readonly MaterialRegistry materialRegistry;
 		private readonly CostService costService;
 		private readonly LocationService locationService;
-		private readonly ObjectDefRegistry objectRegistry;
+		private readonly JsonEntityRegistry objectRegistry;
 
 		public BlueprintBuilder(
 			JsonEntityLoader loader,
 			MaterialRegistry materialRegistry,
 			CostService costService,
 			LocationService locationService,
-			ObjectDefRegistry objectRegistry
+			JsonEntityRegistry objectRegistry
 		)
 		{
 			this.loader = loader;
@@ -29,21 +30,21 @@ namespace Snowship.NEntity
 
 		public Entity CreateBlueprint(EntityManager entityManager, string objectId, string materialId, Tile tile, int rotation)
 		{
-			JsonEntityDef def = objectRegistry.Get(objectId);
+			JsonEntity def = objectRegistry.Get(objectId);
 			Entity entity = loader.BuildFromDef(entityManager, def);
 
 			if (entity.TryGet(out MaterialOptions options)) {
-				MaterialDef candidate = materialRegistry.Get(materialId);
+				Material candidate = materialRegistry.Get(materialId);
 				if (!options.IsAllowed(candidate)) {
 					throw new InvalidOperationException($"Material '{materialId}' not allowed for object '{objectId}'");
 				}
 			}
 
-			MaterialDef material = materialRegistry.Get(materialId);
-			entity.AddComponent(new CMaterial(material));
+			Material material = materialRegistry.Get(materialId);
+			entity.AddComponent(new MaterialC(material));
 
 			List<Ingredient> needed = costService.ComputeFinalCost(entity);
-			entity.AddComponent(new CRequiredResources(needed));
+			entity.AddComponent(new RequiredResourcesC(needed));
 			entity.AddComponent(new CBlueprintMarker());
 
 			locationService.MoveToTile(entity, tile, rotation);
