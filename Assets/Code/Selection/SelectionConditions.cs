@@ -4,6 +4,24 @@ using Snowship.NResource;
 
 namespace Snowship.NSelection
 {
+	public enum ESelectionCondition
+	{
+		Walkable, NotWalkable, WalkableIncludingFences,
+		Buildable, NotBuildable,
+		Stone, NotStone,
+		WaterOrIce, NeitherWaterNorIce,
+		LiquidWater, NotLiquidWater, CoastalWater,
+		NeitherStoneNorWater,
+		Plant, NoPlant,
+		Farm, NoFarm,
+		Roof, NoRoof,
+		Objects, NoObjects,
+		Hole, NoHole, DugPreviously, NotDugPreviously, Fillable,
+		NoSameLayerJobs,
+		SameLayerObject, NoSameLayerObject,
+		NoObjectWithTileAsNonPrimaryTile
+	}
+
 	public static class SelectionConditions
 	{
 		public static bool Walkable(Tile tile, int _) {

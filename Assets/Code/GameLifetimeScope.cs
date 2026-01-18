@@ -9,6 +9,7 @@ using Snowship.NJob;
 using Snowship.NLife;
 using Snowship.NMap;
 using Snowship.NMap.NTile;
+using Snowship.NMaterial;
 using Snowship.NPlanet;
 using Snowship.NResource;
 using Snowship.NSettings;
@@ -60,6 +61,7 @@ namespace Snowship
 			builder.RegisterEntryPoint<PlanetManager>(Lifetime.Singleton).AsSelf();
 
 			ResourceServiceInstaller.Install(builder);
+			MaterialServiceInstaller.Install(builder);
 
 			builder.RegisterEntryPoint<SelectionManager>(Lifetime.Singleton).AsSelf();
 			builder.RegisterEntryPoint<SettingsManager>(Lifetime.Singleton).AsSelf();

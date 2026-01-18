@@ -1,4 +1,5 @@
-﻿using VContainer;
+﻿using Snowship.NMaterial;
+using VContainer;
 using VContainer.Unity;
 
 namespace Snowship.NResource
@@ -9,6 +10,8 @@ namespace Snowship.NResource
 			builder.Register<ResourceProvider>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
 			builder.RegisterEntryPoint<ResourceLoader>(Lifetime.Singleton).AsSelf();
 			builder.RegisterEntryPoint<ResourceManager>(Lifetime.Singleton).AsSelf();
+
+			builder.RegisterEntryPoint<MaterialRegistry>(Lifetime.Singleton).AsSelf();
 		}
 	}
 }

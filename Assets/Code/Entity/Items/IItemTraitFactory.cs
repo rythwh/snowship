@@ -7,6 +7,6 @@ namespace Snowship.NEntity
 	{
 		ETrait Id { get; }
 
-		IItemTraitBlueprint Parse(JsonArgs args, IObjectResolver resolver);
+		IItemTraitBlueprint Parse(JsonArgs args);
 	}
 }

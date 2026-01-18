@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using Snowship.NEntity;
 using Snowship.NMaterial;
@@ -34,16 +33,23 @@ namespace Snowship.NEditor
 			return newValue;
 		}
 
-		public static string StringField(string key, JObject data, JsonArgs args = null, string defaultValue = "")
+		public static bool StringField(string key, JObject data, JsonArgs args = null, Func<string, (bool result, string message)> validationAction = null, string defaultValue = "")
 		{
 			args ??= new JsonArgs(data);
 
 			string existingValue = args.TryGetString(key, defaultValue);
 			string newValue = EditorGUILayout.TextField(key, existingValue);
+			if (validationAction != null) {
+				(bool result, string message) validationResult = validationAction(newValue);
+				if (!validationResult.result) {
+					EditorGUILayout.LabelField(validationResult.message, JsonEditorStyles.ErrorLabelStyle);
+					return false;
+				}
+			}
 			if (!string.Equals(newValue, existingValue, StringComparison.OrdinalIgnoreCase)) {
 				data[key] = newValue;
 			}
-			return newValue;
+			return true;
 		}
 
 		public static bool BoolField(string key, JObject data, JsonArgs args = null, bool defaultValue = false)
@@ -69,8 +75,13 @@ namespace Snowship.NEditor
 			}
 		}
 
-		public static JArray MaterialAmountField(string key, JObject data, JsonArgs args = null, JsonMaterialAmount defaultValue = null)
-		{
+		public static bool MaterialAmountField(
+			string key,
+			JObject data,
+			JsonArgs args = null,
+			Func<string, (bool result, string message)> materialValidationAction = null,
+			JsonMaterialAmount defaultValue = null
+		) {
 			JToken existingToken = data[key];
 			if (existingToken is not JArray materialAmountArray) {
 				materialAmountArray = new JArray();
@@ -105,14 +116,28 @@ namespace Snowship.NEditor
 						}
 					}
 
-					StringField(JsonMaterialAmount.IdPropertyName, materialAmount, materialAmountArgs, defaultValue?.Id ?? string.Empty);
-					IntField(JsonMaterialAmount.AmountPropertyName, materialAmount, materialAmountArgs, defaultValue?.Amount ?? 0);
+					if (!StringField(
+						JsonMaterialAmount.IdPropertyName,
+						materialAmount,
+						materialAmountArgs,
+						materialValidationAction,
+						defaultValue?.Id ?? string.Empty
+					)) {
+						return false;
+					}
+
+					IntField(
+						JsonMaterialAmount.AmountPropertyName,
+						materialAmount,
+						materialAmountArgs,
+						defaultValue?.Amount ?? 0
+					);
 				}
 			}
 
 			data[key] = materialAmountArray;
 
-			return materialAmountArray;
+			return true;
 		}
 	}
 }

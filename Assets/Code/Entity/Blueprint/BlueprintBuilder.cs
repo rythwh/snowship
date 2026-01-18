@@ -19,8 +19,7 @@ namespace Snowship.NEntity
 			CostService costService,
 			LocationService locationService,
 			JsonEntityRegistry objectRegistry
-		)
-		{
+		) {
 			this.loader = loader;
 			this.materialRegistry = materialRegistry;
 			this.costService = costService;

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "table",
+    "layer": 0,
+    "build_time": 0,
+    "integrity": 0,
+    "walk_speed": 0.0,
+    "walkable": false,
+    "buildable": false,
+    "auto_tile": false,
+    "blocks_light": false,
+    "variations": [],
+    "selection_modifiers": [],
+    "components": []
+  }
+]

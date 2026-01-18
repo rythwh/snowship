@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using Snowship.NEntity;
-using VContainer;
 
 namespace Snowship.NMaterial
 {
 	public class JsonMaterialLoader
 	{
 		private readonly ItemTraitFactoryRegistry traitFactories;
-		private readonly IObjectResolver resolver;
 
-		public JsonMaterialLoader(ItemTraitFactoryRegistry traitFactories, IObjectResolver resolver)
+		public JsonMaterialLoader(ItemTraitFactoryRegistry traitFactories)
 		{
 			this.traitFactories = traitFactories;
-			this.resolver = resolver;
 		}
 
-		public Material ToDef(JsonMaterial jsonMaterial)
+		public Material JsonToMaterial(JsonMaterial jsonMaterial)
 		{
 			List<StatModifier> statModifiers = ParseModifiers(jsonMaterial.Modifiers);
 			List<IItemTraitBlueprint> traitBlueprints = ParseTraits(jsonMaterial.Traits);
@@ -55,7 +52,7 @@ namespace Snowship.NMaterial
 				if (!traitFactories.TryGet(trait.Type, out IItemTraitFactory factory)) {
 					throw new NotImplementedException($"IItemTraitFactory does not exist for trait {trait.Type}");
 				}
-				IItemTraitBlueprint blueprint = factory.Parse(new JsonArgs(trait.Data), resolver);
+				IItemTraitBlueprint blueprint = factory.Parse(new JsonArgs(trait.Data));
 				blueprints.Add(blueprint);
 			}
 			return blueprints;

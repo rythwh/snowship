@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if OLD
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
@@ -20,19 +22,12 @@ namespace Snowship.NEditor
 	}
 
 	[Serializable]
-	public sealed class IngredientJson
-	{
-		[JsonProperty("id")] public string Id;
-		[JsonProperty("amount")] public int Amount;
-	}
-
-	[Serializable]
 	public sealed class MaterialCostOverrideJson
 	{
 		[JsonProperty("mode")] public string Mode = "ReplaceAll"; // or "Delta"
-		[JsonProperty("recipe")] public List<IngredientJson> Recipe;
-		[JsonProperty("add")] public List<IngredientJson> Add;
-		[JsonProperty("remove")] public List<IngredientJson> Remove;
+		[JsonProperty("recipe")] public List<JsonMaterialAmount> Recipe;
+		[JsonProperty("add")] public List<JsonMaterialAmount> Add;
+		[JsonProperty("remove")] public List<JsonMaterialAmount> Remove;
 	}
 
 	[Serializable]
@@ -610,7 +605,7 @@ namespace Snowship.NEditor
 		private void AddBaseRecipe()
 		{
 			JArray arr = new() {
-				JObject.FromObject(new IngredientJson { Id = "wood", Amount = 1 })
+				JObject.FromObject(new JsonMaterialAmount { Id = "wood", Amount = 1 })
 			};
 			JsonComponent comp = new() { Type = "BaseRecipe", Data = arr };
 			current.Components.Add(comp);
@@ -650,3 +645,4 @@ namespace Snowship.NEditor
 		}
 	}
 }
+#endif

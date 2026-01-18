@@ -67,7 +67,8 @@
           "craftWithEntities": "furnaces",
           "energyRequired": 50,
           "time": 10,
-          "activeCrafting": false
+          "activeCrafting": false,
+          "output": 2
         }
       }
     ]
@@ -92,7 +93,8 @@
           "craftWithEntities": "furnaces",
           "energyRequired": 50,
           "time": 10,
-          "activeCrafting": false
+          "activeCrafting": false,
+          "output": 2
         }
       }
     ]
@@ -117,7 +119,8 @@
               "id": "gold_ore",
               "amount": 1
             }
-          ]
+          ],
+          "output": 2
         }
       }
     ]
@@ -142,7 +145,8 @@
           "craftWithEntities": "furnaces",
           "energyRequired": 50,
           "time": 10,
-          "activeCrafting": false
+          "activeCrafting": false,
+          "output": 2
         }
       }
     ]
@@ -167,7 +171,8 @@
           "craftWithEntities": "furnaces",
           "energyRequired": 50,
           "time": 10,
-          "activeCrafting": false
+          "activeCrafting": false,
+          "output": 2
         }
       }
     ]
@@ -480,7 +485,23 @@
     "traits": []
   },
   {
-    "id": "birch",
+    "id": "log",
+    "class": "wood",
+    "weight": 200,
+    "volume": 400,
+    "value": 2,
+    "modifiers": [],
+    "traits": [
+      {
+        "type": 0,
+        "data": {
+          "energyPerUnit": 8
+        }
+      }
+    ]
+  },
+  {
+    "id": "wood",
     "class": "wood",
     "weight": 0,
     "volume": 0,
@@ -498,37 +519,19 @@
         "data": {
           "energyPerUnit": 5
         }
-      }
-    ]
-  },
-  {
-    "id": "log",
-    "class": "wood",
-    "weight": 200,
-    "volume": 400,
-    "value": 2,
-    "modifiers": [],
-    "traits": [
+      },
       {
-        "type": 0,
+        "type": 1,
         "data": {
-          "energyPerUnit": 8
-        }
-      }
-    ]
-  },
-  {
-    "id": "oak",
-    "class": "wood",
-    "weight": 0,
-    "volume": 0,
-    "value": 0,
-    "modifiers": [],
-    "traits": [
-      {
-        "type": 0,
-        "data": {
-          "energyPerUnit": 5
+          "materialsToCraft": [
+            {
+              "id": "log",
+              "amount": 1
+            }
+          ],
+          "craftWithEntities": "splitting_block,splitting_log",
+          "time": 2,
+          "output": 4
         }
       }
     ]

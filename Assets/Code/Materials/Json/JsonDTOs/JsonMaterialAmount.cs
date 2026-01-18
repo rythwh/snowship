@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Snowship.NMaterial
 {
@@ -10,12 +9,5 @@ namespace Snowship.NMaterial
 
 		[JsonProperty(IdPropertyName)] public string Id { get; set; }
 		[JsonProperty(AmountPropertyName)] public int Amount { get; set; }
-	}
-
-	public sealed class JsonMaterialAmounts
-	{
-		public const string MaterialAmountsPropertyName = "material_amounts";
-
-		[JsonProperty(MaterialAmountsPropertyName)] public List<JsonMaterialAmount> MaterialAmounts;
 	}
 }

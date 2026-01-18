@@ -5,7 +5,6 @@ using Newtonsoft.Json.Linq;
 using Snowship.NEntity;
 using Snowship.NLife;
 using Snowship.NMaterial;
-using Snowship.NUtilities;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,23 +12,25 @@ using UnityEngine;
 
 namespace Snowship.NEditor
 {
-	public sealed class MaterialsEditorWindow : EditorWindow
+	public sealed class JsonMaterialsEditor : EditorWindow
 	{
 		private const string PrefKeyPath = "Snowship_MaterialsJsonPath";
 
+		private bool uiInitialized = false;
 		private string jsonPath;
 		private Vector2 leftScroll;
 		private Vector2 rightScroll;
 		private List<JsonMaterial> materials = new();
+		private readonly Dictionary<JsonMaterial, bool> validationState = new();
 		private List<JsonMaterial> orderedMaterials;
 		private JsonMaterial selectedMaterial = null;
 
 		[MenuItem("Snowship/Materials JSON Editor")]
 		public static void Open()
 		{
-			MaterialsEditorWindow win = GetWindow<MaterialsEditorWindow>(true, "Materials JSON Editor");
-			win.minSize = new Vector2(1000, 600);
-			win.Show();
+			JsonMaterialsEditor window = GetWindow<JsonMaterialsEditor>(true, "Materials JSON Editor");
+			window.minSize = new Vector2(1000, 600);
+			window.Show();
 		}
 
 		private void OnEnable()
@@ -42,13 +43,23 @@ namespace Snowship.NEditor
 
 		private void OnGUI()
 		{
+			if (!uiInitialized) {
+				// Draw all materials at the start to trigger validation
+				using (new EditorGUILayout.HorizontalScope()) {
+					foreach (JsonMaterial material in materials) {
+						DrawDetail(material);
+					}
+				}
+				uiInitialized = true;
+			}
+
 			DrawToolbar();
 
 			EditorGUILayout.Space();
 
 			using (new EditorGUILayout.HorizontalScope()) {
 				DrawList();
-				DrawDetail();
+				DrawDetail(selectedMaterial);
 			}
 		}
 
@@ -67,22 +78,15 @@ namespace Snowship.NEditor
 					TrySave(jsonPath);
 				}
 
-				if (GUILayout.Button("Save As…", EditorStyles.toolbarButton, GUILayout.Width(80))) {
-					string dest = JsonIO.SaveFile("Save materials.json", "materials", System.IO.Path.GetDirectoryName(jsonPath));
-					if (!string.IsNullOrEmpty(dest)) {
-						TrySave(dest);
+				if (GUILayout.Button("Save As...", EditorStyles.toolbarButton, GUILayout.Width(80))) {
+					string destination = JsonIO.SaveFile("Save materials.json", "materials", System.IO.Path.GetDirectoryName(jsonPath));
+					if (!string.IsNullOrEmpty(destination)) {
+						TrySave(destination);
 					}
 				}
 
 				EditorGUILayout.LabelField(string.IsNullOrEmpty(jsonPath) ? "No file" : jsonPath, EditorStyles.miniLabel);
 			}
-		}
-
-		private bool IsMaterialValid(JsonMaterial material)
-		{
-			return
-				!string.IsNullOrWhiteSpace(material.Id)
-				&& !string.IsNullOrWhiteSpace(material.ClassId);
 		}
 
 		private void UpdateOrderedMaterials()
@@ -100,13 +104,7 @@ namespace Snowship.NEditor
 
 				using (new EditorGUILayout.HorizontalScope()) { // Header
 					EditorGUILayout.LabelField("Materials", EditorStyles.whiteLargeLabel);
-					GUIStyle plusIconStyle = new GUIStyle(EditorStyles.iconButton) {
-						imagePosition = ImagePosition.ImageOnly,
-						alignment = TextAnchor.MiddleCenter,
-						fixedWidth = 22,
-						fixedHeight = 22
-					};
-					if (GUILayout.Button(EditorGUIUtility.IconContent("d_CollabCreate Icon"), plusIconStyle)) {
+					if (GUILayout.Button(EditorGUIUtility.IconContent("d_CollabCreate Icon"), JsonEditorStyles.PlusIconStyle)) {
 						AddMaterial();
 					}
 				}
@@ -125,28 +123,13 @@ namespace Snowship.NEditor
 							GUILayout.Label(previousClassId, EditorStyles.whiteLargeLabel);
 						}
 
-						// Full Material Box
-						GUIStyle materialBoxStyle = new GUIStyle("box") {
-							normal = {
-								background = Texture2D.grayTexture
-							}
-						};
 						// Material above Modifiers/Traits
-						using (new EditorGUILayout.HorizontalScope(materialBoxStyle)) {
+						using (new EditorGUILayout.HorizontalScope(JsonEditorStyles.ListBoxStyle)) {
 							using (new EditorGUILayout.VerticalScope()) {
 								// Material Name/Button + Delete Button
 								using (new EditorGUILayout.HorizontalScope("box")) {
-									bool valid = IsMaterialValid(material);
-									GUIStyle materialButtonStyle = new GUIStyle(EditorStyles.miniButton) {
-										alignment = TextAnchor.MiddleLeft,
-										normal = {
-											textColor = valid ? Color.white : Color.softRed
-										},
-										focused = {
-											textColor = valid ? Color.white : Color.darkRed
-										}
-									};
-									bool clicked = GUILayout.Toggle(selectedMaterial == material, string.IsNullOrEmpty(material.Id) ? "<unnamed>" : material.Id, materialButtonStyle);
+									bool valid = JsonMaterialsEditorUtilities.IsMaterialValid(material);
+									bool clicked = GUILayout.Toggle(selectedMaterial == material, string.IsNullOrEmpty(material.Id) ? "<unnamed>" : material.Id, JsonEditorStyles.ListButtonStyle(valid));
 									if (clicked && selectedMaterial != material) {
 										SelectMaterial(material);
 									}
@@ -168,7 +151,7 @@ namespace Snowship.NEditor
 									if (material.Modifiers is { Count: > 0 }) {
 										using (new EditorGUILayout.HorizontalScope("box")) {
 											foreach (JsonMaterialStatMod statMod in material.Modifiers) {
-												EditorGUILayout.LabelField(GetStatModifierImage(statMod.Stat), GUILayout.MaxWidth(18), GUILayout.MaxHeight(18));
+												EditorGUILayout.LabelField(JsonMaterialsEditorUtilities.GetStatModifierImage(statMod.Stat), GUILayout.MaxWidth(18), GUILayout.MaxHeight(18));
 											}
 										}
 									}
@@ -178,10 +161,14 @@ namespace Snowship.NEditor
 									if (material.Traits is { Count: > 0 }) {
 										using (new EditorGUILayout.HorizontalScope("box")) {
 											foreach (JsonMaterialTrait trait in material.Traits) {
-												EditorGUILayout.LabelField(GetTraitImage(trait.Type), GUILayout.MaxWidth(18), GUILayout.MaxHeight(18));
+												EditorGUILayout.LabelField(JsonMaterialsEditorUtilities.GetTraitImage(trait.Type), GUILayout.MaxWidth(18), GUILayout.MaxHeight(18));
 											}
 										}
 									}
+								}
+
+								if (validationState.ContainsKey(material) && !validationState[material]) {
+									EditorGUILayout.LabelField("Validation failed...", JsonEditorStyles.ErrorLabelStyle);
 								}
 							}
 						}
@@ -223,39 +210,45 @@ namespace Snowship.NEditor
 			Repaint();
 		}
 
-		private void DrawDetail()
+		/// <summary>
+		/// Draw the properties of a single material.
+		/// </summary>
+		/// <returns>true if validation passed, false if validation failed.</returns>
+		/// <exception cref="ArgumentOutOfRangeException"></exception>
+		private bool DrawDetail(JsonMaterial material)
 		{
+			bool validationResult = true;
 			using (new EditorGUILayout.VerticalScope(GUILayout.MinWidth(500), GUILayout.MaxWidth(500))) {
 				EditorGUILayout.LabelField("Details", EditorStyles.boldLabel);
 				using (new EditorGUILayout.ScrollViewScope(rightScroll)) {
-					if (selectedMaterial != null) {
+					if (material != null) {
 						using (new EditorGUILayout.VerticalScope(GUILayout.MinWidth(250), GUILayout.MaxWidth(250))) {
 
 							GUIStyle textFieldStyle = new GUIStyle(EditorStyles.textField);
 
-							string newId = EditorGUILayout.TextField("Id", selectedMaterial.Id, textFieldStyle);
-							if (!string.Equals(newId, selectedMaterial.Id, StringComparison.Ordinal)) {
-								selectedMaterial.Id = newId;
+							string newId = EditorGUILayout.TextField("Id", material.Id, textFieldStyle);
+							if (!string.Equals(newId, material.Id, StringComparison.Ordinal)) {
+								material.Id = newId;
 							}
 
-							string newClass = EditorGUILayout.TextField("Class", selectedMaterial.ClassId, textFieldStyle);
-							if (!string.Equals(newClass, selectedMaterial.ClassId, StringComparison.Ordinal)) {
-								selectedMaterial.ClassId = newClass;
+							string newClass = EditorGUILayout.TextField("Class", material.ClassId, textFieldStyle);
+							if (!string.Equals(newClass, material.ClassId, StringComparison.Ordinal)) {
+								material.ClassId = newClass;
 							}
 
-							int newWeight = EditorGUILayout.IntField("Weight", selectedMaterial.Weight, textFieldStyle);
-							if (newWeight != selectedMaterial.Weight) {
-								selectedMaterial.Weight = newWeight;
+							int newWeight = EditorGUILayout.IntField("Weight", material.Weight, textFieldStyle);
+							if (newWeight != material.Weight) {
+								material.Weight = newWeight;
 							}
 
-							int newVolume = EditorGUILayout.IntField("Volume", selectedMaterial.Volume, textFieldStyle);
-							if (newVolume != selectedMaterial.Volume) {
-								selectedMaterial.Volume = newVolume;
+							int newVolume = EditorGUILayout.IntField("Volume", material.Volume, textFieldStyle);
+							if (newVolume != material.Volume) {
+								material.Volume = newVolume;
 							}
 
-							int newValue = EditorGUILayout.IntField("Value", selectedMaterial.Value, textFieldStyle);
-							if (newValue != selectedMaterial.Value) {
-								selectedMaterial.Value = newValue;
+							int newValue = EditorGUILayout.IntField("Value", material.Value, textFieldStyle);
+							if (newValue != material.Value) {
+								material.Value = newValue;
 							}
 						}
 
@@ -266,18 +259,18 @@ namespace Snowship.NEditor
 								using (new EditorGUILayout.HorizontalScope()) {
 									EditorGUILayout.LabelField("Stat Modifiers", EditorStyles.boldLabel);
 									if (GUILayout.Button("+", GUILayout.MaxWidth(20))) {
-										selectedMaterial.Modifiers.Add(new JsonMaterialStatMod { Stat = 0, Operation = 0, Value = 1f });
+										material.Modifiers.Add(new JsonMaterialStatMod { Stat = 0, Operation = 0, Value = 1f });
 									}
 								}
 
-								List<JsonMaterialStatMod> modifiers = selectedMaterial.Modifiers?.ToList();
+								List<JsonMaterialStatMod> modifiers = material.Modifiers?.ToList();
 								if (modifiers != null) {
 									foreach (JsonMaterialStatMod modifier in modifiers) {
 										EditorGUILayout.BeginVertical("box");
 
 										EditorGUILayout.BeginHorizontal();
 
-										EditorGUILayout.LabelField(GetStatModifierImage(modifier.Stat), GUILayout.MaxWidth(18), GUILayout.MaxHeight(18));
+										EditorGUILayout.LabelField(JsonMaterialsEditorUtilities.GetStatModifierImage(modifier.Stat), GUILayout.MaxWidth(18), GUILayout.MaxHeight(18));
 
 										EStat newStat = (EStat)EditorGUILayout.EnumPopup(modifier.Stat);
 										if (newStat != modifier.Stat) {
@@ -299,10 +292,10 @@ namespace Snowship.NEditor
 										EditorGUILayout.BeginHorizontal();
 										if (GUILayout.Button("Duplicate")) {
 											JsonMaterialStatMod copy = new() { Stat = modifier.Stat, Operation = modifier.Operation, Value = modifier.Value };
-											selectedMaterial.Modifiers.Add(copy);
+											material.Modifiers.Add(copy);
 										}
 										if (GUILayout.Button("Remove")) {
-											selectedMaterial.Modifiers.Remove(modifier);
+											material.Modifiers.Remove(modifier);
 											GUIUtility.ExitGUI();
 										}
 										EditorGUILayout.EndHorizontal();
@@ -316,52 +309,64 @@ namespace Snowship.NEditor
 								using (new EditorGUILayout.HorizontalScope()) {
 									EditorGUILayout.LabelField("Traits", EditorStyles.boldLabel);
 									if (GUILayout.Button("+", GUILayout.MaxWidth(20))) {
-										selectedMaterial.Traits.Add(new JsonMaterialTrait { Type = 0 });
+										material.Traits.Add(new JsonMaterialTrait { Type = 0 });
 									}
 								}
 
-								List<JsonMaterialTrait> traits = selectedMaterial.Traits?.ToList();
+								List<JsonMaterialTrait> traits = material.Traits?.ToList();
 								if (traits != null) {
-									foreach (JsonMaterialTrait trait in selectedMaterial.Traits) {
-										ETrait newTrait = (ETrait)EditorGUILayout.EnumPopup(trait.Type);
-										if (newTrait != trait.Type) {
-											trait.Type = newTrait;
-											trait.Data = null;
-										}
+									foreach (JsonMaterialTrait trait in material.Traits) {
+										using (new EditorGUILayout.VerticalScope("box")) {
 
-										trait.Data ??= new JObject();
-
-										JsonArgs args = new JsonArgs(trait.Data);
-
-										switch (trait.Type) {
-											case ETrait.Fuel:
-												// Energy Per Unit
-												JsonEditorUtilities.IntField("energyPerUnit", trait.Data, args);
+											EditorGUILayout.BeginHorizontal();
+											ETrait newTrait = (ETrait)EditorGUILayout.EnumPopup(trait.Type);
+											if (newTrait != trait.Type) {
+												trait.Type = newTrait;
+												trait.Data = null;
+											}
+											if (GUILayout.Button("-", GUILayout.MaxWidth(20))) {
+												material.Traits.Remove(trait);
 												break;
-											case ETrait.Craftable:
-												// Craft With Entities
-												JsonEditorUtilities.StringField("craftWithEntities", trait.Data, args);
+											}
+											EditorGUILayout.EndHorizontal();
 
-												// Energy Required
-												JsonEditorUtilities.IntField("energyRequired", trait.Data, args);
+											trait.Data ??= new JObject();
 
-												// Resources To Craft
-												JsonEditorUtilities.MaterialAmountField("materialsToCraft", trait.Data, args);
+											JsonArgs args = new JsonArgs(trait.Data);
 
-												// Time
-												JsonEditorUtilities.IntField("time", trait.Data, args);
+											switch (trait.Type) {
+												case ETrait.Fuel:
+													// Energy Per Unit
+													JsonEditorUtilities.IntField("energyPerUnit", trait.Data, args);
+													break;
+												case ETrait.Craftable:
+													// Craft With Entities
+													validationResult &= JsonEditorUtilities.StringField("craftWithEntities", trait.Data, args);
 
-												// Active Crafting
-												JsonEditorUtilities.BoolField("activeCrafting", trait.Data, args, true);
-												break;
-											case ETrait.Food:
-												JsonEditorUtilities.IntField("nutritionPerUnit", trait.Data, args);
-												break;
-											case ETrait.Clothing:
-												JsonEditorUtilities.EnumField<EBodySection>("appearanceKey", trait.Data, args);
-												break;
-											default:
-												throw new ArgumentOutOfRangeException();
+													// Energy Required
+													JsonEditorUtilities.IntField("energyRequired", trait.Data, args);
+
+													// Resources To Craft
+													validationResult &= JsonEditorUtilities.MaterialAmountField("materialsToCraft", trait.Data, args, MaterialValidationAction);
+
+													// Time
+													JsonEditorUtilities.IntField("time", trait.Data, args);
+
+													// Output
+													JsonEditorUtilities.IntField("output", trait.Data, args);
+
+													// Active Crafting
+													JsonEditorUtilities.BoolField("activeCrafting", trait.Data, args, true);
+													break;
+												case ETrait.Food:
+													JsonEditorUtilities.IntField("nutritionPerUnit", trait.Data, args);
+													break;
+												case ETrait.Clothing:
+													JsonEditorUtilities.EnumField<EBodySection>("appearanceKey", trait.Data, args);
+													break;
+												default:
+													throw new ArgumentOutOfRangeException();
+											}
 										}
 									}
 								}
@@ -370,9 +375,10 @@ namespace Snowship.NEditor
 					} else {
 						EditorGUILayout.HelpBox("Select a material to edit, or click '+ Add Material'", MessageType.Info);
 					}
-
 				}
 			}
+			validationState[material] = validationResult;
+			return validationResult;
 		}
 
 		private void TryLoad(string path)
@@ -384,55 +390,38 @@ namespace Snowship.NEditor
 				jsonPath = path;
 				EditorPrefs.SetString(PrefKeyPath, jsonPath);
 				SelectMaterial(orderedMaterials.Count > 0 ? orderedMaterials[0] : null);
-			} catch (Exception ex) {
-				Debug.LogError(ex);
-				EditorUtility.DisplayDialog("Load Error", ex.Message, "OK");
+			} catch (Exception e) {
+				Debug.LogError(e);
+				EditorUtility.DisplayDialog("Load Error", e.Message, "OK");
 			}
 		}
 
 		private void TrySave(string path)
 		{
 			if (string.IsNullOrEmpty(path)) {
-				string dest = JsonIO.SaveFile("Save materials.json", "materials", Application.dataPath);
-				if (string.IsNullOrEmpty(dest)) {
+				string savePath = JsonIO.SaveFile("Save materials.json", "materials", Application.dataPath);
+				if (string.IsNullOrEmpty(savePath)) {
 					return;
 				}
-				path = dest;
+				path = savePath;
 			}
 
 			try {
 				JsonIO.Save(path, orderedMaterials);
 				jsonPath = path;
 				EditorPrefs.SetString(PrefKeyPath, jsonPath);
-			} catch (Exception ex) {
-				Debug.LogError(ex);
-				EditorUtility.DisplayDialog("Save Error", ex.Message, "OK");
+			} catch (Exception e) {
+				Debug.LogError(e);
+				EditorUtility.DisplayDialog("Save Error", e.Message, "OK");
 			}
 		}
 
-		private GUIContent GetStatModifierImage(EStat stat)
+		public (bool result, string message) MaterialValidationAction(string value)
 		{
-			return stat switch {
-				EStat.BuildTime => EditorGUIUtility.IconContent("UnityEditor.AnimationWindow@2x"),
-				EStat.Value => EditorGUIUtility.IconContent("d_LightProbes Icon"),
-				EStat.WalkSpeed => EditorGUIUtility.IconContent("d_NavMeshAgent Icon"),
-				EStat.Integrity => EditorGUIUtility.IconContent("Animation.Record@2x"),
-				EStat.Flammability => EditorGUIUtility.IconContent("d_VisualEffectAsset Icon"),
-				EStat.Insulation => EditorGUIUtility.IconContent("d_SpeedTreeWindAsset Icon"),
-				EStat.Fuel => EditorGUIUtility.IconContent("d_ParticleSystemForceField Icon"),
-				_ => EditorGUIUtility.IconContent("d_Help@2x")
-			};
-		}
-
-		private GUIContent GetTraitImage(ETrait trait)
-		{
-			return trait switch {
-				ETrait.Fuel => EditorGUIUtility.IconContent("d_ParticleSystemForceField Icon"),
-				ETrait.Craftable => EditorGUIUtility.IconContent("BuildProfile Icon"),
-				ETrait.Food => EditorGUIUtility.IconContent("d_PlatformEffector2D Icon"),
-				ETrait.Clothing => EditorGUIUtility.IconContent("Cloth Icon"),
-				_ => EditorGUIUtility.IconContent("d_Help@2x")
-			};
+			if (materials.Find(m => m.Id == value) == null) {
+				return (false, $"Material {value} not found in registry.");
+			}
+			return (true, string.Empty);
 		}
 	}
 }
