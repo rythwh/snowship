@@ -8,11 +8,26 @@ EditorUserSettings:
     GraphicsSettingsInspector_UserSettings:
       value: 18134705175a055722080a3115371d4a0d55006876786860616b0471b8b1636cacb72ba5a52a362c3c0ee63201181433fe3e101bf3250b06144ca74c24f1190708e016c213c61a52f91c12cac80fd8edd298e1e4d1fde2cacddeacbcc1fee7eef0e3b6faa69af9ceaeaaec81a6d2c2c8c8c4b2e5dfd5ccd3f8cf
       flags: 0
+    QuickInstaller_com.unity.purchasing_installRecorded:
+      value: 2550581500
+      flags: 0
+    QuickInstaller_com.unity.services.levelplay_installRecorded:
+      value: 2550581500
+      flags: 0
     RecentlyUsedSceneGuid-0:
       value: 51005154550c0f0c5d5a5a76157b5c4447151e287b2a27602e784d32b1e4373c
       flags: 0
     RecentlyUsedSceneGuid-1:
       value: 5b02570757540f5f5d0a54271320064414161c7c7d2a23647d711967b1b53039
+      flags: 0
+    RecentlyUsedSceneGuid-2:
+      value: 0000000456510a0d5c08097a46705b4442151a28292b71347a7a4f6ae0b0356a
+      flags: 0
+    RecentlyUsedSceneGuid-3:
+      value: 57550c565453595a595d5a7448765d444e154d79297173347a7d1967e0b23168
+      flags: 0
+    RecentlyUsedSceneGuid-4:
+      value: 5202045107005159580a5b2013210d444e16497c747d7e652b2b4960e6b3636e
       flags: 0
     UnityRemoteCompression:
       value: 337f73
