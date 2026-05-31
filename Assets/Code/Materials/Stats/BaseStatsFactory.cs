@@ -4,7 +4,7 @@ namespace Snowship.NMaterial
 {
 	public class BaseStatsFactory : IJsonComponentFactory
 	{
-		public string Id => "BaseStats";
+		public EEntityComponent Id => EEntityComponent.BaseStats;
 
 		public IComponent Create(JsonArgs args)
 		{

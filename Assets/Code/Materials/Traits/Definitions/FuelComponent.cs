@@ -9,7 +9,7 @@ namespace Snowship.NMaterial
 
 		public IItemTraitBlueprint Parse(JsonArgs args)
 		{
-			float energy = args.TryGetFloat("energyPerUnit", 0f);
+			float energy = args.GetFloatOrDefault("energyPerUnit", 0f);
 			return new FuelBlueprint(energy);
 		}
 	}

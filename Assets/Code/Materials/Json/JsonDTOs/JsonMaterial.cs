@@ -7,6 +7,7 @@ namespace Snowship.NMaterial
 	{
 		[JsonProperty("id")] public string Id { get; set; }
 		[JsonProperty("class")] public string ClassId { get; set; }
+		[JsonProperty("parent")] public string ParentId { get; set; }
 
 		[JsonProperty("weight")] public int Weight { get; set; }
 		[JsonProperty("volume")] public int Volume { get; set; }

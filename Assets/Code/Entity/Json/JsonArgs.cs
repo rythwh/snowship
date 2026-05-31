@@ -16,7 +16,7 @@ namespace Snowship.NEntity
 			this.data = data ?? new JObject();
 		}
 
-		public string TryGetString(string name, string defaultValue)
+		public string GetStringOrDefault(string name, string defaultValue)
 		{
 			if (data.TryGetValue(name, out JToken t)) {
 				return t.Value<string>();
@@ -24,7 +24,7 @@ namespace Snowship.NEntity
 			return defaultValue;
 		}
 
-		public int TryGetInt(string name, int defaultValue)
+		public int GetIntOrDefault(string name, int defaultValue)
 		{
 			if (data.TryGetValue(name, out JToken t)) {
 				return t.Value<int>();
@@ -32,7 +32,7 @@ namespace Snowship.NEntity
 			return defaultValue;
 		}
 
-		public float TryGetFloat(string name, float defaultValue)
+		public float GetFloatOrDefault(string name, float defaultValue)
 		{
 			if (data.TryGetValue(name, out JToken token)) {
 				return token.Type is JTokenType.Float or JTokenType.Integer
@@ -42,7 +42,7 @@ namespace Snowship.NEntity
 			return defaultValue;
 		}
 
-		public bool TryGetBool(string key, bool defaultValue)
+		public bool GetBoolOrDefault(string key, bool defaultValue)
 		{
 			if (data.TryGetValue(key, out JToken token)) {
 				return token.Value<bool>();
@@ -50,13 +50,13 @@ namespace Snowship.NEntity
 			return defaultValue;
 		}
 
-		public TEnum TryGetEnum<TEnum>(string key) where TEnum : Enum
+		public TEnum GetEnumValueOrDefault<TEnum>(string key) where TEnum : Enum
 		{
-			int enumInt = TryGetInt(key, 0);
+			int enumInt = GetIntOrDefault(key, 0);
 			return (TEnum)Enum.Parse(typeof(TEnum), enumInt.ToString(), true);
 		}
 
-		public JArray TryGetArray(string key)
+		public JArray GetArrayOrDefault(string key)
 		{
 			if (data.TryGetValue(key, out JToken token)) {
 				return token as JArray;
@@ -64,12 +64,22 @@ namespace Snowship.NEntity
 			return null;
 		}
 
-		public T TryGetObject<T>(string key) where T : JObject
+		public T GetObjectOrDefault<T>(string key) where T : JObject
 		{
 			if (data.TryGetValue(key, out JToken token)) {
 				return token.Value<T>();
 			}
 			return null;
+		}
+
+		private bool TryGetObject(string key, out JObject obj)
+		{
+			if (!data.TryGetValue(key, out JToken token) || token.Type != JTokenType.Object) {
+				obj = null;
+				return false;
+			}
+			obj = (JObject)token;
+			return true;
 		}
 
 		public Dictionary<EStat, float> StatMapFromSelf()
@@ -129,16 +139,6 @@ namespace Snowship.NEntity
 				ingredients.Add(new Ingredient(id, amount));
 			}
 			return ingredients;
-		}
-
-		private bool TryGetObject(string key, out JObject obj)
-		{
-			if (!data.TryGetValue(key, out JToken token) || token.Type != JTokenType.Object) {
-				obj = null;
-				return false;
-			}
-			obj = (JObject)token;
-			return true;
 		}
 	}
 }

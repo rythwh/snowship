@@ -11,11 +11,11 @@ namespace Snowship.NEntity
 		{
 			draft.Clear();
 
-			if (entity.TryGet(out BaseRecipeC baseRecipe)) {
+			if (entity.TryGet(out BaseRecipeComponent baseRecipe)) {
 				baseRecipe.ApplyTo(entity, draft);
 			}
 
-			if (entity.TryGet(out MaterialC material)) {
+			if (entity.TryGet(out MaterialComponent material)) {
 				bool applied = false;
 
 				if (entity.TryGet(out MaterialOptions options)) {
@@ -33,7 +33,7 @@ namespace Snowship.NEntity
 			}
 
 			foreach (ICostProvider costProvider in entity.CostProviders) {
-				if (costProvider is BaseRecipeC or MaterialC) {
+				if (costProvider is BaseRecipeComponent or MaterialComponent) {
 					continue;
 				}
 				costProvider.ApplyTo(entity, draft);

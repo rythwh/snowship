@@ -27,10 +27,10 @@ namespace Snowship.NEntity
 			this.objectRegistry = objectRegistry;
 		}
 
-		public Entity CreateBlueprint(EntityManager entityManager, string objectId, string materialId, Tile tile, int rotation)
+		public Entity CreateBlueprint(EntityRegistry entityRegistry, string objectId, string materialId, Tile tile, int rotation)
 		{
 			JsonEntity def = objectRegistry.Get(objectId);
-			Entity entity = loader.BuildFromDef(entityManager, def);
+			Entity entity = loader.BuildFromDef(entityRegistry, def);
 
 			if (entity.TryGet(out MaterialOptions options)) {
 				Material candidate = materialRegistry.Get(materialId);
@@ -40,11 +40,11 @@ namespace Snowship.NEntity
 			}
 
 			Material material = materialRegistry.Get(materialId);
-			entity.AddComponent(new MaterialC(material));
+			entity.AddComponent(new MaterialComponent(material));
 
 			List<Ingredient> needed = costService.ComputeFinalCost(entity);
-			entity.AddComponent(new RequiredResourcesC(needed));
-			entity.AddComponent(new CBlueprintMarker());
+			entity.AddComponent(new RequiredResourcesComponent(needed));
+			entity.AddComponent(new BlueprintMarkerComponent());
 
 			locationService.MoveToTile(entity, tile, rotation);
 			return entity;

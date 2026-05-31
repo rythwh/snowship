@@ -12,18 +12,18 @@ namespace Snowship.NMaterial
 
 		public IItemTraitBlueprint Parse(JsonArgs args)
 		{
-			JArray materialAmountArray = args.TryGetArray("materialsToCraft");
+			JArray materialAmountArray = args.GetArrayOrDefault("materialsToCraft");
 			List<JsonMaterialAmount> materialsToCraft = materialAmountArray != null
 				? materialAmountArray.ToObject<List<JsonMaterialAmount>>()
 				: new List<JsonMaterialAmount>();
 
 			return new CraftableBlueprint(
-				args.TryGetString("craftWithEntities", string.Empty),
-				args.TryGetInt("energyRequired", 0),
+				args.GetStringOrDefault("craftWithEntities", string.Empty),
+				args.GetIntOrDefault("energyRequired", 0),
 				materialsToCraft,
-				args.TryGetInt("time", 0),
-				args.TryGetInt("output", 0),
-				args.TryGetBool("activeCrafting", true)
+				args.GetIntOrDefault("time", 0),
+				args.GetIntOrDefault("output", 0),
+				args.GetBoolOrDefault("activeCrafting", true)
 			);
 		}
 	}

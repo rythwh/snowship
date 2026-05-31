@@ -5,14 +5,15 @@ namespace Snowship.NEntity
 {
 	public class BaseRecipeFactory : IJsonComponentFactory
 	{
-		public string Id => "BaseRecipe";
+		public EEntityComponent Id => EEntityComponent.BaseRecipe;
 
 		public IComponent Create(JsonArgs args)
 		{
-			List<Ingredient> ingredients = args.DataToken is JArray array
+			JArray array = args.GetArrayOrDefault("ingredients");
+			List<Ingredient> ingredients = array != null
 				? JsonArgs.ReadIngredientsArray(array)
 				: new List<Ingredient>();
-			return new BaseRecipeC(ingredients);
+			return new BaseRecipeComponent(ingredients);
 		}
 	}
 }

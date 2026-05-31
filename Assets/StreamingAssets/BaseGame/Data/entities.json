@@ -1,16 +1,57 @@
 [
   {
-    "id": "table",
-    "layer": 0,
-    "build_time": 0,
-    "integrity": 0,
-    "walk_speed": 0.0,
-    "walkable": false,
-    "buildable": false,
-    "auto_tile": false,
-    "blocks_light": false,
-    "variations": [],
-    "selection_modifiers": [],
-    "components": []
+    "id": "house",
+    "name": "House",
+    "category": "Buildings",
+    "sub_category": "Residential",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 3,
+        "data": {
+          "width": 2,
+          "height": 2
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "tree",
+    "name": "",
+    "category": "Trees",
+    "sub_category": "",
+    "is_abstract": true,
+    "components": [
+      {
+        "type": 7,
+        "data": {
+          "harvest_materials": [
+            {
+              "id": "wood/log",
+              "amount": 5
+            }
+          ]
+        }
+      }
+    ],
+    "variations": [
+      {
+        "id": "oak_tree",
+        "components": []
+      },
+      {
+        "id": "birch_tree",
+        "components": []
+      },
+      {
+        "id": "pine_tree",
+        "components": []
+      },
+      {
+        "id": "palm_tree",
+        "components": []
+      }
+    ]
   }
 ]

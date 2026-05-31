@@ -2,7 +2,7 @@
 {
 	public interface IJsonComponentFactory
 	{
-		string Id { get; }
+		EEntityComponent Id { get; }
 		IComponent Create(JsonArgs args);
 	}
 }

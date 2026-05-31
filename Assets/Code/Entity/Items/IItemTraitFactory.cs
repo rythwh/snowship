@@ -1,5 +1,4 @@
 ﻿using Snowship.NMaterial;
-using VContainer;
 
 namespace Snowship.NEntity
 {

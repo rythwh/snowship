@@ -6,6 +6,8 @@ namespace Snowship.NEditor
 {
 	public static class JsonEditorStyles
 	{
+		public static GUIStyle TextFieldStyle = new GUIStyle(EditorStyles.textField);
+
 		private static readonly GUIStyleState redState = new GUIStyleState {
 			textColor = Color.softRed
 		};

@@ -177,11 +177,11 @@ public class RecentAssetsWindow : EditorWindow
 		RegisterAsset(path);
 	}
 
-	private void OnHierarchyWindowItemGUI(int instanceID, Rect selectionRect) {
+	private void OnHierarchyWindowItemGUI(int entityId, Rect selectionRect) {
 		if (Event.current.type != EventType.MouseDown || !selectionRect.Contains(Event.current.mousePosition)) {
 			return;
 		}
-		Object obj = EditorUtility.InstanceIDToObject(instanceID);
+		Object obj = EditorUtility.EntityIdToObject(entityId);
 		if (obj == null) {
 			return;
 		}
