@@ -1,57 +1,1630 @@
 [
   {
-    "id": "house",
-    "name": "House",
+    "id": "wooden_door",
+    "name": "Wooden Door",
+    "description": "A wooden door that can be opened and closed.",
     "category": "Buildings",
-    "sub_category": "Residential",
+    "sub_category": "Doors",
     "is_abstract": false,
     "components": [
       {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 2
+            }
+          ]
+        }
+      },
+      {
         "type": 3,
         "data": {
-          "width": 2,
-          "height": 2
+          "width": 1,
+          "height": 1,
+          "integrity": 200,
+          "blocks_light": true,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
         }
       }
     ],
     "variations": []
   },
   {
-    "id": "tree",
-    "name": "",
-    "category": "Trees",
-    "sub_category": "",
+    "id": "fence",
+    "name": "Fence",
+    "description": "A simple fence to mark boundaries.",
+    "category": "Buildings",
+    "sub_category": "Fences",
     "is_abstract": true,
     "components": [
       {
-        "type": 7,
+        "type": 2,
         "data": {
-          "harvest_materials": [
-            {
-              "id": "wood/log",
-              "amount": 5
-            }
-          ]
+          "allowed": {
+            "classes": [],
+            "materials": [
+              "wood"
+            ]
+          },
+          "defaults": {
+            "material": ""
+          },
+          "cost": {
+            "byMaterial": {
+              "wood": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "wood/log",
+                    "amount": 3
+                  }
+                ]
+              }
+            },
+            "byClass": {}
+          }
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 300,
+          "blocks_light": false,
+          "walkable": false,
+          "walk_speed": 1,
+          "flammability": 0
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
         }
       }
     ],
     "variations": [
       {
-        "id": "oak_tree",
+        "id": "wood_fence",
+        "components": [
+          {
+            "type": 3,
+            "data": {
+              "flammability": 1
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "brick_floor",
+    "name": "Brick Floor",
+    "description": "A sturdy brick floor.",
+    "category": "Buildings",
+    "sub_category": "Floors",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Brick",
+              "amount": 2
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 200,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 1,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "wooden_floor",
+    "name": "Wooden Floor",
+    "description": "A wooden floor to walk on.",
+    "category": "Buildings",
+    "sub_category": "Floors",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 2
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 100,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 1,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "wooden_dock",
+    "name": "Wooden Dock",
+    "description": "A wooden dock extending over water.",
+    "category": "Buildings",
+    "sub_category": "Foundations",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 6
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 100,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.9,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "roof",
+    "name": "Roof",
+    "description": "A sloped roof to protect from the elements.",
+    "category": "Buildings",
+    "sub_category": "Roofs",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 3
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 10,
+          "blocks_light": false,
+          "walkable": false,
+          "walk_speed": 1,
+          "flammability": 0
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "wall",
+    "name": "Wall",
+    "description": "A wall that provides structure and protection.",
+    "category": "Buildings",
+    "sub_category": "Walls",
+    "is_abstract": true,
+    "components": [
+      {
+        "type": 2,
+        "data": {
+          "allowed": {
+            "classes": [
+              "refined"
+            ],
+            "materials": [
+              "mudbrick",
+              "wood",
+              "granite",
+              "basalt",
+              "sandstone",
+              "compacted_snow",
+              "brick"
+            ]
+          },
+          "defaults": {
+            "class": "refined",
+            "material": "wood"
+          },
+          "cost": {
+            "byMaterial": {
+              "mudbrick": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/mudbrick",
+                    "amount": 5
+                  }
+                ]
+              },
+              "wood": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "wood/log",
+                    "amount": 5
+                  }
+                ]
+              },
+              "granite": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/granite",
+                    "amount": 5
+                  }
+                ]
+              },
+              "basalt": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/basalt",
+                    "amount": 5
+                  }
+                ]
+              },
+              "sandstone": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/sandstone",
+                    "amount": 5
+                  }
+                ]
+              },
+              "compacted_snow": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "Snow",
+                    "amount": 20
+                  }
+                ]
+              },
+              "brick": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/brick",
+                    "amount": 5
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 1000,
+          "blocks_light": true,
+          "walkable": false,
+          "walk_speed": 1,
+          "flammability": 0
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": [
+      {
+        "id": "mudbrick_wall",
+        "components": [
+          {
+            "type": 3,
+            "data": {
+              "integrity": 700
+            }
+          }
+        ]
+      },
+      {
+        "id": "wood_wall",
+        "components": [
+          {
+            "type": 3,
+            "data": {
+              "integrity": 1000,
+              "flammability": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "granite_wall",
+        "components": [
+          {
+            "type": 3,
+            "data": {
+              "integrity": 4000
+            }
+          }
+        ]
+      },
+      {
+        "id": "basalt_wall",
+        "components": [
+          {
+            "type": 3,
+            "data": {
+              "integrity": 3000
+            }
+          }
+        ]
+      },
+      {
+        "id": "sandstone_wall",
+        "components": [
+          {
+            "type": 3,
+            "data": {
+              "integrity": 2000
+            }
+          }
+        ]
+      },
+      {
+        "id": "compacted_snow_wall",
+        "components": [
+          {
+            "type": 3,
+            "data": {
+              "integrity": 500,
+              "flammability": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "brick_wall",
+        "components": [
+          {
+            "type": 3,
+            "data": {
+              "integrity": 2500
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "basket",
+    "name": "Basket",
+    "description": "A small basket for storage.",
+    "category": "Containers",
+    "sub_category": "Containers",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 1
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 25,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 5,
+        "data": {
+          "weight": 0,
+          "volume": 10000
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "wooden_chest",
+    "name": "Wooden Chest",
+    "description": "A sturdy wooden chest for storage.",
+    "category": "Containers",
+    "sub_category": "Containers",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 3
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 100,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 5,
+        "data": {
+          "weight": 0,
+          "volume": 25000
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "wooden_drawers",
+    "name": "Wooden Drawers",
+    "description": "A set of wooden drawers for storage.",
+    "category": "Containers",
+    "sub_category": "Containers",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 4
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 100,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 5,
+        "data": {
+          "weight": 0,
+          "volume": 10000
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "furnace",
+    "name": "Furnace",
+    "description": "A furnace for smelting and firing.",
+    "category": "Crafting",
+    "sub_category": "Furnaces",
+    "is_abstract": true,
+    "components": [
+      {
+        "type": 2,
+        "data": {
+          "allowed": {
+            "classes": [
+              "refined"
+            ],
+            "materials": [
+              "mudbrick",
+              "basalt",
+              "granite",
+              "sandstone"
+            ]
+          },
+          "defaults": {
+            "class": "refined",
+            "material": "mudbrick"
+          },
+          "cost": {
+            "byMaterial": {
+              "mudbrick": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/mudbrick",
+                    "amount": 5
+                  }
+                ]
+              },
+              "basalt": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/basalt",
+                    "amount": 5
+                  }
+                ]
+              },
+              "granite": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/granite",
+                    "amount": 5
+                  }
+                ]
+              },
+              "sandstone": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/sandstone",
+                    "amount": 5
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 500,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 0
+        }
+      },
+      {
+        "type": 6,
+        "data": {}
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": [
+      {
+        "id": "mudbrick_furnace",
         "components": []
       },
       {
-        "id": "birch_tree",
+        "id": "basalt_furnace",
         "components": []
       },
       {
-        "id": "pine_tree",
+        "id": "granite_furnace",
         "components": []
       },
       {
-        "id": "palm_tree",
+        "id": "sandstone_furnace",
         "components": []
       }
     ]
+  },
+  {
+    "id": "anvil",
+    "name": "Anvil",
+    "description": "An anvil for metalworking.",
+    "category": "Crafting",
+    "sub_category": "Processing",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Iron",
+              "amount": 2
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 1000,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 0
+        }
+      },
+      {
+        "type": 6,
+        "data": {}
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "brick_former",
+    "name": "Brick Former",
+    "description": "A device for forming bricks.",
+    "category": "Crafting",
+    "sub_category": "Processing",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 6
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 50,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.25,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 6,
+        "data": {}
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "gin",
+    "name": "Gin",
+    "description": "A gin for processing cotton.",
+    "category": "Crafting",
+    "sub_category": "Processing",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 6
+            },
+            {
+              "id": "Iron",
+              "amount": 2
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 2,
+          "height": 1,
+          "integrity": 100,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 0.7
+        }
+      },
+      {
+        "type": 6,
+        "data": {}
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "loom",
+    "name": "Loom",
+    "description": "A loom for weaving cloth.",
+    "category": "Crafting",
+    "sub_category": "Processing",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 3
+            },
+            {
+              "id": "Iron",
+              "amount": 1
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 50,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 0.5
+        }
+      },
+      {
+        "type": 6,
+        "data": {}
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "splitting_block",
+    "name": "Splitting Block",
+    "description": "A block for splitting logs.",
+    "category": "Crafting",
+    "sub_category": "Processing",
+    "is_abstract": true,
+    "components": [
+      {
+        "type": 2,
+        "data": {
+          "allowed": {
+            "classes": [],
+            "materials": [
+              "basalt",
+              "granite",
+              "sandstone"
+            ]
+          },
+          "defaults": {
+            "material": "basalt"
+          },
+          "cost": {
+            "byMaterial": {
+              "basalt": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/basalt",
+                    "amount": 1
+                  }
+                ]
+              },
+              "granite": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/granite",
+                    "amount": 1
+                  }
+                ]
+              },
+              "sandstone": {
+                "mode": "ReplaceAll",
+                "recipe": [
+                  {
+                    "id": "refined/sandstone",
+                    "amount": 1
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 500,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 0
+        }
+      },
+      {
+        "type": 6,
+        "data": {}
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": [
+      {
+        "id": "basalt_splitting_block",
+        "components": []
+      },
+      {
+        "id": "granite_splitting_block",
+        "components": []
+      },
+      {
+        "id": "sandstone_splitting_block",
+        "components": []
+      }
+    ]
+  },
+  {
+    "id": "splitting_log",
+    "name": "Splitting Log",
+    "description": "A log used as a splitting surface.",
+    "category": "Crafting",
+    "sub_category": "Processing",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Log",
+              "amount": 1
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 200,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 6,
+        "data": {}
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "cotton_farm",
+    "name": "Cotton Farm",
+    "description": "A farm that grows cotton.",
+    "category": "Farm",
+    "sub_category": "PlantFarm",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "CottonSeed",
+              "amount": 1
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 10,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.3,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 7,
+        "data": {
+          "growth_time_days": 4,
+          "seed_resource": "CottonSeed",
+          "harvest_materials": [
+            {
+              "id": "cotton",
+              "amount": 6
+            }
+          ]
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "potato_farm",
+    "name": "Potato Farm",
+    "description": "A farm that grows potatoes.",
+    "category": "Farm",
+    "sub_category": "PlantFarm",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Potato",
+              "amount": 1
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 10,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.3,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 7,
+        "data": {
+          "growth_time_days": 2,
+          "seed_resource": "Potato",
+          "harvest_materials": [
+            {
+              "id": "fuels/anthracite",
+              "amount": 2
+            }
+          ]
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "wheat_farm",
+    "name": "Wheat Farm",
+    "description": "A farm that grows wheat.",
+    "category": "Farm",
+    "sub_category": "PlantFarm",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "WheatSeed",
+              "amount": 1
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 10,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.3,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 7,
+        "data": {
+          "growth_time_days": 4,
+          "seed_resource": "WheatSeed",
+          "harvest_materials": [
+            {
+              "id": "fuels/anthracite",
+              "amount": 4
+            },
+            {
+              "id": "fuels/anthracite",
+              "amount": 5
+            }
+          ]
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "wooden_bed",
+    "name": "Wooden Bed",
+    "description": "A comfortable bed for sleeping.",
+    "category": "Furniture",
+    "sub_category": "Beds",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 4
+            },
+            {
+              "id": "Cloth",
+              "amount": 2
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 150,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 4,
+        "data": {
+          "comfort_amount": 10
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "wooden_chair",
+    "name": "Wooden Chair",
+    "description": "A simple wooden chair.",
+    "category": "Furniture",
+    "sub_category": "Chairs",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 2
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 150,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "torch",
+    "name": "Torch",
+    "description": "A torch that provides light.",
+    "category": "Furniture",
+    "sub_category": "Lights",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 2
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 10,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "wooden_lamp",
+    "name": "Wooden Lamp",
+    "description": "A wooden lamp that provides light.",
+    "category": "Furniture",
+    "sub_category": "Lights",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 1
+            },
+            {
+              "id": "Glass",
+              "amount": 1
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 20,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "wooden_table",
+    "name": "Wooden Table",
+    "description": "A wooden table for dining or working.",
+    "category": "Furniture",
+    "sub_category": "Tables",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 4
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 150,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.2,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
+  },
+  {
+    "id": "plant",
+    "name": "Plant",
+    "description": "A plant that can be grown from a seed.",
+    "category": "Terraform",
+    "sub_category": "Plants",
+    "is_abstract": true,
+    "components": [
+      {
+        "type": 7,
+        "data": {
+          "growth_time_days": 0,
+          "seed_resource": "",
+          "harvest_materials": []
+        }
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": [
+      {
+        "id": "tree",
+        "components": [
+          {
+            "type": 0,
+            "data": {
+              "ingredients": [
+                {
+                  "id": "TreeSeed",
+                  "amount": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "bush",
+        "components": [
+          {
+            "type": 0,
+            "data": {
+              "ingredients": [
+                {
+                  "id": "BushSeed",
+                  "amount": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "cactus",
+        "components": [
+          {
+            "type": 0,
+            "data": {
+              "ingredients": [
+                {
+                  "id": "CactusSeed",
+                  "amount": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "apple_tree",
+        "components": [
+          {
+            "type": 0,
+            "data": {
+              "ingredients": [
+                {
+                  "id": "AppleSeed",
+                  "amount": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "blueberry_bush",
+        "components": [
+          {
+            "type": 0,
+            "data": {
+              "ingredients": [
+                {
+                  "id": "Blueberry",
+                  "amount": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "trading_post",
+    "name": "Trading Post",
+    "description": "A trading post for exchanging goods.",
+    "category": "Trading",
+    "sub_category": "TradingPosts",
+    "is_abstract": false,
+    "components": [
+      {
+        "type": 0,
+        "data": {
+          "ingredients": [
+            {
+              "id": "Wood",
+              "amount": 4
+            }
+          ]
+        }
+      },
+      {
+        "type": 3,
+        "data": {
+          "width": 1,
+          "height": 1,
+          "integrity": 150,
+          "blocks_light": false,
+          "walkable": true,
+          "walk_speed": 0.5,
+          "flammability": 1
+        }
+      },
+      {
+        "type": 5,
+        "data": {
+          "weight": 0,
+          "volume": 100000
+        }
+      },
+      {
+        "type": 6,
+        "data": {}
+      },
+      {
+        "type": 9,
+        "data": {
+          "sprite_path": "",
+          "pivot_x": 0.5,
+          "pivot_y": 0.5
+        }
+      }
+    ],
+    "variations": []
   }
 ]
