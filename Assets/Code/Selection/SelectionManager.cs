@@ -11,6 +11,7 @@ using Snowship.NInput;
 using Snowship.NJob;
 using Snowship.NState;
 using Snowship.NUtilities;
+using Snowship.NEntity;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.InputSystem;
@@ -30,6 +31,8 @@ namespace Snowship.NSelection
 		private readonly JobManager jobM;
 		private readonly TileManager tileM;
 		private readonly JobRegistry jobRegistry;
+		private readonly BlueprintBuilder blueprintBuilder;
+		private readonly EntityRegistry entityRegistry;
 
 		private readonly Stack<ISelectable> selectables = new();
 
@@ -58,7 +61,9 @@ namespace Snowship.NSelection
 			ICameraQuery cameraQuery,
 			JobManager jobM,
 			TileManager tileM,
-			JobRegistry jobRegistry
+			JobRegistry jobRegistry,
+			BlueprintBuilder blueprintBuilder,
+			EntityRegistry entityRegistry
 		) {
 			this.inputM = inputM;
 			this.stateEvents = stateEvents;
@@ -67,6 +72,8 @@ namespace Snowship.NSelection
 			this.jobM = jobM;
 			this.tileM = tileM;
 			this.jobRegistry = jobRegistry;
+			this.blueprintBuilder = blueprintBuilder;
+			this.entityRegistry = entityRegistry;
 
 			selectedJobPreviewObject = sharedReferences.SelectedJobPreview;
 		}
@@ -186,11 +193,20 @@ namespace Snowship.NSelection
 
 			if (selectionArea is { Count: > 0 }) {
 				foreach (Tile tile in selectionArea) {
+					IJob job;
 					if (selectedJobParams == null) {
-						jobM.AddJob(Activator.CreateInstance(selectedJobType, tile) as IJob);
+						job = Activator.CreateInstance(selectedJobType, tile) as IJob;
 					} else {
-						jobM.AddJob(Activator.CreateInstance(selectedJobType, tile, selectedJobParams) as IJob);
+						job = Activator.CreateInstance(selectedJobType, tile, selectedJobParams) as IJob;
 					}
+
+					if (job is EntityBuildJob entityBuildJob && selectedJobParams is EntityBuildJobParams entityParams) {
+						string materialId = "wood/plank";
+						Entity entity = blueprintBuilder.CreateBlueprint(entityRegistry, entityParams.JsonEntity.Id, materialId, tile, entityParams.Rotation);
+						entityBuildJob.InitializeEntity(entity);
+					}
+
+					jobM.AddJob(job);
 				}
 				selectionArea.Clear();
 			}
@@ -221,7 +237,29 @@ namespace Snowship.NSelection
 
 			selectedJobPreviewObject.sprite = jobM.GetJobSprite(selectedJobDefinition, selectedJobParams);
 			Tile overTile = GetTileFromMouseScreenPosition(Input.mousePosition);
-			selectedJobPreviewObject.transform.position = overTile.obj.transform.position;
+			Vector3 basePosition = overTile.obj.transform.position;
+
+			if (selectedJobParams is EntityBuildJobParams entityParams) {
+				JsonEntityComponent rendering = entityParams.JsonEntity.Components.FirstOrDefault(c => c.Type == EEntityComponent.Rendering);
+				if (rendering != null && selectedJobPreviewObject.sprite != null) {
+					JsonArgs args = new JsonArgs(rendering.Data);
+					float pivotX = args.GetFloatOrDefault("pivot_x", 0.5f);
+					float pivotY = args.GetFloatOrDefault("pivot_y", 0.5f);
+
+					float pixelsPerUnit = selectedJobPreviewObject.sprite.pixelsPerUnit;
+					float height = selectedJobPreviewObject.sprite.rect.height / pixelsPerUnit;
+					float width = selectedJobPreviewObject.sprite.rect.width / pixelsPerUnit;
+
+					Vector2 actualPivot = selectedJobPreviewObject.sprite.pivot / selectedJobPreviewObject.sprite.rect.size;
+
+					float offsetX = (pivotX - actualPivot.x) * width;
+					float offsetY = (pivotY - actualPivot.y) * height;
+
+					basePosition -= new Vector3(offsetX, offsetY, 0);
+				}
+			}
+
+			selectedJobPreviewObject.transform.position = basePosition;
 			selectedJobPreviewObject.sortingOrder = selectedJobDefinition.Layer + overTile.sr.sortingOrder + (int)SortingOrder.Selection;
 		}
 

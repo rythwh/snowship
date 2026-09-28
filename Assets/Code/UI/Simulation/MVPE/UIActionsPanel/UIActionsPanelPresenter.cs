@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
+using Snowship.NEntity;
 using Snowship.NJob;
 using Snowship.NResource;
 using Snowship.NSelection;
 using Snowship.NUtilities;
+using UnityEngine;
 
 namespace Snowship.NUI
 {
@@ -15,13 +17,20 @@ namespace Snowship.NUI
 	{
 		private readonly SelectionManager selectionM;
 		private readonly JobRegistry jobRegistry;
+		private readonly JsonEntityRegistry entityRegistry;
 
 		private readonly List<ITreeButton> childButtons = new();
 
-		public UIActionsPanelPresenter(UIActionsPanelView view, SelectionManager selectionM, JobRegistry jobRegistry) : base(view)
+		public UIActionsPanelPresenter(
+			UIActionsPanelView view,
+			SelectionManager selectionM,
+			JobRegistry jobRegistry,
+			JsonEntityRegistry entityRegistry
+		) : base(view)
 		{
 			this.selectionM = selectionM;
 			this.jobRegistry = jobRegistry;
+			this.entityRegistry = entityRegistry;
 		}
 
 		public override async UniTask OnCreate() {
@@ -101,12 +110,39 @@ namespace Snowship.NUI
 		// Build Buttons
 
 		private async UniTask CreateBuildButtons(ITreeButton button) {
-			List<IGroupItem> groups = ObjectPrefabGroup.GetObjectPrefabGroups()
-				.Where(group => group.type is not (ObjectPrefabGroup.ObjectGroupEnum.None or ObjectPrefabGroup.ObjectGroupEnum.Command or ObjectPrefabGroup.ObjectGroupEnum.Farm or ObjectPrefabGroup.ObjectGroupEnum.Terraform))
-				.Cast<IGroupItem>()
-				.ToList();
+			if (PlayerPrefs.GetInt("DebugSettings/Use Entity System for Buildings", 0) != 0) {
+				List<IGroupItem> groups = entityRegistry.AllEntities
+					.Where(e => !e.IsAbstract)
+					.GroupBy(e => e.Category)
+					.Select(g => (IGroupItem)new GenericGroupItem(
+						g.Key,
+						g.GroupBy(e => e.SubCategory)
+							.Select(sg => (IGroupItem)new GenericGroupItem(sg.Key, sg.Cast<IGroupItem>().ToList()))
+							.ToList()
+					))
+					.ToList();
 
-			await CreateGroupButtons(button, groups, SetupIndividualBuildButton);
+				await CreateGroupButtons(button, groups, SetupIndividualEntityBuildButton);
+			} else {
+				List<IGroupItem> groups = ObjectPrefabGroup.GetObjectPrefabGroups()
+					.Where(group => group.type is not (ObjectPrefabGroup.ObjectGroupEnum.None or ObjectPrefabGroup.ObjectGroupEnum.Command or ObjectPrefabGroup.ObjectGroupEnum.Farm or ObjectPrefabGroup.ObjectGroupEnum.Terraform))
+					.Cast<IGroupItem>()
+					.ToList();
+
+				await CreateGroupButtons(button, groups, SetupIndividualBuildButton);
+			}
+		}
+
+		private void SetupIndividualEntityBuildButton(ITreeButton button, IGroupItem item) {
+			if (button is not UIActionItemButtonElement entityButton) {
+				return;
+			}
+			if (item is not JsonEntity entity) {
+				return;
+			}
+
+			EntityBuildJobParams buildJobParams = new(entity);
+			entityButton.OnButtonClicked += () => selectionM.SetSelectedJob<EntityBuildJob, EntityBuildJobDefinition>(buildJobParams);
 		}
 
 		private async void SetupIndividualBuildButton(ITreeButton button, IGroupItem item) {
