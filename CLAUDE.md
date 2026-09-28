@@ -5,9 +5,10 @@ and Addressables. All game code is in `Assets/Code`, in a single assembly (`Snow
 `Snowship.N<Module>`). Editor tools are in `Assets/Editor`. There is one scene: `Assets/Scenes/Game.unity`.
 
 ## ⚠ Current state (update this section when it changes)
-- **The project compiles on Unity 6000.6.3f1** (as of 2026-09-28): 0 errors and 0 warnings, and the Unity CLI is connected to the live Editor. Nothing has been Play-mode tested since the upgrade.
-- The entity-build feature is **uncommitted work in progress**; see `docs/systems/entity.md`.
-- The dirty working tree **mixes** the upgrade with that work, and none of it is committed. Never use a blanket `git checkout .`/`restore`/`stash`; the file split is in GIT-1.
+- **The project compiles on Unity 6000.6.3f1** (as of 2026-09-28): 0 errors and 0 warnings, confirmed via the live Editor (`tools/unity.sh recompile`). Quick Start has been played a few times with only one console error (missing `ui_icon_job_EntityBuild` Addressables key, see FLOW-6).
+- The 2026-09-28 working tree has been split into 6 commits on `main` (Unity 6.6 upgrade; entity components/registry/view; entity job/selection/build-menu wiring; entity JSON editor; `entities.json` data; docs & tooling). History is otherwise untouched.
+- **`Assets/StreamingAssets/BaseGame/Data/materials.json` is still uncommitted.** An edit replaced every metal's ore ingredient with `fuels/anthracite` — looks accidental (MAT-4 in `docs/issues.md`). Review it before committing or discard it.
+- The entity-build feature (committed above) is still **work in progress**, not wired into gameplay end-to-end; see `docs/systems/entity.md`.
 - The complete list of what's broken or unfinished is in **`docs/issues.md`**. Start there when planning.
 
 ## Project knowledge base: read before working

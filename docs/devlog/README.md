@@ -29,3 +29,4 @@ Decisions made, dead ends, things to watch.
 ## Entries
 - [2026-09-28-initial-review.md](2026-09-28-initial-review.md): full codebase review, docs and tooling set up
 - [2026-09-28-unity-6.6-compile-fix.md](2026-09-28-unity-6.6-compile-fix.md): project compiles on 6000.6.3f1, Unity CLI connected
+- [2026-09-28-commit-split.md](2026-09-28-commit-split.md): working tree split into 6 commits, Quick Start play-tested
