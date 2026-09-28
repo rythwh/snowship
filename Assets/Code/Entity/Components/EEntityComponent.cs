@@ -10,6 +10,7 @@
 		Container,
 		Crafting,
 		Plant,
-		Quality
+		Quality,
+		Rendering
 	}
 }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using Snowship.NMap.NTile;
+using UnityEngine;
 
 namespace Snowship.NEntity
 {
@@ -32,17 +34,33 @@ namespace Snowship.NEntity
 			foreach (Type locationType in locationTypes) {
 				entity.Remove(locationType);
 			}
+			entity.Remove<OccupiedTilesComponent>();
 		}
 
 		public WorldLocationComponent MoveToTile(Entity entity, Tile tile, int rotation)
 		{
-			if (entity.TryGet(out WorldLocationComponent worldLocation)) {
+			WorldLocationComponent worldLocation;
+			if (entity.TryGet(out worldLocation)) {
 				worldLocation.Set(tile, rotation);
-				return worldLocation;
+			} else {
+				RemoveAnyLocation(entity);
+				worldLocation = entity.AddComponent(new WorldLocationComponent(tile, rotation));
 			}
 
-			RemoveAnyLocation(entity);
-			return entity.AddComponent(new WorldLocationComponent(tile, rotation));
+			if (entity.TryGet(out BuildingComponent building)) {
+				List<Tile> occupied = new();
+				foreach (Vector2Int pos in building.GetFootprint(rotation)) {
+					Tile t = tile.map.GetTileFromPosition(tile.PositionGrid.x + pos.x, tile.PositionGrid.y + pos.y);
+					if (t != null) {
+						occupied.Add(t);
+					}
+				}
+
+				entity.Remove<OccupiedTilesComponent>();
+				entity.AddComponent(new OccupiedTilesComponent(occupied));
+			}
+
+			return worldLocation;
 		}
 
 		public void Despawn(Entity entity)

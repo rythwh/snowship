@@ -24,10 +24,16 @@ namespace Snowship.NEntity
 			builder.Register<IJsonComponentFactory, CraftingFactory>(Lifetime.Singleton);
 			builder.Register<IJsonComponentFactory, PlantFactory>(Lifetime.Singleton);
 			builder.Register<IJsonComponentFactory, BuildingFactory>(Lifetime.Singleton);
+			builder.Register<IJsonComponentFactory, RenderingFactory>(Lifetime.Singleton);
 
 			builder.Register<JsonComponentFactoryRegistry>(Lifetime.Singleton).AsSelf();
 
 			builder.Register<JsonEntityLoader>(Lifetime.Singleton).AsSelf();
+			builder.Register<JsonEntityService>(Lifetime.Singleton).AsSelf();
+			builder.Register(resolver => resolver.Resolve<JsonEntityService>().Registry, Lifetime.Singleton).AsSelf();
+			builder.Register<BlueprintBuilder>(Lifetime.Singleton).AsSelf();
+
+			builder.RegisterComponentOnNewGameObject<EntityViewManager>(Lifetime.Singleton, "EntityViewManager");
 
 			// builder.RegisterInstance(...ObjectDefRegistry...).AsSelf();
 		}

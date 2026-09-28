@@ -7,6 +7,8 @@ namespace Snowship.NEntity
 	{
 		private readonly Dictionary<string, JsonEntity> idToEntity = new(StringComparer.OrdinalIgnoreCase);
 
+		public IEnumerable<JsonEntity> AllEntities => idToEntity.Values;
+
 		public JsonEntityRegistry(IEnumerable<JsonEntity> jsonEntities)
 		{
 			foreach (JsonEntity jsonEntity in jsonEntities) {
