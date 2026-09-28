@@ -1,7 +1,7 @@
-using UnityEditor;
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 // ReSharper disable InvertIf
 
@@ -14,42 +14,50 @@ public class RecentAssetsWindow : EditorWindow
 	private Vector2 scrollPos;
 
 	[MenuItem("Snowship/Recent Assets Tracker", false, 0)]
-	public static void ShowWindow() {
+	public static void ShowWindow()
+	{
 		GetWindow<RecentAssetsWindow>("Recent Assets");
 	}
 
-	private void OnEnable() {
+	private void OnEnable()
+	{
 		LoadHistory();
 		LoadStarred();
 		EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemGUI;
-		EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyWindowItemGUI;
+		EditorApplication.hierarchyWindowItemByEntityIdOnGUI += OnHierarchyWindowItemGUI;
 	}
 
-	private void OnDisable() {
+	private void OnDisable()
+	{
 		SaveHistory();
 		SaveStarred();
 		EditorApplication.projectWindowItemOnGUI -= OnProjectWindowItemGUI;
-		EditorApplication.hierarchyWindowItemOnGUI -= OnHierarchyWindowItemGUI;
+		EditorApplication.hierarchyWindowItemByEntityIdOnGUI -= OnHierarchyWindowItemGUI;
 	}
 
-	private void OnGUI() {
+	private void OnGUI()
+	{
 
 		scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
-		foreach (string assetPath in starredAssets.OrderByDescending(p => p)) {
+		foreach (string assetPath in starredAssets.OrderByDescending(p => p))
+		{
 			DrawAssetRow(assetPath, true);
 		}
 
-		for (int i = recentAssets.Count - 1; i >= 0; i--) {
+		for (int i = recentAssets.Count - 1; i >= 0; i--)
+		{
 			string assetPath = recentAssets[i];
-			if (!starredAssets.Contains(assetPath)) {
+			if (!starredAssets.Contains(assetPath))
+			{
 				DrawAssetRow(assetPath, false);
 			}
 		}
 
 		EditorGUILayout.EndScrollView();
 
-		if (GUILayout.Button("Clear")) {
+		if (GUILayout.Button("Clear"))
+		{
 			recentAssets.Clear();
 			starredAssets.Clear();
 			SaveHistory();
@@ -57,7 +65,8 @@ public class RecentAssetsWindow : EditorWindow
 		}
 	}
 
-	private void DrawAssetRow(string assetPath, bool isStarred) {
+	private void DrawAssetRow(string assetPath, bool isStarred)
+	{
 
 		Object asset = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
 		bool assetExists = asset != null;
@@ -74,8 +83,10 @@ public class RecentAssetsWindow : EditorWindow
 		EditorGUILayout.EndHorizontal();
 	}
 
-	private void CreateStarButton(string assetPath, bool isStarred, bool assetExists) {
-		GUIStyle starStyle = new(assetExists || isStarred ? EditorStyles.iconButton : GUIStyle.none) {
+	private void CreateStarButton(string assetPath, bool isStarred, bool assetExists)
+	{
+		GUIStyle starStyle = new(assetExists || isStarred ? EditorStyles.iconButton : GUIStyle.none)
+		{
 			normal = {
 				textColor = isStarred
 					? Color.yellow
@@ -90,26 +101,32 @@ public class RecentAssetsWindow : EditorWindow
 			alignment = TextAnchor.MiddleCenter
 		};
 
-		if (GUILayout.Button("★", starStyle)) {
+		if (GUILayout.Button("★", starStyle))
+		{
 			ToggleStar(assetPath, assetExists);
 		}
 	}
 
-	private void CreateOpenButton(Object asset, bool assetExists) {
+	private void CreateOpenButton(Object asset, bool assetExists)
+	{
 		Texture icon = assetExists ? EditorGUIUtility.IconContent("d_ScaleTool").image : null;
-		GUIStyle style = new(assetExists ? EditorStyles.iconButton : EditorStyles.label) {
+		GUIStyle style = new(assetExists ? EditorStyles.iconButton : EditorStyles.label)
+		{
 			fixedWidth = 20,
 			fixedHeight = 20,
 			alignment = TextAnchor.MiddleCenter
 		};
-		if (GUILayout.Button(icon, style)) {
+		if (GUILayout.Button(icon, style))
+		{
 			AssetDatabase.OpenAsset(asset);
 		}
 	}
 
-	private void CreateAssetIcon(string assetPath) {
+	private void CreateAssetIcon(string assetPath)
+	{
 		Texture icon = AssetDatabase.GetCachedIcon(assetPath);
-		GUIStyle style = new(EditorStyles.label) {
+		GUIStyle style = new(EditorStyles.label)
+		{
 			fixedWidth = 16,
 			fixedHeight = 16,
 			alignment = TextAnchor.MiddleCenter
@@ -117,37 +134,46 @@ public class RecentAssetsWindow : EditorWindow
 		GUILayout.Label(icon, style);
 	}
 
-	private void CreateContentButton(string assetPath, bool assetExists) {
+	private void CreateContentButton(string assetPath, bool assetExists)
+	{
 
 		string fileName = System.IO.Path.GetFileName(assetPath);
 
-		GUIStyle buttonStyle = new(EditorStyles.label) {
+		GUIStyle buttonStyle = new(EditorStyles.label)
+		{
 			alignment = TextAnchor.MiddleLeft,
 			stretchWidth = false,
-			normal = new GUIStyleState {
+			normal = new GUIStyleState
+			{
 				textColor = assetExists ? Color.gray8 : Color.dimGray
 			},
-			hover = new GUIStyleState {
+			hover = new GUIStyleState
+			{
 				textColor = assetExists ? Color.white : Color.dimGray
 			},
-			active = new GUIStyleState {
+			active = new GUIStyleState
+			{
 				textColor = assetExists ? Color.gray8 : Color.dimGray
 			}
 		};
 
-		if (GUILayout.Button(fileName, buttonStyle)) {
+		if (GUILayout.Button(fileName, buttonStyle))
+		{
 			SelectAsset(recentAssets.IndexOf(assetPath));
 		}
 	}
 
-	private void CreatePathDisplay(string assetPath) {
+	private void CreatePathDisplay(string assetPath)
+	{
 
 		string[] splitPath = assetPath.Split('/');
-		if (splitPath.Length <= 0) {
+		if (splitPath.Length <= 0)
+		{
 			return;
 		}
 		Color colour = Color.gray4;
-		splitPath = splitPath[0] switch {
+		splitPath = splitPath[0] switch
+		{
 			"Assets" or "Packages" => splitPath.Skip(1).ToArray(),
 			_ => splitPath
 		};
@@ -155,11 +181,13 @@ public class RecentAssetsWindow : EditorWindow
 
 		string displayString = string.Join(" / ", splitPath);
 
-		GUIStyle pathStyle = new(EditorStyles.label) {
+		GUIStyle pathStyle = new(EditorStyles.label)
+		{
 			fontSize = 10,
 			alignment = TextAnchor.MiddleLeft,
 			stretchWidth = false,
-			normal = new GUIStyleState {
+			normal = new GUIStyleState
+			{
 				textColor = colour
 			},
 			padding = new RectOffset(0, 0, 2, 0)
@@ -168,8 +196,10 @@ public class RecentAssetsWindow : EditorWindow
 		GUILayout.Label(displayString, pathStyle);
 	}
 
-	private void OnProjectWindowItemGUI(string guid, Rect selectionRect) {
-		if (Event.current.type != EventType.MouseDown || !selectionRect.Contains(Event.current.mousePosition)) {
+	private void OnProjectWindowItemGUI(string guid, Rect selectionRect)
+	{
+		if (Event.current.type != EventType.MouseDown || !selectionRect.Contains(Event.current.mousePosition))
+		{
 			return;
 		}
 
@@ -177,80 +207,100 @@ public class RecentAssetsWindow : EditorWindow
 		RegisterAsset(path);
 	}
 
-	private void OnHierarchyWindowItemGUI(int entityId, Rect selectionRect) {
-		if (Event.current.type != EventType.MouseDown || !selectionRect.Contains(Event.current.mousePosition)) {
+	private void OnHierarchyWindowItemGUI(EntityId entityId, Rect selectionRect)
+	{
+		if (Event.current.type != EventType.MouseDown || !selectionRect.Contains(Event.current.mousePosition))
+		{
 			return;
 		}
 		Object obj = EditorUtility.EntityIdToObject(entityId);
-		if (obj == null) {
+		if (obj == null)
+		{
 			return;
 		}
 		string path = AssetDatabase.GetAssetPath(obj);
-		if (!string.IsNullOrEmpty(path)) {
+		if (!string.IsNullOrEmpty(path))
+		{
 			RegisterAsset(path);
 		}
 	}
 
-	private void RegisterAsset(string path) {
-		if (string.IsNullOrEmpty(path)) {
+	private void RegisterAsset(string path)
+	{
+		if (string.IsNullOrEmpty(path))
+		{
 			return;
 		}
-		if (recentAssets.Contains(path)) {
+		if (recentAssets.Contains(path))
+		{
 			recentAssets.Remove(path);
 		}
 		recentAssets.Add(path);
-		if (recentAssets.Count > 20) {
+		if (recentAssets.Count > 20)
+		{
 			recentAssets.RemoveAt(0);
 		}
 		SaveHistory();
 		Repaint();
 	}
 
-	private void SelectAsset(int index) {
-		if (index < 0 || index >= recentAssets.Count) {
+	private void SelectAsset(int index)
+	{
+		if (index < 0 || index >= recentAssets.Count)
+		{
 			return;
 		}
 		string assetPath = recentAssets[index];
 		Object obj = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
-		if (!obj) {
+		if (!obj)
+		{
 			return;
 		}
 		Selection.activeObject = obj;
 		EditorGUIUtility.PingObject(obj);
 	}
 
-	private void ToggleStar(string path, bool assetExists) {
-		if (!assetExists && !starredAssets.Contains(path)) {
+	private void ToggleStar(string path, bool assetExists)
+	{
+		if (!assetExists && !starredAssets.Contains(path))
+		{
 			return;
 		}
-		if (!starredAssets.Add(path)) {
+		if (!starredAssets.Add(path))
+		{
 			starredAssets.Remove(path);
 		}
 		SaveStarred();
 		Repaint();
 	}
 
-	private void LoadHistory() {
+	private void LoadHistory()
+	{
 		string data = EditorPrefs.GetString(PrefsKey, "");
-		if (string.IsNullOrEmpty(data)) {
+		if (string.IsNullOrEmpty(data))
+		{
 			return;
 		}
 		recentAssets = data.Split('|').ToList();
 	}
 
-	private void SaveHistory() {
+	private void SaveHistory()
+	{
 		string data = string.Join("|", recentAssets);
 		EditorPrefs.SetString(PrefsKey, data);
 	}
 
-	private void LoadStarred() {
+	private void LoadStarred()
+	{
 		string data = EditorPrefs.GetString(StarredPrefsKey, "");
-		if (!string.IsNullOrEmpty(data)) {
+		if (!string.IsNullOrEmpty(data))
+		{
 			starredAssets = new HashSet<string>(data.Split('|'));
 		}
 	}
 
-	private void SaveStarred() {
+	private void SaveStarred()
+	{
 		string data = string.Join("|", starredAssets);
 		EditorPrefs.SetString(StarredPrefsKey, data);
 	}

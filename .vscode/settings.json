@@ -56,5 +56,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "snowship.sln"
+    "dotnet.defaultSolution": "snowship.slnx",
+    "dotnet.preferCSharpExtension": true
 }
