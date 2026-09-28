@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -166,6 +166,11 @@ namespace Snowship.NEditor
 		private void AddEntity()
 		{
 			JsonEntity newEntity = new();
+			// Add Rendering component by default
+			newEntity.Components.Add(new JsonEntityComponent {
+				Type = EEntityComponent.Rendering,
+				Data = new JObject()
+			});
 			entities.Add(newEntity);
 			UpdateOrderedEntities();
 			SelectEntity(newEntity);
@@ -233,7 +238,33 @@ namespace Snowship.NEditor
 							}
 							List<JsonEntityComponent> components = entity.Components?.ToList();
 							if (components != null) {
-								foreach (JsonEntityComponent component in components) {
+								// Handle Rendering component separately - show as "Pinned" at top
+								JsonEntityComponent renderingComponent = components.FirstOrDefault(c => c.Type == EEntityComponent.Rendering);
+								List<JsonEntityComponent> otherComponents = components.Where(c => c.Type != EEntityComponent.Rendering).ToList();
+
+								// Draw Rendering component first (Pinned)
+								if (renderingComponent != null) {
+									using (new EditorGUILayout.VerticalScope("box")) {
+										// Component selection bar (top of component)
+										using (new EditorGUILayout.HorizontalScope()) {
+											EditorGUILayout.LabelField(JsonEntitiesEditorUtilities.GetComponentImage(renderingComponent.Type), GUILayout.MaxWidth(20));
+
+											// Show "Pinned" label instead of editable type
+											EditorGUILayout.LabelField("Rendering (Pinned)", EditorStyles.boldLabel);
+
+											// No delete button for pinned component
+										}
+
+										renderingComponent.Data ??= new JObject();
+
+										JsonArgs args = new JsonArgs(renderingComponent.Data);
+
+										JsonEntitiesEditorComponents.ComponentEditors.GetValueOrDefault(renderingComponent.Type)?.Invoke(renderingComponent, args, materials);
+									}
+								}
+
+								// Draw other components
+								foreach (JsonEntityComponent component in otherComponents) {
 									using (new EditorGUILayout.VerticalScope("box")) {
 
 										// Component selection bar (top of component)
